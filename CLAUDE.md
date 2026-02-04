@@ -3,7 +3,14 @@
 ## Git Commits
 
 - Never include "Co-Authored-By: Claude" or similar AI attribution lines in commits
-- Write clear, descriptive commit messages that explain what changed and why
+- Use conventional commit format for organized commit history:
+  - `feat: description` - New features
+  - `fix: description` - Bug fixes
+  - `perf: description` - Performance improvements
+  - `deps: description` - Dependency updates
+  - `docs: description` - Documentation changes
+  - `ci: description` - CI/CD changes
+  - `chore: description` - Other changes
 
 ## Development Workflow
 
