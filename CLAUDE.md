@@ -3,14 +3,7 @@
 ## Git Commits
 
 - Never include "Co-Authored-By: Claude" or similar AI attribution lines in commits
-- Use conventional commit format for automatic changelog generation:
-  - `feat: description` - New features
-  - `fix: description` - Bug fixes
-  - `perf: description` - Performance improvements
-  - `deps: description` - Dependency updates
-  - `docs: description` - Documentation changes
-  - `ci: description` - CI/CD changes
-  - `chore: description` - Other changes (hidden from changelog)
+- Write clear, descriptive commit messages that explain what changed and why
 
 ## Development Workflow
 
@@ -117,17 +110,37 @@ The project uses GitHub Actions (`.github/workflows/docker-build.yml`) to automa
 
 ### Creating a Release
 
-Release-please automates changelog generation and version bumping based on conventional commits:
-
-1. Develop features on `dev` using conventional commit messages
-2. Create a pull request from `dev` to `main`
-3. When merged, release-please creates/updates a release PR with changelog
-4. Merge the release PR to create the GitHub release automatically
-5. GitHub Actions builds and pushes the Docker image with version tag
-
-Manual release (if needed):
 1. Update `APP_VERSION` in `config.py`
-2. Create a GitHub release with a version tag (e.g., `v0.3.0`)
+2. Commit the version bump to `dev`
+3. Create a pull request from `dev` to `main` with comprehensive changelog
+4. Merge the PR to `main`
+5. Create and push a version tag:
+   ```bash
+   git checkout main
+   git pull origin main
+   git tag v0.X.0
+   git push origin v0.X.0
+   ```
+6. Create the GitHub release with changelog:
+   ```bash
+   gh release create v0.X.0 --title "v0.X.0" --notes "## What's Changed
+
+   ### New Features
+   - Feature description
+
+   ### Bug Fixes
+   - Fix description
+
+   ### Other Changes
+   - Change description"
+   ```
+7. GitHub Actions automatically builds and pushes the Docker image with version tag
+8. Sync `dev` with `main` after release:
+   ```bash
+   git checkout dev
+   git reset --hard origin/main
+   git push origin dev --force
+   ```
 
 ### Docker Deployment
 
