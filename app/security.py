@@ -74,7 +74,9 @@ def get_safe_redirect_url(target, default='main.dashboard'):
     """
     if target and is_safe_url(target):
         return target
-    return url_for(default)
+    if default:
+        return url_for(default)
+    return None
 
 
 def validate_password_strength(password):
