@@ -9,6 +9,7 @@
     </div>
 
     <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h2>
 

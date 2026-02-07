@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Price History - {{ station.name }}{% endblock %}
 
+{% block extra_scripts %}
+<!-- Chart.js - Needed for price history chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+{% endblock %}
+
 {% block content %}
 <div class="mb-6">
     <a href="{{ url_for('stations.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">&larr; {{ _('Back to stations') }}</a>

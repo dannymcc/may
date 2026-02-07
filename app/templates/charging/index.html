@@ -116,6 +116,7 @@
                             </svg>
                         </a>
                         <form method="POST" action="{{ url_for('charging.delete', session_id=session.id) }}" class="inline"
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                               onsubmit="return confirm('Delete this charging session?');">
                             <button type="submit" class="text-gray-400 hover:text-red-600">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

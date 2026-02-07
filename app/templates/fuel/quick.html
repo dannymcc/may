@@ -9,6 +9,7 @@
     </div>
 
     <form method="POST" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <!-- Vehicle Selection -->
         <div>
             <label for="vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Vehicle') }}</label>

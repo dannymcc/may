@@ -16,9 +16,12 @@
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon.svg') }}">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Tailwind CSS - Critical for styling, loaded first -->
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <!-- HTMX - Non-critical, deferred -->
+    <script src="https://unpkg.com/htmx.org@1.9.10" defer></script>
+    <!-- Chart.js - Only loaded on pages that need it via block -->
+    {% block extra_scripts %}{% endblock %}
     <script>
         // Generate color palette from primary color
         function hexToHSL(hex) {
@@ -309,24 +312,49 @@
         });
     }
 
-    // CSRF Protection: Automatically inject CSRF tokens into all POST forms
-    document.addEventListener('DOMContentLoaded', function() {
+    // CSRF Protection: Setup token injection immediately and also on DOMContentLoaded
+    // This handles both existing forms and dynamically added forms
+    (function() {
         const csrfToken = '{{ csrf_token() }}';
-        document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(function(form) {
-            // Skip if token already exists
-            if (form.querySelector('input[name="csrf_token"]')) return;
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'csrf_token';
-            input.value = csrfToken;
-            form.insertBefore(input, form.firstChild);
-        });
+        const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+        
+        function injectCSRFTokens() {
+            document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(function(form) {
+                // Skip if token already exists
+                if (form.querySelector('input[name="csrf_token"]')) return;
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrf_token';
+                input.value = csrfToken;
+                form.insertBefore(input, form.firstChild);
+            });
+        }
+
+        // Inject tokens immediately for forms rendered on initial load
+        injectCSRFTokens();
+        
+        // Also run on DOMContentLoaded for safety
+        document.addEventListener('DOMContentLoaded', injectCSRFTokens);
+        
+        // Watch for dynamically added forms (HTMX, etc.)
+        if (window.MutationObserver) {
+            new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length) {
+                        injectCSRFTokens();
+                    }
+                });
+            }).observe(document.body, { 
+                childList: true, 
+                subtree: true 
+            });
+        }
 
         // Also handle HTMX requests
-        document.body.addEventListener('htmx:configRequest', function(event) {
+        document.addEventListener('htmx:configRequest', function(event) {
             event.detail.headers['X-CSRFToken'] = csrfToken;
         });
-    });
+    })();
     </script>
 </body>
 </html>

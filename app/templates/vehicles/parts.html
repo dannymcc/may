@@ -70,6 +70,7 @@
                             </svg>
                         </a>
                         <form method="POST" action="{{ url_for('vehicles.delete_part', vehicle_id=vehicle.id, part_id=part.id) }}"
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                               class="inline" onsubmit="return confirm('Delete this part?');">
                             <button type="submit" class="p-2 text-gray-400 hover:text-red-500" title="Delete">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

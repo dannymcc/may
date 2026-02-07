@@ -20,6 +20,7 @@
         </div>
 
         <form method="POST" class="p-6 space-y-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- Vehicle Selection -->
             <div>
                 <label for="vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vehicle</label>

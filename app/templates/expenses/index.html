@@ -45,6 +45,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <a href="{{ url_for('expenses.edit', expense_id=expense.id) }}" class="text-primary-600 hover:text-primary-900 mr-3">Edit</a>
                         <form method="POST" action="{{ url_for('expenses.delete', expense_id=expense.id) }}" class="inline"
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                               onsubmit="return confirm('Delete this expense?');">
                             <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
                         </form>

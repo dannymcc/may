@@ -79,11 +79,28 @@ docker run -d \
 
 Access the application at `http://localhost:5050`
 
-**Default login:**
+**First-time login:**
 - Username: `admin`
-- Password: `admin`
+- Password: Check your container logs for the auto-generated password
 
-⚠️ **Change the default password after first login!**
+On first run, if no `ADMIN_PASSWORD` environment variable is set, May generates a secure random password and prints it to the console:
+
+```
+============================================================
+SECURITY NOTICE: Default admin account created
+Username: admin
+Password: <randomly-generated-password>
+Please change this password immediately after first login!
+Set ADMIN_PASSWORD environment variable to avoid this message.
+============================================================
+```
+
+To view the password, run:
+```bash
+docker logs may
+```
+
+💡 **Tip:** Set `ADMIN_PASSWORD` in your docker-compose.yml or environment to use a fixed password.
 
 ### Manual Installation
 

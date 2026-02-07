@@ -4,12 +4,14 @@
             <!-- Complete checkbox / status -->
             {% if not reminder.is_completed %}
             <form method="POST" action="{{ url_for('reminders.complete', reminder_id=reminder.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="h-6 w-6 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 hover:bg-green-50 flex items-center justify-center transition-colors"
                         title="Mark as completed">
                 </button>
             </form>
             {% else %}
             <form method="POST" action="{{ url_for('reminders.uncomplete', reminder_id=reminder.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center"
                         title="Mark as not completed">
                     <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,6 +82,7 @@
                     </svg>
                 </a>
                 <form method="POST" action="{{ url_for('reminders.delete', reminder_id=reminder.id) }}" class="inline"
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       onsubmit="return confirm('Delete this reminder?');">
                     <button type="submit" class="p-2 text-gray-400 hover:text-red-600" title="Delete">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

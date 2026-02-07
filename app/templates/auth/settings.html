@@ -90,6 +90,7 @@
         <!-- Content Area -->
         <div class="flex-1 min-w-0">
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <!-- Units & Values Section -->
                 <div id="section-units" class="settings-section">
                     <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
@@ -333,6 +334,7 @@
             <!-- Menu & Navigation Section -->
             <div id="section-menu" class="settings-section hidden">
                 <form method="POST" action="{{ url_for('auth.menu_preferences') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
                         <div class="p-6">
                             <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Menu & Navigation') }}</h2>
@@ -461,6 +463,7 @@
                                     <p class="text-sm text-gray-500 dark:text-gray-400">Import from Hammond SQLite database (.db file)</p>
                                 </div>
                                 <form method="POST" action="{{ url_for('api.import_hammond') }}" enctype="multipart/form-data" class="flex items-center gap-2">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="file" name="file" accept=".db,.sqlite,.sqlite3" required
                                            class="text-sm text-gray-500 dark:text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 dark:bg-gray-600 dark:file:bg-gray-600 file:text-gray-700 dark:text-gray-300 dark:file:text-gray-200 hover:file:bg-gray-200 dark:hover:file:bg-gray-50 dark:bg-gray-7000">
                                     <button type="submit"
@@ -476,6 +479,7 @@
                                     <p class="text-sm text-gray-500 dark:text-gray-400">Import from Clarkson MySQL dump (.sql file)</p>
                                 </div>
                                 <form method="POST" action="{{ url_for('api.import_clarkson') }}" enctype="multipart/form-data" class="flex items-center gap-2">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="file" name="file" accept=".sql" required
                                            class="text-sm text-gray-500 dark:text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 dark:bg-gray-600 dark:file:bg-gray-600 file:text-gray-700 dark:text-gray-300 dark:file:text-gray-200 hover:file:bg-gray-200 dark:hover:file:bg-gray-50 dark:bg-gray-7000">
                                     <button type="submit"
@@ -491,6 +495,7 @@
                                     <p class="text-sm text-gray-500 dark:text-gray-400">Import from Fuelly CSV export (.csv file)</p>
                                 </div>
                                 <form method="POST" action="{{ url_for('api.import_fuelly') }}" enctype="multipart/form-data" class="flex items-center gap-2">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="file" name="file" accept=".csv" required
                                            class="text-sm text-gray-500 dark:text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 dark:bg-gray-600 dark:file:bg-gray-600 file:text-gray-700 dark:text-gray-300 dark:file:text-gray-200 hover:file:bg-gray-200 dark:hover:file:bg-gray-50 dark:bg-gray-7000">
                                     <button type="submit"
@@ -972,6 +977,7 @@
                                 </div>
 
                                 <form method="POST" action="{{ url_for('auth.dvla_settings') }}" class="space-y-4">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <div>
                                         <label for="dvla_api_key" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('DVLA API Key') }}</label>
                                         <div class="flex gap-2">
@@ -1051,6 +1057,7 @@
                                 </div>
 
                                 <form method="POST" action="{{ url_for('auth.tessie_settings') }}" class="space-y-4">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <div>
                                         <label for="tessie_api_token" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Tessie API Token') }}</label>
                                         <div class="flex gap-2">
@@ -1085,6 +1092,7 @@
                 <div class="space-y-6">
                     <!-- User Notification Preferences -->
                     <form method="POST" action="{{ url_for('auth.notifications') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
                             <div class="p-6">
                                 <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Notification Preferences') }}</h2>
@@ -1243,6 +1251,7 @@
 
                         <div class="p-6">
                             <form method="POST" action="{{ url_for('auth.smtp_settings') }}" class="space-y-6">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <!-- Email (SMTP) Settings -->
                                 <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                                     <div class="flex items-center justify-between mb-4">
@@ -1419,6 +1428,7 @@
             {% if current_user.is_admin %}
             <div id="section-branding" class="settings-section hidden">
                 <form method="POST" action="{{ url_for('auth.branding') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
                         <div class="p-6">
                             <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Application Branding') }}</h2>

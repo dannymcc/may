@@ -114,6 +114,7 @@
 <div id="complete-modal" class="hidden fixed inset-0 bg-gray-50 dark:bg-gray-7000 bg-opacity-75 flex items-center justify-center z-50">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
         <form id="complete-form" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="p-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white" id="modal-title">{{ _('Mark as Completed') }}</h3>
                 <div class="mt-4 space-y-4">
