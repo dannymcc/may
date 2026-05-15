@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{% if supply %}{{ _('Edit Supply') }}{% else %}{{ _('Add Supply') }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('supplies.index') }}" class="text-sm text-primary-600 hover:text-primary-500">&larr; {{ _('Back to Supplies') }}</a>
+        <h1 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+            {% if supply %}{{ _('Edit Supply') }}{% else %}{{ _('Add Supply') }}{% endif %}
+        </h1>
+    </div>
+
+    <form method="POST" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Product') }} *</label>
+            <input type="text" name="name" id="name" required
+                   value="{{ supply.name if supply else '' }}"
+                   placeholder="{{ _('e.g. Motor Oil, Touch-up Paint') }}"
+                   class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+        </div>
+
+        <div>
+            <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Quantity on Hand') }} *</label>
+            <input type="text" name="quantity" id="quantity" required
+                   value="{{ supply.quantity if supply else '' }}"
+                   placeholder="{{ _('e.g. 3, 2 quarts, half full') }}"
+                   class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <a href="{{ url_for('supplies.index') }}"
+               class="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                {{ _('Cancel') }}
+            </a>
+            <button type="submit"
+                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                {% if supply %}{{ _('Save Changes') }}{% else %}{{ _('Add Supply') }}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

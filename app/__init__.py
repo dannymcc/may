@@ -90,6 +90,7 @@ def _run_schema_migrations(app):
             ('date_format', "VARCHAR(20) DEFAULT 'DD/MM/YYYY'"),
             ('password_reset_token', 'VARCHAR(100)'),
             ('password_reset_expires', 'DATETIME'),
+            ('show_menu_supplies', 'BOOLEAN DEFAULT 1'),
         ],
         'charging_sessions': [
             ('tessie_charge_id', 'VARCHAR(50)'),
@@ -210,7 +211,7 @@ def create_app(config_class=Config):
         fmt = formats.get(style, formats['default'])
         return value.strftime(fmt)
 
-    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, admin
+    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, admin, supplies
     app.register_blueprint(main.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(vehicles.bp)
@@ -227,6 +228,7 @@ def create_app(config_class=Config):
     app.register_blueprint(trips.bp)
     app.register_blueprint(charging.bp)
     app.register_blueprint(admin.bp)
+    app.register_blueprint(supplies.bp)
 
     # Health check endpoint for container orchestration
     @app.route('/health')

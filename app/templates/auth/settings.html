@@ -483,6 +483,11 @@
                                                class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
                                         <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('EV Charging') }}</span>
                                     </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="show_menu_supplies" {% if current_user.show_menu_supplies is not defined or current_user.show_menu_supplies %}checked{% endif %}
+                                               class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                                        <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Supplies') }}</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>

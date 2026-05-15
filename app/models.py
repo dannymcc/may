@@ -79,15 +79,16 @@ class User(UserMixin, db.Model):
     start_page = db.Column(db.String(50), default='dashboard')  # dashboard, vehicles, fuel, expenses, etc.
     show_menu_vehicles = db.Column(db.Boolean, default=True)
     show_menu_fuel = db.Column(db.Boolean, default=True)
-    show_menu_expenses = db.Column(db.Boolean, default=True)
-    show_menu_reminders = db.Column(db.Boolean, default=True)
+    show_menu_expenses = db.Column(db.Boolean, default=False)
+    show_menu_reminders = db.Column(db.Boolean, default=False)
     show_menu_maintenance = db.Column(db.Boolean, default=True)
-    show_menu_recurring = db.Column(db.Boolean, default=True)
+    show_menu_recurring = db.Column(db.Boolean, default=False)
     show_menu_documents = db.Column(db.Boolean, default=True)
-    show_menu_stations = db.Column(db.Boolean, default=True)
-    show_menu_trips = db.Column(db.Boolean, default=True)
-    show_menu_charging = db.Column(db.Boolean, default=True)
-    show_quick_entry = db.Column(db.Boolean, default=False)  # Show quick entry button in navbar
+    show_menu_stations = db.Column(db.Boolean, default=False)
+    show_menu_trips = db.Column(db.Boolean, default=False)
+    show_menu_charging = db.Column(db.Boolean, default=False)
+    show_menu_supplies = db.Column(db.Boolean, default=True)
+    show_quick_entry = db.Column(db.Boolean, default=True)  # Show quick entry button in navbar
 
     # Relationships
     owned_vehicles = db.relationship('Vehicle', backref='owner', lazy='dynamic',
@@ -96,6 +97,7 @@ class User(UserMixin, db.Model):
                                       backref=db.backref('shared_users', lazy='dynamic'))
     fuel_logs = db.relationship('FuelLog', backref='user', lazy='dynamic')
     expenses = db.relationship('Expense', backref='user', lazy='dynamic')
+    supplies = db.relationship('Supply', backref='user', lazy='dynamic', cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -1195,3 +1197,15 @@ class FuelPriceHistory(db.Model):
     # Relationships
     station = db.relationship('FuelStation', backref=db.backref('price_history', lazy='dynamic'))
     user = db.relationship('User', backref=db.backref('fuel_price_history', lazy='dynamic'))
+
+
+class Supply(db.Model):
+    """User-level inventory of car supplies (oil, paint, etc.)"""
+    __tablename__ = 'supplies'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    quantity = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

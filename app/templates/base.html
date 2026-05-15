@@ -303,7 +303,8 @@
                                                     (current_user.show_menu_recurring is not defined or current_user.show_menu_recurring) or
                                                     (current_user.show_menu_documents is not defined or current_user.show_menu_documents) or
                                                     (current_user.show_menu_stations is not defined or current_user.show_menu_stations) or
-                                                    (current_user.show_menu_charging is not defined or current_user.show_menu_charging) %}
+                                                    (current_user.show_menu_charging is not defined or current_user.show_menu_charging) or
+                                                    (current_user.show_menu_supplies is not defined or current_user.show_menu_supplies) %}
                             {% if show_more_menu %}
                             <div class="relative inline-flex items-center" id="more-menu-container">
                                 <button onclick="document.getElementById('more-dropdown').classList.toggle('hidden')" class="inline-flex items-center px-3 py-2 text-sm font-medium {% if 'maintenance' in request.endpoint or 'recurring' in request.endpoint or 'documents' in request.endpoint or 'stations' in request.endpoint %}text-primary-600 border-b-2 border-primary-600{% else %}text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white{% endif %}">
@@ -328,6 +329,9 @@
                                         {% endif %}
                                         {% if current_user.show_menu_charging is not defined or current_user.show_menu_charging %}
                                         <a href="{{ url_for('charging.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('EV Charging') }}</a>
+                                        {% endif %}
+                                        {% if current_user.show_menu_supplies is not defined or current_user.show_menu_supplies %}
+                                        <a href="{{ url_for('supplies.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Supplies') }}</a>
                                         {% endif %}
                                         <a href="{{ url_for('fuel.quick') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Quick Fuel Entry') }}</a>
                                     </div>
@@ -400,6 +404,9 @@
                     {% endif %}
                     {% if current_user.show_menu_stations is not defined or current_user.show_menu_stations %}
                     <a href="{{ url_for('stations.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Fuel Stations') }}</a>
+                    {% endif %}
+                    {% if current_user.show_menu_supplies is not defined or current_user.show_menu_supplies %}
+                    <a href="{{ url_for('supplies.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Supplies') }}</a>
                     {% endif %}
                     <a href="{{ url_for('fuel.quick') }}" class="block px-4 py-2 text-base font-medium text-primary-600 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Quick Fuel Entry') }}</a>
                     <a href="{{ url_for('auth.settings') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Settings') }}</a>

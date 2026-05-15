@@ -367,6 +367,7 @@ def menu_preferences():
     current_user.show_menu_stations = request.form.get('show_menu_stations') == 'on'
     current_user.show_menu_trips = request.form.get('show_menu_trips') == 'on'
     current_user.show_menu_charging = request.form.get('show_menu_charging') == 'on'
+    current_user.show_menu_supplies = request.form.get('show_menu_supplies') == 'on'
     current_user.show_quick_entry = request.form.get('show_quick_entry') == 'on'
     db.session.commit()
     flash(_('Menu preferences updated'), 'success')
