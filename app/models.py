@@ -600,45 +600,36 @@ class FuelLog(db.Model):
     def get_consumption(self, consumption_unit=None, volume_unit='L'):
         """Calculate consumption for this fill-up.
 
-        For full-tank fill-ups, sum every litre poured between the previous
-        full tank and this one (inclusive) and divide by the distance covered
-        — the "fill-to-fill" method. Partial fills between two full tanks are
-        therefore counted (issue #169). If any of the intervening logs is
-        flagged ``is_missed``, the figure is unknowable and we return None.
+        Only meaningful for full-tank fills: sum every litre poured between
+        the previous full tank and this one (inclusive) and divide by the
+        distance covered — the "fill-to-fill" method. Partial fills between
+        two full tanks are therefore counted in the next full tank's figure
+        (issue #169). If any of the intervening logs is flagged ``is_missed``,
+        the figure is unknowable and we return None.
 
-        For partial fills, compare against the immediately preceding log of
-        any type to give an instantaneous "fuel added per km" estimate; this
-        is a rough indicator, not a true consumption figure.
+        Partial fills return None: the litres added in a top-up tell you
+        nothing about consumption over the preceding distance, and surfacing
+        a number there is misleading (issue #194).
         """
-        if not self.volume:
+        if not self.volume or not self.is_full_tank:
             return None
 
-        if self.is_full_tank:
-            prev_full = FuelLog.query.filter(
-                FuelLog.vehicle_id == self.vehicle_id,
-                FuelLog.odometer < self.odometer,
-                FuelLog.is_full_tank == True,
-            ).order_by(FuelLog.odometer.desc()).first()
-            if not prev_full:
-                return None
-            distance = self.odometer - prev_full.odometer
-            between = FuelLog.query.filter(
-                FuelLog.vehicle_id == self.vehicle_id,
-                FuelLog.odometer > prev_full.odometer,
-                FuelLog.odometer <= self.odometer,
-            ).all()
-            if any(log.is_missed for log in between):
-                return None
-            volume_native = sum(log.volume for log in between if log.volume)
-        else:
-            prev_log = FuelLog.query.filter(
-                FuelLog.vehicle_id == self.vehicle_id,
-                FuelLog.odometer < self.odometer,
-            ).order_by(FuelLog.odometer.desc()).first()
-            if not prev_log:
-                return None
-            distance = self.odometer - prev_log.odometer
-            volume_native = self.volume
+        prev_full = FuelLog.query.filter(
+            FuelLog.vehicle_id == self.vehicle_id,
+            FuelLog.odometer < self.odometer,
+            FuelLog.is_full_tank == True,
+        ).order_by(FuelLog.odometer.desc()).first()
+        if not prev_full:
+            return None
+        distance = self.odometer - prev_full.odometer
+        between = FuelLog.query.filter(
+            FuelLog.vehicle_id == self.vehicle_id,
+            FuelLog.odometer > prev_full.odometer,
+            FuelLog.odometer <= self.odometer,
+        ).all()
+        if any(log.is_missed for log in between):
+            return None
+        volume_native = sum(log.volume for log in between if log.volume)
 
         if distance > 0 and volume_native > 0:
             odometer_unit = self.vehicle.get_effective_odometer_unit()

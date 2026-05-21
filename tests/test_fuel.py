@@ -96,7 +96,8 @@ class TestFuelDelete:
 
 
 class TestPartialFillConsumption:
-    """#122 — consumption should be calculated for partial fills."""
+    """#194 — partial fills return no consumption; the next full fill
+    captures the partial volume over the whole interval (#169)."""
 
     def test_full_tank_consumption_unchanged(self, app, test_user, sample_vehicle):
         log1 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
@@ -108,17 +109,14 @@ class TestPartialFillConsumption:
         # 42L / 500km * 100 = 8.4 L/100km
         assert abs(log2.get_consumption() - 8.4) < 0.01
 
-    def test_partial_fill_returns_consumption(self, app, test_user, sample_vehicle):
+    def test_partial_fill_returns_none(self, app, test_user, sample_vehicle):
         log1 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
                        date=date(2024, 1, 1), odometer=10000, volume=40, is_full_tank=True)
         log2 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
                        date=date(2024, 1, 10), odometer=10200, volume=20, is_full_tank=False)
         db.session.add_all([log1, log2])
         db.session.commit()
-        # 20L / 200km * 100 = 10.0 L/100km
-        consumption = log2.get_consumption()
-        assert consumption is not None
-        assert abs(consumption - 10.0) < 0.01
+        assert log2.get_consumption() is None
 
     def test_partial_fill_no_previous_log_returns_none(self, app, test_user, sample_vehicle):
         log = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
@@ -134,21 +132,27 @@ class TestPartialFillConsumption:
         db.session.commit()
         assert log.get_consumption() is None
 
-    def test_partial_fill_uses_any_previous_log(self, app, test_user, sample_vehicle):
-        """Partial fill looks back to the nearest log regardless of fill type."""
-        log1 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
-                       date=date(2024, 1, 1), odometer=10000, volume=40, is_full_tank=True)
-        log2 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
-                       date=date(2024, 1, 8), odometer=10300, volume=15, is_full_tank=False)
-        log3 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
-                       date=date(2024, 1, 15), odometer=10500, volume=20, is_full_tank=False)
-        db.session.add_all([log1, log2, log3])
+    def test_issue_194_partial_then_full(self, app, test_user, sample_vehicle):
+        """#194 — Steve's reported scenario:
+        full (62.8L) → partial 3.8L (no consumption) → full 62.1L (real figure
+        spans the whole interval and includes the 3.8L top-up).
+        """
+        full_a = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                         date=date(2026, 5, 11), odometer=10000, volume=62.8,
+                         is_full_tank=True)
+        partial = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                          date=date(2026, 5, 20), odometer=10557, volume=3.8,
+                          is_full_tank=False)
+        full_b = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                         date=date(2026, 5, 21), odometer=10600, volume=62.1,
+                         is_full_tank=True)
+        db.session.add_all([full_a, partial, full_b])
         db.session.commit()
-        # log3 looks back to log2 (nearest), not log1
-        # 20L / 200km * 100 = 10.0 L/100km
-        consumption = log3.get_consumption()
+        assert partial.get_consumption() is None
+        # (3.8 + 62.1) / 600 * 100 = 10.983 L/100km
+        consumption = full_b.get_consumption()
         assert consumption is not None
-        assert abs(consumption - 10.0) < 0.01
+        assert abs(consumption - 10.983) < 0.01
 
     def test_full_tank_sums_intervening_partials(self, app, test_user, sample_vehicle):
         """#169 — full tank consumption must sum partial fills since the previous full."""
