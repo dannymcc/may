@@ -1,13 +1,8 @@
-"""Tests for the Home Assistant API endpoints.
-
-Note: Some HA routes reference Vehicle.unit_distance and Expense.amount which
-do not exist in the current Vehicle/Expense models. Tests that trigger those
-code paths are marked xfail to document the known issue without blocking the suite.
-"""
+"""Tests for the Home Assistant API endpoints."""
 import pytest
-from datetime import date
+from datetime import date, timedelta
 from app import db as _db_ext
-from app.models import User, Vehicle, FuelLog
+from app.models import User, Vehicle, FuelLog, MaintenanceSchedule, Reminder
 
 
 def make_ha_headers(api_key):
@@ -114,7 +109,6 @@ class TestHaVehicles:
         assert 'vehicles' in data
         assert data['count'] == 0
 
-    @pytest.mark.xfail(reason="HA route uses Vehicle.unit_distance which does not exist in model")
     def test_list_vehicles_with_vehicle(self, client, ha_headers, ha_vehicle):
         resp = client.get('/api/ha/vehicles', headers=ha_headers)
         assert resp.status_code == 200
@@ -124,14 +118,19 @@ class TestHaVehicles:
         assert v['name'] == 'HA Test Car'
         assert 'current_odometer' in v
         assert 'fuel_type' in v
+        assert v['unit_distance'] == 'km'
+        assert v['unit_volume'] == 'L'
+        assert v['currency'] == 'USD'
 
-    @pytest.mark.xfail(reason="HA route uses Vehicle.unit_distance which does not exist in model")
     def test_vehicle_detail(self, client, ha_headers, ha_vehicle):
         resp = client.get(f'/api/ha/vehicles/{ha_vehicle.id}', headers=ha_headers)
         assert resp.status_code == 200
         data = resp.get_json()
         assert data['id'] == ha_vehicle.id
         assert data['name'] == 'HA Test Car'
+        assert data['unit_distance'] == 'km'
+        assert data['unit_volume'] == 'L'
+        assert data['currency'] == 'USD'
 
     def test_vehicle_detail_not_found(self, client, ha_headers):
         resp = client.get('/api/ha/vehicles/99999', headers=ha_headers)
@@ -144,7 +143,6 @@ class TestHaVehicles:
 
 
 class TestHaVehicleStats:
-    @pytest.mark.xfail(reason="HA route uses Expense.amount which does not exist in model")
     def test_vehicle_stats_no_fuel_logs(self, client, ha_headers, ha_vehicle):
         resp = client.get(f'/api/ha/vehicles/{ha_vehicle.id}/stats', headers=ha_headers)
         assert resp.status_code == 200
@@ -153,19 +151,20 @@ class TestHaVehicleStats:
         assert 'total_distance' in data
         assert 'avg_consumption' in data
 
-    @pytest.mark.xfail(reason="HA route uses Vehicle.unit_distance which does not exist in model")
     def test_vehicle_stats_with_fuel_logs(self, client, ha_headers, ha_vehicle, ha_fuel_log):
         resp = client.get(f'/api/ha/vehicles/{ha_vehicle.id}/stats', headers=ha_headers)
         assert resp.status_code == 200
         data = resp.get_json()
         assert data['fill_count'] == 2
         assert data['total_fuel'] > 0
+        assert data['distance_unit'] == 'km'
+        assert data['volume_unit'] == 'L'
+        assert data['currency'] == 'USD'
 
     def test_vehicle_stats_not_found(self, client, ha_headers):
         resp = client.get('/api/ha/vehicles/99999/stats', headers=ha_headers)
         assert resp.status_code == 404
 
-    @pytest.mark.xfail(reason="HA route uses Expense.amount which does not exist in model")
     def test_vehicle_stats_with_days_param(self, client, ha_headers, ha_vehicle, ha_fuel_log):
         resp = client.get(f'/api/ha/vehicles/{ha_vehicle.id}/stats?days=365', headers=ha_headers)
         assert resp.status_code == 200
@@ -174,6 +173,35 @@ class TestHaVehicleStats:
 
 
 class TestHaAlerts:
+    @pytest.fixture
+    def due_maintenance(self, ha_user, ha_vehicle):
+        schedule = MaintenanceSchedule(
+            vehicle_id=ha_vehicle.id,
+            user_id=ha_user.id,
+            name='Oil Change',
+            maintenance_type='oil_change',
+            next_due_date=date.today() - timedelta(days=1),
+            is_active=True,
+        )
+        _db_ext.session.add(schedule)
+        _db_ext.session.commit()
+        return schedule
+
+    @pytest.fixture
+    def overdue_reminder(self, ha_user, ha_vehicle):
+        reminder = Reminder(
+            vehicle_id=ha_vehicle.id,
+            user_id=ha_user.id,
+            title='MOT',
+            reminder_type='mot',
+            due_date=date.today() - timedelta(days=2),
+            notify_days_before=7,
+            is_completed=False,
+        )
+        _db_ext.session.add(reminder)
+        _db_ext.session.commit()
+        return reminder
+
     def test_alerts_no_issues(self, client, ha_headers):
         resp = client.get('/api/ha/alerts', headers=ha_headers)
         assert resp.status_code == 200
@@ -188,6 +216,15 @@ class TestHaAlerts:
         resp = client.get('/api/ha/alerts')
         assert resp.status_code == 401
 
+    def test_alerts_include_maintenance_and_reminder(self, client, ha_headers, due_maintenance, overdue_reminder):
+        resp = client.get('/api/ha/alerts', headers=ha_headers)
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['count'] == 2
+        statuses = {(item['type'], item['status']) for item in data['alerts']}
+        assert ('maintenance', 'overdue') in statuses
+        assert ('reminder', 'overdue') in statuses
+
 
 class TestHaSummary:
     def test_summary_no_vehicles(self, client, ha_headers):
@@ -199,7 +236,6 @@ class TestHaSummary:
         assert 'alerts_count' in data
         assert data['total_vehicles'] == 0
 
-    @pytest.mark.xfail(reason="HA route uses Expense.amount which does not exist in model")
     def test_summary_with_vehicle(self, client, ha_headers, ha_vehicle, ha_fuel_log):
         resp = client.get('/api/ha/summary', headers=ha_headers)
         assert resp.status_code == 200
@@ -208,7 +244,6 @@ class TestHaSummary:
 
 
 class TestHaAddFuel:
-    @pytest.mark.xfail(reason="HA add_fuel route does not set user_id on FuelLog (nullable=False), causing DB integrity error")
     def test_add_fuel_success(self, client, ha_headers, ha_vehicle):
         resp = client.post(
             '/api/ha/fuel/add',
@@ -227,6 +262,9 @@ class TestHaAddFuel:
         data = resp.get_json()
         assert data['success'] is True
         assert 'id' in data
+        log = FuelLog.query.get(data['id'])
+        assert log is not None
+        assert log.user_id == ha_vehicle.owner_id
 
     def test_add_fuel_missing_required_field(self, client, ha_headers, ha_vehicle):
         resp = client.post(

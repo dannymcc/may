@@ -106,9 +106,9 @@ def vehicles(user):
             'registration': v.registration,
             'fuel_type': v.fuel_type,
             'current_odometer': latest_log.odometer if latest_log else 0,
-            'unit_distance': v.unit_distance,
-            'unit_volume': v.unit_volume,
-            'currency': v.currency
+            'unit_distance': user.distance_unit,
+            'unit_volume': user.volume_unit,
+            'currency': user.currency
         }
         result['vehicles'].append(vehicle_data)
 
@@ -137,9 +137,9 @@ def vehicle_detail(vehicle_id, user):
         'registration': vehicle.registration,
         'fuel_type': vehicle.fuel_type,
         'current_odometer': latest_log.odometer if latest_log else 0,
-        'unit_distance': vehicle.unit_distance,
-        'unit_volume': vehicle.unit_volume,
-        'currency': vehicle.currency
+        'unit_distance': user.distance_unit,
+        'unit_volume': user.volume_unit,
+        'currency': user.currency
     })
 
 
@@ -183,7 +183,7 @@ def vehicle_stats(vehicle_id, user):
     # Skip first fill for consumption calculation (don't know previous fill level)
     if len(fuel_logs) >= 2 and total_distance > 0:
         consumption_fuel = sum(log.volume for log in fuel_logs[1:])
-        if vehicle.unit_distance == 'mi':
+        if user.distance_unit == 'mi':
             # MPG (higher is better)
             avg_consumption = total_distance / consumption_fuel if consumption_fuel > 0 else 0
         else:
@@ -215,15 +215,15 @@ def vehicle_stats(vehicle_id, user):
         'total_expenses': round(float(total_expenses), 2),
         'total_cost': round(total_fuel_cost + float(total_expenses), 2),
         'avg_consumption': round(avg_consumption, 2),
-        'consumption_unit': 'mpg' if vehicle.unit_distance == 'mi' else 'L/100km',
+        'consumption_unit': 'mpg' if user.distance_unit == 'mi' else 'L/100km',
         'fill_count': len(fuel_logs),
         'last_fill_date': last_fill.date.isoformat() if last_fill else None,
         'last_fill_volume': last_fill.volume if last_fill else None,
         'last_fill_cost': last_fill.total_cost if last_fill else None,
         'current_odometer': latest_log.odometer if latest_log else 0,
-        'distance_unit': vehicle.unit_distance,
-        'volume_unit': vehicle.unit_volume,
-        'currency': vehicle.currency,
+        'distance_unit': user.distance_unit,
+        'volume_unit': user.volume_unit,
+        'currency': user.currency,
         'currency_symbol': vehicle.currency_symbol
     })
 
@@ -241,12 +241,21 @@ def alerts(user):
     ).all()
 
     for schedule in schedules:
-        if schedule.is_due() or schedule.is_overdue():
+        current_odometer = schedule.vehicle.get_last_odometer()
+        is_due = schedule.is_due(current_odometer)
+        date_overdue = bool(schedule.next_due_date and schedule.next_due_date < date.today())
+        odometer_overdue = bool(
+            schedule.next_due_odometer is not None and
+            current_odometer is not None and
+            current_odometer > schedule.next_due_odometer
+        )
+
+        if is_due:
             alerts.append({
                 'type': 'maintenance',
                 'vehicle': schedule.vehicle.name,
                 'title': schedule.name,
-                'status': 'overdue' if schedule.is_overdue() else 'due',
+                'status': 'overdue' if (date_overdue or odometer_overdue) else 'due',
                 'due_odometer': schedule.next_due_odometer,
                 'due_date': schedule.next_due_date.isoformat() if schedule.next_due_date else None
             })
@@ -298,12 +307,20 @@ def alerts(user):
     ).all()
 
     for reminder in reminders:
-        if reminder.is_due():
+        if reminder.is_overdue():
             alerts.append({
                 'type': 'reminder',
                 'vehicle': reminder.vehicle.name,
                 'title': reminder.title,
-                'status': 'due',
+                'status': 'overdue',
+                'due_date': reminder.due_date.isoformat() if reminder.due_date else None
+            })
+        elif reminder.is_upcoming(reminder.notify_days_before or 7):
+            alerts.append({
+                'type': 'reminder',
+                'vehicle': reminder.vehicle.name,
+                'title': reminder.title,
+                'status': 'upcoming',
                 'due_date': reminder.due_date.isoformat() if reminder.due_date else None
             })
 
@@ -382,6 +399,7 @@ def add_fuel(user):
     try:
         fuel_log = FuelLog(
             vehicle_id=data['vehicle_id'],
+            user_id=user.id,
             date=date.fromisoformat(data['date']),
             odometer=float(data['odometer']),
             volume=float(data['volume']),
