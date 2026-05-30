@@ -101,6 +101,7 @@ class NotificationService:
                 'Title': title,
                 'Priority': priority,
                 'Tags': 'car',
+                'User-Agent': 'May-Vehicle-Manager/1.0',
             })
             with urlopen(req, timeout=10) as response:
                 return True, None
