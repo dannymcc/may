@@ -13,4 +13,4 @@ requests>=2.34.2
 python-dateutil>=2.9.0.post0
 pytest>=9.0.3
 pytest-cov>=7.1.0
-coverage>=7.14.0
+coverage>=7.14.1
