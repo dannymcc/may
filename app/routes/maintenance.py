@@ -68,7 +68,11 @@ def new():
                 request.form.get('last_performed_date'), '%Y-%m-%d'
             ).date()
         if request.form.get('last_performed_odometer'):
-            schedule.last_performed_odometer = float(request.form.get('last_performed_odometer'))
+            raw_odo = float(request.form.get('last_performed_odometer'))
+            if vehicle.get_effective_odometer_unit() == 'mi':
+                schedule.last_performed_odometer = raw_odo * 1.60934
+            else:
+                schedule.last_performed_odometer = raw_odo
 
         # Calculate next due
         schedule.calculate_next_due()
@@ -121,7 +125,11 @@ def edit(schedule_id):
                 request.form.get('last_performed_date'), '%Y-%m-%d'
             ).date()
         if request.form.get('last_performed_odometer'):
-            schedule.last_performed_odometer = float(request.form.get('last_performed_odometer'))
+            raw_odo = float(request.form.get('last_performed_odometer'))
+            if schedule.vehicle.get_effective_odometer_unit() == 'mi':
+                schedule.last_performed_odometer = raw_odo * 1.60934
+            else:
+                schedule.last_performed_odometer = raw_odo
 
         schedule.calculate_next_due()
         db.session.commit()
@@ -150,7 +158,11 @@ def complete(schedule_id):
     # Update last performed
     schedule.last_performed_date = date.today()
     if request.form.get('odometer'):
-        schedule.last_performed_odometer = float(request.form.get('odometer'))
+        raw_odo = float(request.form.get('odometer'))
+        if schedule.vehicle.get_effective_odometer_unit() == 'mi':
+            schedule.last_performed_odometer = raw_odo * 1.60934
+        else:
+            schedule.last_performed_odometer = raw_odo
     else:
         schedule.last_performed_odometer = schedule.vehicle.get_last_odometer()
 

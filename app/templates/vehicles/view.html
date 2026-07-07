@@ -614,7 +614,8 @@
                         <span>{{ schedule.next_due_date|format_date }}</span>
                         {% endif %}
                         {% if schedule.next_due_odometer %}
-                        <span>{{ schedule.next_due_odometer|int }} {{ vehicle.get_effective_odometer_unit() }}</span>
+                        {% set next_due_display = schedule.next_due_odometer * 0.621371 if vehicle.get_effective_odometer_unit() == 'mi' else schedule.next_due_odometer %}
+                        <span>{{ next_due_display|int }} {{ vehicle.get_effective_odometer_unit() }}</span>
                         {% endif %}
                     </div>
                 </div>

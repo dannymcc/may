@@ -60,8 +60,10 @@
                     </p>
                     {% endif %}
                     {% if schedule.next_due_odometer %}
+                    {% set next_due_unit = schedule.vehicle.get_effective_odometer_unit() %}
+                    {% set next_due_display = schedule.next_due_odometer * 0.621371 if next_due_unit == 'mi' else schedule.next_due_odometer %}
                     <p class="text-xs text-gray-500 dark:text-gray-400">
-                        @ {{ "{:,.0f}".format(schedule.next_due_odometer) }} {{ current_user.distance_unit }}
+                        @ {{ "{:,.0f}".format(next_due_display) }} {{ next_due_unit }}
                     </p>
                     {% endif %}
                     {% if schedule.estimated_cost %}
