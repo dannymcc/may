@@ -807,10 +807,124 @@ class Reminder(db.Model):
             'reminder_type': self.reminder_type,
             'due_date': self.due_date.isoformat() if self.due_date else None,
             'recurrence': self.recurrence,
+            'recurrence_interval': self.recurrence_interval,
+            'notify_days_before': self.notify_days_before,
+            'notification_sent': self.notification_sent,
             'is_completed': self.is_completed,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
             'is_overdue': self.is_overdue(),
             'days_until_due': self.days_until_due(),
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class CalendarEvent(db.Model):
+    """Portable calendar event that can be exposed through REST, iCalendar, and CalDAV."""
+    __tablename__ = 'calendar_events'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=True)
+
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    event_type = db.Column(db.String(50), nullable=False, default='custom')
+    status = db.Column(db.String(20), nullable=False, default='confirmed')
+
+    start_at = db.Column(db.DateTime, nullable=False)
+    end_at = db.Column(db.DateTime)
+    all_day = db.Column(db.Boolean, default=True, nullable=False)
+    timezone = db.Column(db.String(64), default='UTC')
+    location = db.Column(db.String(255))
+    url = db.Column(db.String(500))
+
+    recurrence_rule = db.Column(db.String(500))
+    recurrence_until = db.Column(db.DateTime)
+
+    source_type = db.Column(db.String(50), default='manual')
+    source_id = db.Column(db.Integer)
+    external_uid = db.Column(db.String(255), index=True)
+    external_calendar_url = db.Column(db.String(500))
+    external_etag = db.Column(db.String(255))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('calendar_events', lazy='dynamic'))
+    vehicle = db.relationship('Vehicle', backref=db.backref('calendar_events', lazy='dynamic', cascade='all, delete-orphan'))
+    alarms = db.relationship('CalendarAlarm', backref='event', lazy='dynamic', cascade='all, delete-orphan')
+
+    def calendar_uid(self):
+        return self.external_uid or f"event-{self.id}-{self.user_id}@may-vehicle"
+
+    def to_dict(self, include_alarms=True):
+        data = {
+            'id': self.id,
+            'user_id': self.user_id,
+            'vehicle_id': self.vehicle_id,
+            'title': self.title,
+            'description': self.description,
+            'event_type': self.event_type,
+            'status': self.status,
+            'start_at': self.start_at.isoformat() if self.start_at else None,
+            'end_at': self.end_at.isoformat() if self.end_at else None,
+            'all_day': self.all_day,
+            'timezone': self.timezone,
+            'location': self.location,
+            'url': self.url,
+            'recurrence_rule': self.recurrence_rule,
+            'recurrence_until': self.recurrence_until.isoformat() if self.recurrence_until else None,
+            'source_type': self.source_type,
+            'source_id': self.source_id,
+            'external_uid': self.external_uid,
+            'external_calendar_url': self.external_calendar_url,
+            'external_etag': self.external_etag,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+        if include_alarms:
+            data['alarms'] = [alarm.to_dict() for alarm in self.alarms.order_by(CalendarAlarm.trigger_minutes_before.desc()).all()]
+        return data
+
+
+class CalendarAlarm(db.Model):
+    """Alarm attached to a CalendarEvent, matching common iCalendar VALARM needs."""
+    __tablename__ = 'calendar_alarms'
+
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('calendar_events.id'), nullable=False)
+
+    action = db.Column(db.String(20), nullable=False, default='display')
+    trigger_minutes_before = db.Column(db.Integer, nullable=False, default=15)
+    summary = db.Column(db.String(200))
+    description = db.Column(db.Text)
+    attendee_email = db.Column(db.String(120))
+    is_enabled = db.Column(db.Boolean, default=True, nullable=False)
+    notification_sent = db.Column(db.Boolean, default=False, nullable=False)
+    sent_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def trigger_at(self):
+        if not self.event or not self.event.start_at:
+            return None
+        return self.event.start_at - timedelta(minutes=max(self.trigger_minutes_before or 0, 0))
+
+    def to_dict(self):
+        trigger_at = self.trigger_at()
+        return {
+            'id': self.id,
+            'event_id': self.event_id,
+            'action': self.action,
+            'trigger_minutes_before': self.trigger_minutes_before,
+            'summary': self.summary,
+            'description': self.description,
+            'attendee_email': self.attendee_email,
+            'is_enabled': self.is_enabled,
+            'notification_sent': self.notification_sent,
+            'sent_at': self.sent_at.isoformat() if self.sent_at else None,
+            'trigger_at': trigger_at.isoformat() if trigger_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 
 
@@ -958,6 +1072,31 @@ RECURRENCE_OPTIONS = [
     ('weekly', _l('Week(s)')),
     ('monthly', _l('Month(s)')),
     ('yearly', _l('Year(s)')),
+]
+
+# Portable event metadata used by the API, iCalendar feed, and CalDAV exporter.
+CALENDAR_EVENT_TYPES = [
+    ('custom', _l('Custom')),
+    ('reminder', _l('Reminder')),
+    ('maintenance', _l('Maintenance')),
+    ('expense', _l('Expense')),
+    ('document', _l('Document')),
+    ('trip', _l('Trip')),
+    ('charging', _l('Charging')),
+]
+
+CALENDAR_EVENT_STATUSES = [
+    ('confirmed', _l('Confirmed')),
+    ('tentative', _l('Tentative')),
+    ('cancelled', _l('Cancelled')),
+]
+
+CALENDAR_ALARM_ACTIONS = [
+    ('display', _l('Display')),
+    ('email', _l('Email')),
+    ('smtp', _l('SMTP Email')),
+    ('webhook', _l('Webhook')),
+    ('none', _l('None')),
 ]
 
 # Trip purposes for tax deductions
