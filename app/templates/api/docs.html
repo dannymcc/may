@@ -16,6 +16,7 @@
             <a href="#vehicles" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Vehicles</a>
             <a href="#fuel-logs" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Fuel Logs</a>
             <a href="#expenses" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Expenses</a>
+           <a href="#reminders-calendar" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Reminders & Calendar</a>
             <a href="#errors" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Error Handling</a>
         </div>
     </div>
@@ -424,6 +425,84 @@
                 </div>
             </div>
         </div>
+    </section>
+    <!-- Reminders & Calendar -->
+    <section id="reminders-calendar" class="mb-12">
+       <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+           <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Reminders & Calendar</h2>
+               <p class="mt-1 text-gray-500 dark:text-gray-400">Automate vehicle reminders, generic calendar events, alarms, and CalDAV publishing</p>
+           </div>
+
+           <div class="border-b border-gray-200 dark:border-gray-700">
+               <div class="p-6">
+                   <div class="flex items-center gap-3 mb-2">
+                       <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                       <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">POST</span>
+                       <code class="text-gray-900 dark:text-white">/reminders</code>
+                   </div>
+                   <p class="text-gray-600 dark:text-gray-400">List or create vehicle reminders. Use <code>/reminders/{id}</code> with GET, PATCH, or DELETE for a single reminder.</p>
+               </div>
+           </div>
+
+           <div class="border-b border-gray-200 dark:border-gray-700">
+               <div class="p-6">
+                   <div class="flex items-center gap-3 mb-4">
+                       <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                       <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">POST</span>
+                       <code class="text-gray-900 dark:text-white">/calendar/events</code>
+                   </div>
+                   <p class="text-gray-600 dark:text-gray-400 mb-4">Manage portable calendar events with optional vehicle links, location, recurrence rule, URL, and alarms.</p>
+                   <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
+<pre class="text-green-700 dark:text-green-400 text-sm"><code>{
+  "title": "Tyre appointment",
+  "vehicle_id": 1,
+  "event_type": "maintenance",
+  "start_at": "2026-08-01T09:00:00",
+  "end_at": "2026-08-01T10:00:00",
+  "all_day": false,
+  "location": "Local garage",
+  "alarms": [
+    {"action": "display", "trigger_minutes_before": 1440},
+    {"action": "email", "trigger_minutes_before": 60}
+  ]
+}</code></pre>
+                   </div>
+               </div>
+           </div>
+
+           <div class="border-b border-gray-200 dark:border-gray-700">
+               <div class="p-6">
+                   <div class="flex items-center gap-3 mb-2">
+                       <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                       <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">PATCH</span>
+                       <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">DELETE</span>
+                       <code class="text-gray-900 dark:text-white">/calendar/events/{id}</code>
+                   </div>
+                   <p class="text-gray-600 dark:text-gray-400">Get, update, or delete a portable calendar event.</p>
+               </div>
+           </div>
+
+           <div class="border-b border-gray-200 dark:border-gray-700">
+               <div class="p-6">
+                   <div class="flex items-center gap-3 mb-2">
+                       <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">POST</span>
+                       <code class="text-gray-900 dark:text-white">/calendar/events/{id}/sync/caldav</code>
+                   </div>
+                   <p class="text-gray-600 dark:text-gray-400">Publish one event to a CalDAV collection using request-scoped credentials.</p>
+               </div>
+           </div>
+
+           <div>
+               <div class="p-6">
+                   <div class="flex items-center gap-3 mb-2">
+                       <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                       <code class="text-gray-900 dark:text-white">/calendar/metadata</code>
+                   </div>
+                   <p class="text-gray-600 dark:text-gray-400">Discover valid event types, statuses, and alarm actions.</p>
+               </div>
+           </div>
+       </div>
     </section>
 
     <!-- Error Handling -->

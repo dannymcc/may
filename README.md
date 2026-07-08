@@ -48,7 +48,8 @@ Named after James May, completing the trio of Top Gear presenters (alongside [Cl
 - **📱 PWA Support**: Install as a mobile app with offline capabilities
 - **🔌 REST API**: Full API access for integrations and automation
 - **🏠 Home Assistant Integration**: Create sensors and automations for your vehicles
-- **📆 Calendar Subscription**: Subscribe to reminders in Apple Calendar, Google Calendar, Outlook
+- **📆 Calendar Subscription**: Subscribe to reminders/events in Apple Calendar, Google Calendar, Outlook
+- **🔁 Portable Calendar Events**: Manage generic events and alarms via API and publish events to CalDAV
 - **🐳 Docker Ready**: Easy self-hosting via Docker
 
 ## 📦 Installation
@@ -125,7 +126,12 @@ Copy `.env.example` to `.env` and configure:
 SECRET_KEY=your-secure-random-string
 
 # Database location (default: SQLite)
-DATABASE_URL=sqlite:///data/may.db
+DATABASE_URL=sqlite:////app/data/may.db
+
+# Optional external databases
+# DATABASE_URL=postgresql+psycopg://may:may@postgres:5432/may
+# DATABASE_URL=mysql+pymysql://may:may@mysql:3306/may
+# DATABASE_URL=mysql+pymysql://may:may@mariadb:3306/may
 
 # Upload folder for attachments
 UPLOAD_FOLDER=/app/data/uploads
@@ -136,13 +142,34 @@ UPLOAD_FOLDER=/app/data/uploads
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `SECRET_KEY` | Session encryption key | Random |
-| `DATABASE_URL` | Database connection string | `sqlite:///data/may.db` |
+| `DATABASE_URL` | Database connection string | `sqlite:////app/data/may.db` in Docker |
+| `DB_ENGINE` | Optional DB builder: `sqlite`, `postgres`, `postgresql`, `mysql`, `mariadb` | `sqlite` |
+| `DB_HOST` / `DB_PORT` | Host and port used when `DATABASE_URL` is omitted | Engine defaults |
+| `DB_NAME` / `DB_USER` / `DB_PASSWORD` | Database credentials used when `DATABASE_URL` is omitted | `may` |
+| `SQLITE_PATH` | SQLite file used when `DATABASE_URL` is omitted | `data/may.db` |
 | `UPLOAD_FOLDER` | Path for file uploads | `/app/data/uploads` |
 | `TAILWIND_ASSET_URL` | Local Tailwind Play CDN JS path | `/static/vendor/tailwindcss.js` |
 | `TAILWIND_CDN_URL` | Tailwind CDN fallback URL | `https://cdn.tailwindcss.com` |
 | `HTMX_CDN_URL` | HTMX CDN URL | `https://unpkg.com/htmx.org@1.9.10` |
 
 By default, Tailwind loads from `app/static/vendor/tailwindcss.js` and falls back to the CDN URL if the local asset is missing.
+
+### Database Options
+
+May defaults to SQLite so existing compose deployments keep working unchanged. For a separate database server, set `DATABASE_URL` and start the matching compose profile:
+
+```bash
+# PostgreSQL
+DATABASE_URL=postgresql+psycopg://may:may@postgres:5432/may docker compose --profile postgres up -d
+
+# MySQL
+DATABASE_URL=mysql+pymysql://may:may@mysql:3306/may docker compose --profile mysql up -d
+
+# MariaDB
+DATABASE_URL=mysql+pymysql://may:may@mariadb:3306/may docker compose --profile mariadb up -d
+```
+
+`postgres://`, `postgresql://`, `mysql://`, and `mariadb://` URLs are normalized to bundled drivers automatically. Existing SQLite recovery remains SQLite-only; external databases should be kept current with Alembic migrations (`flask db upgrade`, run automatically by the container entrypoint).
 
 ## 🎯 Usage
 
@@ -189,6 +216,7 @@ Never miss important dates:
 - Insurance renewals
 - Tax payments
 - Custom reminders with flexible recurrence
+- REST API access for CRUD automation and external sync
 
 ### Maintenance Schedules
 Plan regular maintenance tasks:
@@ -225,6 +253,7 @@ Configure your preferred notification method:
 - **ntfy**: Free push notifications via ntfy.sh or self-hosted
 - **Pushover**: iOS/Android push notifications
 - **Webhook**: HTTP POST for Home Assistant, Discord, Slack, etc.
+- **Calendar event alarms**: Generic event alarms can trigger SMTP/email or webhook delivery
 
 ## 🔧 Admin Settings
 
@@ -246,6 +275,14 @@ curl -H "Authorization: Bearer may_your_api_key" \
 ```
 
 See the API documentation at `/api/docs` when logged in.
+
+Calendar/reminder automation endpoints include:
+- `GET/POST /api/v1/reminders`
+- `GET/PATCH/DELETE /api/v1/reminders/{id}`
+- `GET/POST /api/v1/calendar/events`
+- `GET/PATCH/DELETE /api/v1/calendar/events/{id}`
+- `POST /api/v1/calendar/events/{id}/sync/caldav`
+- `GET /api/v1/calendar/metadata`
 
 ## 🔗 Integrations
 
@@ -279,6 +316,24 @@ The calendar includes:
 - Recurring expense due dates
 - Document expiry dates
 - Custom reminders
+- Generic calendar events created through the REST API
+
+### CalDAV Publishing
+
+Generic calendar events can be pushed to a CalDAV collection with:
+
+```bash
+curl -X POST http://localhost:5050/api/v1/calendar/events/1/sync/caldav \
+  -H "Authorization: ******" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "calendar_url": "https://calendar.example.com/user/default/",
+    "username": "calendar-user",
+    "password": "calendar-password"
+  }'
+```
+
+Credentials supplied to this endpoint are used for that sync request only; the event stores the remote calendar URL and ETag for later updates.
 
 ## 🌍 Supported Languages
 
@@ -308,7 +363,7 @@ Translations were generated with AI assistance and may contain inaccuracies. If 
 ## 🛠️ Tech Stack
 
 - **Backend**: Python / Flask
-- **Database**: SQLite (easily swappable)
+- **Database**: SQLite by default; PostgreSQL, MySQL, and MariaDB via SQLAlchemy
 - **Frontend**: Tailwind CSS, HTMX, Chart.js
 - **Server**: Gunicorn
 - **Notifications**: SMTP, ntfy, Pushover, Webhooks
@@ -323,7 +378,8 @@ Translations were generated with AI assistance and may contain inaccuracies. If 
 
 ### Database Issues
 - Default SQLite database is created at `data/may.db`
-- Ensure the directory exists and is writable
+- Ensure the SQLite directory exists and is writable
+- For PostgreSQL/MySQL/MariaDB, verify `DATABASE_URL` uses the correct host, port, database, user, and password
 - For schema updates, the app handles migrations automatically
 
 ### Notification Issues
