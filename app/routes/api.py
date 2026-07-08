@@ -9,7 +9,7 @@ import tempfile
 import traceback
 import zipfile
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Blueprint, jsonify, request, send_from_directory, current_app, url_for, render_template, Response, flash, redirect, session
 from flask_login import login_required, current_user
 from app import db
@@ -17,6 +17,8 @@ from app.models import (
     User, Vehicle, VehicleSpec, FuelLog, Expense, EXPENSE_CATEGORIES,
     Reminder, MaintenanceSchedule, RecurringExpense, FuelStation,
     Document, Trip, ChargingSession, VehiclePart, FuelPriceHistory, Attachment,
+    CalendarEvent, CalendarAlarm, REMINDER_TYPES, RECURRENCE_OPTIONS,
+    CALENDAR_EVENT_TYPES, CALENDAR_EVENT_STATUSES, CALENDAR_ALARM_ACTIONS,
     TRIP_PURPOSES, CHARGER_TYPES
 )
 from app.services.tessie import TessieService
@@ -75,6 +77,161 @@ def api_auth_required(f):
 def get_api_user():
     """Get the authenticated API user"""
     return getattr(request, 'api_user', None)
+
+
+def _parse_iso_datetime(value, field_name):
+    if not value:
+        return None
+    try:
+        dt = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+    except ValueError as exc:
+        raise ValueError(f'{field_name} must be an ISO-8601 datetime') from exc
+    if dt.tzinfo:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
+
+def _parse_iso_date(value, field_name):
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, '%Y-%m-%d').date()
+    except ValueError as exc:
+        raise ValueError(f'{field_name} must use YYYY-MM-DD') from exc
+
+
+def _parse_int(value, field_name, default=None, minimum=None):
+    if value is None or value == '':
+        return default
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f'{field_name} must be an integer') from exc
+    if minimum is not None and parsed < minimum:
+        raise ValueError(f'{field_name} must be at least {minimum}')
+    return parsed
+
+
+def _vehicle_for_api_user(user, vehicle_id):
+    if vehicle_id is None:
+        return None
+    vehicle = Vehicle.query.get(vehicle_id)
+    if not vehicle or vehicle not in user.get_all_vehicles():
+        return None
+    return vehicle
+
+
+def _calendar_alarm_from_payload(payload):
+    valid_actions = {action[0] for action in CALENDAR_ALARM_ACTIONS}
+    action = payload.get('action', 'display')
+    if action not in valid_actions:
+        raise ValueError(f'action must be one of: {", ".join(sorted(valid_actions))}')
+    minutes = _parse_int(
+        payload.get('trigger_minutes_before', 15),
+        'trigger_minutes_before',
+        default=15,
+        minimum=0,
+    )
+    return CalendarAlarm(
+        action=action,
+        trigger_minutes_before=minutes,
+        summary=payload.get('summary'),
+        description=payload.get('description'),
+        attendee_email=payload.get('attendee_email'),
+        is_enabled=payload.get('is_enabled', True),
+    )
+
+
+def _replace_calendar_alarms(event, alarms_payload):
+    for alarm in event.alarms.all():
+        db.session.delete(alarm)
+    for alarm_payload in alarms_payload or []:
+        event.alarms.append(_calendar_alarm_from_payload(alarm_payload))
+
+
+def _apply_calendar_event_payload(event, user, data, partial=False):
+    if not partial and not data.get('title'):
+        return 'title is required'
+    if not partial and not (data.get('start_at') or data.get('start')):
+        return 'start_at is required'
+
+    valid_types = {event_type[0] for event_type in CALENDAR_EVENT_TYPES}
+    valid_statuses = {status[0] for status in CALENDAR_EVENT_STATUSES}
+
+    if 'title' in data:
+        event.title = data['title']
+    if 'description' in data:
+        event.description = data['description']
+    if 'event_type' in data:
+        if data['event_type'] not in valid_types:
+            return f'event_type must be one of: {", ".join(sorted(valid_types))}'
+        event.event_type = data['event_type']
+    elif not partial and not event.event_type:
+        event.event_type = 'custom'
+
+    if 'status' in data:
+        if data['status'] not in valid_statuses:
+            return f'status must be one of: {", ".join(sorted(valid_statuses))}'
+        event.status = data['status']
+    elif not partial and not event.status:
+        event.status = 'confirmed'
+
+    if 'vehicle_id' in data:
+        vehicle = _vehicle_for_api_user(user, data.get('vehicle_id'))
+        if data.get('vehicle_id') is not None and not vehicle:
+            return 'vehicle_id not found or access denied'
+        event.vehicle_id = vehicle.id if vehicle else None
+
+    try:
+        if 'start_at' in data or 'start' in data:
+            event.start_at = _parse_iso_datetime(data.get('start_at') or data.get('start'), 'start_at')
+        if 'end_at' in data or 'end' in data:
+            end_value = data.get('end_at') if 'end_at' in data else data.get('end')
+            event.end_at = _parse_iso_datetime(end_value, 'end_at')
+        if 'recurrence_until' in data:
+            event.recurrence_until = _parse_iso_datetime(data.get('recurrence_until'), 'recurrence_until')
+    except ValueError as exc:
+        return str(exc)
+
+    if 'all_day' in data:
+        event.all_day = bool(data['all_day'])
+    elif not partial and event.all_day is None:
+        event.all_day = True
+    if 'timezone' in data:
+        event.timezone = data['timezone'] or 'UTC'
+    elif not partial and not event.timezone:
+        event.timezone = 'UTC'
+    if 'location' in data:
+        event.location = data['location']
+    if 'url' in data:
+        event.url = data['url']
+    if 'recurrence_rule' in data:
+        event.recurrence_rule = data['recurrence_rule']
+    if 'source_type' in data:
+        event.source_type = data['source_type']
+    elif not partial and not event.source_type:
+        event.source_type = 'manual'
+    if 'source_id' in data:
+        event.source_id = data['source_id']
+    if 'external_uid' in data:
+        event.external_uid = data['external_uid']
+    if 'external_calendar_url' in data:
+        event.external_calendar_url = data['external_calendar_url']
+    if 'external_etag' in data:
+        event.external_etag = data['external_etag']
+
+    try:
+        if 'alarms' in data:
+            _replace_calendar_alarms(event, data.get('alarms') or [])
+        elif not partial and data.get('reminder_minutes_before') is not None:
+            _replace_calendar_alarms(event, [{
+                'action': 'display',
+                'trigger_minutes_before': data['reminder_minutes_before'],
+            }])
+    except ValueError as exc:
+        return str(exc)
+
+    return None
 
 
 # =============================================================================
@@ -239,8 +396,10 @@ def process_reminders():
         if internal_token != current_app.config.get('SECRET_KEY'):
             return jsonify({'success': False, 'error': 'Unauthorized'}), 401
 
-    from app.services.reminder_processor import process_due_reminders
+    from app.services.reminder_processor import process_due_calendar_alarms, process_due_reminders
     stats = process_due_reminders()
+    calendar_alarm_stats = process_due_calendar_alarms()
+    stats['calendar_alarms'] = calendar_alarm_stats
 
     return jsonify({
         'success': True,
@@ -800,6 +959,335 @@ def api_delete_expense(expense_id):
 
 
 # =============================================================================
+# Public API v1 - Reminders
+# =============================================================================
+
+@bp.route('/v1/reminders', methods=['GET'])
+@api_auth_required
+def api_list_reminders():
+    """List reminders for all vehicles the authenticated user can access."""
+    user = get_api_user()
+    vehicle_ids = [vehicle.id for vehicle in user.get_all_vehicles()]
+    limit = min(max(request.args.get('limit', 100, type=int), 1), 500)
+    offset = max(request.args.get('offset', 0, type=int), 0)
+
+    query = Reminder.query.filter(Reminder.vehicle_id.in_(vehicle_ids))
+    if request.args.get('completed') != 'true':
+        query = query.filter_by(is_completed=False)
+    if request.args.get('type'):
+        query = query.filter_by(reminder_type=request.args['type'])
+    if request.args.get('vehicle_id', type=int):
+        query = query.filter_by(vehicle_id=request.args.get('vehicle_id', type=int))
+
+    query = query.order_by(Reminder.due_date.asc())
+    total = query.count()
+    reminders = query.offset(offset).limit(limit).all()
+    return jsonify({
+        'reminders': [reminder.to_dict() for reminder in reminders],
+        'count': len(reminders),
+        'total': total,
+        'limit': limit,
+        'offset': offset,
+    })
+
+
+@bp.route('/v1/reminders', methods=['POST'])
+@api_auth_required
+def api_create_reminder():
+    """Create a vehicle reminder."""
+    user = get_api_user()
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    required = ['vehicle_id', 'title', 'reminder_type', 'due_date']
+    for field in required:
+        if not data.get(field):
+            return jsonify({'error': f'{field} is required', 'code': 'validation_error'}), 400
+
+    vehicle = _vehicle_for_api_user(user, data.get('vehicle_id'))
+    if not vehicle:
+        return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+
+    valid_types = {reminder_type[0] for reminder_type in REMINDER_TYPES}
+    if data['reminder_type'] not in valid_types:
+        return jsonify({
+            'error': f'reminder_type must be one of: {", ".join(sorted(valid_types))}',
+            'code': 'validation_error',
+        }), 400
+
+    valid_recurrences = {recurrence[0] for recurrence in RECURRENCE_OPTIONS} | {'quarterly', 'biannual'}
+    recurrence = data.get('recurrence', 'none')
+    if recurrence not in valid_recurrences:
+        return jsonify({
+            'error': f'recurrence must be one of: {", ".join(sorted(valid_recurrences))}',
+            'code': 'validation_error',
+        }), 400
+
+    try:
+        due_date = _parse_iso_date(data['due_date'], 'due_date')
+        recurrence_interval = _parse_int(
+            data.get('recurrence_interval'),
+            'recurrence_interval',
+            default=1,
+            minimum=1,
+        )
+        notify_days_before = _parse_int(
+            data.get('notify_days_before'),
+            'notify_days_before',
+            default=7,
+            minimum=0,
+        )
+    except ValueError as exc:
+        return jsonify({'error': str(exc), 'code': 'validation_error'}), 400
+
+    reminder = Reminder(
+        vehicle_id=vehicle.id,
+        user_id=user.id,
+        title=data['title'],
+        description=data.get('description'),
+        reminder_type=data['reminder_type'],
+        due_date=due_date,
+        recurrence=recurrence,
+        recurrence_interval=recurrence_interval,
+        notify_days_before=notify_days_before,
+    )
+    db.session.add(reminder)
+    db.session.commit()
+    return jsonify(reminder.to_dict()), 201
+
+
+@bp.route('/v1/reminders/<int:reminder_id>', methods=['GET'])
+@api_auth_required
+def api_get_reminder(reminder_id):
+    """Get a reminder."""
+    user = get_api_user()
+    reminder = Reminder.query.get_or_404(reminder_id)
+    if reminder.vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Reminder not found or access denied', 'code': 'not_found'}), 404
+    return jsonify(reminder.to_dict())
+
+
+@bp.route('/v1/reminders/<int:reminder_id>', methods=['PUT', 'PATCH'])
+@api_auth_required
+def api_update_reminder(reminder_id):
+    """Update a reminder."""
+    user = get_api_user()
+    reminder = Reminder.query.get_or_404(reminder_id)
+    if reminder.vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Reminder not found or access denied', 'code': 'not_found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    valid_types = {reminder_type[0] for reminder_type in REMINDER_TYPES}
+    valid_recurrences = {recurrence[0] for recurrence in RECURRENCE_OPTIONS} | {'quarterly', 'biannual'}
+
+    if 'vehicle_id' in data:
+        vehicle = _vehicle_for_api_user(user, data.get('vehicle_id'))
+        if not vehicle:
+            return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+        reminder.vehicle_id = vehicle.id
+    if 'title' in data:
+        reminder.title = data['title']
+    if 'description' in data:
+        reminder.description = data['description']
+    if 'reminder_type' in data:
+        if data['reminder_type'] not in valid_types:
+            return jsonify({'error': f'reminder_type must be one of: {", ".join(sorted(valid_types))}', 'code': 'validation_error'}), 400
+        reminder.reminder_type = data['reminder_type']
+    if 'due_date' in data:
+        try:
+            reminder.due_date = _parse_iso_date(data['due_date'], 'due_date')
+        except ValueError as exc:
+            return jsonify({'error': str(exc), 'code': 'validation_error'}), 400
+    if 'recurrence' in data:
+        if data['recurrence'] not in valid_recurrences:
+            return jsonify({'error': f'recurrence must be one of: {", ".join(sorted(valid_recurrences))}', 'code': 'validation_error'}), 400
+        reminder.recurrence = data['recurrence']
+    if 'recurrence_interval' in data:
+        try:
+            reminder.recurrence_interval = _parse_int(
+                data.get('recurrence_interval'),
+                'recurrence_interval',
+                default=1,
+                minimum=1,
+            )
+        except ValueError as exc:
+            return jsonify({'error': str(exc), 'code': 'validation_error'}), 400
+    if 'notify_days_before' in data:
+        try:
+            reminder.notify_days_before = _parse_int(
+                data.get('notify_days_before'),
+                'notify_days_before',
+                default=7,
+                minimum=0,
+            )
+        except ValueError as exc:
+            return jsonify({'error': str(exc), 'code': 'validation_error'}), 400
+    if 'is_completed' in data:
+        reminder.is_completed = bool(data['is_completed'])
+        reminder.completed_at = datetime.utcnow() if reminder.is_completed else None
+    if 'notification_sent' in data:
+        reminder.notification_sent = bool(data['notification_sent'])
+
+    db.session.commit()
+    return jsonify(reminder.to_dict())
+
+
+@bp.route('/v1/reminders/<int:reminder_id>', methods=['DELETE'])
+@api_auth_required
+def api_delete_reminder(reminder_id):
+    """Delete a reminder."""
+    user = get_api_user()
+    reminder = Reminder.query.get_or_404(reminder_id)
+    if reminder.vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Reminder not found or access denied', 'code': 'not_found'}), 404
+
+    db.session.delete(reminder)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Reminder deleted'})
+
+
+# =============================================================================
+# Public API v1 - Calendar Events
+# =============================================================================
+
+@bp.route('/v1/calendar/events', methods=['GET'])
+@api_auth_required
+def api_list_calendar_events():
+    """List portable calendar events for the authenticated user."""
+    user = get_api_user()
+    limit = min(max(request.args.get('limit', 100, type=int), 1), 500)
+    offset = max(request.args.get('offset', 0, type=int), 0)
+
+    query = CalendarEvent.query.filter_by(user_id=user.id)
+    vehicle_id = request.args.get('vehicle_id', type=int)
+    if vehicle_id is not None:
+        vehicle = _vehicle_for_api_user(user, vehicle_id)
+        if not vehicle:
+            return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+        query = query.filter_by(vehicle_id=vehicle.id)
+    if request.args.get('type'):
+        query = query.filter_by(event_type=request.args['type'])
+    try:
+        if request.args.get('from'):
+            query = query.filter(CalendarEvent.start_at >= _parse_iso_datetime(request.args['from'], 'from'))
+        if request.args.get('to'):
+            query = query.filter(CalendarEvent.start_at <= _parse_iso_datetime(request.args['to'], 'to'))
+    except ValueError as exc:
+        return jsonify({'error': str(exc), 'code': 'validation_error'}), 400
+
+    query = query.order_by(CalendarEvent.start_at.asc())
+    total = query.count()
+    events = query.offset(offset).limit(limit).all()
+    return jsonify({
+        'events': [event.to_dict() for event in events],
+        'count': len(events),
+        'total': total,
+        'limit': limit,
+        'offset': offset,
+    })
+
+
+@bp.route('/v1/calendar/events', methods=['POST'])
+@api_auth_required
+def api_create_calendar_event():
+    """Create a portable calendar event."""
+    user = get_api_user()
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    event = CalendarEvent(user_id=user.id)
+    error = _apply_calendar_event_payload(event, user, data)
+    if error:
+        return jsonify({'error': error, 'code': 'validation_error'}), 400
+
+    db.session.add(event)
+    db.session.commit()
+    return jsonify(event.to_dict()), 201
+
+
+@bp.route('/v1/calendar/events/<int:event_id>', methods=['GET'])
+@api_auth_required
+def api_get_calendar_event(event_id):
+    """Get a portable calendar event."""
+    user = get_api_user()
+    event = CalendarEvent.query.get_or_404(event_id)
+    if event.user_id != user.id:
+        return jsonify({'error': 'Calendar event not found or access denied', 'code': 'not_found'}), 404
+    return jsonify(event.to_dict())
+
+
+@bp.route('/v1/calendar/events/<int:event_id>', methods=['PUT', 'PATCH'])
+@api_auth_required
+def api_update_calendar_event(event_id):
+    """Update a portable calendar event."""
+    user = get_api_user()
+    event = CalendarEvent.query.get_or_404(event_id)
+    if event.user_id != user.id:
+        return jsonify({'error': 'Calendar event not found or access denied', 'code': 'not_found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    error = _apply_calendar_event_payload(event, user, data, partial=True)
+    if error:
+        return jsonify({'error': error, 'code': 'validation_error'}), 400
+
+    db.session.commit()
+    return jsonify(event.to_dict())
+
+
+@bp.route('/v1/calendar/events/<int:event_id>', methods=['DELETE'])
+@api_auth_required
+def api_delete_calendar_event(event_id):
+    """Delete a portable calendar event."""
+    user = get_api_user()
+    event = CalendarEvent.query.get_or_404(event_id)
+    if event.user_id != user.id:
+        return jsonify({'error': 'Calendar event not found or access denied', 'code': 'not_found'}), 404
+
+    db.session.delete(event)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Calendar event deleted'})
+
+
+@bp.route('/v1/calendar/events/<int:event_id>/sync/caldav', methods=['POST'])
+@api_auth_required
+def api_sync_calendar_event_caldav(event_id):
+    """Publish a portable calendar event to a CalDAV calendar collection."""
+    user = get_api_user()
+    event = CalendarEvent.query.get_or_404(event_id)
+    if event.user_id != user.id:
+        return jsonify({'error': 'Calendar event not found or access denied', 'code': 'not_found'}), 404
+
+    data = request.get_json() or {}
+    calendar_url = data.get('calendar_url') or event.external_calendar_url
+    username = data.get('username')
+    password = data.get('password')
+    if not calendar_url:
+        return jsonify({'error': 'calendar_url is required', 'code': 'validation_error'}), 400
+    from app.security import validate_webhook_url
+    is_valid, error = validate_webhook_url(calendar_url)
+    if not is_valid:
+        return jsonify({'error': error, 'code': 'validation_error'}), 400
+
+    from app.services.caldav import CalDAVService
+    success, result, etag = CalDAVService.publish_event(calendar_url, event, username, password)
+    if not success:
+        return jsonify({'success': False, 'error': result}), 502
+
+    event.external_calendar_url = calendar_url
+    event.external_etag = etag
+    db.session.commit()
+    return jsonify({'success': True, 'url': result, 'etag': etag, 'event': event.to_dict()})
+
+
+# =============================================================================
 # Public API v1 - Metadata
 # =============================================================================
 
@@ -809,6 +1297,27 @@ def api_list_categories():
     """List all expense categories"""
     return jsonify({
         'categories': [{'id': c[0], 'name': c[1]} for c in EXPENSE_CATEGORIES]
+    })
+
+
+@bp.route('/v1/reminder-types', methods=['GET'])
+@api_auth_required
+def api_list_reminder_types():
+    """List valid reminder types and recurrence units."""
+    return jsonify({
+        'reminder_types': [{'id': item[0], 'name': str(item[1])} for item in REMINDER_TYPES],
+        'recurrence_options': [{'id': item[0], 'name': str(item[1])} for item in RECURRENCE_OPTIONS],
+    })
+
+
+@bp.route('/v1/calendar/metadata', methods=['GET'])
+@api_auth_required
+def api_calendar_metadata():
+    """List valid calendar event metadata values."""
+    return jsonify({
+        'event_types': [{'id': item[0], 'name': str(item[1])} for item in CALENDAR_EVENT_TYPES],
+        'statuses': [{'id': item[0], 'name': str(item[1])} for item in CALENDAR_EVENT_STATUSES],
+        'alarm_actions': [{'id': item[0], 'name': str(item[1])} for item in CALENDAR_ALARM_ACTIONS],
     })
 
 

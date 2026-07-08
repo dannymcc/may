@@ -1,8 +1,8 @@
 """Background reminder processor that checks and sends due notifications."""
 import logging
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from app import db
-from app.models import Reminder, User
+from app.models import CalendarAlarm, CalendarEvent, Reminder, User
 from app.services.notifications import NotificationService
 
 logger = logging.getLogger(__name__)
@@ -96,5 +96,79 @@ def process_due_reminders():
             stats['failed'] += 1
             stats['errors'].append(f"Reminder #{reminder.id}: {str(e)}")
             logger.error(f"Error processing reminder #{reminder.id}: {e}")
+
+    return stats
+
+
+def process_due_calendar_alarms():
+    """Send due notifications for portable calendar event alarms."""
+    stats = {'checked': 0, 'sent': 0, 'failed': 0, 'skipped': 0, 'errors': []}
+    now = datetime.utcnow()
+
+    alarms = (
+        CalendarAlarm.query
+        .join(CalendarEvent)
+        .filter(
+            CalendarAlarm.is_enabled == True,
+            CalendarAlarm.notification_sent == False,
+            CalendarAlarm.action.in_(('email', 'smtp', 'webhook')),
+        )
+        .all()
+    )
+
+    for alarm in alarms:
+        stats['checked'] += 1
+        event = alarm.event
+        user = event.user if event else None
+        if not event or not user:
+            stats['skipped'] += 1
+            continue
+
+        trigger_at = alarm.trigger_at()
+        if not trigger_at or now < trigger_at:
+            stats['skipped'] += 1
+            continue
+
+        title = alarm.summary or f"Calendar event: {event.title}"
+        message = alarm.description or (
+            f"Event: {event.title}\n"
+            f"Starts: {event.start_at.isoformat() if event.start_at else 'unknown'}\n"
+        )
+        if event.location:
+            message += f"Location: {event.location}\n"
+
+        try:
+            if alarm.action in ('email', 'smtp'):
+                if not user.email_reminders:
+                    stats['skipped'] += 1
+                    continue
+                to_email = alarm.attendee_email or user.email
+                success, error = NotificationService.send_email(to_email, title, message)
+            elif alarm.action == 'webhook':
+                payload = {
+                    'title': title,
+                    'message': message,
+                    'event': event.to_dict(include_alarms=False),
+                    'alarm': alarm.to_dict(),
+                }
+                success, error = NotificationService.send_webhook(user.webhook_url, payload)
+            else:
+                stats['skipped'] += 1
+                continue
+
+            if success:
+                alarm.notification_sent = True
+                alarm.sent_at = now
+                db.session.commit()
+                stats['sent'] += 1
+                logger.info(f"Sent calendar alarm #{alarm.id} to {user.username}")
+            else:
+                stats['failed'] += 1
+                stats['errors'].append(f"Calendar alarm #{alarm.id}: {error}")
+                logger.warning(f"Failed to send calendar alarm #{alarm.id}: {error}")
+        except Exception as e:
+            stats['failed'] += 1
+            stats['errors'].append(f"Calendar alarm #{alarm.id}: {str(e)}")
+            logger.error(f"Error processing calendar alarm #{alarm.id}: {e}")
 
     return stats
