@@ -18,15 +18,19 @@ The feed includes:
 - Custom reminders
 """
 
-from flask import Blueprint, request, Response, url_for
-from app import db
+from flask import Blueprint, request, Response
 from app.models import (
     User, Vehicle, MaintenanceSchedule, RecurringExpense,
-    Document, Reminder
+    Document, Reminder, CalendarEvent
 )
-from datetime import datetime, timedelta, date
+from app.services.calendar import (
+    CalendarAlarmPayload,
+    CalendarEventPayload,
+    build_icalendar,
+    payload_from_calendar_event,
+)
+from datetime import date
 from functools import wraps
-import hashlib
 
 bp = Blueprint('calendar', __name__, url_prefix='/api/calendar')
 
@@ -53,69 +57,15 @@ def generate_uid(prefix, item_id, user_id):
     return f"{prefix}-{item_id}-{user_id}@may-vehicle"
 
 
-def escape_ical(text):
-    """Escape text for iCalendar format."""
-    if not text:
-        return ''
-    # Escape backslashes first, then other special chars
-    text = str(text).replace('\\', '\\\\')
-    text = text.replace(';', '\\;')
-    text = text.replace(',', '\\,')
-    text = text.replace('\n', '\\n')
-    return text
-
-
-def format_datetime(dt):
-    """Format datetime for iCalendar (UTC)."""
-    if isinstance(dt, date) and not isinstance(dt, datetime):
-        return dt.strftime('%Y%m%d')
-    return dt.strftime('%Y%m%dT%H%M%SZ')
-
-
-def format_date(d):
-    """Format date for all-day events."""
-    if isinstance(d, datetime):
-        d = d.date()
-    return d.strftime('%Y%m%d')
-
-
-def create_vevent(uid, summary, description, dtstart, dtend=None, all_day=True, alarm_days=7):
-    """Create a VEVENT component."""
-    lines = [
-        'BEGIN:VEVENT',
-        f'UID:{uid}',
-        f'DTSTAMP:{format_datetime(datetime.utcnow())}',
-        f'SUMMARY:{escape_ical(summary)}',
-    ]
-
-    if description:
-        lines.append(f'DESCRIPTION:{escape_ical(description)}')
-
-    if all_day:
-        lines.append(f'DTSTART;VALUE=DATE:{format_date(dtstart)}')
-        if dtend:
-            lines.append(f'DTEND;VALUE=DATE:{format_date(dtend)}')
-        else:
-            # All-day event for single day
-            next_day = dtstart + timedelta(days=1) if isinstance(dtstart, date) else dtstart.date() + timedelta(days=1)
-            lines.append(f'DTEND;VALUE=DATE:{format_date(next_day)}')
-    else:
-        lines.append(f'DTSTART:{format_datetime(dtstart)}')
-        if dtend:
-            lines.append(f'DTEND:{format_datetime(dtend)}')
-
-    # Add alarm
-    if alarm_days > 0:
-        lines.extend([
-            'BEGIN:VALARM',
-            'ACTION:DISPLAY',
-            f'TRIGGER:-P{alarm_days}D',
-            f'DESCRIPTION:Reminder: {escape_ical(summary)}',
-            'END:VALARM'
-        ])
-
-    lines.append('END:VEVENT')
-    return '\r\n'.join(lines)
+def _display_alarm(days, summary):
+    days = max(int(days or 0), 0)
+    if days == 0:
+        return []
+    return [CalendarAlarmPayload(
+        action='display',
+        trigger_minutes_before=days * 1440,
+        description=f'Reminder: {summary}',
+    )]
 
 
 @bp.route('/feed')
@@ -127,19 +77,6 @@ def calendar_feed(user):
     # Get all user's vehicles
     vehicles = Vehicle.query.filter_by(owner_id=user.id).all()
     vehicle_ids = [v.id for v in vehicles]
-
-    if not vehicle_ids:
-        # Empty calendar
-        ical = '\r\n'.join([
-            'BEGIN:VCALENDAR',
-            'VERSION:2.0',
-            'PRODID:-//May Vehicle Management//EN',
-            'CALSCALE:GREGORIAN',
-            'METHOD:PUBLISH',
-            f'X-WR-CALNAME:May - {user.username}',
-            'END:VCALENDAR'
-        ])
-        return Response(ical, mimetype='text/calendar')
 
     # Maintenance schedules with due dates
     schedules = MaintenanceSchedule.query.filter(
@@ -161,12 +98,12 @@ def calendar_feed(user):
             if schedule.notes:
                 description += f"\\nNotes: {schedule.notes}"
 
-            events.append(create_vevent(
+            events.append(CalendarEventPayload(
                 uid=generate_uid('maint', schedule.id, user.id),
                 summary=summary,
                 description=description,
-                dtstart=schedule.next_due_date,
-                alarm_days=schedule.remind_days_before or 7
+                start=schedule.next_due_date,
+                alarms=_display_alarm(schedule.remind_days_before or 7, summary),
             ))
 
     # Recurring expenses
@@ -189,12 +126,12 @@ def calendar_feed(user):
             if item.description:
                 description += f"\\nNotes: {item.description}"
 
-            events.append(create_vevent(
+            events.append(CalendarEventPayload(
                 uid=generate_uid('recur', item.id, user.id),
                 summary=summary,
                 description=description,
-                dtstart=item.next_due,
-                alarm_days=item.notify_before_days or 7
+                start=item.next_due,
+                alarms=_display_alarm(item.notify_before_days or 7, summary),
             ))
 
     # Document expiry dates
@@ -215,12 +152,12 @@ def calendar_feed(user):
             if doc.reference_number:
                 description += f"\\nReference: {doc.reference_number}"
 
-            events.append(create_vevent(
+            events.append(CalendarEventPayload(
                 uid=generate_uid('doc', doc.id, user.id),
                 summary=summary,
                 description=description,
-                dtstart=doc.expiry_date,
-                alarm_days=doc.remind_days or 30
+                start=doc.expiry_date,
+                alarms=_display_alarm(doc.remind_days or 30, summary),
             ))
 
     # Custom reminders
@@ -238,31 +175,22 @@ def calendar_feed(user):
             summary = f"⏰ {reminder.title} - {vehicle_name}"
             description = reminder.description or f"Reminder for {vehicle_name}"
 
-            events.append(create_vevent(
+            events.append(CalendarEventPayload(
                 uid=generate_uid('remind', reminder.id, user.id),
                 summary=summary,
                 description=description,
-                dtstart=reminder.due_date,
-                alarm_days=7
+                start=reminder.due_date,
+                alarms=_display_alarm(reminder.notify_days_before or 7, summary),
             ))
 
-    # Build the complete iCalendar
-    ical_lines = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//May Vehicle Management//EN',
-        'CALSCALE:GREGORIAN',
-        'METHOD:PUBLISH',
-        f'X-WR-CALNAME:May - {user.username}',
-        'X-WR-CALDESC:Vehicle reminders, maintenance, and document expiry dates',
-    ]
+    generic_events = CalendarEvent.query.filter_by(user_id=user.id).all()
+    events.extend(payload_from_calendar_event(event) for event in generic_events)
 
-    for event in events:
-        ical_lines.append(event)
-
-    ical_lines.append('END:VCALENDAR')
-
-    ical = '\r\n'.join(ical_lines)
+    ical = build_icalendar(
+        events,
+        calendar_name=f'May - {user.username}',
+        calendar_description='Vehicle reminders, maintenance, document expiry dates, and custom calendar events',
+    )
 
     response = Response(ical, mimetype='text/calendar')
     response.headers['Content-Disposition'] = 'attachment; filename="may-calendar.ics"'
