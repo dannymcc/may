@@ -1,0 +1,59 @@
+Alembic migration order by revision graph
+Generated from migrations/versions revision/down_revision values.
+
+01. 998cdb1497c6
+    File: 998cdb1497c6_add_odometer_unit_to_vehicles.py
+    Revises: None
+    Message: add odometer_unit to vehicles
+
+02. 613be8af4376
+    File: 613be8af4376_allow_nullable_amount_on_recurring_.py
+    Revises: 998cdb1497c6
+    Message: Allow nullable amount on recurring_expenses
+
+03. a1b2c3d4e5f6
+    File: a1b2c3d4e5f6_add_default_vehicle_nullable_trip_end_odometer.py
+    Revises: 613be8af4376
+    Message: add default_vehicle_id to users, make trip end_odometer nullable
+
+04. b2c3d4e5f6a7
+    File: b2c3d4e5f6a7_add_trip_templates.py
+    Revises: a1b2c3d4e5f6
+    Message: add trip_templates table
+
+05. ee92897cc33b
+    File: ee92897cc33b_add_secondary_fuel_type_to_vehicles_and_.py
+    Revises: b2c3d4e5f6a7
+    Message: add secondary_fuel_type to vehicles and fuel_type to fuel_logs
+
+06. f1a2b3c4d5e6
+    File: f1a2b3c4d5e6_add_annual_mileage_limit_to_vehicles.py
+    Revises: ee92897cc33b
+    Message: add annual mileage limit to vehicles
+
+07. 42b26bf6d488
+    File: 42b26bf6d488_add_is_shared_to_vehicles.py
+    Revises: f1a2b3c4d5e6
+    Message: add is_shared to vehicles
+
+08. c1d2e3f4a5b6
+    File: c1d2e3f4a5b6_add_discount_per_unit_to_fuel_logs.py
+    Revises: 42b26bf6d488
+    Message: add discount_per_unit to fuel_logs
+
+09. c2d3e4f5a6b7
+    File: c2d3e4f5a6b7_add_notes_table.py
+    Revises: c1d2e3f4a5b6
+    Message: add notes table and show_menu_notes preference
+
+10. c3d4e5f6a7b8
+    File: c3d4e5f6a7b8_add_mileage_allowances_table.py
+    Revises: c2d3e4f5a6b7
+    Message: add mileage_allowances table and show_menu_allowance preference
+
+11. d4e5f6a7b8c9
+    File: d4e5f6a7b8c9_add_calendar_events_and_alarms.py
+    Revises: c3d4e5f6a7b8
+    Message: add calendar events and alarms
+
+Current head: d4e5f6a7b8c9

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import quote_plus
 
 basedir = Path(__file__).parent.absolute()
 
@@ -24,6 +25,58 @@ elif RELEASE_CHANNEL == 'dev':
     DISPLAY_VERSION = f"{APP_VERSION}-dev"
 else:
     DISPLAY_VERSION = APP_VERSION
+
+
+def _normalise_database_url(database_url):
+    """Return a SQLAlchemy URL with bundled pure-Python drivers when omitted."""
+    if not database_url:
+        return None
+
+    driver_map = {
+        'postgres': 'postgresql+psycopg',
+        'postgresql': 'postgresql+psycopg',
+        'mysql': 'mysql+pymysql',
+        'mariadb': 'mysql+pymysql',
+    }
+    for scheme, driver in driver_map.items():
+        prefix = f'{scheme}://'
+        if database_url.startswith(prefix):
+            return f'{driver}://{database_url[len(prefix):]}'
+    return database_url
+
+
+def _build_database_url_from_parts():
+    """Build DATABASE_URL from DB_* variables for compose deployments."""
+    engine = os.environ.get('DB_ENGINE', 'sqlite').strip().lower()
+    if engine in ('sqlite', 'sqlite3'):
+        sqlite_path = os.environ.get('SQLITE_PATH') or str(basedir / 'data' / 'may.db')
+        sqlite_path = Path(sqlite_path)
+        if sqlite_path.is_absolute():
+            return f'sqlite:///{sqlite_path}'
+        return f'sqlite:///{sqlite_path.as_posix()}'
+
+    driver_map = {
+        'postgres': ('postgresql+psycopg', '5432'),
+        'postgresql': ('postgresql+psycopg', '5432'),
+        'mysql': ('mysql+pymysql', '3306'),
+        'mariadb': ('mysql+pymysql', '3306'),
+    }
+    if engine not in driver_map:
+        raise RuntimeError(
+            "DB_ENGINE must be one of: sqlite, postgresql, postgres, mysql, mariadb"
+        )
+
+    driver, default_port = driver_map[engine]
+    username = quote_plus(os.environ.get('DB_USER', 'may'))
+    password = quote_plus(os.environ.get('DB_PASSWORD', 'may'))
+    host = os.environ.get('DB_HOST', engine)
+    port = os.environ.get('DB_PORT', default_port)
+    name = os.environ.get('DB_NAME', 'may')
+    return f'{driver}://{username}:{password}@{host}:{port}/{name}'
+
+
+def get_database_url():
+    return _normalise_database_url(os.environ.get('DATABASE_URL')) or _build_database_url_from_parts()
 
 
 class Config:
@@ -51,7 +104,7 @@ class Config:
             "Sessions will not persist across restarts. Set SECRET_KEY for production.",
             RuntimeWarning
         )
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{basedir}/data/may.db'
+    SQLALCHEMY_DATABASE_URI = get_database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or str(basedir / 'data' / 'uploads')
     MAX_CONTENT_LENGTH = 300 * 1024 * 1024  # 300MB max upload

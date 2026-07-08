@@ -7,6 +7,7 @@ from flask_babel import Babel, gettext as _
 from config import Config
 import os
 import secrets
+from pathlib import Path
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -90,13 +91,29 @@ def _bootstrap_alembic_version(app):
     if 'users' not in table_names or 'vehicles' not in table_names:
         return
 
+    schema_matches_models = _schema_matches_metadata(inspector, set(table_names))
+
     with db.engine.begin() as conn:
         if 'alembic_version' in table_names:
             current = conn.execute(
                 text('SELECT version_num FROM alembic_version')
             ).scalar()
             if current:
+                if schema_matches_models:
+                    try:
+                        stamp(revision='head')
+                        app.logger.info('Stamped alembic_version to head for current model schema')
+                    except Exception as e:
+                        app.logger.warning(f'Could not stamp alembic_version to head: {e}')
                 return
+
+    if schema_matches_models:
+        try:
+            stamp(revision='head')
+            app.logger.info('Stamped alembic_version to head for current model schema')
+        except Exception as e:
+            app.logger.warning(f'Could not stamp alembic_version to head: {e}')
+        return
 
     user_cols = {c['name'] for c in inspector.get_columns('users')}
     vehicle_cols = {c['name'] for c in inspector.get_columns('vehicles')}
@@ -118,6 +135,18 @@ def _bootstrap_alembic_version(app):
         app.logger.info(f'Stamped alembic_version to {target} for pre-migration database')
     except Exception as e:
         app.logger.warning(f'Could not stamp alembic_version: {e}')
+
+
+def _schema_matches_metadata(inspector, table_names):
+    """Return True when all model tables and columns already exist."""
+    for table in db.metadata.tables.values():
+        if table.name not in table_names:
+            return False
+        existing_cols = {col['name'] for col in inspector.get_columns(table.name)}
+        model_cols = {column.name for column in table.columns}
+        if not model_cols.issubset(existing_cols):
+            return False
+    return True
 
 
 def _log_startup_banner(app):
@@ -210,6 +239,13 @@ def _run_schema_migrations(app):
     """
     from sqlalchemy import text, inspect
 
+    if db.engine.dialect.name != 'sqlite':
+        app.logger.info(
+            'Skipping model-driven schema recovery for %s; use Alembic migrations for external databases',
+            db.engine.dialect.name,
+        )
+        return
+
     inspector = inspect(db.engine)
     existing_tables = set(inspector.get_table_names())
     dialect = db.engine.dialect
@@ -265,6 +301,22 @@ def get_locale():
     return request.accept_languages.best_match(LANGUAGES.keys(), default='en')
 
 
+def _ensure_sqlite_database_directory(database_uri):
+    """Create the SQLite parent directory without treating remote URLs as paths."""
+    from sqlalchemy.engine import make_url
+
+    url = make_url(database_uri)
+    if not url.drivername.startswith('sqlite'):
+        return
+    if not url.database or url.database == ':memory:':
+        return
+
+    db_path = Path(url.database)
+    if not db_path.is_absolute():
+        db_path = Path.cwd() / db_path
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -274,7 +326,7 @@ def create_app(config_class=Config):
     app.config['BABEL_SUPPORTED_LOCALES'] = list(LANGUAGES.keys())
 
     # Ensure data directories exist
-    os.makedirs(os.path.dirname(app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')), exist_ok=True)
+    _ensure_sqlite_database_directory(app.config['SQLALCHEMY_DATABASE_URI'])
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     db.init_app(app)
@@ -420,12 +472,19 @@ def _start_reminder_scheduler(app):
         while True:
             try:
                 with app.app_context():
-                    from app.services.reminder_processor import process_due_reminders
+                    from app.services.reminder_processor import (
+                        process_due_calendar_alarms,
+                        process_due_reminders,
+                    )
                     stats = process_due_reminders()
-                    if stats['sent'] > 0 or stats['failed'] > 0:
+                    calendar_stats = process_due_calendar_alarms()
+                    sent = stats['sent'] + calendar_stats['sent']
+                    failed = stats['failed'] + calendar_stats['failed']
+                    skipped = stats['skipped'] + calendar_stats['skipped']
+                    if sent > 0 or failed > 0:
                         logger.info(
-                            f"Reminder check: {stats['sent']} sent, "
-                            f"{stats['failed']} failed, {stats['skipped']} skipped"
+                            f"Reminder check: {sent} sent, "
+                            f"{failed} failed, {skipped} skipped"
                         )
             except Exception as e:
                 logger.error(f"Error in reminder scheduler: {e}")
