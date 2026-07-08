@@ -103,6 +103,40 @@ docker logs may
 
 💡 **Tip:** Set `ADMIN_PASSWORD` in your docker-compose.yml or environment to use a fixed password.
 
+### Deploy via Portainer (GitHub Stack)
+
+Use this repository directly as a Portainer stack source with the Portainer-specific compose file:
+
+- Compose file: `docker-compose-port.yaml`
+- Env file: `stack.env`
+
+In Portainer, go to **Stacks** -> **Add stack** and choose **Repository**.
+
+Set:
+
+- Repository URL: `https://github.com/dannymcc/may.git`
+- Repository reference: your target branch/tag (for example `main` or `dev`)
+- Compose path: `docker-compose-port.yaml`
+
+Then configure environment values in one of these ways:
+
+1. Paste the key/value pairs from `stack.env` into Portainer's **Environment variables** section.
+2. Or commit your own adjusted `stack.env` in your fork and reference it with Portainer if your setup supports env file loading for Git stacks.
+
+Minimum values you should customize before deploy:
+
+- `SECRET_KEY`
+- `ADMIN_PASSWORD`
+- `MAY_TAG` (`latest` for stable, `dev` for development)
+- `MAY_PORT` (host port to expose)
+
+Production hardening tips:
+
+- Set `MAY_CONTAINER_NAME` to a unique value per environment (for example `may-prod`, `may-staging`) to avoid container name conflicts when running multiple stacks on the same Docker host.
+- Use a dedicated persistent volume per stack/environment so data is isolated. If you deploy multiple stacks from this same compose file, keep separate stack names (or adjust volume naming) so each stack gets its own `may_data` volume.
+
+After deployment, open `http://<your-host>:<MAY_PORT>`.
+
 ### Manual Installation
 
 ```bash

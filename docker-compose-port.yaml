@@ -1,22 +1,16 @@
 services:
   may:
-    # image: ghcr.io/dannymcc/may:latest
-    # To build locally instead, comment out 'image' above and uncomment:
-    build: .
-    container_name: may
+    image: ${MAY_IMAGE:-ghcr.io/dannymcc/may}:${MAY_TAG:-latest}
+    container_name: ${MAY_CONTAINER_NAME:-may}
     restart: unless-stopped
     ports:
-      - "5050:5050"
+      - ${MAY_PORT:-5050}:5050
     volumes:
       - may_data:/app/data
     environment:
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - DATABASE_URL=${DATABASE_URL:-sqlite:////app/data/may.db}
-      # PostgreSQL: postgresql+psycopg://may:may@postgres:5432/may
-      # MySQL:      mysql+pymysql://may:may@mysql:3306/may
-      # MariaDB:    mysql+pymysql://may:may@mariadb:3306/may
       - UPLOAD_FOLDER=/app/data/uploads
-      # Optional: set a fixed admin password (default is auto-generated and shown in logs)
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-your-secure-password}
 
   postgres:
