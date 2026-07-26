@@ -88,6 +88,7 @@ class User(UserMixin, db.Model):
     show_menu_trips = db.Column(db.Boolean, default=False)
     show_menu_charging = db.Column(db.Boolean, default=False)
     show_menu_supplies = db.Column(db.Boolean, default=True)
+    show_menu_notes = db.Column(db.Boolean, default=True)
     show_quick_entry = db.Column(db.Boolean, default=True)  # Show quick entry button in navbar
 
     # Relationships
@@ -1112,6 +1113,38 @@ class ChargingSession(db.Model):
             'network': self.network,
             'notes': self.notes,
             'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+class VehicleNote(db.Model):
+    """Rich-text notes attached to a vehicle."""
+    __tablename__ = 'vehicle_notes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text)  # sanitized HTML from WYSIWYG
+    is_pinned = db.Column(db.Boolean, default=False)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    vehicle = db.relationship('Vehicle', backref=db.backref('vehicle_notes', lazy='dynamic', cascade='all, delete-orphan'))
+    user = db.relationship('User', backref=db.backref('vehicle_notes', lazy='dynamic'))
+
+    def to_dict(self):
+        """Serialize note to dictionary for API"""
+        return {
+            'id': self.id,
+            'vehicle_id': self.vehicle_id,
+            'user_id': self.user_id,
+            'title': self.title,
+            'content': self.content,
+            'is_pinned': self.is_pinned,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
 
 

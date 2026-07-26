@@ -7,7 +7,7 @@ from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import Vehicle, VehicleSpec, VehiclePart, FuelLog, Expense, User, Reminder, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, PART_TYPES, TRACKING_UNITS, ODOMETER_UNITS, AppSettings
+from app.models import Vehicle, VehicleSpec, VehiclePart, FuelLog, Expense, User, Reminder, VehicleNote, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, PART_TYPES, TRACKING_UNITS, ODOMETER_UNITS, AppSettings
 from app.services.tessie import TessieService
 
 bp = Blueprint('vehicles', __name__, url_prefix='/vehicles')
@@ -151,6 +151,11 @@ def view(vehicle_id):
     # Check if Tessie integration is configured
     tessie_configured = TessieService.is_configured()
 
+    # Get recent notes for this vehicle
+    recent_notes = vehicle.vehicle_notes.order_by(
+        VehicleNote.is_pinned.desc(), VehicleNote.updated_at.desc()
+    ).limit(3).all()
+
     return render_template('vehicles/view.html',
                            vehicle=vehicle,
                            recent_logs=recent_logs,
@@ -162,7 +167,8 @@ def view(vehicle_id):
                            parts=parts,
                            part_types=PART_TYPES,
                            dvla_configured=dvla_configured,
-                           tessie_configured=tessie_configured)
+                           tessie_configured=tessie_configured,
+                           recent_notes=recent_notes)
 
 
 @bp.route('/<int:vehicle_id>/edit', methods=['GET', 'POST'])

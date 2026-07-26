@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 *)",
+      "Bash(venv/Scripts/python.exe -m pytest tests/test_notes.py -q)"
+    ]
+  }
+}

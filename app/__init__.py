@@ -91,6 +91,7 @@ def _run_schema_migrations(app):
             ('password_reset_token', 'VARCHAR(100)'),
             ('password_reset_expires', 'DATETIME'),
             ('show_menu_supplies', 'BOOLEAN DEFAULT 1'),
+            ('show_menu_notes', 'BOOLEAN DEFAULT 1'),
         ],
         'charging_sessions': [
             ('tessie_charge_id', 'VARCHAR(50)'),
@@ -159,7 +160,11 @@ def create_app(config_class=Config):
     app.config['BABEL_SUPPORTED_LOCALES'] = list(LANGUAGES.keys())
 
     # Ensure data directories exist
-    data_dir = os.path.dirname(app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', ''))
+    db_uri = app.config['SQLALCHEMY_DATABASE_URI']
+    if db_uri.startswith('sqlite:///') and ':memory:' not in db_uri:
+        data_dir = os.path.dirname(db_uri.replace('sqlite:///', ''))
+    else:
+        data_dir = app.config['UPLOAD_FOLDER']
     os.makedirs(data_dir, exist_ok=True)
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     os.makedirs(os.path.join(data_dir, 'backups'), exist_ok=True)
@@ -211,7 +216,7 @@ def create_app(config_class=Config):
         fmt = formats.get(style, formats['default'])
         return value.strftime(fmt)
 
-    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, admin, supplies
+    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, admin, supplies, notes
     app.register_blueprint(main.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(vehicles.bp)
@@ -229,6 +234,7 @@ def create_app(config_class=Config):
     app.register_blueprint(charging.bp)
     app.register_blueprint(admin.bp)
     app.register_blueprint(supplies.bp)
+    app.register_blueprint(notes.bp)
 
     # Health check endpoint for container orchestration
     @app.route('/health')

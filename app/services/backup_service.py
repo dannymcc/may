@@ -15,8 +15,12 @@ logger = logging.getLogger(__name__)
 
 def get_backup_dir(app):
     """Return the backup directory path (creates it if missing)."""
-    db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
-    data_dir = os.path.dirname(db_path)
+    db_uri = app.config['SQLALCHEMY_DATABASE_URI']
+    if db_uri.startswith('sqlite:///') and ':memory:' not in db_uri:
+        db_path = db_uri.replace('sqlite:///', '')
+        data_dir = os.path.dirname(db_path)
+    else:
+        data_dir = app.config['UPLOAD_FOLDER']
     backup_dir = os.path.join(data_dir, 'backups')
     os.makedirs(backup_dir, exist_ok=True)
     return backup_dir
@@ -186,7 +190,8 @@ def _serialize_vehicle(vehicle, files_to_backup):
         'trips': [],
         'charging_sessions': [],
         'parts': [],
-        'attachments': []
+        'attachments': [],
+        'vehicle_notes': []
     }
 
     if vehicle.image_filename:
@@ -345,6 +350,15 @@ def _serialize_vehicle(vehicle, files_to_backup):
             'supplier_url': part.supplier_url, 'notes': part.notes,
             'created_at': part.created_at.isoformat() if part.created_at else None,
             'updated_at': part.updated_at.isoformat() if part.updated_at else None
+        })
+
+    from app.models import VehicleNote
+    for note in vehicle.vehicle_notes.order_by(VehicleNote.created_at.asc()).all():
+        vd['vehicle_notes'].append({
+            'id': note.id, 'title': note.title, 'content': note.content,
+            'is_pinned': note.is_pinned,
+            'created_at': note.created_at.isoformat() if note.created_at else None,
+            'updated_at': note.updated_at.isoformat() if note.updated_at else None,
         })
 
     return vd

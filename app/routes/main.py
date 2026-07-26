@@ -26,6 +26,7 @@ def index():
             'stations': 'stations.index',
             'trips': 'trips.index',
             'charging': 'charging.index',
+            'notes': 'notes.index',
         }
         route = page_routes.get(start_page, 'main.dashboard')
         return redirect(url_for(route))

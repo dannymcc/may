@@ -3,6 +3,7 @@ Security utilities for the Willman application.
 """
 import re
 import ipaddress
+import bleach
 from urllib.parse import urlparse, urljoin
 from functools import wraps
 from flask import request, redirect, url_for, flash
@@ -345,3 +346,33 @@ def secure_filename_with_uuid(filename):
 
     # Add UUID prefix
     return f"{uuid.uuid4().hex}_{secure_name}"
+
+
+# Allowed HTML tags and attributes for WYSIWYG editor output
+ALLOWED_HTML_TAGS = [
+    'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'strike',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'ul', 'ol', 'li', 'blockquote', 'a', 'span', 'div',
+]
+ALLOWED_HTML_ATTRIBUTES = {
+    'a': ['href', 'title', 'target'],
+    '*': ['class'],
+}
+ALLOWED_HTML_PROTOCOLS = ['http', 'https', 'mailto']
+
+
+def sanitize_html(html):
+    """
+    Clean HTML from the WYSIWYG editor to prevent XSS.
+
+    Returns an empty string for None/empty input.
+    """
+    if not html:
+        return ''
+    return bleach.clean(
+        html,
+        tags=ALLOWED_HTML_TAGS,
+        attributes=ALLOWED_HTML_ATTRIBUTES,
+        protocols=ALLOWED_HTML_PROTOCOLS,
+        strip=True
+    )

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Notes for') }} {{ vehicle.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{{ url_for('vehicles.view', vehicle_id=vehicle.id) }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; {{ _('Back to') }} {{ vehicle.name }}</a>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">{{ _('Notes for') }} {{ vehicle.name }}</h1>
+</div>
+
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+    <a href="{{ url_for('notes.new', vehicle_id=vehicle.id) }}"
+       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        {{ _('Add Note') }}
+    </a>
+    <a href="{{ url_for('notes.index') }}"
+       class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+        {{ _('All Notes') }}
+    </a>
+</div>
+
+{% if notes %}
+<div class="space-y-4">
+    {% for note in notes %}
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden {% if note.is_pinned %}border-l-4 border-primary-500{% endif %}">
+        <div class="px-6 py-4">
+            <div class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        {% if note.is_pinned %}
+                        <svg class="h-4 w-4 text-primary-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.699-1.699a1 1 0 111.414 1.414l-1.699 1.699L18 10l-1.582 3.954 1.699 1.699a1 1 0 11-1.414 1.414l-1.699-1.699L10 18l-3.954-1.582-1.699 1.699a1 1 0 11-1.414-1.414l1.699-1.699L2 10l1.582-3.954-1.699-1.699a1 1 0 111.414-1.414l1.699 1.699L9 4.323V3a1 1 0 011-1z"/>
+                        </svg>
+                        {% endif %}
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white truncate">{{ note.title }}</h3>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                        {{ _('Updated') }} {{ note.updated_at|format_date('long_datetime') }}
+                        <span class="mx-1">&middot;</span>
+                        <span class="text-xs text-gray-400">{{ note.user.username }}</span>
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2 ml-4 flex-shrink-0">
+                    <a href="{{ url_for('notes.edit', note_id=note.id) }}"
+                       class="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
+                       title="{{ _('Edit') }}">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </a>
+                    <form method="POST" action="{{ url_for('notes.delete', note_id=note.id) }}?return_to=vehicle" class="inline" onsubmit="return confirm('{{ _('Delete this note?') }}');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600" title="{{ _('Delete') }}">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {% if note.content %}
+            <div class="prose dark:prose-invert max-w-none text-sm text-gray-700 dark:text-gray-300">
+                {{ note.content|safe }}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-400 italic">{{ _('No content.') }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-8 text-center">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ _('No notes for this vehicle yet') }}</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Keep track of ideas, plans, and important details here.') }}</p>
+    <div class="mt-6">
+        <a href="{{ url_for('notes.new', vehicle_id=vehicle.id) }}"
+           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            {{ _('Add Note') }}
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

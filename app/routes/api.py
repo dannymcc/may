@@ -17,7 +17,7 @@ from app.models import (
     User, Vehicle, VehicleSpec, FuelLog, Expense, EXPENSE_CATEGORIES,
     Reminder, MaintenanceSchedule, RecurringExpense, FuelStation,
     Document, Trip, ChargingSession, VehiclePart, FuelPriceHistory, Attachment,
-    TRIP_PURPOSES, CHARGER_TYPES
+    VehicleNote, TRIP_PURPOSES, CHARGER_TYPES
 )
 from app.services.tessie import TessieService
 from flask_babel import gettext as _
@@ -1714,7 +1714,8 @@ def export_full_backup():
             'trips': [],
             'charging_sessions': [],
             'parts': [],
-            'attachments': []
+            'attachments': [],
+            'vehicle_notes': []
         }
 
         # Track vehicle image
@@ -1931,6 +1932,17 @@ def export_full_backup():
                 'updated_at': part.updated_at.isoformat() if part.updated_at else None
             })
 
+        # Add vehicle notes
+        for note in vehicle.vehicle_notes.order_by(VehicleNote.created_at.asc()).all():
+            vehicle_data['vehicle_notes'].append({
+                'id': note.id,
+                'title': note.title,
+                'content': note.content,
+                'is_pinned': note.is_pinned,
+                'created_at': note.created_at.isoformat() if note.created_at else None,
+                'updated_at': note.updated_at.isoformat() if note.updated_at else None,
+            })
+
         export_data['vehicles'].append(vehicle_data)
 
     # Add fuel stations (not vehicle-specific)
@@ -2119,7 +2131,7 @@ def _restore_backup_data(data, user, upload_folder):
     stats = {
         'vehicles': 0, 'fuel_logs': 0, 'expenses': 0, 'trips': 0,
         'charging_sessions': 0, 'reminders': 0, 'maintenance': 0, 'documents': 0,
-        'parts': 0, 'recurring': 0, 'stations': 0
+        'parts': 0, 'recurring': 0, 'stations': 0, 'notes': 0
     }
 
     # --- fuel stations (keyed by name to avoid duplicates) ---
@@ -2397,6 +2409,17 @@ def _restore_backup_data(data, user, upload_folder):
                 notes=pd.get('notes'),
             ))
             stats['parts'] += 1
+
+        # vehicle notes
+        for nd in vd.get('vehicle_notes', []):
+            db.session.add(VehicleNote(
+                vehicle_id=vehicle.id,
+                user_id=user.id,
+                title=nd.get('title', ''),
+                content=nd.get('content'),
+                is_pinned=nd.get('is_pinned', False),
+            ))
+            stats['notes'] += 1
 
     db.session.commit()
     return stats

@@ -147,6 +147,7 @@ def get_start_page_url(user):
         'stations': 'stations.index',
         'trips': 'trips.index',
         'charging': 'charging.index',
+        'notes': 'notes.index',
     }
     route = page_routes.get(start_page, 'main.dashboard')
     return url_for(route)
@@ -368,6 +369,7 @@ def menu_preferences():
     current_user.show_menu_trips = request.form.get('show_menu_trips') == 'on'
     current_user.show_menu_charging = request.form.get('show_menu_charging') == 'on'
     current_user.show_menu_supplies = request.form.get('show_menu_supplies') == 'on'
+    current_user.show_menu_notes = request.form.get('show_menu_notes') == 'on'
     current_user.show_quick_entry = request.form.get('show_quick_entry') == 'on'
     db.session.commit()
     flash(_('Menu preferences updated'), 'success')
