@@ -13,6 +13,8 @@ def sample_trip(app, test_user, sample_vehicle):
         date=date(2024, 2, 1),
         start_odometer=10000.0,
         end_odometer=10150.0,
+        start_fuel_level=100,
+        end_fuel_level=87.3,
         purpose='business',
         description='Client meeting',
     )
@@ -53,6 +55,8 @@ class TestTripNew:
             'date': '2024-03-01',
             'start_odometer': '12000',
             'end_odometer': '12200',
+            'start_fuel_level': '85.3',
+            'end_fuel_level': '80',
             'purpose': 'business',
             'description': 'Business trip',
             'start_location': 'Office',
@@ -63,6 +67,8 @@ class TestTripNew:
         assert trip is not None
         assert trip.start_odometer == 12000.0
         assert trip.end_odometer == 12200.0
+        assert trip.start_fuel_level == 85.3
+        assert trip.send_fuel_level == 80.0
         assert trip.user_id == test_user.id
 
 class TestTripNewNoEndOdometer:
@@ -89,7 +95,9 @@ class TestTripNewNoEndOdometer:
         trip = Trip.query.filter_by(description='No end odometer trip').first()
         assert trip is not None
         assert trip.start_odometer == 12000.0
-        assert trip.end_odometer == None
+        assert trip.end_odometer is None
+        assert trip.start_fuel_level is None
+        assert trip.end_fuel_level is None
         assert trip.user_id == test_user.id
 
 

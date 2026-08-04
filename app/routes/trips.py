@@ -144,6 +144,8 @@ def edit(trip_id):
         trip.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else trip.date
         trip.start_odometer = parse_decimal(request.form.get('start_odometer'))
         trip.end_odometer = parse_decimal(request.form.get('end_odometer')) if request.form.get('end_odometer') else None
+        trip.start_fuel_level = parse_decimal(request.form.get('start_fuel_level')) if request.form.get('start_fuel_level') else None
+        trip.end_fuel_level = parse_decimal(request.form.get('end_fuel_level')) if request.form.get('end_fuel_level') else None
         trip.purpose = request.form.get('purpose')
         trip.description = request.form.get('description')
         trip.start_location = request.form.get('start_location')
