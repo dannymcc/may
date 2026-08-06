@@ -1,4 +1,5 @@
 """Notification service for sending reminders via various methods."""
+import os
 import smtplib
 import json
 from email.mime.text import MIMEText
@@ -12,17 +13,26 @@ class NotificationService:
     """Service for sending notifications through various channels."""
 
     @staticmethod
+    def _smtp_setting(key, default=None):
+        """App settings (admin UI) win; SMTP_* env vars fill gaps (e.g. compose)."""
+        value = AppSettings.get(key)
+        if value is None or value == '':
+            value = os.environ.get(key.upper(), default)
+        return value
+
+    @staticmethod
     def get_smtp_config():
         """Get SMTP configuration from app settings."""
+        setting = NotificationService._smtp_setting
         return {
-            'host': AppSettings.get('smtp_host'),
-            'port': int(AppSettings.get('smtp_port', '587')),
-            'username': AppSettings.get('smtp_username'),
-            'password': AppSettings.get('smtp_password'),
-            'sender': AppSettings.get('smtp_sender'),
-            'sender_name': AppSettings.get('smtp_sender_name', 'May'),
-            'use_tls': AppSettings.get('smtp_tls', 'true') == 'true',
-            'use_ssl': AppSettings.get('smtp_ssl', 'false') == 'true',
+            'host': setting('smtp_host'),
+            'port': int(setting('smtp_port', '587')),
+            'username': setting('smtp_username'),
+            'password': setting('smtp_password'),
+            'sender': setting('smtp_sender'),
+            'sender_name': setting('smtp_sender_name', 'May'),
+            'use_tls': setting('smtp_tls', 'true') == 'true',
+            'use_ssl': setting('smtp_ssl', 'false') == 'true',
         }
 
     @staticmethod

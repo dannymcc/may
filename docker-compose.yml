@@ -18,6 +18,29 @@ services:
       - UPLOAD_FOLDER=/app/data/uploads
       # Optional: set a fixed admin password (default is auto-generated and shown in logs)
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-your-secure-password}
+      # SMTP defaults point at the bundled mailpit service; values saved in the
+      # admin UI (Settings -> Notifications) override these env fallbacks.
+      - SMTP_HOST=${SMTP_HOST:-mailpit}
+      - SMTP_PORT=${SMTP_PORT:-1025}
+      - SMTP_SENDER=${SMTP_SENDER:-may@localhost}
+      - SMTP_SENDER_NAME=${SMTP_SENDER_NAME:-May}
+      - SMTP_TLS=${SMTP_TLS:-false}
+      - SMTP_SSL=${SMTP_SSL:-false}
+    depends_on:
+      - mailpit
+
+  # Local SMTP server + web inbox for testing notification emails.
+  # Web UI: http://localhost:8025 - SMTP (port 1025) stays inside the compose network.
+  mailpit:
+    image: axllent/mailpit
+    container_name: may-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+    environment:
+      - MP_DATABASE=/data/mailpit.db
+    volumes:
+      - may_mailpit_data:/data
 
   postgres:
     image: postgres:16-alpine
@@ -56,6 +79,7 @@ services:
 
 volumes:
   may_data:
+  may_mailpit_data:
   may_postgres_data:
   may_mysql_data:
   may_mariadb_data:
