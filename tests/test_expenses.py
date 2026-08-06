@@ -84,6 +84,60 @@ class TestExpenseEdit:
         assert sample_expense.description == 'Updated oil change'
         assert sample_expense.cost == 85.0
 
+    def test_edit_form_no_odometer_omits_literal_none(self, auth_client, sample_expense):
+        """Regression for #217: an expense without an odometer must not
+        render value="None" into the odometer input, which would be
+        submitted back and break the save."""
+        assert sample_expense.odometer is None
+        resp = auth_client.get(f'/expenses/{sample_expense.id}/edit')
+        assert resp.status_code == 200
+        assert b'value="None"' not in resp.data
+
+    def test_edit_notes_persist_without_odometer(self, auth_client, sample_expense):
+        """Regression for #217: editing notes on an expense that has no
+        odometer must persist. The buggy edit form rendered value="None"
+        for the odometer field; simulate that round-trip and confirm the
+        notes are saved rather than silently discarded."""
+        assert sample_expense.odometer is None
+        resp = auth_client.post(f'/expenses/{sample_expense.id}/edit', data={
+            'date': '2024-01-20',
+            'category': 'maintenance',
+            'description': 'Oil change',
+            'cost': '75.00',
+            'odometer': 'None',  # what the buggy template submitted
+            'notes': 'Remember to check the filter next time',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(sample_expense)
+        assert sample_expense.notes == 'Remember to check the filter next time'
+        assert sample_expense.odometer is None
+
+    def test_edit_notes_change_persists(self, auth_client, test_user, sample_vehicle):
+        """An expense that already has notes must save an updated notes value."""
+        expense = Expense(
+            vehicle_id=sample_vehicle.id,
+            user_id=test_user.id,
+            date=date(2024, 4, 1),
+            category='repairs',
+            description='Clutch',
+            cost=300.0,
+            notes='Original notes',
+        )
+        db.session.add(expense)
+        db.session.commit()
+
+        resp = auth_client.post(f'/expenses/{expense.id}/edit', data={
+            'date': '2024-04-01',
+            'category': 'repairs',
+            'description': 'Clutch',
+            'cost': '300.00',
+            'odometer': 'None',
+            'notes': 'Updated notes after inspection',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(expense)
+        assert expense.notes == 'Updated notes after inspection'
+
 
 class TestExpenseDelete:
     def test_delete_requires_auth(self, client, sample_expense):

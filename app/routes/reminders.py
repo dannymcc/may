@@ -170,21 +170,40 @@ def complete(reminder_id):
     # If recurring, create the next occurrence
     if reminder.recurrence != 'none':
         new_due_date = calculate_next_due_date(reminder.due_date, reminder.recurrence, reminder.recurrence_interval)
-        new_reminder = Reminder(
+
+        # Guard against duplicates (#232): if the reminder was completed,
+        # un-completed and completed again, a matching open next occurrence
+        # may already exist. Only create one if none is present.
+        existing = Reminder.query.filter_by(
             vehicle_id=reminder.vehicle_id,
             user_id=reminder.user_id,
             title=reminder.title,
-            description=reminder.description,
             reminder_type=reminder.reminder_type,
-            due_date=new_due_date,
             recurrence=reminder.recurrence,
             recurrence_interval=reminder.recurrence_interval,
-            notify_days_before=reminder.notify_days_before
-        )
-        db.session.add(new_reminder)
+            due_date=new_due_date,
+            is_completed=False,
+        ).first()
+
         user_format = getattr(current_user, 'date_format', None) or 'DD/MM/YYYY'
         fmt = DATE_FORMATS.get(user_format, DATE_FORMATS['DD/MM/YYYY'])['default']
-        flash(_('Reminder completed. Next occurrence created for %(date)s') % {'date': new_due_date.strftime(fmt)}, 'success')
+
+        if existing:
+            flash(_('Reminder marked as completed'), 'success')
+        else:
+            new_reminder = Reminder(
+                vehicle_id=reminder.vehicle_id,
+                user_id=reminder.user_id,
+                title=reminder.title,
+                description=reminder.description,
+                reminder_type=reminder.reminder_type,
+                due_date=new_due_date,
+                recurrence=reminder.recurrence,
+                recurrence_interval=reminder.recurrence_interval,
+                notify_days_before=reminder.notify_days_before
+            )
+            db.session.add(new_reminder)
+            flash(_('Reminder completed. Next occurrence created for %(date)s') % {'date': new_due_date.strftime(fmt)}, 'success')
     else:
         flash(_('Reminder marked as completed'), 'success')
 

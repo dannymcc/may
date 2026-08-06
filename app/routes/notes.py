@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from app import db
+from app.utils import parse_decimal
 from app.models import Vehicle, Note
 
 bp = Blueprint('notes', __name__, url_prefix='/notes')
@@ -47,7 +48,7 @@ def new():
                 date=datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.now().date(),
                 title=request.form.get('title') or None,
                 content=request.form.get('content'),
-                odometer=float(request.form.get('odometer')) if request.form.get('odometer') else None,
+                odometer=parse_decimal(request.form.get('odometer')) if request.form.get('odometer') else None,
             )
         except (ValueError, TypeError):
             flash(_('Invalid data submitted. Please check the date and odometer fields.'), 'error')
@@ -87,7 +88,7 @@ def edit(note_id):
             note.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else note.date
             note.title = request.form.get('title') or None
             note.content = request.form.get('content')
-            note.odometer = float(request.form.get('odometer')) if request.form.get('odometer') else None
+            note.odometer = parse_decimal(request.form.get('odometer')) if request.form.get('odometer') else None
         except (ValueError, TypeError):
             flash(_('Invalid data submitted. Please check the date and odometer fields.'), 'error')
             return render_template('notes/form.html', note=note, vehicles=vehicles,

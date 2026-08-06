@@ -52,8 +52,40 @@ Generated from migrations/versions revision/down_revision values.
     Message: add mileage_allowances table and show_menu_allowance preference
 
 11. d4e5f6a7b8c9
-    File: d4e5f6a7b8c9_add_calendar_events_and_alarms.py
+    File: d4e5f6a7b8c9_recompute_maintenance_next_due_odometer.py
     Revises: c3d4e5f6a7b8
-    Message: add calendar events and alarms
+    Message: recompute maintenance next_due_odometer (upstream)
 
-Current head: d4e5f6a7b8c9
+12. e5f6a7b8c9d0
+    File: e5f6a7b8c9d0_backfill_quick_log_price_history.py
+    Revises: d4e5f6a7b8c9
+    Message: backfill quick log price history (upstream)
+
+13. a1b2c3d4e5f7
+    File: a1b2c3d4e5f7_add_fuel_log_fk_to_price_history.py
+    Revises: e5f6a7b8c9d0
+    Message: add fuel_log FK to price_history (upstream)
+
+14. b2c3d4e5f6a8
+    File: b2c3d4e5f6a8_add_default_trip_purpose_to_vehicles.py
+    Revises: a1b2c3d4e5f7
+    Message: add default_trip_purpose to vehicles (upstream)
+
+15. c3d4e5f6a7b9
+    File: c3d4e5f6a7b9_add_ntfy_token_to_users.py
+    Revises: b2c3d4e5f6a8
+    Message: add ntfy_token to users (upstream)
+
+16. d4e5f6a7b8c0
+    File: d4e5f6a7b8c0_add_number_format_prefs_to_users.py
+    Revises: c3d4e5f6a7b9
+    Message: add number format prefs to users (upstream)
+
+17. 3d5ffcb447c9
+    File: 3d5ffcb447c9_add_calendar_events_and_alarms.py
+    Revises: d4e5f6a7b8c0
+    Message: add calendar events and alarms (fork - renumbered from
+    d4e5f6a7b8c9 during the v0.27.1 upstream sync: upstream independently
+    used that id, and fork ids are now random to avoid future collisions)
+
+Current head: 3d5ffcb447c9

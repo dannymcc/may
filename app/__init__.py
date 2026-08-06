@@ -5,6 +5,7 @@ from flask_login import LoginManager, current_user
 from flask_wtf.csrf import CSRFProtect
 from flask_babel import Babel, gettext as _
 from config import Config
+from app.utils import first_day_of_week
 import os
 import secrets
 from pathlib import Path
@@ -20,6 +21,7 @@ csrf = CSRFProtect()
 # Supported languages
 LANGUAGES = {
     'en': 'English',
+    'ar': 'العربية',
     'cs': 'Čeština',
     'de': 'Deutsch',
     'es': 'Español',
@@ -28,10 +30,12 @@ LANGUAGES = {
     'nl': 'Nederlands',
     'pt': 'Português',
     'pl': 'Polski',
+    'ru': 'Русский',
     'sv': 'Svenska',
     'da': 'Dansk',
     'no': 'Norsk',
     'fi': 'Suomi',
+    'tr': 'Türkçe',
     'ja': '日本語',
     'zh': '中文',
     'ko': '한국어'
@@ -321,6 +325,12 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
+    # Render None as an empty string in all templates. Nullable model fields
+    # (tank capacity, odometer, notes, ...) otherwise stringify to the literal
+    # text "None" in value="" attributes, which then blocks form validation on
+    # save (issues #217, #241).
+    app.jinja_env.finalize = lambda value: '' if value is None else value
+
     # Babel configuration
     app.config['BABEL_DEFAULT_LOCALE'] = 'en'
     app.config['BABEL_SUPPORTED_LOCALES'] = list(LANGUAGES.keys())
@@ -349,8 +359,11 @@ def create_app(config_class=Config):
     @app.context_processor
     def inject_globals():
         branding = AppSettings.get_all_branding()
+        current_locale = str(get_locale() or 'en')
         return {
             'LANGUAGES': LANGUAGES,
+            'CURRENT_LOCALE': current_locale,
+            'FIRST_DAY_OF_WEEK': first_day_of_week(current_locale),
             'APP_NAME': branding.get('app_name', 'May'),
             'APP_TAGLINE': branding.get('app_tagline', 'Vehicle Management'),
             'APP_LOGO': branding.get('logo_filename'),
@@ -365,6 +378,72 @@ def create_app(config_class=Config):
             'FLATPICKR_CSS_CDN_URL': app.config.get('FLATPICKR_CSS_CDN_URL', 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css'),
         }
 
+    # Map stored slugs (e.g. 'maintenance', 'petrol') to their translated
+    # display labels. Templates previously rendered the raw slug with CSS
+    # capitalisation, which bypassed translation entirely (#266).
+    @app.template_filter('category_label')
+    def category_label_filter(value):
+        from app.models import EXPENSE_CATEGORIES
+        return dict(EXPENSE_CATEGORIES).get(value) or (value or '').replace('_', ' ').title()
+
+    @app.template_filter('fuel_type_label')
+    def fuel_type_label_filter(value):
+        from app.models import FUEL_TYPES
+        return dict(FUEL_TYPES).get(value) or (value or '').replace('_', ' ').title()
+
+    @app.template_filter('spec_label')
+    def spec_label_filter(spec):
+        # Predefined spec labels were stamped into the DB in the locale active
+        # at save time; re-resolve them from spec_type so they follow the
+        # user's current language. Custom specs keep their stored label.
+        from app.models import VEHICLE_SPEC_TYPES
+        if spec.spec_type and spec.spec_type != 'custom':
+            label = dict(VEHICLE_SPEC_TYPES).get(spec.spec_type)
+            if label:
+                return label
+        return spec.label
+
+    @app.template_filter('money')
+    def money_filter(value):
+        """Format a money amount per the user's separator/rounding prefs (#134).
+
+        'period' grouping implies the European convention, so the decimal
+        separator becomes a comma.
+        """
+        if value is None:
+            value = 0
+        sep = 'none'
+        decimals = 2
+        if current_user and current_user.is_authenticated:
+            sep = getattr(current_user, 'thousand_separator', None) or 'none'
+            if getattr(current_user, 'round_costs', False):
+                decimals = 0
+        s = f"{value:,.{decimals}f}"
+        if sep == 'none':
+            return s.replace(',', '')
+        if sep == 'space':
+            return s.replace(',', '\u202f')
+        if sep == 'period':
+            return s.replace('.', '\x00').replace(',', '.').replace('\x00', ',')
+        return s
+
+    @app.template_filter('groupnum')
+    def groupnum_filter(value, decimals=0):
+        """Group a non-currency number per the user's separator pref (#134)."""
+        if value is None:
+            value = 0
+        sep = 'none'
+        if current_user and current_user.is_authenticated:
+            sep = getattr(current_user, 'thousand_separator', None) or 'none'
+        s = f"{value:,.{decimals}f}"
+        if sep == 'none':
+            return s.replace(',', '')
+        if sep == 'space':
+            return s.replace(',', '\u202f')
+        if sep == 'period':
+            return s.replace('.', '\x00').replace(',', '.').replace('\x00', ',')
+        return s
+
     @app.template_filter('format_date')
     def format_date_filter(value, style='default'):
         if value is None:
@@ -376,7 +455,7 @@ def create_app(config_class=Config):
         fmt = formats.get(style, formats['default'])
         return value.strftime(fmt)
 
-    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, notes, allowance
+    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, notes, allowance, search
     app.register_blueprint(main.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(vehicles.bp)
@@ -394,6 +473,7 @@ def create_app(config_class=Config):
     app.register_blueprint(charging.bp)
     app.register_blueprint(notes.bp)
     app.register_blueprint(allowance.bp)
+    app.register_blueprint(search.bp)
 
     # Health check endpoint for container orchestration
     @app.route('/health')
@@ -421,10 +501,24 @@ def create_app(config_class=Config):
         # at — issue #166 stalled on triage because nothing in the worker
         # boot trace identified the image version.
         _log_startup_banner(app)
+        from sqlalchemy import inspect as _sa_inspect
+        _fresh_db = 'users' not in _sa_inspect(db.engine).get_table_names()
         db.create_all()
-        # Stamp alembic_version for pre-Flask-Migrate databases so future
-        # `flask db upgrade` runs apply only pending migrations.
-        _bootstrap_alembic_version(app)
+        if _fresh_db:
+            # A fresh database just received the complete current schema from
+            # create_all(), so stamp head: replaying historical migrations on
+            # top of it re-adds existing columns, and the batch rebuild in
+            # 42b26bf6d488 crashes with a CircularDependencyError (#278).
+            from flask_migrate import stamp
+            try:
+                stamp()
+                app.logger.info('Stamped alembic head for fresh database')
+            except Exception as e:
+                app.logger.warning(f'Could not stamp alembic head: {e}')
+        else:
+            # Stamp alembic_version for pre-Flask-Migrate databases so future
+            # `flask db upgrade` runs apply only pending migrations.
+            _bootstrap_alembic_version(app)
         # Run schema migrations for new columns on existing tables
         _run_schema_migrations(app)
         # Create default admin user if no users exist
@@ -488,6 +582,21 @@ def _start_reminder_scheduler(app):
                         )
             except Exception as e:
                 logger.error(f"Error in reminder scheduler: {e}")
+
+            try:
+                with app.app_context():
+                    from app.services.recurring_processor import (
+                        process_due_recurring_expenses,
+                    )
+                    rec_stats = process_due_recurring_expenses()
+                    if rec_stats['generated'] > 0 or rec_stats['errors']:
+                        logger.info(
+                            f"Recurring expense check: {rec_stats['generated']} "
+                            f"generated, {rec_stats['skipped']} skipped, "
+                            f"{len(rec_stats['errors'])} errors"
+                        )
+            except Exception as e:
+                logger.error(f"Error in recurring expense scheduler: {e}")
 
             # Check every hour
             time.sleep(3600)

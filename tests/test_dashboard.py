@@ -53,6 +53,29 @@ class TestTimeline:
         resp = auth_client.get('/timeline/99999')
         assert resp.status_code == 404
 
+    def test_timeline_chart_months_unique(self, auth_client, sample_vehicle):
+        """The Monthly Costs chart must show 12 distinct calendar months (#270).
+
+        The old 30-day stepping drifted against month boundaries, duplicating
+        a month and skipping another depending on the date the page loaded.
+        """
+        import json
+        import re
+        resp = auth_client.get(f'/timeline/{sample_vehicle.id}')
+        assert resp.status_code == 200
+        match = re.search(r'const chartData = (\{.*?\});', resp.get_data(as_text=True))
+        assert match, 'chart data not found in timeline page'
+        labels = json.loads(match.group(1))['labels']
+        from datetime import datetime
+        expected = []
+        year, month = datetime.now().year, datetime.now().month
+        for _ in range(12):
+            expected.append(datetime(year, month, 1).strftime('%b %Y'))
+            month -= 1
+            if month == 0:
+                year, month = year - 1, 12
+        assert labels == list(reversed(expected))
+
     def test_timeline_other_user_vehicle_redirects(self, auth_client, admin_user):
         # Create a vehicle owned by admin
         other_vehicle = Vehicle(

@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from app import db
-from app.models import Vehicle, FuelLog, Expense, ChargingSession, FuelPriceHistory, FuelStation, MileageAllowance
+from app.models import Vehicle, FuelLog, Expense, ChargingSession, FuelPriceHistory, FuelStation, MileageAllowance, EXPENSE_CATEGORIES
 
 bp = Blueprint('main', __name__)
 
@@ -82,7 +82,7 @@ def dashboard():
         # Recent activity
         recent_logs = FuelLog.query.filter(
             FuelLog.vehicle_id.in_(vehicle_ids)
-        ).order_by(FuelLog.date.desc()).limit(5).all()
+        ).order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).limit(5).all()
 
         recent_expenses = Expense.query.filter(
             Expense.vehicle_id.in_(vehicle_ids)
@@ -114,6 +114,20 @@ def dashboard():
     if total_distance > 0:
         cost_per_distance = total_cost / total_distance
 
+    # Expenses grouped by category for the dashboard chart (#145),
+    # with labels translated server-side
+    expenses_by_category = {}
+    if vehicle_ids:
+        category_rows = db.session.query(
+            Expense.category, func.sum(Expense.cost)
+        ).filter(
+            Expense.vehicle_id.in_(vehicle_ids)
+        ).group_by(Expense.category).all()
+        expenses_by_category = {
+            str(dict(EXPENSE_CATEGORIES).get(cat, (cat or '').capitalize())): round(total, 2)
+            for cat, total in category_rows if total
+        }
+
     # Get cheapest stations (most recent prices)
     cheapest_stations = []
     if vehicle_ids:
@@ -137,6 +151,8 @@ def dashboard():
                            total_charging_cost=total_charging_cost,
                            total_allowance=total_allowance,
                            net_cost=net_cost,
+                           total_cost=total_cost,
+                           expenses_by_category=expenses_by_category,
                            total_distance=total_distance,
                            cost_per_distance=cost_per_distance,
                            recent_logs=recent_logs,
@@ -203,7 +219,7 @@ def timeline(vehicle_id):
         return redirect(url_for('main.dashboard'))
 
     # Get all fuel logs, expenses, and charging sessions for timeline
-    fuel_logs = vehicle.fuel_logs.order_by(FuelLog.date.desc()).all()
+    fuel_logs = vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all()
     expenses = vehicle.expenses.order_by(Expense.date.desc()).all()
     charging_sessions = vehicle.charging_sessions.order_by(ChargingSession.date.desc()).all()
 
@@ -225,7 +241,7 @@ def timeline(vehicle_id):
             'date': expense.date,
             'type': 'expense',
             'title': expense.description,
-            'description': expense.category.capitalize(),
+            'description': str(dict(EXPENSE_CATEGORIES).get(expense.category, expense.category.capitalize())),
             'cost': expense.cost or 0,
             'odometer': expense.odometer
         })
@@ -243,15 +259,25 @@ def timeline(vehicle_id):
     # Sort by date descending
     timeline_events.sort(key=lambda x: x['date'], reverse=True)
 
-    # Prepare chart data - monthly costs
+    # Prepare chart data - monthly costs for the last 12 calendar months.
+    # Walk real calendar months rather than 30-day steps: fixed-size steps
+    # drift against month boundaries, duplicating some months and skipping
+    # others in the chart (#270).
     chart_data = {'labels': [], 'fuel': [], 'expenses': [], 'charging': []}
-    for i in range(11, -1, -1):
-        date = datetime.now() - timedelta(days=i * 30)
-        month_start = date.replace(day=1)
-        if date.month == 12:
-            month_end = date.replace(year=date.year + 1, month=1, day=1)
+    today = datetime.now()
+    months = []
+    year, month = today.year, today.month
+    for _ in range(12):
+        months.append((year, month))
+        month -= 1
+        if month == 0:
+            year, month = year - 1, 12
+    for year, month in reversed(months):
+        month_start = datetime(year, month, 1)
+        if month == 12:
+            month_end = datetime(year + 1, 1, 1)
         else:
-            month_end = date.replace(month=date.month + 1, day=1)
+            month_end = datetime(year, month + 1, 1)
 
         chart_data['labels'].append(month_start.strftime('%b %Y'))
 

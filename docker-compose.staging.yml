@@ -11,6 +11,9 @@ services:
       - SECRET_KEY=${SECRET_KEY:-change-me-in-staging}
       - DATABASE_URL=sqlite:////app/data/may.db
       - UPLOAD_FOLDER=/app/data/uploads
+      # Optional runtime UID/GID for bind-mounted data (default 1000:1000)
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - RELEASE_CHANNEL=dev
     labels:
       - "com.centurylinklabs.watchtower.enable=true"

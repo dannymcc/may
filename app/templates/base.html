@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full {% if current_user.is_authenticated and current_user.dark_mode %}dark{% endif %}">
+<html lang="{{ CURRENT_LOCALE }}" dir="{{ 'rtl' if CURRENT_LOCALE == 'ar' else 'ltr' }}" class="h-full {% if current_user.is_authenticated and current_user.dark_mode %}dark{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,11 +38,23 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- User date format preference for flatpickr -->
     <meta name="date-format" content="{{ current_user.date_format if current_user.is_authenticated and current_user.date_format else 'DD/MM/YYYY' }}">
+    <!-- Active locale and derived calendar week start (0 = Sunday, 1 = Monday) -->
+    <meta name="app-locale" content="{{ CURRENT_LOCALE }}">
+    <meta name="first-day-of-week" content="{{ FIRST_DAY_OF_WEEK }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="{{ APP_NAME }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    {# Tab icon: the uploaded branding logo when one is set, else the bundled
+       default (#259). Browsers accept PNG/JPEG/SVG here, no .ico needed. #}
+    {% if APP_LOGO %}
+    <link rel="icon" href="{{ url_for('api.uploaded_file', filename=APP_LOGO) }}">
+    <link rel="apple-touch-icon" href="{{ url_for('api.uploaded_file', filename=APP_LOGO) }}">
+    {% else %}
+    <link rel="icon" href="{{ url_for('static', filename='icons/icon.svg') }}" type="image/svg+xml">
+    <link rel="icon" href="{{ url_for('static', filename='icons/icon-96x96.png') }}" sizes="96x96" type="image/png">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon.svg') }}">
+    {% endif %}
 
     <!-- Tailwind CSS - Critical for styling, loaded first -->
     <script>
@@ -339,6 +351,11 @@
                             <span>{{ _('Fuel') }}</span>
                         </a>
                         {% endif %}
+                        <a href="{{ url_for('search.index') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" title="{{ _('Search') }}">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </a>
                         <a href="{{ url_for('auth.settings') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" title="{{ _('Settings') }}">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
@@ -376,6 +393,7 @@
                     {% if current_user.show_menu_reminders is not defined or current_user.show_menu_reminders %}
                     <a href="{{ url_for('reminders.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Reminders') }}</a>
                     {% endif %}
+                    <a href="{{ url_for('search.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Search') }}</a>
                     {% if current_user.show_menu_trips is not defined or current_user.show_menu_trips %}
                     <a href="{{ url_for('trips.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Trips') }}</a>
                     {% endif %}
@@ -569,6 +587,16 @@
         var userFormat = meta ? meta.getAttribute('content') : 'DD/MM/YYYY';
         var fpFormat = formatMap[userFormat] || 'd/m/Y';
 
+        // Derive the first day of the week from the active locale. The server
+        // computes it (0 = Sunday, 1 = Monday) so calendars match locale
+        // conventions: de/fr/etc start on Monday per ISO 8601, en on Sunday.
+        var fdowMeta = document.querySelector('meta[name="first-day-of-week"]');
+        var firstDayOfWeek = 1;
+        if (fdowMeta) {
+            var parsed = parseInt(fdowMeta.getAttribute('content'), 10);
+            if (parsed === 0 || parsed === 1) firstDayOfWeek = parsed;
+        }
+
         function initDatePickers() {
             if (typeof flatpickr === 'undefined') return;
             document.querySelectorAll('[data-datepicker]').forEach(function(el) {
@@ -577,7 +605,8 @@
                     dateFormat: 'Y-m-d',
                     altInput: true,
                     altFormat: fpFormat,
-                    allowInput: true
+                    allowInput: true,
+                    locale: { firstDayOfWeek: firstDayOfWeek }
                 };
                 if (el.hasAttribute('data-default-today') && !el.value) {
                     opts.defaultDate = 'today';
@@ -591,6 +620,100 @@
         } else {
             initDatePickers();
         }
+    })();
+    </script>
+
+    <script>
+    // Locale-tolerant decimal inputs (#237).
+    // Native <input type="number"> only accepts a period as the decimal
+    // separator, so a German user typing "9,99" has their value silently
+    // dropped before it ever reaches the server. We convert decimal-capable
+    // number inputs to inputmode="decimal" text inputs (which submit their raw
+    // text) and canonicalise a comma decimal to a dot on blur and on submit, so
+    // both the inline auto-calculations and the backend receive a clean number.
+    (function() {
+        // Mirror of the server-side parse_decimal() canonicalisation, but
+        // returns a string (dot-decimal) and leaves un-parseable input untouched.
+        function normaliseDecimalString(raw) {
+            if (raw == null) return raw;
+            var s = String(raw).trim();
+            if (s === '') return raw;
+            var hasDot = s.indexOf('.') !== -1;
+            var hasComma = s.indexOf(',') !== -1;
+            var out = s;
+            if (hasDot && hasComma) {
+                if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+                    out = s.replace(/\./g, '').replace(',', '.');
+                } else {
+                    out = s.replace(/,/g, '');
+                }
+            } else if (hasComma) {
+                if ((s.match(/,/g) || []).length > 1) {
+                    out = s.replace(/,/g, '');
+                } else {
+                    out = s.replace(',', '.');
+                }
+            }
+            // Only rewrite if the result is a valid number; otherwise leave the
+            // original so browser validation can flag genuinely bad input.
+            return isNaN(parseFloat(out)) || !/^-?[0-9]*\.?[0-9]+$/.test(out) ? raw : out;
+        }
+        window.normaliseDecimalString = normaliseDecimalString;
+
+        // Locale-tolerant parseFloat for the inline auto-calculations, which
+        // run on every keystroke — before the blur/submit normalisation above
+        // has rewritten a comma decimal (#267, #269).
+        window.parseDecimal = function(value) {
+            return parseFloat(normaliseDecimalString(value));
+        };
+
+        function isDecimalInput(el) {
+            if (el.tagName !== 'INPUT') return false;
+            var step = el.getAttribute('step') || '';
+            return step === 'any' || step.indexOf('.') !== -1;
+        }
+
+        function convertDecimalInputs(root) {
+            (root || document).querySelectorAll('input[type="number"]').forEach(function(el) {
+                if (!isDecimalInput(el)) return;
+                el.type = 'text';
+                el.setAttribute('inputmode', 'decimal');
+                if (!el.getAttribute('pattern')) {
+                    el.setAttribute('pattern', '-?[0-9., ]*');
+                }
+                el.addEventListener('blur', function() {
+                    if (this.value) this.value = normaliseDecimalString(this.value);
+                });
+            });
+        }
+
+        function wireFormNormalisation() {
+            document.querySelectorAll('form').forEach(function(form) {
+                if (form._decimalNormaliserBound) return;
+                form._decimalNormaliserBound = true;
+                form.addEventListener('submit', function() {
+                    form.querySelectorAll('input[inputmode="decimal"]').forEach(function(el) {
+                        if (el.value) el.value = normaliseDecimalString(el.value);
+                    });
+                });
+            });
+        }
+
+        function init() {
+            convertDecimalInputs(document);
+            wireFormNormalisation();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        // Handle HTMX-swapped content (forms loaded into the page dynamically).
+        document.body.addEventListener('htmx:afterSwap', function(evt) {
+            convertDecimalInputs(evt.target);
+            wireFormNormalisation();
+        });
     })();
     </script>
 </body>

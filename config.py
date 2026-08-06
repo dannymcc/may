@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 basedir = Path(__file__).parent.absolute()
 
 
-APP_VERSION = '0.23.0'
+APP_VERSION = '0.27.1'
 RELEASE_CHANNEL = os.environ.get('RELEASE_CHANNEL', 'stable')
 GIT_SHA = os.environ.get('GIT_SHA', '')[:7]  # Short SHA
 GITHUB_REPO = 'dannymcc/may'

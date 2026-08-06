@@ -91,7 +91,7 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">{{ vehicle.make or '' }} {{ vehicle.model or '' }} {% if vehicle.year %}({{ vehicle.year }}){% endif %}</p>
             <div class="mt-4 flex items-center justify-between text-sm">
                 <span class="text-gray-500 dark:text-gray-400">{{ vehicle.vehicle_type_label }}</span>
-                <span class="font-medium text-gray-900 dark:text-white">{{ "%.2f"|format(vehicle.get_total_cost()) }} {{ current_user.currency }}</span>
+                <span class="font-medium text-gray-900 dark:text-white">{{ vehicle.get_total_cost()|money }} {{ current_user.currency }}</span>
             </div>
         </div>
     </a>

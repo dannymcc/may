@@ -211,6 +211,10 @@ def settings():
         current_user.distance_unit = request.form.get('distance_unit', 'km')
         current_user.volume_unit = request.form.get('volume_unit', 'L')
         current_user.consumption_unit = request.form.get('consumption_unit', 'L/100km')
+        submitted_separator = request.form.get('thousand_separator', 'none')
+        if submitted_separator in ('none', 'space', 'comma', 'period'):
+            current_user.thousand_separator = submitted_separator
+        current_user.round_costs = request.form.get('round_costs') == 'on'
         currency = (request.form.get('currency', 'USD') or 'USD').strip()
         if currency == 'custom':
             custom_currency = (request.form.get('custom_currency') or '').strip()
@@ -331,6 +335,11 @@ def notifications():
     current_user.notification_method = request.form.get('notification_method', 'email')
     current_user.webhook_url = webhook_url
     current_user.ntfy_topic = request.form.get('ntfy_topic') or None
+    # The saved token is never rendered back to the page; blank means keep (#90)
+    if request.form.get('clear_ntfy_token') == 'on':
+        current_user.ntfy_token = None
+    elif request.form.get('ntfy_token', '').strip():
+        current_user.ntfy_token = request.form.get('ntfy_token').strip()
     current_user.pushover_user_key = request.form.get('pushover_user_key') or None
     db.session.commit()
     flash(_('Notification preferences updated'), 'success')

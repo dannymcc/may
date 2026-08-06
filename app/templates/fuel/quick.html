@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Quick Fuel Entry{% endblock %}
+{% block title %}{{ _('Quick Fuel Entry') }}{% endblock %}
 
 {% block content %}
 <div class="max-w-md mx-auto">
@@ -135,6 +135,8 @@
 </div>
 
 <script>
+const T_LAST = {{ _('Last')|tojson }};
+const T_FROM_TESSIE = {{ _('From Tessie')|tojson }};
 function updateVehicleOdometer() {
     const select = document.getElementById('vehicle_id');
     const option = select.options[select.selectedIndex];
@@ -156,7 +158,7 @@ function updateVehicleOdometer() {
         input.readOnly = true;
         input.value = Math.round(parseFloat(tessieOdometer));
         input.classList.add('bg-gray-100', 'dark:bg-gray-600');
-        hint.textContent = 'From Tessie';
+        hint.textContent = T_FROM_TESSIE;
     } else {
         // Hide Tessie badge and allow editing
         badge.classList.add('hidden');
@@ -164,7 +166,7 @@ function updateVehicleOdometer() {
         input.classList.remove('bg-gray-100', 'dark:bg-gray-600');
 
         if (odometer && parseFloat(odometer) > 0) {
-            hint.textContent = 'Last: ' + parseFloat(odometer).toLocaleString() + ' ' + odometerUnit;
+            hint.textContent = T_LAST + ': ' + parseFloat(odometer).toLocaleString() + ' ' + odometerUnit;
             input.placeholder = odometer;
         } else {
             hint.textContent = '';
@@ -182,9 +184,9 @@ function updateQuickStationName(selectEl) {
 }
 
 function calcQuickFuel(changed) {
-    const volume = parseFloat(document.getElementById('volume').value);
-    const price = parseFloat(document.getElementById('price_per_unit').value);
-    const total = parseFloat(document.getElementById('total_cost').value);
+    const volume = parseDecimal(document.getElementById('volume').value);
+    const price = parseDecimal(document.getElementById('price_per_unit').value);
+    const total = parseDecimal(document.getElementById('total_cost').value);
 
     if (changed === 'volume' || changed === 'price') {
         if (volume > 0 && price > 0) {

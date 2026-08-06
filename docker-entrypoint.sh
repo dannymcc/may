@@ -1,15 +1,36 @@
 #!/bin/bash
 set -e
 
-# Fix ownership of data directory for bind mounts
-# This runs as root before dropping to the 'may' user
-if [ -d "/app/data" ]; then
-    chown -R may:may /app/data
+# Resolve the desired runtime UID/GID from PUID/PGID (linuxserver.io convention).
+# Defaults preserve the historical 1000:1000 behaviour, so existing deployments
+# that don't set these variables are unaffected.
+PUID="${PUID:-1000}"
+PGID="${PGID:-1000}"
+
+# Remap the 'may' group/user to the requested IDs when they differ from the
+# baked-in ones. -o (non-unique) avoids failures when the target ID already
+# exists in the base image (e.g. Unraid's 99:100 nobody:users, where GID 100
+# is already taken by the Debian 'users' group).
+current_gid="$(id -g may)"
+if [ "$PGID" != "$current_gid" ]; then
+    groupmod -o -g "$PGID" may
 fi
 
-# Create uploads directory if it doesn't exist
+current_uid="$(id -u may)"
+if [ "$PUID" != "$current_uid" ]; then
+    usermod -o -u "$PUID" may
+fi
+
+echo "[entrypoint] Running as may (PUID: $PUID, PGID: $PGID)"
+
+# Ensure the data + uploads directories exist, then fix ownership for bind
+# mounts. The recursive chown only runs when the top-level ownership is wrong,
+# so a correctly-owned (and possibly large) uploads directory doesn't slow
+# startup on every restart.
 mkdir -p /app/data/uploads
-chown -R may:may /app/data
+if [ "$(stat -c '%u:%g' /app/data)" != "$PUID:$PGID" ]; then
+    chown -R may:may /app/data
+fi
 
 gosu may python - <<'PY'
 import time

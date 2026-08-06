@@ -58,6 +58,10 @@ class User(UserMixin, db.Model):
     currency = db.Column(db.String(10), default='USD')
     dark_mode = db.Column(db.Boolean, default=False)  # Dark mode preference
     date_format = db.Column(db.String(20), default='DD/MM/YYYY')  # DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD, DD.MM.YYYY
+    # Number display (#134): grouping separator for large numbers and
+    # optional whole-number rounding for money amounts
+    thousand_separator = db.Column(db.String(10), default='none')  # none, space, comma, period
+    round_costs = db.Column(db.Boolean, default=False)
 
     # Notification preferences
     email_reminders = db.Column(db.Boolean, default=True)
@@ -65,6 +69,7 @@ class User(UserMixin, db.Model):
     notification_method = db.Column(db.String(20), default='email')  # email, webhook, ntfy, pushover, none
     webhook_url = db.Column(db.String(500))  # URL to POST notifications to
     ntfy_topic = db.Column(db.String(200))  # ntfy.sh topic or custom server URL
+    ntfy_token = db.Column(db.String(200))  # access token for authenticated ntfy servers (#90)
     pushover_user_key = db.Column(db.String(50))  # Pushover user key
 
     # Password reset
@@ -221,6 +226,9 @@ class Vehicle(db.Model):
     # Sharing — if True, all users on this instance can view and log against this vehicle
     is_shared = db.Column(db.Boolean, default=False, nullable=False)
 
+    # Default trip purpose pre-selected when logging a trip for this vehicle (#272)
+    default_trip_purpose = db.Column(db.String(20), default='business')
+
     # Relationships
     fuel_logs = db.relationship('FuelLog', backref='vehicle', lazy='dynamic',
                                 cascade='all, delete-orphan')
@@ -252,6 +260,27 @@ class Vehicle(db.Model):
 
     def get_total_expense_cost(self):
         return sum(exp.cost for exp in self.expenses.all() if exp.cost)
+
+    def get_total_fuel_volume(self):
+        """Total fuel logged, in the unit the logs were entered in."""
+        return sum(log.volume for log in self.fuel_logs.all() if log.volume)
+
+    def get_total_co2_kg(self, volume_unit='L'):
+        """Estimated lifetime tailpipe CO2 in kg from logged fuel (#218).
+
+        Uses per-fuel-type DEFRA conversion factors; each log's own fuel
+        type wins (dual-fuel vehicles), falling back to the vehicle's.
+        Electric charging is not counted — grid intensity varies too much
+        to state honestly.
+        """
+        total = 0.0
+        for log in self.fuel_logs.all():
+            if not log.volume:
+                continue
+            fuel_type = log.fuel_type or self.fuel_type
+            factor = FUEL_CO2_KG_PER_LITRE.get(fuel_type, FUEL_CO2_KG_PER_LITRE['petrol'])
+            total += _to_litres(log.volume, volume_unit) * factor
+        return total
 
     def get_total_cost(self):
         return self.get_total_fuel_cost() + self.get_total_expense_cost() + self.get_total_charging_cost()
@@ -299,30 +328,54 @@ class Vehicle(db.Model):
             return _distance_in(raw_distance, self.get_effective_odometer_unit(), distance_unit)
         return raw_distance
 
-    def get_average_consumption(self, consumption_unit=None, volume_unit='L'):
-        """Calculate average fuel consumption between the first and last
-        full-tank fill-ups.
+    def _valid_consumption_segments(self):
+        """Collect (distance, fuel) spans usable for the consumption average.
 
-        Sums every litre poured between those two anchors so partial fills
-        in the middle are counted (issue #169). Returns None when any log
-        in the range is flagged ``is_missed`` — we have no way to make the
-        figure honest in that case.
+        Each span runs between consecutive full-tank fill-ups, counting every
+        litre poured within it so partial fills are included (issue #169).
+        A span containing a log flagged ``is_missed`` is discarded — there is
+        no way to make that span honest — but spans either side of it remain
+        usable, so one missed fill-up doesn't invalidate the whole history
+        (issue #251).
+
+        Returns ``None`` when there are fewer than two full-tank anchors,
+        otherwise a (possibly empty) list of ``(distance, fuel)`` tuples.
         """
         full_logs = self.fuel_logs.filter_by(is_full_tank=True).order_by(FuelLog.odometer).all()
         if len(full_logs) < 2:
             return None
 
-        first_odo = full_logs[0].odometer
-        last_odo = full_logs[-1].odometer
         range_logs = self.fuel_logs.filter(
-            FuelLog.odometer > first_odo,
-            FuelLog.odometer <= last_odo,
-        ).all()
-        if any(log.is_missed for log in range_logs):
+            FuelLog.odometer > full_logs[0].odometer,
+            FuelLog.odometer <= full_logs[-1].odometer,
+        ).order_by(FuelLog.odometer).all()
+
+        segments = []
+        for start, end in zip(full_logs, full_logs[1:]):
+            span_logs = [log for log in range_logs
+                         if start.odometer < log.odometer <= end.odometer]
+            if any(log.is_missed for log in span_logs):
+                continue
+            fuel = sum(log.volume for log in span_logs if log.volume)
+            distance = end.odometer - start.odometer
+            if distance > 0 and fuel > 0:
+                segments.append((distance, fuel))
+        return segments
+
+    def get_average_consumption(self, consumption_unit=None, volume_unit='L'):
+        """Calculate average fuel consumption across full-tank fill-up spans.
+
+        Spans contaminated by a missed fill-up are excluded rather than
+        poisoning the whole figure (issue #251); the average covers every
+        remaining span, partial fills included (issue #169). Returns None
+        when no honest span exists.
+        """
+        segments = self._valid_consumption_segments()
+        if not segments:
             return None
 
-        total_fuel = sum(log.volume for log in range_logs if log.volume)
-        total_distance = last_odo - first_odo
+        total_distance = sum(distance for distance, _ in segments)
+        total_fuel = sum(fuel for _, fuel in segments)
 
         if total_distance > 0 and total_fuel > 0:
             odometer_unit = self.get_effective_odometer_unit()
@@ -336,8 +389,37 @@ class Vehicle(db.Model):
                 return miles / gallons if gallons > 0 else None
             km = _distance_in(total_distance, odometer_unit, 'km')
             litres = _to_litres(total_fuel, volume_unit)
+            if consumption_unit == 'km/L':
+                return km / litres if litres > 0 else None
             return (litres / km) * 100  # L/100km
         return None
+
+    def get_consumption_unavailable_reason(self):
+        """Explain why :meth:`get_average_consumption` returns ``None``.
+
+        Returns a stable reason code (translated for display in the template)
+        or ``None`` when a figure is available. Mirrors the exact conditions
+        in ``get_average_consumption`` (issues #169/#194) so the UI can show a
+        helpful empty state instead of a bare dash (issue #214):
+
+        - ``'insufficient_full_tanks'`` — fewer than two full-tank fill-ups
+        - ``'missed_fill_up'`` — every span is invalidated by a missed fill-up
+        - ``'insufficient_data'`` — not enough distance/volume to calculate
+        """
+        segments = self._valid_consumption_segments()
+        if segments is None:
+            return 'insufficient_full_tanks'
+        if segments:
+            return None
+
+        full_logs = self.fuel_logs.filter_by(is_full_tank=True).order_by(FuelLog.odometer).all()
+        range_logs = self.fuel_logs.filter(
+            FuelLog.odometer > full_logs[0].odometer,
+            FuelLog.odometer <= full_logs[-1].odometer,
+        ).all()
+        if any(log.is_missed for log in range_logs):
+            return 'missed_fill_up'
+        return 'insufficient_data'
 
     def uses_tessie_odometer(self):
         """Check if this vehicle uses Tessie for odometer tracking"""
@@ -353,15 +435,16 @@ class Vehicle(db.Model):
         Otherwise, returns the highest from fuel logs, trips, or charging sessions.
 
         Args:
-            distance_unit: If provided ('km' or 'mi'), converts Tessie odometer to this unit.
-                          Tessie odometer is stored in km internally.
+            distance_unit: If provided ('km' or 'mi'), converts Tessie odometer to
+                          this unit. When omitted, the vehicle's effective odometer
+                          unit is used so the result is comparable with logged
+                          odometer values, which are stored in that unit (#245).
+                          Tessie itself reports km internally.
         """
         # If Tessie is enabled, use Tessie odometer exclusively
         if self.uses_tessie_odometer() and self.tessie_last_odometer:
-            odometer = self.tessie_last_odometer
-            # Convert from km to user's unit if specified
-            if distance_unit == 'mi':
-                odometer = odometer * 0.621371
+            target = distance_unit or self.get_effective_odometer_unit()
+            odometer = _distance_in(self.tessie_last_odometer, 'km', target)
             return round(odometer)
 
         last_fuel = self.fuel_logs.order_by(FuelLog.odometer.desc()).first()
@@ -547,6 +630,22 @@ class Vehicle(db.Model):
         }
 
 
+# Tailpipe CO2 emitted per litre of fuel burned, in kg — standard UK
+# DEFRA/BEIS conversion factors (#218). Zero-tailpipe types are listed
+# explicitly so unknown/custom types can fall back to the petrol factor.
+FUEL_CO2_KG_PER_LITRE = {
+    'petrol': 2.31,
+    'diesel': 2.68,
+    'lpg': 1.51,
+    'cng': 2.75,  # approximation: CNG is normally metered by kg, not litres
+    'e85': 1.61,
+    'hybrid': 2.31,
+    'plugin_hybrid': 2.31,
+    'electric': 0.0,
+    'hydrogen': 0.0,
+}
+
+
 def _to_litres(volume, volume_unit):
     if volume_unit == 'gal':
         return volume * 4.54609
@@ -591,7 +690,7 @@ class FuelLog(db.Model):
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     odometer = db.Column(db.Float, nullable=False)  # stored in km
     volume = db.Column(db.Float)  # stored in liters
-    price_per_unit = db.Column(db.Float)  # price per liter
+    price_per_unit = db.Column(db.Float)  # price per the user's volume unit, as entered
     discount_per_unit = db.Column(db.Float)  # optional loyalty discount per liter (issue #209)
     total_cost = db.Column(db.Float)
 
@@ -654,6 +753,8 @@ class FuelLog(db.Model):
                 return miles / gallons if gallons > 0 else None
             km = _distance_in(distance, odometer_unit, 'km')
             litres = _to_litres(volume_native, volume_unit)
+            if consumption_unit == 'km/L':
+                return km / litres if litres > 0 else None
             return (litres / km) * 100  # L/100km
         return None
 
@@ -1204,10 +1305,32 @@ class MaintenanceSchedule(db.Model):
             self.next_due_date = self.last_performed_date + relativedelta(months=self.interval_months)
 
         if self.last_performed_odometer:
+            # last_performed_odometer is stored in the vehicle's effective
+            # odometer unit (the same unit next_due_odometer is displayed and
+            # compared in). Convert the interval into that same unit before
+            # adding, so the two operands never mix km and miles (issue #230).
+            unit = self._effective_odometer_unit()
             if self.interval_km:
-                self.next_due_odometer = self.last_performed_odometer + self.interval_km
+                interval = _distance_in(self.interval_km, 'km', unit)
+                self.next_due_odometer = self.last_performed_odometer + interval
             elif self.interval_miles:
-                self.next_due_odometer = self.last_performed_odometer + (self.interval_miles * 1.60934)
+                interval = _distance_in(self.interval_miles, 'mi', unit)
+                self.next_due_odometer = self.last_performed_odometer + interval
+
+    def _effective_odometer_unit(self):
+        """Resolve the odometer unit for this schedule's vehicle.
+
+        Uses the loaded ``vehicle`` relationship when available, otherwise
+        looks it up by ``vehicle_id`` (calculate_next_due runs on new
+        schedules before they are flushed, so the relationship may be unset).
+        Defaults to 'km' when no vehicle can be resolved.
+        """
+        vehicle = self.vehicle
+        if vehicle is None and self.vehicle_id:
+            vehicle = Vehicle.query.get(self.vehicle_id)
+        if vehicle:
+            return vehicle.get_effective_odometer_unit()
+        return 'km'
 
     def is_due(self, current_odometer=None):
         """Check if maintenance is due"""
@@ -1288,6 +1411,8 @@ class RecurringExpense(db.Model):
             self.next_due = base_date + relativedelta(months=1)
         elif self.frequency == 'quarterly':
             self.next_due = base_date + relativedelta(months=3)
+        elif self.frequency == 'biannual':
+            self.next_due = base_date + relativedelta(months=6)
         elif self.frequency == 'yearly':
             self.next_due = base_date + relativedelta(years=1)
 
@@ -1603,6 +1728,9 @@ class FuelPriceHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     station_id = db.Column(db.Integer, db.ForeignKey('fuel_stations.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    # Exact link to the fuel log that produced this row (#254). Nullable:
+    # legacy rows and manually recorded station prices have no owning log.
+    fuel_log_id = db.Column(db.Integer, db.ForeignKey('fuel_logs.id'), nullable=True)
 
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     fuel_type = db.Column(db.String(20), nullable=False)  # petrol, diesel, premium, etc.
@@ -1611,8 +1739,16 @@ class FuelPriceHistory(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
-    station = db.relationship('FuelStation', backref=db.backref('price_history', lazy='dynamic'))
+    # Cascade so deleting a station removes its price rows rather than
+    # violating the NOT NULL station_id constraint with a 500 (#256).
+    station = db.relationship(
+        'FuelStation',
+        backref=db.backref('price_history', lazy='dynamic', cascade='all, delete-orphan'),
+    )
     user = db.relationship('User', backref=db.backref('fuel_price_history', lazy='dynamic'))
+    fuel_log = db.relationship(
+        'FuelLog', backref=db.backref('price_history_entries', lazy='dynamic')
+    )
 
 
 class Note(db.Model):

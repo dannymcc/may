@@ -33,3 +33,6 @@ Thumbs.db
 # Logs
 *.log
 .devcontainer
+
+# Local deploy staging - may contain real secrets, never commit
+deploy/

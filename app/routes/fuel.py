@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
+from app.utils import parse_decimal
 from app.models import Vehicle, FuelLog, Attachment, FuelStation, FuelPriceHistory, FUEL_TYPES
 from app.security import validate_file_upload, secure_filename_with_uuid, validate_positive_number
 from flask_babel import gettext as _
@@ -29,7 +30,7 @@ def index():
     # Get all fuel logs for user's vehicles
     logs = FuelLog.query.filter(
         FuelLog.vehicle_id.in_(vehicle_ids)
-    ).order_by(FuelLog.date.desc()).all()
+    ).order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all()
 
     # #175 — also surface charging sessions on this page when the user has EVs
     from app.models import ChargingSession
@@ -125,6 +126,7 @@ def new():
                 price_history = FuelPriceHistory(
                     station_id=station_id,
                     user_id=current_user.id,
+                    fuel_log_id=log.id,
                     date=log.date,
                     fuel_type=log.fuel_type or vehicle.fuel_type or 'petrol',
                     price_per_unit=log.price_per_unit
@@ -192,11 +194,11 @@ def edit(log_id):
                 log.vehicle_id = new_vehicle_id
         date_str = request.form.get('date')
         log.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else log.date
-        log.odometer = float(request.form.get('odometer'))
-        log.volume = float(request.form.get('volume')) if request.form.get('volume') else None
-        log.price_per_unit = float(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else None
-        log.discount_per_unit = float(request.form.get('discount_per_unit')) if request.form.get('discount_per_unit') else None
-        log.total_cost = float(request.form.get('total_cost')) if request.form.get('total_cost') else None
+        log.odometer = parse_decimal(request.form.get('odometer'))
+        log.volume = parse_decimal(request.form.get('volume')) if request.form.get('volume') else None
+        log.price_per_unit = parse_decimal(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else None
+        log.discount_per_unit = parse_decimal(request.form.get('discount_per_unit')) if request.form.get('discount_per_unit') else None
+        log.total_cost = parse_decimal(request.form.get('total_cost')) if request.form.get('total_cost') else None
         log.fuel_type = request.form.get('fuel_type') or None
         log.is_full_tank = request.form.get('is_full_tank') == 'on'
         log.is_missed = request.form.get('is_missed') == 'on'
@@ -213,13 +215,21 @@ def edit(log_id):
         # both create the price-history row (so it shows in "cheapest fuel")
         # and bump the station's `times_used` counter.
         station_id = request.form.get('station_id', type=int)
-        existing_entry = None
-        if old_price and old_date:
+        # Prefer the exact FK link (#254); fall back to the legacy heuristic
+        # only for rows created before fuel_log_id existed. Restricting the
+        # heuristic to unlinked rows stops it from grabbing a different log's
+        # entry that happens to share the same date and price.
+        existing_entry = FuelPriceHistory.query.filter_by(fuel_log_id=log.id).first()
+        if not existing_entry and old_price and old_date:
             existing_entry = FuelPriceHistory.query.filter_by(
                 user_id=current_user.id,
                 date=old_date,
                 price_per_unit=old_price,
+                fuel_log_id=None,
             ).first()
+            if existing_entry:
+                # Adopt the legacy row so future edits match exactly.
+                existing_entry.fuel_log_id = log.id
 
         if existing_entry:
             if not log.price_per_unit:
@@ -230,6 +240,12 @@ def edit(log_id):
                 if station_id and existing_entry.station_id != station_id:
                     new_station = FuelStation.query.get(station_id)
                     if new_station:
+                        # Reassigning the log moves the usage count too (#252):
+                        # decrement the station we're leaving before bumping the
+                        # new one, so no station is over-counted.
+                        old_station = existing_entry.station
+                        if old_station and old_station.times_used:
+                            old_station.times_used = max(0, old_station.times_used - 1)
                         existing_entry.station_id = station_id
                         new_station.increment_usage()
         elif station_id and log.price_per_unit:
@@ -238,6 +254,7 @@ def edit(log_id):
                 db.session.add(FuelPriceHistory(
                     station_id=station_id,
                     user_id=current_user.id,
+                    fuel_log_id=log.id,
                     date=log.date,
                     fuel_type=log.fuel_type or log.vehicle.fuel_type or 'petrol',
                     price_per_unit=log.price_per_unit,
@@ -296,13 +313,26 @@ def delete(log_id):
         if os.path.exists(file_path):
             os.remove(file_path)
 
-    # Clean up matching fuel price history entries
-    if log.price_per_unit and log.date:
-        FuelPriceHistory.query.filter(
+    # Clean up matching fuel price history entries and keep each affected
+    # station's usage counter in step with the chart view (#252): deleting a
+    # log must decrement the overview "used N times" counter, not just drop the
+    # price-history row the chart reads from.
+    # Prefer the exact FK link (#254); the legacy heuristic only considers
+    # unlinked rows so it can never delete another log's price entry.
+    entries = FuelPriceHistory.query.filter_by(fuel_log_id=log.id).all()
+    if not entries and log.price_per_unit and log.date:
+        entries = FuelPriceHistory.query.filter(
             FuelPriceHistory.user_id == current_user.id,
             FuelPriceHistory.date == log.date,
-            FuelPriceHistory.price_per_unit == log.price_per_unit
-        ).delete()
+            FuelPriceHistory.price_per_unit == log.price_per_unit,
+            FuelPriceHistory.fuel_log_id.is_(None)
+        ).all()
+    if entries:
+        for entry in entries:
+            station = entry.station
+            if station and station.times_used:
+                station.times_used = max(0, station.times_used - 1)
+            db.session.delete(entry)
 
     db.session.delete(log)
     db.session.commit()
@@ -361,9 +391,9 @@ def quick():
             flash(_('Access denied'), 'error')
             return redirect(url_for('fuel.quick'))
 
-        volume = float(request.form.get('volume')) if request.form.get('volume') else None
-        total_cost = float(request.form.get('total_cost')) if request.form.get('total_cost') else None
-        price_per_unit = float(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else None
+        volume = parse_decimal(request.form.get('volume')) if request.form.get('volume') else None
+        total_cost = parse_decimal(request.form.get('total_cost')) if request.form.get('total_cost') else None
+        price_per_unit = parse_decimal(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else None
 
         # Derive missing value if two of the three are provided
         if volume and price_per_unit and not total_cost:
@@ -375,26 +405,45 @@ def quick():
             vehicle_id=vehicle_id,
             user_id=current_user.id,
             date=datetime.now().date(),
-            odometer=float(request.form.get('odometer')),
+            odometer=parse_decimal(request.form.get('odometer')),
             volume=volume,
             total_cost=total_cost,
             price_per_unit=price_per_unit,
+            fuel_type=request.form.get('fuel_type') or None,
             is_full_tank=request.form.get('is_full_tank') == 'on',
             station=request.form.get('station'),
         )
 
-        # Update station usage
-        station_name = request.form.get('station')
-        if station_name:
-            station = FuelStation.query.filter_by(
-                user_id=current_user.id,
-                name=station_name
-            ).first()
-            if station:
-                station.increment_usage()
-
         db.session.add(log)
         db.session.commit()
+
+        # Associate with a saved station the same way fuel.new() does (#252):
+        # record a FuelPriceHistory row and bump the usage counter together, so
+        # quick logs show up in the station chart view and keep the overview
+        # counter in step. Prefer the station_id sent by the dropdown; fall back
+        # to a name match for manually typed stations.
+        station_id = request.form.get('station_id', type=int)
+        station = None
+        if station_id:
+            station = FuelStation.query.get(station_id)
+        else:
+            station_name = request.form.get('station')
+            if station_name:
+                station = FuelStation.query.filter_by(
+                    user_id=current_user.id,
+                    name=station_name
+                ).first()
+        if station and log.price_per_unit:
+            db.session.add(FuelPriceHistory(
+                station_id=station.id,
+                user_id=current_user.id,
+                fuel_log_id=log.id,
+                date=log.date,
+                fuel_type=log.fuel_type or vehicle.fuel_type or 'petrol',
+                price_per_unit=log.price_per_unit,
+            ))
+            station.increment_usage()
+            db.session.commit()
 
         flash(_('Fuel log added!'), 'success')
 
@@ -403,8 +452,10 @@ def quick():
             return redirect(url_for('fuel.quick', vehicle_id=vehicle_id))
         return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
 
-    # Pre-select vehicle
-    selected_vehicle_id = request.args.get('vehicle_id')
+    # Pre-select vehicle: explicit param > default vehicle preference > single vehicle
+    selected_vehicle_id = request.args.get('vehicle_id', type=int)
+    if not selected_vehicle_id and current_user.default_vehicle_id in [v.id for v in vehicles]:
+        selected_vehicle_id = current_user.default_vehicle_id
     if not selected_vehicle_id and len(vehicles) == 1:
         selected_vehicle_id = vehicles[0].id
 

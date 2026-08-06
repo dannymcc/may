@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from app import db
+from app.utils import parse_decimal
 from app.models import Vehicle, MileageAllowance
 
 bp = Blueprint('allowance', __name__, url_prefix='/allowance')
@@ -46,9 +47,9 @@ def new():
                 user_id=current_user.id,
                 date=datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.now().date(),
                 description=request.form.get('description') or None,
-                distance=float(request.form.get('distance')) if request.form.get('distance') else None,
-                rate_per_unit=float(request.form.get('rate_per_unit')) if request.form.get('rate_per_unit') else None,
-                amount=float(request.form.get('amount')),
+                distance=parse_decimal(request.form.get('distance')) if request.form.get('distance') else None,
+                rate_per_unit=parse_decimal(request.form.get('rate_per_unit')) if request.form.get('rate_per_unit') else None,
+                amount=parse_decimal(request.form.get('amount')),
             )
         except (ValueError, TypeError):
             flash(_('Invalid data submitted. Please check the date and amount fields.'), 'error')
@@ -82,9 +83,9 @@ def edit(allowance_id):
             date_str = request.form.get('date')
             allowance.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else allowance.date
             allowance.description = request.form.get('description') or None
-            allowance.distance = float(request.form.get('distance')) if request.form.get('distance') else None
-            allowance.rate_per_unit = float(request.form.get('rate_per_unit')) if request.form.get('rate_per_unit') else None
-            allowance.amount = float(request.form.get('amount'))
+            allowance.distance = parse_decimal(request.form.get('distance')) if request.form.get('distance') else None
+            allowance.rate_per_unit = parse_decimal(request.form.get('rate_per_unit')) if request.form.get('rate_per_unit') else None
+            allowance.amount = parse_decimal(request.form.get('amount'))
         except (ValueError, TypeError):
             flash(_('Invalid data submitted. Please check the date and amount fields.'), 'error')
             return render_template('allowance/form.html', allowance=allowance, vehicles=vehicles,

@@ -1,7 +1,8 @@
+import re
 import pytest
 from datetime import date
 from app import db
-from app.models import FuelLog, FuelStation, FuelPriceHistory
+from app.models import FuelLog, FuelStation, FuelPriceHistory, Vehicle
 
 
 class TestFuelIndex:
@@ -476,3 +477,280 @@ class TestFuelQuick:
             odometer=20000.0
         ).first()
         assert log is not None
+
+    @staticmethod
+    def _selected_vehicle_id(html):
+        """Return the vehicle id of the pre-selected <option>, or None."""
+        for match in re.finditer(r'<option value="(\d+)"[^>]*>', html):
+            if 'selected' in match.group(0):
+                return int(match.group(1))
+        return None
+
+    def test_quick_get_preselects_single_vehicle(self, auth_client, sample_vehicle):
+        """#233 — with one vehicle and no default, it is pre-selected."""
+        resp = auth_client.get('/fuel/quick')
+        assert self._selected_vehicle_id(resp.get_data(as_text=True)) == sample_vehicle.id
+
+    def test_quick_get_uses_default_vehicle(self, auth_client, test_user, sample_vehicle):
+        """#233 — with multiple vehicles, the user's default is pre-selected."""
+        second = Vehicle(owner_id=test_user.id, name='Van', vehicle_type='car',
+                         make='Ford', model='Transit', fuel_type='diesel', odometer_unit='km')
+        db.session.add(second)
+        db.session.commit()
+        test_user.default_vehicle_id = second.id
+        db.session.commit()
+
+        resp = auth_client.get('/fuel/quick')
+        assert self._selected_vehicle_id(resp.get_data(as_text=True)) == second.id
+
+    def test_quick_get_explicit_param_overrides_default(self, auth_client, test_user, sample_vehicle):
+        """#233 — an explicit vehicle_id param wins over the default preference."""
+        second = Vehicle(owner_id=test_user.id, name='Van', vehicle_type='car',
+                         make='Ford', model='Transit', fuel_type='diesel', odometer_unit='km')
+        db.session.add(second)
+        db.session.commit()
+        test_user.default_vehicle_id = second.id
+        db.session.commit()
+
+        resp = auth_client.get(f'/fuel/quick?vehicle_id={sample_vehicle.id}')
+        assert self._selected_vehicle_id(resp.get_data(as_text=True)) == sample_vehicle.id
+
+    def test_quick_get_ignores_default_not_in_list(self, auth_client, test_user, sample_vehicle, admin_user):
+        """#233 — a default vehicle the user can't access is not pre-selected."""
+        # Give test_user a second vehicle so the single-vehicle fallback doesn't fire.
+        second = Vehicle(owner_id=test_user.id, name='Van', vehicle_type='car',
+                         make='Ford', model='Transit', fuel_type='diesel', odometer_unit='km')
+        # A vehicle owned by someone else, not shared.
+        foreign = Vehicle(owner_id=admin_user.id, name='Admin Car', vehicle_type='car',
+                          make='BMW', model='M3', fuel_type='petrol', odometer_unit='km')
+        db.session.add_all([second, foreign])
+        db.session.commit()
+        test_user.default_vehicle_id = foreign.id
+        db.session.commit()
+
+        resp = auth_client.get('/fuel/quick')
+        assert self._selected_vehicle_id(resp.get_data(as_text=True)) is None
+
+
+class TestFuelLogOrdering:
+    """#236 — same-date fuel logs must fall back to odometer for a stable order."""
+
+    def _two_same_date_logs(self, test_user, vehicle):
+        low = FuelLog(vehicle_id=vehicle.id, user_id=test_user.id,
+                      date=date(2024, 3, 1), odometer=10000, volume=40, is_full_tank=True)
+        high = FuelLog(vehicle_id=vehicle.id, user_id=test_user.id,
+                       date=date(2024, 3, 1), odometer=10400, volume=42, is_full_tank=True)
+        # Insert the lower-odometer row second so id order != odometer order.
+        db.session.add(high)
+        db.session.commit()
+        db.session.add(low)
+        db.session.commit()
+        return low, high
+
+    def test_api_list_desc_orders_by_odometer(self, client, api_headers, test_user, sample_vehicle):
+        self._two_same_date_logs(test_user, sample_vehicle)
+        resp = client.get(f'/api/v1/vehicles/{sample_vehicle.id}/fuel?sort=desc', headers=api_headers)
+        odos = [log['odometer'] for log in resp.get_json()['fuel_logs']]
+        assert odos == [10400, 10000]
+
+    def test_api_list_asc_orders_by_odometer(self, client, api_headers, test_user, sample_vehicle):
+        self._two_same_date_logs(test_user, sample_vehicle)
+        resp = client.get(f'/api/v1/vehicles/{sample_vehicle.id}/fuel?sort=asc', headers=api_headers)
+        odos = [log['odometer'] for log in resp.get_json()['fuel_logs']]
+        assert odos == [10000, 10400]
+
+
+class TestConsumptionUnavailableReason:
+    """#214 — surface why average consumption can't be shown."""
+
+    def test_reason_insufficient_full_tanks(self, app, test_user, sample_vehicle):
+        log = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                      date=date(2024, 1, 1), odometer=10000, volume=40, is_full_tank=True)
+        db.session.add(log)
+        db.session.commit()
+        assert sample_vehicle.get_average_consumption() is None
+        assert sample_vehicle.get_consumption_unavailable_reason() == 'insufficient_full_tanks'
+
+    def test_reason_missed_fill_up(self, app, test_user, sample_vehicle):
+        log1 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                       date=date(2024, 1, 1), odometer=10000, volume=40, is_full_tank=True)
+        missed = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                         date=date(2024, 1, 5), odometer=10300, volume=20,
+                         is_full_tank=False, is_missed=True)
+        log3 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                       date=date(2024, 1, 10), odometer=10500, volume=42, is_full_tank=True)
+        db.session.add_all([log1, missed, log3])
+        db.session.commit()
+        assert sample_vehicle.get_average_consumption() is None
+        assert sample_vehicle.get_consumption_unavailable_reason() == 'missed_fill_up'
+
+    def test_missed_fill_up_only_invalidates_its_own_span(
+            self, app, test_user, sample_vehicle):
+        """#251 — one missed fill-up must not kill the whole average.
+
+        Spans between full tanks that don't contain the missed log stay
+        usable; only the contaminated span is excluded.
+        """
+        logs = [
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2024, 1, 1), odometer=10000, volume=40, is_full_tank=True),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2024, 1, 10), odometer=10500, volume=40, is_full_tank=True),
+            # Contaminated span: missed fill-up between the next two anchors.
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2024, 1, 15), odometer=10700, volume=20,
+                    is_full_tank=False, is_missed=True),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2024, 1, 20), odometer=11000, volume=45, is_full_tank=True),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2024, 1, 30), odometer=11500, volume=40, is_full_tank=True),
+        ]
+        db.session.add_all(logs)
+        db.session.commit()
+        # Valid spans: 10000->10500 (40 L / 500) and 11000->11500 (40 L / 500).
+        # The 10500->11000 span is excluded, so: 80 L / 1000 km = 8.0 L/100km.
+        avg = sample_vehicle.get_average_consumption()
+        assert avg is not None
+        assert abs(avg - 8.0) < 0.01
+        assert sample_vehicle.get_consumption_unavailable_reason() is None
+
+    def test_reason_none_when_available(self, app, test_user, sample_vehicle):
+        log1 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                       date=date(2024, 1, 1), odometer=10000, volume=40, is_full_tank=True)
+        log2 = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                       date=date(2024, 1, 15), odometer=10500, volume=42, is_full_tank=True)
+        db.session.add_all([log1, log2])
+        db.session.commit()
+        assert sample_vehicle.get_average_consumption() is not None
+        assert sample_vehicle.get_consumption_unavailable_reason() is None
+
+
+class TestFuelStationSync:
+    """#252 — quick logs, delete counter, and per-fuel-type price series."""
+
+    def test_quick_log_appears_in_station_chart(
+            self, auth_client, sample_vehicle, sample_station):
+        """Defect 1: a quick log at a saved station records price history
+        (so it shows in the chart view) and bumps the usage counter."""
+        starting = sample_station.times_used or 0
+        auth_client.post('/fuel/quick', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'odometer': '30000',
+            'volume': '40',
+            'price_per_unit': '1.70',
+            'station_id': str(sample_station.id),
+            'station': sample_station.name,
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        history = FuelPriceHistory.query.filter_by(
+            station_id=sample_station.id, price_per_unit=1.70).first()
+        assert history is not None
+        assert history.date == date.today()
+
+        db.session.refresh(sample_station)
+        assert sample_station.times_used == starting + 1
+
+    def test_quick_log_matches_station_by_name(
+            self, auth_client, sample_vehicle, sample_station):
+        """Defect 1: a manually typed station name (no station_id) still
+        records price history via name match."""
+        auth_client.post('/fuel/quick', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'odometer': '31000',
+            'volume': '35',
+            'price_per_unit': '1.65',
+            'station': sample_station.name,
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        history = FuelPriceHistory.query.filter_by(
+            station_id=sample_station.id, price_per_unit=1.65).first()
+        assert history is not None
+
+    def test_delete_decrements_station_counter(
+            self, auth_client, sample_vehicle, sample_station):
+        """Defect 2: deleting a fuel log decrements the overview counter,
+        not just the chart's price-history row."""
+        auth_client.post('/fuel/quick', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'odometer': '32000',
+            'volume': '40',
+            'price_per_unit': '1.80',
+            'station_id': str(sample_station.id),
+            'station': sample_station.name,
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+        db.session.refresh(sample_station)
+        assert sample_station.times_used == 1
+
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id).order_by(
+            FuelLog.id.desc()).first()
+        auth_client.post(f'/fuel/{log.id}/delete', follow_redirects=True)
+
+        db.session.refresh(sample_station)
+        assert sample_station.times_used == 0
+        assert FuelPriceHistory.query.filter_by(
+            station_id=sample_station.id).count() == 0
+
+    def test_edit_reassign_moves_counter(
+            self, auth_client, test_user, sample_vehicle, sample_station):
+        """Defect 2: reassigning a log's station decrements the old station
+        and increments the new one, so neither is over-counted."""
+        other = FuelStation(user_id=test_user.id, name='Esso Station', brand='Esso')
+        db.session.add(other)
+        db.session.commit()
+
+        # Log created at sample_station via quick (usage 1 + price history).
+        auth_client.post('/fuel/quick', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'odometer': '33000',
+            'volume': '40',
+            'price_per_unit': '1.90',
+            'station_id': str(sample_station.id),
+            'station': sample_station.name,
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+        db.session.refresh(sample_station)
+        assert sample_station.times_used == 1
+
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id).order_by(
+            FuelLog.id.desc()).first()
+
+        # Reassign to the other station via edit.
+        auth_client.post(f'/fuel/{log.id}/edit', data={
+            'date': log.date.isoformat(),
+            'odometer': '33000',
+            'volume': '40',
+            'price_per_unit': '1.90',
+            'station_id': str(other.id),
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        db.session.refresh(sample_station)
+        db.session.refresh(other)
+        assert sample_station.times_used == 0
+        assert other.times_used == 1
+
+    def test_price_history_separates_fuel_types(
+            self, auth_client, test_user, sample_station):
+        """Defect 3: the chart data keeps petrol and diesel as distinct
+        series rather than aggregating them into one price line."""
+        db.session.add_all([
+            FuelPriceHistory(station_id=sample_station.id, user_id=test_user.id,
+                             date=date(2024, 3, 1), fuel_type='petrol',
+                             price_per_unit=1.60),
+            FuelPriceHistory(station_id=sample_station.id, user_id=test_user.id,
+                             date=date(2024, 3, 2), fuel_type='diesel',
+                             price_per_unit=1.75),
+        ])
+        db.session.commit()
+
+        resp = auth_client.get(f'/stations/{sample_station.id}/prices')
+        assert resp.status_code == 200
+        html = resp.get_data(as_text=True)
+        # Both fuel types reach the template as distinct data...
+        assert '"fuel_type": "petrol"' in html
+        assert '"fuel_type": "diesel"' in html
+        # ...and the chart groups by fuel type instead of one flat series.
+        assert 'byType' in html

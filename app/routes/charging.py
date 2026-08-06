@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from app import db
+from app.utils import parse_decimal
 from app.models import Vehicle, ChargingSession, CHARGER_TYPES
 
 bp = Blueprint('charging', __name__, url_prefix='/charging')
@@ -78,12 +79,12 @@ def new():
             date=date,
             start_time=start_time,
             end_time=end_time,
-            odometer=float(request.form.get('odometer')) if request.form.get('odometer') else None,
-            kwh_added=float(request.form.get('kwh_added')) if request.form.get('kwh_added') else None,
+            odometer=parse_decimal(request.form.get('odometer')) if request.form.get('odometer') else None,
+            kwh_added=parse_decimal(request.form.get('kwh_added')) if request.form.get('kwh_added') else None,
             start_soc=int(request.form.get('start_soc')) if request.form.get('start_soc') else None,
             end_soc=int(request.form.get('end_soc')) if request.form.get('end_soc') else None,
-            cost_per_kwh=float(request.form.get('cost_per_kwh')) if request.form.get('cost_per_kwh') else None,
-            total_cost=float(request.form.get('total_cost')) if request.form.get('total_cost') else None,
+            cost_per_kwh=parse_decimal(request.form.get('cost_per_kwh')) if request.form.get('cost_per_kwh') else None,
+            total_cost=parse_decimal(request.form.get('total_cost')) if request.form.get('total_cost') else None,
             charger_type=request.form.get('charger_type'),
             location=request.form.get('location'),
             network=request.form.get('network'),
@@ -135,12 +136,12 @@ def edit(session_id):
         else:
             session.end_time = None
 
-        session.odometer = float(request.form.get('odometer')) if request.form.get('odometer') else None
-        session.kwh_added = float(request.form.get('kwh_added')) if request.form.get('kwh_added') else None
+        session.odometer = parse_decimal(request.form.get('odometer')) if request.form.get('odometer') else None
+        session.kwh_added = parse_decimal(request.form.get('kwh_added')) if request.form.get('kwh_added') else None
         session.start_soc = int(request.form.get('start_soc')) if request.form.get('start_soc') else None
         session.end_soc = int(request.form.get('end_soc')) if request.form.get('end_soc') else None
-        session.cost_per_kwh = float(request.form.get('cost_per_kwh')) if request.form.get('cost_per_kwh') else None
-        session.total_cost = float(request.form.get('total_cost')) if request.form.get('total_cost') else None
+        session.cost_per_kwh = parse_decimal(request.form.get('cost_per_kwh')) if request.form.get('cost_per_kwh') else None
+        session.total_cost = parse_decimal(request.form.get('total_cost')) if request.form.get('total_cost') else None
         session.charger_type = request.form.get('charger_type')
         session.location = request.form.get('location')
         session.network = request.form.get('network')

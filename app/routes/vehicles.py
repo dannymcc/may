@@ -7,7 +7,8 @@ from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import Vehicle, VehicleSpec, VehiclePart, FuelLog, Expense, User, Reminder, MaintenanceSchedule, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, PART_TYPES, TRACKING_UNITS, ODOMETER_UNITS, AppSettings
+from app.utils import parse_decimal
+from app.models import Vehicle, VehicleSpec, VehiclePart, FuelLog, Expense, User, Reminder, MaintenanceSchedule, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, PART_TYPES, TRACKING_UNITS, ODOMETER_UNITS, TRIP_PURPOSES, AppSettings
 from app.services.tessie import TessieService
 
 bp = Blueprint('vehicles', __name__, url_prefix='/vehicles')
@@ -55,10 +56,13 @@ def new():
             vin=request.form.get('vin'),
             fuel_type=request.form.get('fuel_type'),
             secondary_fuel_type=request.form.get('secondary_fuel_type') or None,
-            tank_capacity=float(request.form.get('tank_capacity')) if request.form.get('tank_capacity') else None,
+            tank_capacity=parse_decimal(request.form.get('tank_capacity')) if request.form.get('tank_capacity') else None,
             notes=request.form.get('notes'),
-            annual_mileage_limit=float(request.form.get('annual_mileage_limit')) if request.form.get('annual_mileage_limit') else None,
+            annual_mileage_limit=parse_decimal(request.form.get('annual_mileage_limit')) if request.form.get('annual_mileage_limit') else None,
             annual_mileage_start_date=datetime.strptime(request.form.get('annual_mileage_start_date'), '%Y-%m-%d').date() if request.form.get('annual_mileage_start_date') else None,
+            default_trip_purpose=(request.form.get('default_trip_purpose')
+                                  if request.form.get('default_trip_purpose') in dict(TRIP_PURPOSES)
+                                  else 'business'),
         )
 
         # Handle image upload
@@ -101,6 +105,7 @@ def new():
                            tracking_units=TRACKING_UNITS,
                            odometer_units=ODOMETER_UNITS,
                            spec_types=VEHICLE_SPEC_TYPES,
+                           trip_purposes=TRIP_PURPOSES,
                            tessie_configured=tessie_configured)
 
 
@@ -115,7 +120,7 @@ def view(vehicle_id):
         return redirect(url_for('vehicles.index'))
 
     # Get recent activity
-    recent_logs = vehicle.fuel_logs.order_by(FuelLog.date.desc()).limit(10).all()
+    recent_logs = vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).limit(10).all()
     recent_expenses = vehicle.expenses.order_by(Expense.date.desc()).limit(10).all()
 
     # Get specifications
@@ -135,6 +140,8 @@ def view(vehicle_id):
         'total_distance': vehicle.get_total_distance(vehicle.get_effective_odometer_unit()),
         'avg_consumption': vehicle.get_average_consumption(current_user.consumption_unit, current_user.volume_unit),
         'cost_per_distance': vehicle.get_cost_per_distance(),
+        'total_fuel_volume': vehicle.get_total_fuel_volume(),
+        'total_co2_kg': vehicle.get_total_co2_kg(current_user.volume_unit),
         'fuel_logs_count': vehicle.fuel_logs.count(),
         'expenses_count': vehicle.expenses.count(),
         'charging_sessions_count': vehicle.charging_sessions.count(),
@@ -201,13 +208,16 @@ def edit(vehicle_id):
         vehicle.vin = request.form.get('vin')
         vehicle.fuel_type = request.form.get('fuel_type')
         vehicle.secondary_fuel_type = request.form.get('secondary_fuel_type') or None
-        vehicle.tank_capacity = float(request.form.get('tank_capacity')) if request.form.get('tank_capacity') else None
+        vehicle.tank_capacity = parse_decimal(request.form.get('tank_capacity')) if request.form.get('tank_capacity') else None
         vehicle.notes = request.form.get('notes')
-        vehicle.annual_mileage_limit = float(request.form.get('annual_mileage_limit')) if request.form.get('annual_mileage_limit') else None
+        vehicle.annual_mileage_limit = parse_decimal(request.form.get('annual_mileage_limit')) if request.form.get('annual_mileage_limit') else None
         vehicle.annual_mileage_start_date = datetime.strptime(request.form.get('annual_mileage_start_date'), '%Y-%m-%d').date() if request.form.get('annual_mileage_start_date') else None
 
         vehicle.is_active = request.form.get('is_active') == 'on'
         vehicle.is_shared = request.form.get('is_shared') == 'on'
+        submitted_purpose = request.form.get('default_trip_purpose')
+        if submitted_purpose in dict(TRIP_PURPOSES):
+            vehicle.default_trip_purpose = submitted_purpose
 
         # Handle Tessie integration fields
         vehicle.tessie_vin = request.form.get('tessie_vin') or None
@@ -259,6 +269,7 @@ def edit(vehicle_id):
                            odometer_units=ODOMETER_UNITS,
                            spec_types=VEHICLE_SPEC_TYPES,
                            specs=specs,
+                           trip_purposes=TRIP_PURPOSES,
                            tessie_configured=tessie_configured)
 
 
@@ -384,7 +395,7 @@ def report(vehicle_id):
         return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
 
     # Gather all data for the report
-    fuel_logs = vehicle.fuel_logs.order_by(FuelLog.date.desc()).all()
+    fuel_logs = vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all()
     expenses = vehicle.expenses.order_by(Expense.date.desc()).all()
     specs = vehicle.specs.all()
 
@@ -478,7 +489,7 @@ def new_part(vehicle_id):
             name=request.form.get('name'),
             part_type=request.form.get('part_type'),
             specification=request.form.get('specification') or None,
-            quantity=float(request.form.get('quantity')) if request.form.get('quantity') else None,
+            quantity=parse_decimal(request.form.get('quantity')) if request.form.get('quantity') else None,
             unit=request.form.get('unit') or None,
             part_number=request.form.get('part_number') or None,
             supplier_url=request.form.get('supplier_url') or None,
@@ -518,7 +529,7 @@ def edit_part(vehicle_id, part_id):
         part.name = request.form.get('name')
         part.part_type = request.form.get('part_type')
         part.specification = request.form.get('specification') or None
-        part.quantity = float(request.form.get('quantity')) if request.form.get('quantity') else None
+        part.quantity = parse_decimal(request.form.get('quantity')) if request.form.get('quantity') else None
         part.unit = request.form.get('unit') or None
         part.part_number = request.form.get('part_number') or None
         part.supplier_url = request.form.get('supplier_url') or None

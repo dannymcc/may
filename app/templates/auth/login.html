@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Login{% endblock %}
+{% block title %}{{ _('Login') }}{% endblock %}
 
 {% block auth_content %}
 <div class="w-full max-w-md">
@@ -15,13 +15,13 @@
         <form method="POST" class="space-y-6">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div>
-                <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+                <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Username') }}</label>
                 <input type="text" name="username" id="username" required autofocus
                        class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
             </div>
 
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Password') }}</label>
                 <input type="password" name="password" id="password" required
                        class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
             </div>
@@ -30,23 +30,23 @@
                 <div class="flex items-center">
                     <input type="checkbox" name="remember" id="remember"
                            class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
-                    <label for="remember" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">Remember me</label>
+                    <label for="remember" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Remember me') }}</label>
                 </div>
                 {% if smtp_configured %}
-                <a href="{{ url_for('auth.forgot_password') }}" class="text-sm font-medium text-primary-600 hover:text-primary-500">Forgot password?</a>
+                <a href="{{ url_for('auth.forgot_password') }}" class="text-sm font-medium text-primary-600 hover:text-primary-500">{{ _('Forgot password?') }}</a>
                 {% endif %}
             </div>
 
             <button type="submit"
                     class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                Sign in
+                {{ _('Sign in') }}
             </button>
         </form>
 
         {% if registration_enabled %}
         <p class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            Don't have an account?
-            <a href="{{ url_for('auth.register') }}" class="font-medium text-primary-600 hover:text-primary-500">Register</a>
+            {{ _("Don't have an account?") }}
+            <a href="{{ url_for('auth.register') }}" class="font-medium text-primary-600 hover:text-primary-500">{{ _('Register') }}</a>
         </p>
         {% endif %}
     </div>

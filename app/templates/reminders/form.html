@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Edit Reminder' if reminder else 'New Reminder' }}{% endblock %}
+{% block title %}{{ _('Edit Reminder') if reminder else _('New Reminder') }}{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
@@ -8,14 +8,14 @@
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
-            Back to Reminders
+            {{ _('Back to Reminders') }}
         </a>
     </div>
 
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                {{ 'Edit Reminder' if reminder else 'New Reminder' }}
+                {{ _('Edit Reminder') if reminder else _('New Reminder') }}
             </h1>
         </div>
 
@@ -23,7 +23,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- Vehicle Selection -->
             <div>
-                <label for="vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vehicle</label>
+                <label for="vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Vehicle') }}</label>
                 <select name="vehicle_id" id="vehicle_id" required
                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                         {% if reminder %}disabled{% endif %}>
@@ -41,16 +41,16 @@
 
             <!-- Title -->
             <div>
-                <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+                <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Title') }}</label>
                 <input type="text" name="title" id="title" required
                        value="{{ reminder.title if reminder else '' }}"
-                       placeholder="e.g., MOT Due, Insurance Renewal"
+                       placeholder="{{ _('e.g., MOT Due, Insurance Renewal') }}"
                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">
             </div>
 
             <!-- Type -->
             <div>
-                <label for="reminder_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                <label for="reminder_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Type') }}</label>
                 <select name="reminder_type" id="reminder_type" required
                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">
                     {% for type_id, type_name in reminder_types %}
@@ -63,7 +63,7 @@
 
             <!-- Due Date -->
             <div>
-                <label for="due_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Due Date</label>
+                <label for="due_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Due Date') }}</label>
                 <input type="text" name="due_date" id="due_date" required data-datepicker
                        value="{{ reminder.due_date.strftime('%Y-%m-%d') if reminder else '' }}"
                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">
@@ -71,9 +71,9 @@
 
             <!-- Description -->
             <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description (optional)</label>
+                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Description (optional)') }}</label>
                 <textarea name="description" id="description" rows="3"
-                          placeholder="Additional notes about this reminder"
+                          placeholder="{{ _('Additional notes about this reminder') }}"
                           class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">{{ reminder.description if reminder else '' }}</textarea>
             </div>
 
@@ -102,15 +102,15 @@
 
             <!-- Notification Days -->
             <div>
-                <label for="notify_days_before" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notify me</label>
+                <label for="notify_days_before" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Notify me') }}</label>
                 <select name="notify_days_before" id="notify_days_before"
                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                    <option value="0" {% if reminder and reminder.notify_days_before == 0 %}selected{% endif %}>On the due date</option>
-                    <option value="1" {% if reminder and reminder.notify_days_before == 1 %}selected{% endif %}>1 day before</option>
-                    <option value="3" {% if reminder and reminder.notify_days_before == 3 %}selected{% endif %}>3 days before</option>
-                    <option value="7" {% if (not reminder) or reminder.notify_days_before == 7 %}selected{% endif %}>1 week before</option>
-                    <option value="14" {% if reminder and reminder.notify_days_before == 14 %}selected{% endif %}>2 weeks before</option>
-                    <option value="30" {% if reminder and reminder.notify_days_before == 30 %}selected{% endif %}>1 month before</option>
+                    <option value="0" {% if reminder and reminder.notify_days_before == 0 %}selected{% endif %}>{{ _('On the due date') }}</option>
+                    <option value="1" {% if reminder and reminder.notify_days_before == 1 %}selected{% endif %}>{{ _('1 day before') }}</option>
+                    <option value="3" {% if reminder and reminder.notify_days_before == 3 %}selected{% endif %}>{{ _('3 days before') }}</option>
+                    <option value="7" {% if (not reminder) or reminder.notify_days_before == 7 %}selected{% endif %}>{{ _('1 week before') }}</option>
+                    <option value="14" {% if reminder and reminder.notify_days_before == 14 %}selected{% endif %}>{{ _('2 weeks before') }}</option>
+                    <option value="30" {% if reminder and reminder.notify_days_before == 30 %}selected{% endif %}>{{ _('1 month before') }}</option>
                 </select>
             </div>
 
@@ -123,11 +123,11 @@
             <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <a href="{{ url_for('reminders.index') }}"
                    class="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    Cancel
+                    {{ _('Cancel') }}
                 </a>
                 <button type="submit"
                         class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                    {{ 'Update Reminder' if reminder else 'Create Reminder' }}
+                    {{ _('Update Reminder') if reminder else _('Create Reminder') }}
                 </button>
             </div>
         </form>

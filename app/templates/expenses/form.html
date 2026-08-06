@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}{% if expense %}Edit Expense{% else %}Add Expense{% endif %}{% endblock %}
+{% block title %}{% if expense %}{{ _('Edit Expense') }}{% else %}{{ _('Add Expense') }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
     <div class="mb-6">
-        <a href="{{ url_for('expenses.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; Back to expenses</a>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">{% if expense %}Edit Expense{% else %}Add Expense{% endif %}</h1>
+        <a href="{{ url_for('expenses.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; {{ _('Back to expenses') }}</a>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">{% if expense %}{{ _('Edit Expense') }}{% else %}{{ _('Add Expense') }}{% endif %}</h1>
     </div>
 
     <form method="POST" enctype="multipart/form-data" class="space-y-6">
@@ -13,7 +13,7 @@
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div class="sm:col-span-2">
-                    <label for="vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle *</label>
+                    <label for="vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Vehicle') }} *</label>
                     <select name="vehicle_id" id="vehicle_id" required
                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         {% for vehicle in vehicles %}
@@ -27,14 +27,14 @@
                 </div>
 
                 <div>
-                    <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date *</label>
+                    <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Date') }} *</label>
                     <input type="text" name="date" id="date" required data-datepicker data-default-today
                            value="{{ expense.date.strftime('%Y-%m-%d') if expense else '' }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
                 <div>
-                    <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category *</label>
+                    <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Category') }} *</label>
                     <select name="category" id="category" required
                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         {% for value, label in categories %}
@@ -44,43 +44,64 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description *</label>
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Description') }} *</label>
                     <input type="text" name="description" id="description" required
                            value="{{ expense.description if expense else '' }}"
-                           placeholder="e.g., Oil change, Annual service"
+                           placeholder="{{ _('e.g., Oil change, Annual service') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
                 <div>
-                    <label for="cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cost ({{ current_user.currency }}) *</label>
+                    <label for="cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Cost') }} ({{ current_user.currency }}) *</label>
                     <input type="number" name="cost" id="cost" required step="0.01"
                            value="{{ expense.cost if expense else '' }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
                 <div>
-                    <label for="odometer" id="odometer-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Odometer ({{ current_user.distance_unit }})</label>
+                    <label for="odometer" id="odometer-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Odometer') }} ({{ current_user.distance_unit }})</label>
                     <input type="number" name="odometer" id="odometer" step="0.1"
-                           value="{{ expense.odometer if expense else '' }}"
+                           value="{{ expense.odometer if expense and expense.odometer is not none else '' }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
                 <div>
-                    <label for="vendor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vendor / Service Provider</label>
-                    <input type="text" name="vendor" id="vendor"
-                           value="{{ expense.vendor if expense else '' }}"
-                           placeholder="e.g., Local Garage"
+                    <label for="vendor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Vendor / Service Provider') }}</label>
+                    <input type="text" name="vendor" id="vendor" list="vendor-suggestions"
+                           value="{{ expense.vendor if expense and expense.vendor is not none else '' }}"
+                           placeholder="{{ _('e.g., Local Garage') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    {% if known_vendors %}
+                    <datalist id="vendor-suggestions">
+                        {% for v in known_vendors %}
+                        <option value="{{ v }}"></option>
+                        {% endfor %}
+                    </datalist>
+                    {% endif %}
                 </div>
 
+                {% if not expense and maintenance_schedules %}
+                <div>
+                    <label for="maintenance_schedule_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Mark Maintenance as Performed') }}</label>
+                    <select name="maintenance_schedule_id" id="maintenance_schedule_id"
+                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                        <option value="">{{ _('— none —') }}</option>
+                        {% for schedule in maintenance_schedules %}
+                        <option value="{{ schedule.id }}" data-vehicle-id="{{ schedule.vehicle_id }}">{{ schedule.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Optional — records the schedule as performed on the expense date') }}</p>
+                </div>
+                {% endif %}
+
                 <div class="sm:col-span-2">
-                    <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                    <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Notes') }}</label>
                     <textarea name="notes" id="notes" rows="2"
-                              class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">{{ expense.notes if expense else '' }}</textarea>
+                              class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">{{ expense.notes if expense and expense.notes is not none else '' }}</textarea>
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Receipt / Attachment</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Receipt / Attachment') }}</label>
                     {% if expense %}
                     {% for attachment in expense.attachments.all() %}
                     <div class="mt-2 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
@@ -102,11 +123,11 @@
         <div class="flex justify-end space-x-3">
             <a href="{{ url_for('expenses.index') }}"
                class="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                Cancel
+                {{ _('Cancel') }}
             </a>
             <button type="submit"
                     class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                {% if expense %}Save Changes{% else %}Add Expense{% endif %}
+                {% if expense %}{{ _('Save Changes') }}{% else %}{{ _('Add Expense') }}{% endif %}
             </button>
         </div>
     </form>
@@ -120,6 +141,10 @@
         const vehicleSelect = document.getElementById('vehicle_id');
         const odometerLabel = document.getElementById('odometer-label');
 
+        if (!vehicleSelect || !odometerLabel) {
+            return;
+        }
+
         function updateOdometerUnit() {
             const selected = vehicleSelect.options[vehicleSelect.selectedIndex];
             const unit = selected ? selected.dataset.odometerUnit : '{{ current_user.distance_unit }}';
@@ -130,6 +155,25 @@
 
         vehicleSelect.addEventListener('change', updateOdometerUnit);
         updateOdometerUnit();
+
+        // Only offer maintenance schedules belonging to the chosen vehicle (#86)
+        const scheduleSelect = document.getElementById('maintenance_schedule_id');
+        if (scheduleSelect) {
+            function filterSchedules() {
+                const vehicleId = vehicleSelect.value;
+                let visible = 0;
+                Array.from(scheduleSelect.options).forEach(function(opt) {
+                    if (!opt.value) return;
+                    const match = opt.dataset.vehicleId === vehicleId;
+                    opt.hidden = !match;
+                    if (match) visible++;
+                    if (!match && opt.selected) scheduleSelect.value = '';
+                });
+                scheduleSelect.closest('div').style.display = visible ? '' : 'none';
+            }
+            vehicleSelect.addEventListener('change', filterSchedules);
+            filterSchedules();
+        }
     })();
 </script>
 {% endblock %}

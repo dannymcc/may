@@ -75,8 +75,12 @@ docker run -d \
   -p 5050:5050 \
   -v may_data:/app/data \
   -e SECRET_KEY=your-secret-key \
+  -e PUID=1000 \
+  -e PGID=1000 \
   ghcr.io/dannymcc/may:latest
 ```
+
+> **Running as a specific user (PUID/PGID):** May follows the [linuxserver.io](https://docs.linuxserver.io/general/understanding-puid-and-pgid/) convention. Set the optional `PUID` and `PGID` environment variables to make the container run as a specific host user/group so bind-mounted data is owned correctly. They default to `1000:1000`. On Unraid, set `PUID=99` and `PGID=100`.
 
 Access the application at `http://localhost:5050`
 
@@ -182,6 +186,8 @@ UPLOAD_FOLDER=/app/data/uploads
 | `DB_NAME` / `DB_USER` / `DB_PASSWORD` | Database credentials used when `DATABASE_URL` is omitted | `may` |
 | `SQLITE_PATH` | SQLite file used when `DATABASE_URL` is omitted | `data/may.db` |
 | `UPLOAD_FOLDER` | Path for file uploads | `/app/data/uploads` |
+| `PUID` | User ID the container runs as (linuxserver.io convention) | `1000` |
+| `PGID` | Group ID the container runs as (linuxserver.io convention) | `1000` |
 | `TAILWIND_ASSET_URL` | Local Tailwind Play CDN JS path | `/static/vendor/tailwindcss.js` |
 | `TAILWIND_CDN_URL` | Tailwind CDN fallback URL | `https://cdn.tailwindcss.com` |
 | `HTMX_CDN_URL` | HTMX CDN URL | `https://unpkg.com/htmx.org@1.9.10` |

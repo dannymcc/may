@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Reminders{% endblock %}
+{% block title %}{{ _('Reminders') }}{% endblock %}
 
 {% block content %}
 <div class="sm:flex sm:items-center sm:justify-between mb-6">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Reminders</h1>
-        <p class="text-gray-500 dark:text-gray-400">Keep track of important dates for your vehicles</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Reminders') }}</h1>
+        <p class="text-gray-500 dark:text-gray-400">{{ _('Keep track of important dates for your vehicles') }}</p>
     </div>
     <div class="mt-4 sm:mt-0">
         <a href="{{ url_for('reminders.new') }}"
@@ -13,7 +13,7 @@
             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            Add Reminder
+            {{ _('Add Reminder') }}
         </a>
     </div>
 </div>
@@ -22,18 +22,18 @@
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mb-6">
     <form method="GET" class="flex flex-wrap gap-4 items-end">
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vehicle</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Vehicle') }}</label>
             <select name="vehicle" class="block rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm">
-                <option value="">All Vehicles</option>
+                <option value="">{{ _('All Vehicles') }}</option>
                 {% for vehicle in vehicles %}
                 <option value="{{ vehicle.id }}" {% if filter_vehicle == vehicle.id %}selected{% endif %}>{{ vehicle.name }}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Type') }}</label>
             <select name="type" class="block rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm">
-                <option value="">All Types</option>
+                <option value="">{{ _('All Types') }}</option>
                 {% for type_id, type_name in reminder_types %}
                 <option value="{{ type_id }}" {% if filter_type == type_id %}selected{% endif %}>{{ type_name }}</option>
                 {% endfor %}
@@ -42,13 +42,13 @@
         <div class="flex items-center gap-2">
             <input type="checkbox" id="completed" name="completed" value="true" {% if show_completed %}checked{% endif %}
                    class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
-            <label for="completed" class="text-sm text-gray-700 dark:text-gray-300">Show completed</label>
+            <label for="completed" class="text-sm text-gray-700 dark:text-gray-300">{{ _('Show completed') }}</label>
         </div>
         <button type="submit" class="px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md text-sm hover:bg-gray-200">
-            Filter
+            {{ _('Filter') }}
         </button>
         {% if filter_vehicle or filter_type or show_completed %}
-        <a href="{{ url_for('reminders.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">Clear filters</a>
+        <a href="{{ url_for('reminders.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">{{ _('Clear filters') }}</a>
         {% endif %}
     </form>
 </div>
@@ -60,7 +60,7 @@
         <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
         </svg>
-        Overdue ({{ overdue|length }})
+        {{ _('Overdue') }} ({{ overdue|length }})
     </h2>
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700 border-l-4 border-red-500">
         {% for reminder in overdue %}
@@ -77,7 +77,7 @@
         <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        Upcoming ({{ upcoming|length }})
+        {{ _('Upcoming') }} ({{ upcoming|length }})
     </h2>
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700 border-l-4 border-amber-500">
         {% for reminder in upcoming %}
@@ -94,7 +94,7 @@
         <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
-        Later ({{ later|length }})
+        {{ _('Later') }} ({{ later|length }})
     </h2>
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
         {% for reminder in later %}
@@ -111,7 +111,7 @@
         <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
-        Completed ({{ completed|length }})
+        {{ _('Completed') }} ({{ completed|length }})
     </h2>
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700 opacity-75">
         {% for reminder in completed %}
@@ -127,15 +127,15 @@
     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
     </svg>
-    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No reminders</h3>
-    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding a reminder for your vehicle.</p>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ _('No reminders') }}</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Get started by adding a reminder for your vehicle.') }}</p>
     <div class="mt-6">
         <a href="{{ url_for('reminders.new') }}"
            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            Add Reminder
+            {{ _('Add Reminder') }}
         </a>
     </div>
 </div>

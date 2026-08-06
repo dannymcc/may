@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from app import db
+from app.utils import parse_decimal
 from flask import jsonify
 from app.models import Vehicle, Trip, TripTemplate, TRIP_PURPOSES
 
@@ -81,8 +82,8 @@ def new():
             vehicle_id=vehicle_id,
             user_id=current_user.id,
             date=date,
-            start_odometer=float(request.form.get('start_odometer')),
-            end_odometer=float(request.form.get('end_odometer')) if request.form.get('end_odometer') else None,
+            start_odometer=parse_decimal(request.form.get('start_odometer')),
+            end_odometer=parse_decimal(request.form.get('end_odometer')) if request.form.get('end_odometer') else None,
             purpose=request.form.get('purpose'),
             description=request.form.get('description'),
             start_location=request.form.get('start_location'),
@@ -141,8 +142,8 @@ def edit(trip_id):
     if request.method == 'POST':
         date_str = request.form.get('date')
         trip.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else trip.date
-        trip.start_odometer = float(request.form.get('start_odometer'))
-        trip.end_odometer = float(request.form.get('end_odometer')) if request.form.get('end_odometer') else None
+        trip.start_odometer = parse_decimal(request.form.get('start_odometer'))
+        trip.end_odometer = parse_decimal(request.form.get('end_odometer')) if request.form.get('end_odometer') else None
         trip.purpose = request.form.get('purpose')
         trip.description = request.form.get('description')
         trip.start_location = request.form.get('start_location')

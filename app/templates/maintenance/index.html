@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Maintenance Schedules{% endblock %}
+{% block title %}{{ _('Maintenance Schedules') }}{% endblock %}
 
 {% block content %}
 <div class="mb-6 flex items-center justify-between">
@@ -66,7 +66,7 @@
                     {% endif %}
                     {% if schedule.estimated_cost %}
                     <p class="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">
-                        ~{{ "%.2f"|format(schedule.estimated_cost) }} {{ current_user.currency }}
+                        ~{{ schedule.estimated_cost|money }} {{ current_user.currency }}
                     </p>
                     {% endif %}
                 </div>
@@ -119,6 +119,11 @@
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white" id="modal-title">{{ _('Mark as Completed') }}</h3>
                 <div class="mt-4 space-y-4">
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Completed on') }}</label>
+                        <input type="date" name="performed_date" id="performed-date"
+                               class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Current Odometer') }}</label>
                         <input type="number" name="odometer" step="0.1"
                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
@@ -165,6 +170,8 @@ function showCompleteModal(scheduleId, name, estimatedCost) {
     document.getElementById('complete-form').action = '/maintenance/' + scheduleId + '/complete';
     document.getElementById('modal-title').textContent = 'Complete: ' + name;
     document.getElementById('actual-cost').value = estimatedCost || '';
+    // Default to today in the user's local timezone (en-CA gives YYYY-MM-DD).
+    document.getElementById('performed-date').value = new Date().toLocaleDateString('en-CA');
     document.getElementById('complete-modal').classList.remove('hidden');
 }
 

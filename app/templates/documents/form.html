@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if document %}Edit{% else %}Upload{% endif %} Document{% endblock %}
+{% block title %}{% if document %}{{ _('Edit Document') }}{% else %}{{ _('Upload Document') }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="mb-6">
@@ -40,7 +40,7 @@
                               file:bg-primary-50 file:text-primary-700
                               hover:file:bg-primary-100
                               dark:file:bg-gray-700 dark:file:text-gray-300">
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">PDF, images, Word, Excel, text files, or ePub (max 300MB)</p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('PDF, images, Word, Excel, text files, or ePub (max 300MB)') }}</p>
             </div>
             {% endif %}
 

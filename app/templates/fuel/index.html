@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Fuel Logs{% endblock %}
+{% block title %}{{ _('Fuel Logs') }}{% endblock %}
 
 {% block content %}
 <div class="sm:flex sm:items-center sm:justify-between mb-6">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Fuel Logs</h1>
-        <p class="text-gray-500 dark:text-gray-400">Track your fuel fill-ups and consumption</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Fuel Logs') }}</h1>
+        <p class="text-gray-500 dark:text-gray-400">{{ _('Track your fuel fill-ups and consumption') }}</p>
     </div>
     <a href="{{ url_for('fuel.new') }}"
        class="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600">
         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
-        Add Fuel Log
+        {{ _('Add Fuel Log') }}
     </a>
 </div>
 
@@ -22,13 +22,14 @@
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Vehicle</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Odometer</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Volume</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cost</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Consumption</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Date') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Vehicle') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Odometer') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Volume') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Price/Unit') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Cost') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Consumption') }}</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Actions') }}</th>
                 </tr>
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -44,23 +45,24 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {{ "%.1f"|format(log.volume or 0) }} {{ current_user.volume_unit }}
                         {% if log.is_full_tank %}
-                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 ml-1">Full</span>
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 ml-1">{{ _('Full') }}</span>
                         {% endif %}
                         {% if log.is_missed %}
-                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 ml-1">Missed</span>
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 ml-1">{{ _('Missed') }}</span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ "%.2f"|format(log.total_cost or 0) }} {{ current_user.currency }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{% if log.price_per_unit %}{{ "%.3f"|format(log.price_per_unit) }}{% else %}-{% endif %}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ (log.total_cost or 0)|money }} {{ current_user.currency }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {% set consumption = log.get_consumption(current_user.consumption_unit, current_user.volume_unit) %}
                         {% if consumption %}{{ "%.1f"|format(consumption) }} {{ current_user.consumption_unit }}{% else %}-{% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="{{ url_for('fuel.edit', log_id=log.id) }}" class="text-primary-600 hover:text-primary-900 mr-3">Edit</a>
+                        <a href="{{ url_for('fuel.edit', log_id=log.id) }}" class="text-primary-600 hover:text-primary-900 mr-3">{{ _('Edit') }}</a>
                         <form method="POST" action="{{ url_for('fuel.delete', log_id=log.id) }}" class="inline"
-                              onsubmit="return confirm('Delete this fuel log?');">
+                              onsubmit="return confirm('{{ _('Delete this fuel log?') }}');">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                            <button type="submit" class="text-red-600 hover:text-red-900">{{ _('Delete') }}</button>
                         </form>
                     </td>
                 </tr>
@@ -74,15 +76,15 @@
     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
     </svg>
-    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No fuel logs</h3>
-    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Start tracking your fuel fill-ups.</p>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ _('No fuel logs') }}</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Start tracking your fuel fill-ups.') }}</p>
     <div class="mt-6">
         <a href="{{ url_for('fuel.new') }}"
            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600">
             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            Add Fuel Log
+            {{ _('Add Fuel Log') }}
         </a>
     </div>
 </div>
@@ -132,7 +134,7 @@
                         {% if session.kwh_added %}{{ "%.1f"|format(session.kwh_added) }} kWh{% else %}-{% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {% if session.total_cost %}{{ "%.2f"|format(session.total_cost) }} {{ current_user.currency }}{% else %}-{% endif %}
+                        {% if session.total_cost %}{{ session.total_cost|money }} {{ current_user.currency }}{% else %}-{% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ session.location or '-' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

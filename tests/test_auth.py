@@ -300,6 +300,20 @@ class TestBrandingRoute:
         with app.app_context():
             assert AppSettings.get('app_name') == 'MyFleet'
 
+    def test_uploaded_logo_used_as_favicon(self, auth_client, app):
+        # #259 — a branding logo should become the tab icon.
+        with app.app_context():
+            AppSettings.set('logo_filename', 'my-logo.png')
+        resp = auth_client.get('/auth/login', follow_redirects=True)
+        assert b'rel="icon" href="/api/uploads/my-logo.png"' in resp.data
+        with app.app_context():
+            AppSettings.set('logo_filename', '')
+
+    def test_default_favicon_without_logo(self, auth_client):
+        resp = auth_client.get('/auth/login', follow_redirects=True)
+        assert b'rel="icon"' in resp.data
+        assert b'icons/icon.svg' in resp.data
+
     def test_post_branding_non_admin_forbidden(self, auth_client):
         response = auth_client.post('/auth/branding', data={
             'app_name': 'Hacked',

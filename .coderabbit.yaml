@@ -1,0 +1,38 @@
+# CodeRabbit configuration — https://docs.coderabbit.ai/reference/yaml-template
+language: en-GB
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  auto_review:
+    enabled: true
+    # Review PRs into both branches: feature work lands on dev, releases go dev -> main
+    base_branches:
+      - dev
+      - main
+  path_filters:
+    - "!app/translations/**"
+    - "!app/static/vendor/**"
+  path_instructions:
+    - path: "app/routes/**"
+      instructions: |
+        Flask blueprint routes. Check that user-supplied numbers go through
+        parse_decimal() (never bare float()), that vehicle/record access is
+        checked against current_user.get_all_vehicles(), and that flash
+        messages are wrapped in _() for translation.
+    - path: "app/models.py"
+      instructions: |
+        Schema changes must be model-driven: any new column needs both an
+        Alembic migration and the column present on the model so startup
+        schema recovery stays in lockstep (see issue #166 history).
+    - path: "app/templates/**"
+      instructions: |
+        User-facing strings must be wrapped in _() for Babel extraction,
+        including page titles and Chart.js dataset labels. Templates should
+        support both light and dark mode Tailwind classes.
+
+chat:
+  auto_reply: true

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Price History - {{ station.name }}{% endblock %}
+{% block title %}{{ _('Price History') }} - {{ station.name }}{% endblock %}
 
 {% block extra_scripts %}
 <!-- Chart.js - Needed for price history chart -->
@@ -35,7 +35,7 @@
         <li class="px-6 py-4 flex items-center justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ price.date|format_date }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400 capitalize">{{ price.fuel_type }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ price.fuel_type|fuel_type_label }}</p>
             </div>
             <div class="flex items-center gap-4">
                 <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ "%.3f"|format(price.price_per_unit) }} {{ current_user.currency }}/{{ current_user.volume_unit }}</p>
@@ -69,31 +69,66 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('priceChart').getContext('2d');
     const prices = {{ prices_json | tojson }};
 
-    // Reverse to show chronological order
-    const sortedPrices = prices.slice().reverse();
+    // Petrol and diesel (etc.) at the same station have naturally different
+    // prices, so plot one line per fuel type rather than mixing them into a
+    // single misleading series (#252).
+    const sortedPrices = prices.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Shared, ordered set of dates so every series lines up on the x-axis.
+    const dates = [...new Set(sortedPrices.map(p => p.date))];
+    const labels = dates.map(d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+    // Group prices by fuel type: { fuelType: { date: price } }
+    const byType = {};
+    sortedPrices.forEach(p => {
+        const ft = p.fuel_type || 'unknown';
+        (byType[ft] = byType[ft] || {})[p.date] = p.price_per_unit;
+    });
+
+    // Stable, readable colours per known fuel type, with a fallback palette.
+    const typeColours = {
+        petrol: 'rgb(14, 165, 233)',
+        diesel: 'rgb(234, 88, 12)',
+        electric: 'rgb(16, 185, 129)',
+        hybrid: 'rgb(250, 204, 21)',
+        plugin_hybrid: 'rgb(132, 204, 22)',
+        lpg: 'rgb(168, 85, 247)',
+        cng: 'rgb(236, 72, 153)',
+        hydrogen: 'rgb(6, 182, 212)',
+        e85: 'rgb(217, 70, 239)',
+        other: 'rgb(100, 116, 139)'
+    };
+    const fallback = ['rgb(59, 130, 246)', 'rgb(239, 68, 68)', 'rgb(34, 197, 94)', 'rgb(245, 158, 11)', 'rgb(139, 92, 246)'];
+
+    const fuelTypes = Object.keys(byType);
+    const datasets = fuelTypes.map((ft, i) => {
+        const colour = typeColours[ft] || fallback[i % fallback.length];
+        const label = ft.charAt(0).toUpperCase() + ft.slice(1).replace('_', ' ');
+        return {
+            label: label,
+            data: dates.map(d => (d in byType[ft]) ? byType[ft][d] : null),
+            borderColor: colour,
+            backgroundColor: colour,
+            tension: 0.3,
+            fill: false,
+            spanGaps: true
+        };
+    });
 
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: sortedPrices.map(p => {
-                const date = new Date(p.date);
-                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            }),
-            datasets: [{
-                label: '{{ _("Price per") }} {{ current_user.volume_unit }}',
-                data: sortedPrices.map(p => p.price_per_unit),
-                borderColor: 'rgb(14, 165, 233)',
-                backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                tension: 0.3,
-                fill: true
-            }]
+            labels: labels,
+            datasets: datasets
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: false
+                    // Only worth showing the key once more than one fuel type
+                    // is being charted.
+                    display: datasets.length > 1
                 }
             },
             scales: {

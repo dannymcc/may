@@ -173,3 +173,46 @@ class TestReminderFlexibleRecurrence:
     def test_weekly_interval(self):
         from app.routes.reminders import calculate_next_due_date
         assert calculate_next_due_date(date(2025, 6, 1), 'weekly', 3) == date(2025, 6, 22)
+
+
+class TestReminderRecurrenceDuplicates:
+    """#232 — re-completing a recurring reminder must not duplicate the next occurrence."""
+
+    def _make_recurring(self, test_user, sample_vehicle):
+        r = Reminder(
+            vehicle_id=sample_vehicle.id, user_id=test_user.id,
+            title='Biannual Service', reminder_type='service',
+            due_date=date(2026, 7, 18),
+            recurrence='monthly', recurrence_interval=6,
+        )
+        db.session.add(r)
+        db.session.commit()
+        return r
+
+    def test_single_completion_creates_one_next_occurrence(self, auth_client, sample_vehicle, test_user):
+        r = self._make_recurring(test_user, sample_vehicle)
+        auth_client.post(f'/reminders/{r.id}/complete', follow_redirects=True)
+
+        next_occurrences = Reminder.query.filter(
+            Reminder.title == 'Biannual Service',
+            Reminder.is_completed == False,
+        ).all()
+        assert len(next_occurrences) == 1
+        assert next_occurrences[0].due_date == date(2027, 1, 18)
+
+    def test_tick_untick_tick_creates_exactly_one_next_occurrence(self, auth_client, sample_vehicle, test_user):
+        r = self._make_recurring(test_user, sample_vehicle)
+
+        # Tick
+        auth_client.post(f'/reminders/{r.id}/complete', follow_redirects=True)
+        # Untick
+        auth_client.post(f'/reminders/{r.id}/uncomplete', follow_redirects=True)
+        # Tick again
+        auth_client.post(f'/reminders/{r.id}/complete', follow_redirects=True)
+
+        next_occurrences = Reminder.query.filter(
+            Reminder.title == 'Biannual Service',
+            Reminder.due_date == date(2027, 1, 18),
+            Reminder.is_completed == False,
+        ).all()
+        assert len(next_occurrences) == 1

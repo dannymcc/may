@@ -437,3 +437,170 @@ class TestCsvImportExecute:
             content_type='multipart/form-data'
         )
         assert execute_resp.status_code == 302
+
+
+# ---------------------------------------------------------------------------
+# Locale-tolerant numeric handling on CSV import (issue #244)
+# ---------------------------------------------------------------------------
+
+class TestParseFloatValue:
+    """parse_float_value must accept locale decimal separators without
+    corrupting Anglo thousands-grouped values."""
+
+    def _parse(self, value):
+        from app.routes.api import parse_float_value
+        return parse_float_value(value)
+
+    def test_dot_decimal_unchanged(self):
+        assert self._parse('9.99') == 9.99
+
+    def test_comma_decimal(self):
+        # Previously imported as 999 (comma stripped) — a silent 100x error.
+        assert self._parse('9,99') == 9.99
+
+    def test_german_grouping(self):
+        assert self._parse('1.234,56') == 1234.56
+
+    def test_anglo_grouping(self):
+        assert self._parse('1,234.56') == 1234.56
+
+    def test_anglo_thousands_only(self):
+        # Odometer-style value: two or more digits before a comma with three
+        # after is thousands grouping, not a decimal.
+        assert self._parse('12,345') == 12345
+
+    def test_short_integer_part_is_decimal(self):
+        # German fuel price: 1,899 €/L.
+        assert self._parse('1,899') == 1.899
+
+    def test_currency_symbols_stripped(self):
+        assert self._parse('€1.234,56') == 1234.56
+        assert self._parse('$1,234.56') == 1234.56
+
+    def test_empty_returns_none(self):
+        assert self._parse('') is None
+        assert self._parse(None) is None
+
+
+# ---------------------------------------------------------------------------
+# Date-format handling on CSV import (issue #250)
+# ---------------------------------------------------------------------------
+
+class TestParseDateValue:
+    """Unit tests for parse_date_value date-format disambiguation."""
+
+    def test_auto_us_preference_ambiguous_reads_as_mdy(self):
+        """A US user's ambiguous 12/01/2026 should be 1 December, not 12 Jan."""
+        from datetime import date
+        from app.routes.api import parse_date_value
+        result = parse_date_value('12/01/2026', 'auto', user_date_format='MM/DD/YYYY')
+        assert result == date(2026, 12, 1)
+
+    def test_auto_us_preference_unambiguous_day_still_parses(self):
+        """12/31/2026 has no DD/MM reading, so it stays 31 December."""
+        from datetime import date
+        from app.routes.api import parse_date_value
+        result = parse_date_value('12/31/2026', 'auto', user_date_format='MM/DD/YYYY')
+        assert result == date(2026, 12, 31)
+
+    def test_auto_uk_preference_ambiguous_reads_as_dmy(self):
+        """A DD/MM user keeps the original behaviour: 12/01/2026 is 12 January."""
+        from datetime import date
+        from app.routes.api import parse_date_value
+        result = parse_date_value('12/01/2026', 'auto', user_date_format='DD/MM/YYYY')
+        assert result == date(2026, 1, 12)
+
+    def test_auto_no_preference_defaults_to_dmy(self):
+        """With no preference (legacy default) 12/01/2026 stays DD/MM = 12 January."""
+        from datetime import date
+        from app.routes.api import parse_date_value
+        result = parse_date_value('12/01/2026', 'auto')
+        assert result == date(2026, 1, 12)
+
+    def test_iso_unaffected_by_preference(self):
+        """Unambiguous ISO dates parse identically regardless of preference."""
+        from datetime import date
+        from app.routes.api import parse_date_value
+        assert parse_date_value('2026-12-01', 'auto', user_date_format='MM/DD/YYYY') == date(2026, 12, 1)
+        assert parse_date_value('2026-12-01', 'auto', user_date_format='DD/MM/YYYY') == date(2026, 12, 1)
+        assert parse_date_value('2026-12-01', 'YYYY-MM-DD') == date(2026, 12, 1)
+
+    def test_explicit_mdy_falls_back_for_out_of_range_month(self):
+        """Explicit MM/DD/YYYY falls back to DD/MM when the month slot is invalid."""
+        from datetime import date
+        from app.routes.api import parse_date_value
+        # 31 cannot be a month, so this must be 31 December.
+        assert parse_date_value('31/12/2026', 'MM/DD/YYYY') == date(2026, 12, 31)
+
+    def test_explicit_dmy_unchanged(self):
+        from datetime import date
+        from app.routes.api import parse_date_value
+        assert parse_date_value('12/01/2026', 'DD/MM/YYYY') == date(2026, 1, 12)
+
+
+class TestCsvImportUsDateFormat:
+    """End-to-end import flow honours the importing user's date preference."""
+
+    def _import(self, auth_client, sample_vehicle, csv_content):
+        preview_data = {
+            'data_type': 'fuel_logs',
+            'vehicle_id': str(sample_vehicle.id),
+            'file': (io.BytesIO(csv_content), 'fuel.csv'),
+        }
+        preview_resp = auth_client.post(
+            '/api/import/csv/preview',
+            data=preview_data,
+            content_type='multipart/form-data',
+        )
+        assert preview_resp.status_code == 200
+        execute_data = {
+            'data_type': 'fuel_logs',
+            'vehicle_id': str(sample_vehicle.id),
+            'date_format': 'auto',
+            'mapping_0': 'date',
+            'mapping_1': 'odometer',
+            'mapping_2': 'volume',
+            'mapping_3': 'total_cost',
+        }
+        execute_resp = auth_client.post(
+            '/api/import/csv/execute',
+            data=execute_data,
+            content_type='multipart/form-data',
+        )
+        assert execute_resp.status_code == 302
+
+    def test_us_user_ambiguous_date_not_reversed(self, auth_client, test_user, sample_vehicle):
+        """US-preference user importing 12/01/2026 gets 1 December 2026."""
+        from datetime import date
+        test_user.date_format = 'MM/DD/YYYY'
+        _db_ext.session.commit()
+        self._import(
+            auth_client, sample_vehicle,
+            b'date,odometer,volume,total_cost\n12/01/2026,10000,40.0,60.0\n',
+        )
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id).one()
+        assert log.date == date(2026, 12, 1)
+
+    def test_us_user_unambiguous_date_correct(self, auth_client, test_user, sample_vehicle):
+        """US-preference user importing 12/31/2026 gets 31 December 2026."""
+        from datetime import date
+        test_user.date_format = 'MM/DD/YYYY'
+        _db_ext.session.commit()
+        self._import(
+            auth_client, sample_vehicle,
+            b'date,odometer,volume,total_cost\n12/31/2026,10000,40.0,60.0\n',
+        )
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id).one()
+        assert log.date == date(2026, 12, 31)
+
+    def test_uk_user_keeps_dmy_behaviour(self, auth_client, test_user, sample_vehicle):
+        """DD/MM-preference user importing 12/01/2026 gets 12 January 2026."""
+        from datetime import date
+        test_user.date_format = 'DD/MM/YYYY'
+        _db_ext.session.commit()
+        self._import(
+            auth_client, sample_vehicle,
+            b'date,odometer,volume,total_cost\n12/01/2026,10000,40.0,60.0\n',
+        )
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id).one()
+        assert log.date == date(2026, 1, 12)

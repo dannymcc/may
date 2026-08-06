@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from app import db
+from app.utils import parse_decimal
 from app.models import (
     Vehicle, MaintenanceSchedule, Expense, MAINTENANCE_TYPES, EXPENSE_CATEGORIES
 )
@@ -57,7 +58,7 @@ def new():
             interval_km=int(request.form.get('interval_km')) if request.form.get('interval_km') else None,
             interval_miles=int(request.form.get('interval_miles')) if request.form.get('interval_miles') else None,
             interval_months=int(request.form.get('interval_months')) if request.form.get('interval_months') else None,
-            estimated_cost=float(request.form.get('estimated_cost')) if request.form.get('estimated_cost') else None,
+            estimated_cost=parse_decimal(request.form.get('estimated_cost')) if request.form.get('estimated_cost') else None,
             auto_remind=request.form.get('auto_remind') == 'on',
             remind_days_before=int(request.form.get('remind_days_before') or 14),
         )
@@ -68,7 +69,7 @@ def new():
                 request.form.get('last_performed_date'), '%Y-%m-%d'
             ).date()
         if request.form.get('last_performed_odometer'):
-            schedule.last_performed_odometer = float(request.form.get('last_performed_odometer'))
+            schedule.last_performed_odometer = parse_decimal(request.form.get('last_performed_odometer'))
 
         # Calculate next due
         schedule.calculate_next_due()
@@ -112,7 +113,7 @@ def edit(schedule_id):
         schedule.interval_km = int(request.form.get('interval_km')) if request.form.get('interval_km') else None
         schedule.interval_miles = int(request.form.get('interval_miles')) if request.form.get('interval_miles') else None
         schedule.interval_months = int(request.form.get('interval_months')) if request.form.get('interval_months') else None
-        schedule.estimated_cost = float(request.form.get('estimated_cost')) if request.form.get('estimated_cost') else None
+        schedule.estimated_cost = parse_decimal(request.form.get('estimated_cost')) if request.form.get('estimated_cost') else None
         schedule.auto_remind = request.form.get('auto_remind') == 'on'
         schedule.remind_days_before = int(request.form.get('remind_days_before') or 14)
 
@@ -121,7 +122,7 @@ def edit(schedule_id):
                 request.form.get('last_performed_date'), '%Y-%m-%d'
             ).date()
         if request.form.get('last_performed_odometer'):
-            schedule.last_performed_odometer = float(request.form.get('last_performed_odometer'))
+            schedule.last_performed_odometer = parse_decimal(request.form.get('last_performed_odometer'))
 
         schedule.calculate_next_due()
         db.session.commit()
@@ -147,10 +148,18 @@ def complete(schedule_id):
         flash(_('Access denied'), 'error')
         return redirect(url_for('maintenance.index'))
 
-    # Update last performed
-    schedule.last_performed_date = date.today()
+    # Update last performed — honouring a user-chosen completion date (#220)
+    performed_date = date.today()
+    if request.form.get('performed_date'):
+        try:
+            performed_date = datetime.strptime(
+                request.form.get('performed_date'), '%Y-%m-%d'
+            ).date()
+        except ValueError:
+            pass
+    schedule.last_performed_date = performed_date
     if request.form.get('odometer'):
-        schedule.last_performed_odometer = float(request.form.get('odometer'))
+        schedule.last_performed_odometer = parse_decimal(request.form.get('odometer'))
     else:
         schedule.last_performed_odometer = schedule.vehicle.get_last_odometer()
 
@@ -159,20 +168,21 @@ def complete(schedule_id):
 
     # Create expense if requested
     if request.form.get('create_expense') == 'on':
-        cost = float(request.form.get('actual_cost') or schedule.estimated_cost or 0)
-        if cost > 0:
-            expense = Expense(
-                vehicle_id=schedule.vehicle_id,
-                user_id=current_user.id,
-                date=date.today(),
-                category='maintenance',
-                description=schedule.name,
-                cost=cost,
-                odometer=schedule.last_performed_odometer,
-                vendor=request.form.get('vendor'),
-                notes=f'From maintenance schedule: {schedule.name}'
-            )
-            db.session.add(expense)
+        # The checkbox is an explicit request: zero-cost DIY jobs still get an
+        # expense entry so they appear in the vehicle's history (#271).
+        cost = parse_decimal(request.form.get('actual_cost') or schedule.estimated_cost or 0)
+        expense = Expense(
+            vehicle_id=schedule.vehicle_id,
+            user_id=current_user.id,
+            date=performed_date,
+            category='maintenance',
+            description=schedule.name,
+            cost=cost,
+            odometer=schedule.last_performed_odometer,
+            vendor=request.form.get('vendor'),
+            notes=f'From maintenance schedule: {schedule.name}'
+        )
+        db.session.add(expense)
 
     db.session.commit()
     flash(_('Maintenance "%(name)s" marked as completed') % {'name': schedule.name}, 'success')

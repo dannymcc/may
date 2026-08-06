@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if trip %}Edit Trip{% else %}Log Trip{% endif %}{% endblock %}
+{% block title %}{% if trip %}{{ _('Edit Trip') }}{% else %}{{ _('Log Trip') }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
@@ -37,6 +37,7 @@
                         <option value="{{ vehicle.id }}"
                                 {% if (trip and trip.vehicle_id == vehicle.id) or (selected_vehicle_id == vehicle.id) %}selected{% endif %}
                                 data-last-odometer="{{ vehicle.get_last_odometer(current_user.distance_unit) }}"
+                                data-default-purpose="{{ vehicle.default_trip_purpose or 'business' }}"
                                 data-uses-tessie="{{ 'true' if vehicle.uses_tessie_odometer() else 'false' }}"
                                 data-tessie-odometer="{% if vehicle.tessie_last_odometer %}{% if current_user.distance_unit == 'mi' %}{{ (vehicle.tessie_last_odometer * 0.621371)|round|int }}{% else %}{{ vehicle.tessie_last_odometer|round|int }}{% endif %}{% endif %}">
                             {{ vehicle.name }}
@@ -180,16 +181,31 @@ function updateVehicleOdometer(vehicleId) {
 }
 
 function calculateDistance() {
-    const start = parseFloat(document.getElementById('start_odometer').value) || 0;
-    const end = parseFloat(document.getElementById('end_odometer').value) || 0;
+    const start = parseDecimal(document.getElementById('start_odometer').value) || 0;
+    const end = parseDecimal(document.getElementById('end_odometer').value) || 0;
     const distance = end - start;
     document.getElementById('trip-distance').textContent = distance > 0 ? distance.toFixed(1) : '0';
 }
+
+// Pre-select the vehicle's default trip type on new trips (#272)
+{% if not trip %}
+function applyDefaultPurpose() {
+    const sel = document.getElementById('vehicle_id');
+    const opt = sel.options[sel.selectedIndex];
+    if (opt && opt.dataset.defaultPurpose) {
+        document.getElementById('purpose').value = opt.dataset.defaultPurpose;
+    }
+}
+{% endif %}
 
 document.addEventListener('DOMContentLoaded', function() {
     calculateDistance();
     const vehicleSelect = document.getElementById('vehicle_id');
     updateVehicleOdometer(vehicleSelect.value);
+    {% if not trip %}
+    applyDefaultPurpose();
+    vehicleSelect.addEventListener('change', applyDefaultPurpose);
+    {% endif %}
 
     // Auto-load template if specified in URL
     {% if preload_template_id %}

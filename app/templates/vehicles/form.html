@@ -18,7 +18,7 @@
                     <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Name') }} *</label>
                     <input type="text" name="name" id="name" required
                            value="{{ vehicle.name if vehicle else '' }}"
-                           placeholder="e.g., My Daily Driver"
+                           placeholder="{{ _('e.g., My Daily Driver') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -81,7 +81,7 @@
                     <label for="make" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Make') }}</label>
                     <input type="text" name="make" id="make"
                            value="{{ vehicle.make if vehicle else '' }}"
-                           placeholder="e.g., Toyota"
+                           placeholder="{{ _('e.g., Toyota') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -89,7 +89,7 @@
                     <label for="model" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Model') }}</label>
                     <input type="text" name="model" id="model"
                            value="{{ vehicle.model if vehicle else '' }}"
-                           placeholder="e.g., Corolla"
+                           placeholder="{{ _('e.g., Corolla') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -98,7 +98,7 @@
                     <input type="number" name="year" id="year"
                            value="{{ vehicle.year if vehicle else '' }}"
                            min="1900" max="2100"
-                           placeholder="e.g., 2020"
+                           placeholder="{{ _('e.g., 2020') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -106,7 +106,7 @@
                     <label for="tank_capacity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Tank Capacity (L)') }}</label>
                     <input type="number" name="tank_capacity" id="tank_capacity" step="0.1"
                            value="{{ vehicle.tank_capacity if vehicle else '' }}"
-                           placeholder="e.g., 50"
+                           placeholder="{{ _('e.g., 50') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
             </div>
@@ -120,7 +120,7 @@
                     <label for="registration" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Registration / License Plate') }}</label>
                     <input type="text" name="registration" id="registration"
                            value="{{ vehicle.registration if vehicle else '' }}"
-                           placeholder="e.g., ABC 123"
+                           placeholder="{{ _('e.g., ABC 123') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -128,7 +128,7 @@
                     <label for="vin" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('VIN') }}</label>
                     <input type="text" name="vin" id="vin"
                            value="{{ vehicle.vin if vehicle else '' }}"
-                           placeholder="Vehicle Identification Number"
+                           placeholder="{{ _('Vehicle Identification Number') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
             </div>
@@ -203,7 +203,7 @@
                     <input type="number" name="annual_mileage_limit" id="annual_mileage_limit"
                            step="1" min="0"
                            value="{{ vehicle.annual_mileage_limit|int if vehicle and vehicle.annual_mileage_limit else '' }}"
-                           placeholder="e.g. 25000"
+                           placeholder="{{ _('e.g. 25000') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
                 <div>
@@ -224,8 +224,19 @@
             <div>
                 <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('General Notes') }}</label>
                 <textarea name="notes" id="notes" rows="4"
-                          placeholder="Any additional notes about this vehicle..."
+                          placeholder="{{ _('Any additional notes about this vehicle...') }}"
                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">{{ vehicle.notes if vehicle and vehicle.notes else '' }}</textarea>
+            </div>
+
+            <div class="mt-6">
+                <label for="default_trip_purpose" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Default Trip Type') }}</label>
+                <select name="default_trip_purpose" id="default_trip_purpose"
+                        class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    {% for value, label in trip_purposes %}
+                    <option value="{{ value }}" {% if (vehicle.default_trip_purpose if vehicle else 'business') == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Pre-selected when logging a new trip for this vehicle') }}</p>
             </div>
         </div>
 
@@ -266,7 +277,7 @@
                     <div class="mt-1 flex gap-2">
                         <input type="text" name="tessie_vin" id="tessie_vin"
                                value="{{ vehicle.tessie_vin if vehicle and vehicle.tessie_vin else '' }}"
-                               placeholder="Enter Tesla VIN or select from list"
+                               placeholder="{{ _('Enter Tesla VIN or select from list') }}"
                                maxlength="20"
                                class="flex-1 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 font-mono">
                         <button type="button" onclick="fetchTessieVehicles()"

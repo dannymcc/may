@@ -108,6 +108,26 @@ class TestStationDelete:
         assert resp.status_code == 200
         assert FuelStation.query.get(station_id) is None
 
+    def test_delete_station_with_price_history(self, auth_client, test_user, sample_station):
+        # #256 — deleting a station with price rows must cascade rather than
+        # 500 on the NOT NULL station_id constraint.
+        from datetime import date
+        from app.models import FuelPriceHistory
+        entry = FuelPriceHistory(
+            station_id=sample_station.id,
+            user_id=test_user.id,
+            date=date(2026, 6, 9),
+            fuel_type='petrol',
+            price_per_unit=1.899,
+        )
+        db.session.add(entry)
+        db.session.commit()
+        station_id = sample_station.id
+        resp = auth_client.post(f'/stations/{station_id}/delete', follow_redirects=True)
+        assert resp.status_code == 200
+        assert FuelStation.query.get(station_id) is None
+        assert FuelPriceHistory.query.filter_by(station_id=station_id).count() == 0
+
 
 class TestStationToggleFavorite:
     def test_toggle_requires_auth(self, client, sample_station):

@@ -71,6 +71,16 @@ class TestVehicleEdit:
         resp = auth_client.get(f'/vehicles/{sample_vehicle.id}/edit')
         assert resp.status_code == 200
 
+    def test_edit_form_renders_null_fields_blank(self, auth_client, sample_vehicle):
+        # Nullable numeric fields (tank capacity etc.) must render as empty
+        # strings, not the literal text "None", which blocks validation on
+        # save (#241).
+        sample_vehicle.tank_capacity = None
+        db.session.commit()
+        resp = auth_client.get(f'/vehicles/{sample_vehicle.id}/edit')
+        assert resp.status_code == 200
+        assert b'value="None"' not in resp.data
+
     def test_edit_vehicle(self, auth_client, sample_vehicle):
         resp = auth_client.post(f'/vehicles/{sample_vehicle.id}/edit', data={
             'name': 'Updated Car',

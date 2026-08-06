@@ -4,6 +4,7 @@ import io
 import json
 import logging
 import os
+import re
 import sqlite3
 import tempfile
 import traceback
@@ -22,6 +23,7 @@ from app.models import (
     TRIP_PURPOSES, CHARGER_TYPES
 )
 from app.services.tessie import TessieService
+from app.utils import parse_decimal
 from flask_babel import gettext as _
 from config import APP_VERSION
 
@@ -294,7 +296,8 @@ def test_notification():
         topic = request.form.get('ntfy_topic')
         if not topic:
             return jsonify({'success': False, 'error': 'Please enter an ntfy topic'})
-        success, error = NotificationService.send_ntfy(topic, title, message)
+        token = request.form.get('ntfy_token') or current_user.ntfy_token or None
+        success, error = NotificationService.send_ntfy(topic, title, message, token=token)
     elif method == 'pushover':
         user_key = request.form.get('pushover_user_key')
         if not user_key:
@@ -430,7 +433,7 @@ def vehicle_stats(vehicle_id):
     if vehicle not in current_user.get_all_vehicles():
         return jsonify({'error': 'Access denied'}), 403
 
-    logs = vehicle.fuel_logs.filter_by(is_full_tank=True).order_by(FuelLog.date).all()
+    logs = vehicle.fuel_logs.filter_by(is_full_tank=True).order_by(FuelLog.date, FuelLog.odometer).all()
     consumption_data = []
     for log in logs:
         consumption = log.get_consumption(current_user.consumption_unit, current_user.volume_unit)
@@ -449,8 +452,18 @@ def vehicle_stats(vehicle_id):
         else:
             category_totals[exp.category] = exp.cost
 
+    # Price paid per unit over time, from every log that recorded one (#249)
+    price_logs = vehicle.fuel_logs.filter(
+        FuelLog.price_per_unit.isnot(None)
+    ).order_by(FuelLog.date, FuelLog.odometer).all()
+    price_data = [
+        {'date': log.date.isoformat(), 'price': round(log.price_per_unit, 3)}
+        for log in price_logs
+    ]
+
     return jsonify({
         'consumption': consumption_data,
+        'price_per_unit': price_data,
         'expenses_by_category': category_totals,
         'total_fuel_cost': vehicle.get_total_fuel_cost(),
         'total_expense_cost': vehicle.get_total_expense_cost(),
@@ -643,9 +656,9 @@ def api_list_fuel_logs(vehicle_id):
 
     query = vehicle.fuel_logs
     if sort == 'asc':
-        query = query.order_by(FuelLog.date.asc())
+        query = query.order_by(FuelLog.date.asc(), FuelLog.odometer.asc())
     else:
-        query = query.order_by(FuelLog.date.desc())
+        query = query.order_by(FuelLog.date.desc(), FuelLog.odometer.desc())
 
     total = query.count()
     logs = query.offset(offset).limit(limit).all()
@@ -693,10 +706,10 @@ def api_create_fuel_log(vehicle_id):
         vehicle_id=vehicle_id,
         user_id=user.id,
         date=date,
-        odometer=float(data['odometer']),
-        volume=float(data['volume']) if data.get('volume') else None,
-        price_per_unit=float(data['price_per_unit']) if data.get('price_per_unit') else None,
-        total_cost=float(data['total_cost']) if data.get('total_cost') else None,
+        odometer=parse_decimal(data['odometer']),
+        volume=parse_decimal(data['volume']) if data.get('volume') else None,
+        price_per_unit=parse_decimal(data['price_per_unit']) if data.get('price_per_unit') else None,
+        total_cost=parse_decimal(data['total_cost']) if data.get('total_cost') else None,
         is_full_tank=data.get('is_full_tank', True),
         is_missed=data.get('is_missed', False),
         station=data.get('station'),
@@ -747,13 +760,13 @@ def api_update_fuel_log(log_id):
             return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD', 'code': 'validation_error'}), 400
 
     if 'odometer' in data:
-        log.odometer = float(data['odometer'])
+        log.odometer = parse_decimal(data['odometer'])
     if 'volume' in data:
-        log.volume = float(data['volume']) if data['volume'] else None
+        log.volume = parse_decimal(data['volume']) if data['volume'] else None
     if 'price_per_unit' in data:
-        log.price_per_unit = float(data['price_per_unit']) if data['price_per_unit'] else None
+        log.price_per_unit = parse_decimal(data['price_per_unit']) if data['price_per_unit'] else None
     if 'total_cost' in data:
-        log.total_cost = float(data['total_cost']) if data['total_cost'] else None
+        log.total_cost = parse_decimal(data['total_cost']) if data['total_cost'] else None
     if 'is_full_tank' in data:
         log.is_full_tank = data['is_full_tank']
     if 'is_missed' in data:
@@ -873,8 +886,8 @@ def api_create_expense(vehicle_id):
         date=date,
         category=data['category'],
         description=data['description'],
-        cost=float(data['cost']),
-        odometer=float(data['odometer']) if data.get('odometer') else None,
+        cost=parse_decimal(data['cost']),
+        odometer=parse_decimal(data['odometer']) if data.get('odometer') else None,
         vendor=data.get('vendor'),
         notes=data.get('notes')
     )
@@ -930,9 +943,9 @@ def api_update_expense(expense_id):
     if 'description' in data:
         expense.description = data['description']
     if 'cost' in data:
-        expense.cost = float(data['cost'])
+        expense.cost = parse_decimal(data['cost'])
     if 'odometer' in data:
-        expense.odometer = float(data['odometer']) if data['odometer'] else None
+        expense.odometer = parse_decimal(data['odometer']) if data['odometer'] else None
     if 'vendor' in data:
         expense.vendor = data['vendor']
     if 'notes' in data:
@@ -1657,7 +1670,7 @@ def export_csv():
         ])
         for vehicle in current_user.get_all_vehicles():
             odometer_unit = vehicle.get_effective_odometer_unit()
-            for log in vehicle.fuel_logs.order_by(FuelLog.date.desc()).all():
+            for log in vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all():
                 writer.writerow([
                     log.id, vehicle.id, vehicle.name, log.date.isoformat(),
                     log.odometer, odometer_unit,
@@ -1959,7 +1972,7 @@ def export_json():
             })
 
         # Add fuel logs
-        for log in vehicle.fuel_logs.order_by(FuelLog.date.desc()).all():
+        for log in vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all():
             vehicle_data['fuel_logs'].append({
                 'id': log.id,
                 'date': log.date.isoformat() if log.date else None,
@@ -2256,7 +2269,7 @@ def export_full_backup():
             })
 
         # Add fuel logs with attachments
-        for log in vehicle.fuel_logs.order_by(FuelLog.date.desc()).all():
+        for log in vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all():
             log_data = {
                 'id': log.id,
                 'date': log.date.isoformat() if log.date else None,
@@ -3282,24 +3295,48 @@ def auto_suggest_mappings(csv_columns, target_fields):
     return suggestions
 
 
-def parse_date_value(value, date_format='auto'):
-    """Parse a date string, optionally with a format hint."""
+def _ordered_slash_formats(prefer_mdy):
+    """Return ambiguous day/month date formats, preferred interpretation first.
+
+    ``strptime`` rejects out-of-range values, so listing the preferred order
+    first means a value that is unambiguous (e.g. a 31 in the day slot) still
+    falls through to the only interpretation that parses, without silently
+    reversing values that are valid under the preferred format.
+    """
+    dmy = ['%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M', '%d/%m/%Y',
+           '%d-%m-%Y', '%d.%m.%Y', '%d/%m/%y']
+    mdy = ['%m/%d/%Y %H:%M:%S', '%m/%d/%Y %H:%M', '%m/%d/%Y',
+           '%m-%d-%Y', '%m/%d/%y']
+    return (mdy + dmy) if prefer_mdy else (dmy + mdy)
+
+
+def parse_date_value(value, date_format='auto', user_date_format=None):
+    """Parse a date string, optionally with a format hint.
+
+    ``date_format`` is the format chosen on the import screen. When it is
+    ``'auto'`` the importing user's own ``date_format`` preference
+    (``user_date_format``) disambiguates slash-separated dates such as
+    ``12/01/2026`` (issue #250), so a US user's ``MM/DD/YYYY`` data is not
+    silently read as ``DD/MM/YYYY``. Unambiguous ISO dates (``YYYY-MM-DD``)
+    are always parsed first and are unaffected by the preference.
+    """
     if not value or not value.strip():
         return None
     value = value.strip()
 
+    iso_formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y/%m/%d']
+
     if date_format == 'DD/MM/YYYY':
-        formats = ['%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M', '%d/%m/%Y', '%d-%m-%Y', '%d.%m.%Y', '%d/%m/%y']
+        formats = _ordered_slash_formats(prefer_mdy=False)
     elif date_format == 'MM/DD/YYYY':
-        formats = ['%m/%d/%Y %H:%M:%S', '%m/%d/%Y %H:%M', '%m/%d/%Y', '%m-%d-%Y', '%m/%d/%y']
+        formats = _ordered_slash_formats(prefer_mdy=True)
     elif date_format == 'YYYY-MM-DD':
-        formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y/%m/%d']
+        formats = iso_formats
     else:
-        # Auto-detect: try unambiguous formats first
-        formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y/%m/%d',
-                   '%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M', '%d/%m/%Y',
-                   '%m/%d/%Y %H:%M:%S', '%m/%d/%Y %H:%M', '%m/%d/%Y',
-                   '%d-%m-%Y', '%m-%d-%Y', '%d.%m.%Y', '%d/%m/%y', '%m/%d/%y']
+        # Auto-detect: unambiguous ISO first, then slash formats ordered by
+        # the importing user's preference so US dates are not reversed.
+        prefer_mdy = (user_date_format == 'MM/DD/YYYY')
+        formats = iso_formats + _ordered_slash_formats(prefer_mdy)
 
     for fmt in formats:
         try:
@@ -3330,16 +3367,29 @@ def parse_bool_value(value):
 
 
 def parse_float_value(value):
-    """Parse a float, stripping currency symbols and commas."""
-    if not value or not str(value).strip():
+    """Parse a CSV numeric value, stripping currency symbols and tolerating
+    locale separators (#244).
+
+    Uses :func:`app.utils.parse_decimal` (so ``9,99``, ``1.234,56`` and
+    ``1,234.56`` all parse correctly) with one CSV-specific refinement: a
+    single comma followed by exactly three digits with two or more digits
+    before it (e.g. ``12,345``) is read as Anglo thousands grouping, which is
+    how such values appear in exported odometer columns. A short integer part
+    (e.g. the German fuel price ``1,899``) still reads the comma as a decimal
+    separator.
+    """
+    if value is None or not str(value).strip():
         return None
     cleaned = str(value).strip()
-    for ch in ['$', '\u20ac', '\u00a3', '\u00a5', '\u20b9', ',']:
+    for ch in ['$', '\u20ac', '\u00a3', '\u00a5', '\u20b9']:
         cleaned = cleaned.replace(ch, '')
     cleaned = cleaned.strip()
     if not cleaned:
         return None
-    return float(cleaned)
+    m = re.fullmatch(r'(-?\d{2,}),(\d{3})', cleaned)
+    if m:
+        cleaned = m.group(1) + m.group(2)
+    return parse_decimal(cleaned)
 
 
 def parse_int_value(value):
@@ -3359,9 +3409,9 @@ def _cleanup_temp_file(path):
         pass
 
 
-def create_record(data_type, mapped_row, vehicle_id, user_id, date_format):
+def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_date_format=None):
     """Create a model instance from a mapped CSV row."""
-    date_val = parse_date_value(mapped_row.get('date', ''), date_format)
+    date_val = parse_date_value(mapped_row.get('date', ''), date_format, user_date_format)
 
     if data_type == 'fuel_logs':
         if not date_val:
@@ -3601,7 +3651,7 @@ def csv_import_execute():
                 for csv_col, field_name in col_mapping.items():
                     mapped_row[field_name] = row.get(csv_col, '')
 
-                record = create_record(data_type, mapped_row, vehicle_id, current_user.id, date_format)
+                record = create_record(data_type, mapped_row, vehicle_id, current_user.id, date_format, current_user.date_format)
                 db.session.add(record)
                 imported += 1
             except (ValueError, KeyError) as e:

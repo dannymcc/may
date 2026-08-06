@@ -16,6 +16,11 @@ services:
       # MySQL:      mysql+pymysql://may:may@mysql:3306/may
       # MariaDB:    mysql+pymysql://may:may@mariadb:3306/may
       - UPLOAD_FOLDER=/app/data/uploads
+      # Optional: run the container as a specific host user/group so bind-mounted
+      # data is owned correctly (linuxserver.io convention; default 1000:1000).
+      # On Unraid, set these to 99 and 100.
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       # Optional: set a fixed admin password (default is auto-generated and shown in logs)
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-your-secure-password}
       # SMTP defaults point at the bundled mailpit service; values saved in the

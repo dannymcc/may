@@ -53,7 +53,7 @@
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Fuel') }}</dt>
-                    <dd class="mt-1 text-sm text-gray-900 dark:text-white capitalize">{{ vehicle.fuel_type or _('Not set') }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white ">{{ vehicle.fuel_type|fuel_type_label if vehicle.fuel_type else _('Not set') }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Registration') }}</dt>
@@ -73,31 +73,31 @@
     {% if vehicle.uses_fuel() %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Total Fuel Cost') }}</dt>
-        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.2f"|format(stats.total_fuel_cost) }}</dd>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.total_fuel_cost|money }}</dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.currency }}</dd>
     </div>
     {% endif %}
     {% if vehicle.uses_charging() %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Total Charging Cost') }}</dt>
-        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.2f"|format(stats.total_charging_cost) }}</dd>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.total_charging_cost|money }}</dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.currency }}</dd>
     </div>
     {% endif %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Other Expenses') }}</dt>
-        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.2f"|format(stats.total_expense_cost) }}</dd>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.total_expense_cost|money }}</dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.currency }}</dd>
     </div>
     {% if stats.total_allowance and stats.total_allowance > 0 %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Mileage Allowance') }}</dt>
-        <dd class="mt-1 text-xl font-semibold text-emerald-600 dark:text-emerald-400">-{{ "%.2f"|format(stats.total_allowance) }}</dd>
+        <dd class="mt-1 text-xl font-semibold text-emerald-600 dark:text-emerald-400">-{{ stats.total_allowance|money }}</dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.currency }}</dd>
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Net Cost') }}</dt>
-        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.2f"|format(stats.net_cost) }}</dd>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.net_cost|money }}</dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.currency }}</dd>
     </div>
     {% endif %}
@@ -109,8 +109,21 @@
     {% if vehicle.uses_fuel() %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Avg. Consumption') }}</dt>
-        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{% if stats.avg_consumption %}{{ "%.1f"|format(stats.avg_consumption) }}{% else %}-{% endif %}</dd>
+        {% if stats.avg_consumption %}
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.1f"|format(stats.avg_consumption) }}</dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.consumption_unit }}</dd>
+        {% else %}
+        {% set reason = vehicle.get_consumption_unavailable_reason() %}
+        {% if reason == 'missed_fill_up' %}
+            {% set consumption_hint = _('A missed fill-up in the range means we can’t calculate this honestly.') %}
+        {% elif reason == 'insufficient_data' %}
+            {% set consumption_hint = _('Not enough distance or fuel data yet to calculate this.') %}
+        {% else %}
+            {% set consumption_hint = _('Needs at least two full-tank fill-ups.') %}
+        {% endif %}
+        <dd class="mt-1 text-xl font-semibold text-gray-400 dark:text-gray-500" title="{{ consumption_hint }}">&mdash;</dd>
+        <dd class="text-xs text-gray-400 dark:text-gray-500">{{ consumption_hint }}</dd>
+        {% endif %}
     </div>
     {% endif %}
     {% if vehicle.uses_charging() %}
@@ -122,9 +135,26 @@
     {% endif %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Cost per') }} {{ vehicle.get_effective_odometer_unit() }}</dt>
-        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{% if stats.cost_per_distance %}{{ "%.2f"|format(stats.cost_per_distance) }}{% else %}-{% endif %}</dd>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{% if stats.cost_per_distance %}{{ stats.cost_per_distance|money }}{% else %}-{% endif %}</dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.currency }}</dd>
     </div>
+    {% if vehicle.uses_fuel() and stats.total_fuel_volume %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Fuel Used') }}</dt>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.total_fuel_volume|groupnum }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.volume_unit }}</dd>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('CO₂ Emissions') }}</dt>
+        {% if stats.total_co2_kg >= 1000 %}
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.2f"|format(stats.total_co2_kg / 1000) }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ _('tonnes (estimated)') }}</dd>
+        {% else %}
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.0f"|format(stats.total_co2_kg) }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ _('kg (estimated)') }}</dd>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 
 <!-- Quick Actions -->
@@ -487,18 +517,18 @@
     <ul class="divide-y divide-gray-200 dark:divide-gray-700">
         {% for reminder in reminders[:5] %}
         <li class="px-6 py-4 hover:bg-gray-50 dark:bg-gray-700">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <form method="POST" action="{{ url_for('reminders.complete', reminder_id=reminder.id) }}?return_to=vehicle">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center space-x-3 min-w-0 flex-1">
+                    <form method="POST" action="{{ url_for('reminders.complete', reminder_id=reminder.id) }}?return_to=vehicle" class="flex-shrink-0">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 hover:bg-green-50 flex items-center justify-center transition-colors"
                                 title="{{ _('Mark as completed') }}">
                         </button>
                     </form>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ reminder.title }}</p>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ reminder.title }}</p>
+                            <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
                                          {% if reminder.reminder_type == 'mot' %}bg-purple-100 text-purple-800
                                          {% elif reminder.reminder_type == 'service' %}bg-blue-100 text-blue-800
                                          {% elif reminder.reminder_type == 'insurance' %}bg-green-100 text-green-800
@@ -508,11 +538,11 @@
                             </span>
                         </div>
                         {% if reminder.description %}
-                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-md">{{ reminder.description }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate">{{ reminder.description }}</p>
                         {% endif %}
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-4 flex-shrink-0">
                     <div class="text-right">
                         <p class="text-sm {% if reminder.is_overdue() %}text-red-600 font-medium{% elif reminder.is_upcoming(7) %}text-amber-600{% else %}text-gray-900 dark:text-white{% endif %}">
                             {{ reminder.due_date|format_date }}
@@ -561,7 +591,7 @@
         <dl class="divide-y divide-gray-200 dark:divide-gray-700">
             {% for spec in specs %}
             <div class="px-6 py-3 flex justify-between">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ spec.label }}</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ spec|spec_label }}</dt>
                 <dd class="text-sm text-gray-900 dark:text-white">{{ spec.value }}</dd>
             </div>
             {% endfor %}
@@ -725,11 +755,29 @@
 </script>
 
 {% if vehicle.uses_fuel() %}
-<!-- Consumption Chart -->
+<!-- Consumption Chart (collapsible, state per vehicle in localStorage, #249) -->
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
-    <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ _('Fuel Consumption Trend') }}</h2>
-    <div style="position: relative; height: 300px;">
+    <button type="button" onclick="toggleChart('consumption')" class="w-full flex items-center justify-between text-left">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Fuel Consumption Trend') }}</h2>
+        <svg id="consumption-chart-chevron" class="h-5 w-5 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+    <div id="consumption-chart-body" class="mt-4" style="position: relative; height: 300px;">
         <canvas id="consumptionChart"></canvas>
+    </div>
+</div>
+
+<!-- Price per Unit Chart (#249, #145) -->
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+    <button type="button" onclick="toggleChart('price')" class="w-full flex items-center justify-between text-left">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Fuel Price Trend') }}</h2>
+        <svg id="price-chart-chevron" class="h-5 w-5 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+    <div id="price-chart-body" class="mt-4" style="position: relative; height: 300px;">
+        <canvas id="priceChart"></canvas>
     </div>
 </div>
 {% endif %}
@@ -751,12 +799,13 @@
                         <p class="text-sm text-gray-500 dark:text-gray-400">
                             {{ "%.0f"|format(log.odometer) }} {{ vehicle.get_effective_odometer_unit() }} &middot;
                             {{ "%.1f"|format(log.volume or 0) }} {{ current_user.volume_unit }}
+                            {% if log.price_per_unit %}&middot; {{ "%.3f"|format(log.price_per_unit) }}/{{ current_user.volume_unit }}{% endif %}
                             {% if log.is_full_tank %}<span class="text-green-600">{{ _('(Full)') }}</span>{% endif %}
                         </p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="text-right">
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ "%.2f"|format(log.total_cost or 0) }} {{ current_user.currency }}</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ (log.total_cost or 0)|money }} {{ current_user.currency }}</p>
                             {% set consumption = log.get_consumption(current_user.consumption_unit, current_user.volume_unit) %}
                             {% if consumption %}
                             <p class="text-sm text-gray-500 dark:text-gray-400">{{ "%.1f"|format(consumption) }} {{ current_user.consumption_unit }}</p>
@@ -798,14 +847,14 @@
             <li class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700">
                 <div class="flex items-center justify-between">
                     <div class="min-w-0 flex-1">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ expense.description }}</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white break-words">{{ expense.description }}</p>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
                             {{ expense.date|format_date }} &middot;
-                            <span class="capitalize">{{ expense.category }}</span>
+                            <span>{{ expense.category|category_label }}</span>
                         </p>
                     </div>
                     <div class="flex items-center gap-3 ml-4">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ "%.2f"|format(expense.cost) }} {{ current_user.currency }}</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ expense.cost|money }} {{ current_user.currency }}</p>
                         <div class="flex items-center gap-1">
                             <a href="{{ url_for('expenses.edit', expense_id=expense.id) }}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600" title="Edit">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -890,18 +939,50 @@
 </div>
 
 <script>
+// Collapsible chart cards with per-vehicle state (#249). Charts are resized
+// on reveal because Chart.js can't size itself inside a hidden container.
+const chartInstances = {};
+function toggleChart(name) {
+    const key = name + '-chart-collapsed-{{ vehicle.id }}';
+    const body = document.getElementById(name + '-chart-body');
+    const chevron = document.getElementById(name + '-chart-chevron');
+    const collapsed = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', collapsed);
+    chevron.style.transform = collapsed ? 'rotate(-90deg)' : '';
+    localStorage.setItem(key, collapsed ? '1' : '0');
+    if (!collapsed && chartInstances[name]) chartInstances[name].resize();
+}
+function restoreChartState(name) {
+    if (localStorage.getItem(name + '-chart-collapsed-{{ vehicle.id }}') === '1') {
+        document.getElementById(name + '-chart-body').classList.add('hidden');
+        document.getElementById(name + '-chart-chevron').style.transform = 'rotate(-90deg)';
+    }
+}
+function showChartFallback(canvasEl, message) {
+    const p = document.createElement('p');
+    p.className = 'text-sm text-gray-500 dark:text-gray-400';
+    p.textContent = message;
+    canvasEl.parentElement.replaceChildren(p);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    const consumptionEl = document.getElementById('consumptionChart');
+    if (consumptionEl) {
+        restoreChartState('consumption');
+        restoreChartState('price');
+    }
     fetch('/api/vehicles/{{ vehicle.id }}/stats')
         .then(response => response.json())
         .then(data => {
+            if (!consumptionEl) return;
             if (data.consumption && data.consumption.length > 0) {
-                const ctx = document.getElementById('consumptionChart').getContext('2d');
-                new Chart(ctx, {
+                const ctx = consumptionEl.getContext('2d');
+                chartInstances['consumption'] = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.consumption.map(d => d.date),
                         datasets: [{
-                            label: 'Consumption ({{ current_user.consumption_unit }})',
+                            label: {{ (_('Consumption') + ' (' + current_user.consumption_unit + ')')|tojson }},
                             data: data.consumption.map(d => d.consumption),
                             borderColor: 'rgb(14, 165, 233)',
                             backgroundColor: 'rgba(14, 165, 233, 0.1)',
@@ -919,13 +1000,55 @@ document.addEventListener('DOMContentLoaded', function() {
                         },
                         scales: {
                             y: {
-                                beginAtZero: false
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: {{ current_user.consumption_unit|tojson }}
+                                }
                             }
                         }
                     }
                 });
             } else {
-                document.getElementById('consumptionChart').parentElement.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Not enough data to show consumption trend. Add more fuel logs with full tank fills.</p>';
+                showChartFallback(consumptionEl, {{ _('Not enough data to show consumption trend. Add more fuel logs with full tank fills.')|tojson }});
+            }
+
+            const priceEl = document.getElementById('priceChart');
+            if (priceEl && data.price_per_unit && data.price_per_unit.length > 0) {
+                chartInstances['price'] = new Chart(priceEl.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.price_per_unit.map(d => d.date),
+                        datasets: [{
+                            label: '{{ _("Price per") }} {{ current_user.volume_unit }} ({{ current_user.currency }})',
+                            data: data.price_per_unit.map(d => d.price),
+                            borderColor: 'rgb(245, 158, 11)',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: {{ (current_user.currency + '/' + current_user.volume_unit)|tojson }}
+                                }
+                            }
+                        }
+                    }
+                });
+            } else if (priceEl) {
+                showChartFallback(priceEl, {{ _('No fuel prices recorded yet.')|tojson }});
             }
         });
 });
