@@ -44,6 +44,10 @@ services:
       - "8025:8025"
     environment:
       - MP_DATABASE=/data/mailpit.db
+      # Accept any SMTP credentials so the admin UI works with or without
+      # username/password filled in (mailpit is a catch-all test inbox).
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
     volumes:
       - may_mailpit_data:/data
 
