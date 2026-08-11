@@ -56,7 +56,7 @@ class User(UserMixin, db.Model):
     volume_unit = db.Column(db.String(10), default='L')  # L, gal, us_gal
     consumption_unit = db.Column(db.String(10), default='L/100km')  # L/100km, mpg, mpg_us
     currency = db.Column(db.String(10), default='USD')
-    dark_mode = db.Column(db.Boolean, default=False)  # Dark mode preference
+    dark_mode = db.Column(db.Boolean, default=True)  # Dark mode preference — on by default; users and admins can switch per account
     date_format = db.Column(db.String(20), default='DD/MM/YYYY')  # DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD, DD.MM.YYYY
     # Number display (#134): grouping separator for large numbers and
     # optional whole-number rounding for money amounts

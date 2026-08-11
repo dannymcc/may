@@ -149,9 +149,13 @@ class TestPersonModel:
         expected_keys = {
             'id', 'name', 'relationship_type', 'email', 'phone', 'organization',
             'role_title', 'notes', 'image_filename', 'is_active', 'is_shared',
-            'created_at', 'updated_at',
+            'vehicles', 'created_at', 'updated_at',
         }
         assert expected_keys == set(data.keys())
+
+    def test_to_dict_vehicles_empty_without_viewer(self, sample_person):
+        # Vehicle links are viewer-scoped; with no viewer nothing is exposed
+        assert sample_person.to_dict()['vehicles'] == []
 
     def test_to_dict_values(self, sample_person):
         data = sample_person.to_dict()
@@ -297,7 +301,8 @@ class TestPersonTaskModel:
         data = sample_task.to_dict()
         expected_keys = {
             'id', 'person_id', 'title', 'description', 'status', 'priority',
-            'due_date', 'started_at', 'completed_at', 'is_overdue',
+            'due_date', 'started_at', 'completed_at', 'notification_sent',
+            'recurrence', 'recurrence_interval', 'is_overdue',
             'created_at', 'updated_at',
         }
         assert expected_keys == set(data.keys())

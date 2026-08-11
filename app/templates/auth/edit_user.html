@@ -186,9 +186,17 @@
 
         <!-- Menu & Navigation -->
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700 mb-6">
-            <div class="p-6">
-                <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Menu & Navigation') }}</h2>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Which pages this user starts on and sees in the menu') }}</p>
+            <div class="p-6 flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Menu & Navigation') }}</h2>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Which pages this user starts on and sees in the menu') }}</p>
+                </div>
+                <div class="flex gap-3 text-sm flex-shrink-0">
+                    <button type="button" onclick="setAllMenuItems('admin-menu-toggles', true)"
+                            class="text-primary-600 hover:text-primary-500">{{ _('Select all') }}</button>
+                    <button type="button" onclick="setAllMenuItems('admin-menu-toggles', false)"
+                            class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">{{ _('Clear all') }}</button>
+                </div>
             </div>
             <div class="p-6 space-y-6">
                 <div class="max-w-xs">
@@ -205,7 +213,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" id="admin-menu-toggles">
                     {% for field, label in [('show_menu_vehicles', _('Vehicles')), ('show_menu_fuel', _('Fuel Logs')),
                                             ('show_menu_expenses', _('Expenses')), ('show_menu_reminders', _('Reminders')),
                                             ('show_menu_maintenance', _('Maintenance')), ('show_menu_recurring', _('Recurring')),
@@ -231,4 +239,12 @@
         </div>
     </form>
 </div>
+
+<script>
+function setAllMenuItems(containerId, checked) {
+    document.querySelectorAll('#' + containerId + ' input[type="checkbox"]').forEach(box => {
+        box.checked = checked;
+    });
+}
+</script>
 {% endblock %}

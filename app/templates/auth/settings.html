@@ -463,10 +463,18 @@
 
                             <!-- Menu Items -->
                             <div class="pt-3 border-t border-gray-200 dark:border-gray-700 dark:border-gray-700">
-                                <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">{{ _('Show Menu Items') }}</h3>
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ _('Show Menu Items') }}</h3>
+                                    <div class="flex gap-3 text-sm">
+                                        <button type="button" onclick="setAllMenuItems('menu-items-list', true)"
+                                                class="text-primary-600 hover:text-primary-500">{{ _('Select all') }}</button>
+                                        <button type="button" onclick="setAllMenuItems('menu-items-list', false)"
+                                                class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">{{ _('Clear all') }}</button>
+                                    </div>
+                                </div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ _('Choose which items appear in the navigation menu') }}</p>
 
-                                <div class="space-y-3">
+                                <div class="space-y-3" id="menu-items-list">
                                     <label class="flex items-center">
                                         <input type="checkbox" name="show_menu_vehicles" {% if current_user.show_menu_vehicles is not defined or current_user.show_menu_vehicles %}checked{% endif %}
                                                class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
@@ -1800,6 +1808,12 @@ docker compose up -d</code>
 </style>
 
 <script>
+function setAllMenuItems(containerId, checked) {
+    document.querySelectorAll('#' + containerId + ' input[type="checkbox"]').forEach(box => {
+        box.checked = checked;
+    });
+}
+
 function showSection(section, evt) {
     // Hide all sections
     document.querySelectorAll('.settings-section').forEach(el => {
