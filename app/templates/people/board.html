@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Task Board') }}{% endblock %}
+
+{% block content %}
+<div class="sm:flex sm:items-center sm:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Task Board') }}</h1>
+        <p class="text-gray-500 dark:text-gray-400">{{ _('Everything you owe everyone, in one place — drag cards to update status') }}</p>
+    </div>
+    <div class="mt-4 sm:mt-0 flex items-center gap-3">
+        <a href="{{ url_for('people.index') }}"
+           class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+            {{ _('People') }}
+        </a>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Active Tasks') }}</dt>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.active_tasks }}</dd>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Overdue') }}</dt>
+        <dd class="mt-1 text-xl font-semibold {% if stats.overdue_tasks %}text-red-600 dark:text-red-400{% else %}text-gray-900 dark:text-white{% endif %}">{{ stats.overdue_tasks }}</dd>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Completed') }}</dt>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.done_tasks }}</dd>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('People With Open Work') }}</dt>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.people_count }}</dd>
+    </div>
+</div>
+
+<!-- Filters -->
+<form method="GET" action="{{ url_for('people.board') }}" class="mb-6 flex flex-wrap items-center gap-3">
+    <select name="person" onchange="this.form.submit()"
+            class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+        <option value="">{{ _('All people') }}</option>
+        {% for p in people %}
+        <option value="{{ p.id }}" {% if person_filter == p.id %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="priority" onchange="this.form.submit()"
+            class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+        <option value="">{{ _('All priorities') }}</option>
+        {% for value, label in task_priorities %}
+        <option value="{{ value }}" {% if priority_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    {% if person_filter or priority_filter %}
+    <a href="{{ url_for('people.board') }}" class="text-sm text-primary-600 hover:text-primary-500">{{ _('Clear filters') }}</a>
+    {% endif %}
+</form>
+
+{% if not people %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg text-center py-12">
+    <p class="text-gray-500 dark:text-gray-400">{{ _('No people yet — add someone to start tracking tasks') }}</p>
+    <a href="{{ url_for('people.new') }}" class="mt-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+        {{ _('Add Person') }}
+    </a>
+</div>
+{% else %}
+<div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+    {% for value, label in task_statuses %}
+    <div class="board-column bg-white dark:bg-gray-800 shadow rounded-lg p-4 transition-colors" data-status="{{ value }}">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                <span class="h-2 w-2 rounded-full mr-2
+                             {% if value == 'todo' %}bg-gray-400
+                             {% elif value == 'in_progress' %}bg-blue-500
+                             {% elif value == 'blocked' %}bg-amber-500
+                             {% else %}bg-green-500{% endif %}"></span>
+                {{ label }}
+            </h3>
+            <span class="text-xs text-gray-500 dark:text-gray-400 column-count">{{ tasks_by_status[value]|length }}</span>
+        </div>
+
+        {% if value == 'done' and done_total > done_limit %}
+        <p class="mb-3 text-xs text-gray-400 dark:text-gray-500">{{ _('Showing the %(count)s most recent', count=done_limit) }}</p>
+        {% endif %}
+
+        <div class="space-y-3 board-cards min-h-[3rem]">
+            {% for task in tasks_by_status[value] %}
+            <div class="board-card rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 p-3 cursor-grab"
+                 draggable="true" data-task-id="{{ task.id }}"
+                 data-move-url="{{ url_for('people.move_task', task_id=task.id) }}">
+                <div class="flex items-start justify-between gap-2">
+                    <p class="task-title text-sm font-medium text-gray-900 dark:text-white {% if task.status == 'done' %}line-through text-gray-500 dark:text-gray-400{% endif %}">{{ task.title }}</p>
+                    <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                 {% if task.priority == 'urgent' %}bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300
+                                 {% elif task.priority == 'high' %}bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300
+                                 {% elif task.priority == 'low' %}bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300
+                                 {% else %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300{% endif %}">
+                        {{ dict(task_priorities)[task.priority] if task.priority in dict(task_priorities) else task.priority|capitalize }}
+                    </span>
+                </div>
+
+                <a href="{{ url_for('people.view', person_id=task.person_id) }}"
+                   class="mt-2 inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">
+                    {% set name_parts = (task.person.name or '').split() %}
+                    <span class="h-5 w-5 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center text-[10px] font-semibold text-primary-700">
+                        {{ ((name_parts[0][:1] if name_parts else '?') ~ (name_parts[-1][:1] if name_parts|length > 1 else ''))|upper }}
+                    </span>
+                    {{ task.person.name }}
+                </a>
+
+                {% if task.due_date %}
+                <p class="mt-2 text-xs {% if task.is_overdue() %}text-red-600 dark:text-red-400 font-medium{% elif task.status != 'done' and task.due_date == today %}text-amber-600 dark:text-amber-400{% else %}text-gray-500 dark:text-gray-400{% endif %}">
+                    {% if task.is_overdue() %}
+                    {{ _('Overdue — due %(date)s', date=task.due_date|format_date) }}
+                    {% elif task.status != 'done' and task.due_date == today %}
+                    {{ _('Due today') }}
+                    {% else %}
+                    {{ _('Due %(date)s', date=task.due_date|format_date) }}
+                    {% endif %}
+                </p>
+                {% endif %}
+
+                <div class="mt-3 flex items-center justify-between gap-2">
+                    <select onchange="moveTask(this.closest('.board-card'), this.value, this)"
+                            class="task-status-select rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                        {% for status_value, status_label in task_statuses %}
+                        <option value="{{ status_value }}" {% if task.status == status_value %}selected{% endif %}>{{ status_label }}</option>
+                        {% endfor %}
+                    </select>
+                    <a href="{{ url_for('people.edit_task', person_id=task.person_id, task_id=task.id) }}"
+                       class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="{{ _('Edit') }}">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+            <p class="board-empty text-xs text-gray-400 dark:text-gray-500 {% if tasks_by_status[value] %}hidden{% endif %}">{{ _('Nothing here') }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+const CSRF_TOKEN = "{{ csrf_token() }}";
+
+let draggedCard = null;
+
+document.querySelectorAll('.board-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+        // Firefox needs drag data set for the drag to start reliably
+        e.dataTransfer.setData('text/plain', card.dataset.taskId);
+        e.dataTransfer.effectAllowed = 'move';
+        draggedCard = card;
+        card.classList.add('opacity-50');
+    });
+    card.addEventListener('dragend', () => {
+        card.classList.remove('opacity-50');
+        draggedCard = null;
+        document.querySelectorAll('.board-column').forEach(col =>
+            col.classList.remove('ring-2', 'ring-primary-500'));
+    });
+});
+
+document.querySelectorAll('.board-column').forEach(column => {
+    column.addEventListener('dragover', e => {
+        if (!draggedCard) return;
+        e.preventDefault();
+        column.classList.add('ring-2', 'ring-primary-500');
+    });
+    column.addEventListener('dragleave', e => {
+        if (!column.contains(e.relatedTarget)) {
+            column.classList.remove('ring-2', 'ring-primary-500');
+        }
+    });
+    column.addEventListener('drop', e => {
+        e.preventDefault();
+        column.classList.remove('ring-2', 'ring-primary-500');
+        if (draggedCard) {
+            moveTask(draggedCard, column.dataset.status);
+        }
+    });
+});
+
+function moveTask(card, status, select) {
+    const currentColumn = card.closest('.board-column');
+    if (currentColumn && currentColumn.dataset.status === status) return;
+
+    fetch(card.dataset.moveUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': CSRF_TOKEN
+        },
+        body: JSON.stringify({ status: status })
+    })
+        .then(response => {
+            if (!response.ok) throw new Error('Move failed');
+            return response.json();
+        })
+        .then(() => {
+            // The server owns sorting, overdue styling, and the stat tiles —
+            // re-render rather than drift out of step with it
+            window.location.reload();
+        })
+        .catch(() => {
+            // The browser already switched the select before the request ran
+            if (select) select.value = currentColumn.dataset.status;
+            alert({{ _('Could not move the task — please refresh and try again')|tojson }});
+        });
+}
+</script>
+{% endblock %}

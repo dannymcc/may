@@ -316,6 +316,7 @@
                                     <div class="py-1">
                                         {% if current_user.show_menu_people is not defined or current_user.show_menu_people %}
                                         <a href="{{ url_for('people.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('People') }}</a>
+                                        <a href="{{ url_for('people.board') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Task Board') }}</a>
                                         {% endif %}
                                         {% if current_user.show_menu_maintenance is not defined or current_user.show_menu_maintenance %}
                                         <a href="{{ url_for('maintenance.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Maintenance') }}</a>
@@ -403,6 +404,7 @@
                     {% endif %}
                     {% if current_user.show_menu_people is not defined or current_user.show_menu_people %}
                     <a href="{{ url_for('people.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('People') }}</a>
+                    <a href="{{ url_for('people.board') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Task Board') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_charging is not defined or current_user.show_menu_charging %}
                     <a href="{{ url_for('charging.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('EV Charging') }}</a>

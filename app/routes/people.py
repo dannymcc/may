@@ -18,6 +18,10 @@ OPEN_STATUSES = ('todo', 'in_progress', 'blocked')
 # Sort order for the task board — urgent work first
 PRIORITY_ORDER = {'urgent': 0, 'high': 1, 'normal': 2, 'low': 3}
 
+# The unified board caps the Done column so years of finished work don't weigh
+# down the page — the full history stays on each person's own page
+BOARD_DONE_LIMIT = 25
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -84,6 +88,80 @@ def index():
                            summaries=summaries,
                            show_archived=show_archived,
                            archived_count=archived_count)
+
+
+@bp.route('/board')
+@login_required
+def board():
+    """Unified kanban of tasks across every person the user can see"""
+    people = [p for p in current_user.get_all_people() if p.is_active]
+    people_by_id = {p.id: p for p in people}
+
+    person_filter = request.args.get('person', type=int)
+    if person_filter not in people_by_id:
+        person_filter = None
+    priority_filter = request.args.get('priority')
+    if priority_filter not in dict(PERSON_TASK_PRIORITIES):
+        priority_filter = None
+
+    tasks = []
+    if people_by_id:
+        query = PersonTask.query.filter(PersonTask.person_id.in_(people_by_id.keys()))
+        if person_filter:
+            query = query.filter(PersonTask.person_id == person_filter)
+        if priority_filter:
+            query = query.filter(PersonTask.priority == priority_filter)
+        tasks = query.all()
+
+    tasks_by_status = {}
+    for value, label in PERSON_TASK_STATUSES:
+        tasks_by_status[value] = sort_tasks([t for t in tasks if t.status == value])
+
+    done = sorted(tasks_by_status.get('done', []),
+                  key=lambda t: t.completed_at or datetime.min,
+                  reverse=True)
+    done_total = len(done)
+    tasks_by_status['done'] = done[:BOARD_DONE_LIMIT]
+
+    open_tasks = [t for t in tasks if t.status in OPEN_STATUSES]
+    stats = {
+        'active_tasks': len(open_tasks),
+        'overdue_tasks': len([t for t in open_tasks if t.is_overdue()]),
+        'done_tasks': done_total,
+        'people_count': len({t.person_id for t in open_tasks}),
+    }
+
+    return render_template('people/board.html',
+                           people=people,
+                           tasks_by_status=tasks_by_status,
+                           task_statuses=PERSON_TASK_STATUSES,
+                           task_priorities=PERSON_TASK_PRIORITIES,
+                           stats=stats,
+                           done_total=done_total,
+                           done_limit=BOARD_DONE_LIMIT,
+                           person_filter=person_filter,
+                           priority_filter=priority_filter,
+                           today=date.today())
+
+
+@bp.route('/tasks/<int:task_id>/move', methods=['POST'])
+@login_required
+def move_task(task_id):
+    """JSON endpoint behind the unified board's drag-and-drop"""
+    task = PersonTask.query.get_or_404(task_id)
+
+    if task.person not in current_user.get_all_people():
+        return {'error': 'Access denied'}, 403
+
+    data = request.get_json(silent=True) or {}
+    status = data.get('status')
+    if status not in dict(PERSON_TASK_STATUSES):
+        return {'error': 'Invalid status'}, 400
+
+    apply_task_status(task, status)
+    db.session.commit()
+
+    return {'ok': True, 'task_id': task.id, 'status': task.status}
 
 
 @bp.route('/new', methods=['GET', 'POST'])
