@@ -55,8 +55,17 @@ def process_due_reminders():
             stats['skipped'] += 1
             continue
 
-        # Build notification message
-        vehicle_name = reminder.vehicle.name if reminder.vehicle else 'Unknown Vehicle'
+        # Build notification message — a reminder is about a vehicle or a person
+        if reminder.person:
+            subject_label = 'Person'
+            subject_name = reminder.person.display_name
+        elif reminder.vehicle:
+            subject_label = 'Vehicle'
+            subject_name = reminder.vehicle.name
+        else:
+            subject_label = 'Vehicle'
+            subject_name = 'Unknown Vehicle'
+
         days_until = (reminder.due_date - today).days
 
         if days_until < 0:
@@ -70,7 +79,7 @@ def process_due_reminders():
 
         title = f"Reminder: {reminder.title} ({time_msg})"
         message = (
-            f"Vehicle: {vehicle_name}\n"
+            f"{subject_label}: {subject_name}\n"
             f"Reminder: {reminder.title}\n"
             f"Due: {reminder.due_date.strftime('%B %d, %Y')} ({time_msg})\n"
         )
@@ -134,6 +143,8 @@ def process_due_calendar_alarms():
             f"Event: {event.title}\n"
             f"Starts: {event.start_at.isoformat() if event.start_at else 'unknown'}\n"
         )
+        if event.person:
+            message += f"Person: {event.person.display_name}\n"
         if event.location:
             message += f"Location: {event.location}\n"
 

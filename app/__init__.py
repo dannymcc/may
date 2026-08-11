@@ -142,14 +142,26 @@ def _bootstrap_alembic_version(app):
 
 
 def _schema_matches_metadata(inspector, table_names):
-    """Return True when all model tables and columns already exist."""
+    """Return True when all model tables and columns already exist, with matching nullability.
+
+    Name-only comparison was enough while every migration was purely additive,
+    because ``_run_schema_migrations`` can replay an ``ADD COLUMN`` itself. It
+    cannot relax an existing ``NOT NULL`` (see 7c3e9a1d5b42, which makes
+    ``reminders.vehicle_id`` nullable), so a database whose column names all
+    match may still be structurally behind. Reporting a match there would let
+    ``_bootstrap_alembic_version`` stamp head and skip that migration forever.
+    Only the relax direction is checked, so no correct database is misread.
+    """
     for table in db.metadata.tables.values():
         if table.name not in table_names:
             return False
-        existing_cols = {col['name'] for col in inspector.get_columns(table.name)}
-        model_cols = {column.name for column in table.columns}
-        if not model_cols.issubset(existing_cols):
-            return False
+        existing_cols = {col['name']: col for col in inspector.get_columns(table.name)}
+        for column in table.columns:
+            existing = existing_cols.get(column.name)
+            if existing is None:
+                return False
+            if column.nullable and existing.get('nullable') is False:
+                return False
     return True
 
 
@@ -455,7 +467,7 @@ def create_app(config_class=Config):
         fmt = formats.get(style, formats['default'])
         return value.strftime(fmt)
 
-    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, notes, allowance, search
+    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, notes, allowance, search, people
     app.register_blueprint(main.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(vehicles.bp)
@@ -474,6 +486,7 @@ def create_app(config_class=Config):
     app.register_blueprint(notes.bp)
     app.register_blueprint(allowance.bp)
     app.register_blueprint(search.bp)
+    app.register_blueprint(people.bp)
 
     # Health check endpoint for container orchestration
     @app.route('/health')

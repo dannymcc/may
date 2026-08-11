@@ -1,12 +1,13 @@
 """Global search across a user's records (#112)."""
-from datetime import datetime
+from datetime import datetime, time, timedelta
 
 from flask import Blueprint, render_template, request
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 
 from app.models import (
-    Expense, FuelLog, Document, Note, Trip, ChargingSession
+    Expense, FuelLog, Document, Note, Trip, ChargingSession, Person, PersonTask,
+    PERSON_TASK_STATUSES
 )
 
 bp = Blueprint('search', __name__, url_prefix='/search')
@@ -31,6 +32,15 @@ def _apply_dates(query, column, date_from, date_to):
     return query
 
 
+def _apply_dates_to_timestamp(query, column, date_from, date_to):
+    """Apply the date filters to a datetime column, covering the whole end day."""
+    if date_from:
+        query = query.filter(column >= datetime.combine(date_from, time.min))
+    if date_to:
+        query = query.filter(column < datetime.combine(date_to, time.min) + timedelta(days=1))
+    return query
+
+
 @bp.route('/')
 @login_required
 def index():
@@ -41,8 +51,11 @@ def index():
     vehicles = current_user.get_all_vehicles()
     vehicle_ids = [v.id for v in vehicles]
 
+    people = current_user.get_all_people()
+    person_ids = [p.id for p in people]
+
     results = None
-    if vehicle_ids and (q or date_from or date_to):
+    if (vehicle_ids or person_ids) and (q or date_from or date_to):
         like = f'%{q}%'
         results = {}
 
@@ -106,6 +119,28 @@ def index():
         charging = _apply_dates(charging, ChargingSession.date, date_from, date_to)
         results['charging'] = charging.order_by(ChargingSession.date.desc()).limit(RESULT_LIMIT).all()
 
+        matched_people = Person.query.filter(Person.id.in_(person_ids))
+        if q:
+            matched_people = matched_people.filter(or_(
+                Person.name.ilike(like),
+                Person.email.ilike(like),
+                Person.organization.ilike(like),
+                Person.role_title.ilike(like),
+                Person.notes.ilike(like),
+            ))
+        # People have no logged date; filter on when they were added
+        matched_people = _apply_dates_to_timestamp(matched_people, Person.created_at, date_from, date_to)
+        results['people'] = matched_people.order_by(Person.name).limit(RESULT_LIMIT).all()
+
+        person_tasks = PersonTask.query.filter(PersonTask.person_id.in_(person_ids))
+        if q:
+            person_tasks = person_tasks.filter(or_(
+                PersonTask.title.ilike(like),
+                PersonTask.description.ilike(like),
+            ))
+        person_tasks = _apply_dates(person_tasks, PersonTask.due_date, date_from, date_to)
+        results['person_tasks'] = person_tasks.order_by(PersonTask.due_date.desc()).limit(RESULT_LIMIT).all()
+
     total = sum(len(v) for v in results.values()) if results is not None else 0
 
     return render_template('search/index.html',
@@ -114,4 +149,5 @@ def index():
                            date_to=request.args.get('date_to', ''),
                            results=results,
                            total=total,
-                           result_limit=RESULT_LIMIT)
+                           result_limit=RESULT_LIMIT,
+                           task_status_labels=dict(PERSON_TASK_STATUSES))

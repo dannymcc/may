@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+{% block title %}{{ person.name }}{% endblock %}
+
+{% block content %}
+{% set is_owner = person.owner_id == current_user.id or current_user.is_admin %}
+
+<div class="mb-6">
+    <a href="{{ url_for('people.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">&larr; {{ _('Back to people') }}</a>
+</div>
+
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-8">
+    <div class="p-6">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-4 min-w-0">
+                {% if person.image_filename %}
+                <img src="{{ url_for('api.uploaded_file', filename=person.image_filename) }}"
+                     alt="{{ person.name }}"
+                     class="h-20 w-20 rounded-full object-cover flex-shrink-0">
+                {% else %}
+                {% set name_parts = (person.name or '').split() %}
+                <div class="h-20 w-20 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center flex-shrink-0">
+                    <span class="text-2xl font-semibold text-primary-700">
+                        {{ ((name_parts[0][:1] if name_parts else '?') ~ (name_parts[-1][:1] if name_parts|length > 1 else ''))|upper }}
+                    </span>
+                </div>
+                {% endif %}
+                <div class="min-w-0">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ person.name }}</h1>
+                    <p class="text-gray-500 dark:text-gray-400">
+                        {{ person.role_title or '' }}{% if person.role_title and person.organization %} · {% endif %}{{ person.organization or '' }}
+                    </p>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                     {% if person.relationship_type == 'coworker' %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+                                     {% elif person.relationship_type == 'dependent' %}bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300
+                                     {% elif person.relationship_type == 'client' %}bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300
+                                     {% elif person.relationship_type == 'family' %}bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
+                                     {% else %}bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300{% endif %}">
+                            {{ person.relationship_type_label }}
+                        </span>
+                        {% if not person.is_active %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300">{{ _('Inactive') }}</span>
+                        {% endif %}
+                        {% if person.is_shared %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">{{ _('Shared') }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% if is_owner %}
+            <div class="flex space-x-2 flex-shrink-0">
+                <a href="{{ url_for('people.edit', person_id=person.id) }}"
+                   class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-700">
+                    {{ _('Edit') }}
+                </a>
+                {% if person.is_shared %}
+                <form method="POST" action="{{ url_for('people.unshare', person_id=person.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-700">
+                        {{ _('Unshare') }}
+                    </button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('people.share', person_id=person.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-700">
+                        {{ _('Share') }}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Email') }}</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white truncate">
+                    {% if person.email %}
+                    <a href="mailto:{{ person.email }}" class="text-primary-600 hover:text-primary-500">{{ person.email }}</a>
+                    {% else %}{{ _('Not set') }}{% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Phone') }}</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {% if person.phone %}
+                    <a href="tel:{{ person.phone }}" class="text-primary-600 hover:text-primary-500">{{ person.phone }}</a>
+                    {% else %}{{ _('Not set') }}{% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Organization') }}</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ person.organization or _('Not set') }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Role / Job Title') }}</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ person.role_title or _('Not set') }}</dd>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-8">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Active Tasks') }}</dt>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.active_tasks }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ _('of %(count)s total', count=stats.total_tasks) }}</dd>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Overdue') }}</dt>
+        <dd class="mt-1 text-xl font-semibold {% if stats.overdue_tasks %}text-red-600 dark:text-red-400{% else %}text-gray-900 dark:text-white{% endif %}">{{ stats.overdue_tasks }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ _('past due date') }}</dd>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Completed') }}</dt>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ stats.done_tasks }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ _('tasks done') }}</dd>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Open Reminders') }}</dt>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ reminders|length }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ _('and %(count)s events', count=calendar_events|length) }}</dd>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="flex flex-wrap gap-3 mb-8">
+    <a href="{{ url_for('people.new_task', person_id=person.id) }}"
+       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        {{ _('Add Task') }}
+    </a>
+    {% if person.email %}
+    <a href="mailto:{{ person.email }}"
+       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600">
+        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        {{ _('Send Email') }}
+    </a>
+    {% endif %}
+</div>
+
+<!-- Task Board -->
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div class="flex items-center">
+            <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+            </svg>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Current Work') }}</h2>
+        </div>
+        <a href="{{ url_for('people.new_task', person_id=person.id) }}" class="text-sm text-primary-600 hover:text-primary-500">{{ _('Add Task') }}</a>
+    </div>
+
+    {% if stats.total_tasks %}
+    <div class="p-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        {% for value, label in task_statuses %}
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                    <span class="h-2 w-2 rounded-full mr-2
+                                 {% if value == 'todo' %}bg-gray-400
+                                 {% elif value == 'in_progress' %}bg-blue-500
+                                 {% elif value == 'blocked' %}bg-amber-500
+                                 {% else %}bg-green-500{% endif %}"></span>
+                    {{ label }}
+                </h3>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ tasks_by_status[value]|length }}</span>
+            </div>
+
+            <div class="space-y-3">
+                {% for task in tasks_by_status[value] %}
+                <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 p-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white {% if task.status == 'done' %}line-through text-gray-500 dark:text-gray-400{% endif %}">{{ task.title }}</p>
+                        <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                     {% if task.priority == 'urgent' %}bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300
+                                     {% elif task.priority == 'high' %}bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300
+                                     {% elif task.priority == 'low' %}bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300
+                                     {% else %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300{% endif %}">
+                            {{ dict(task_priorities)[task.priority] if task.priority in dict(task_priorities) else task.priority|capitalize }}
+                        </span>
+                    </div>
+
+                    {% if task.description %}
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">{{ task.description }}</p>
+                    {% endif %}
+
+                    {% if task.due_date %}
+                    <p class="mt-2 text-xs {% if task.is_overdue() %}text-red-600 dark:text-red-400 font-medium{% elif task.status != 'done' and task.due_date == today %}text-amber-600 dark:text-amber-400{% else %}text-gray-500 dark:text-gray-400{% endif %}">
+                        {% if task.is_overdue() %}
+                        {{ _('Overdue — due %(date)s', date=task.due_date|format_date) }}
+                        {% elif task.status != 'done' and task.due_date == today %}
+                        {{ _('Due today') }}
+                        {% else %}
+                        {{ _('Due %(date)s', date=task.due_date|format_date) }}
+                        {% endif %}
+                    </p>
+                    {% elif task.status == 'done' and task.completed_at %}
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ _('Completed %(date)s', date=task.completed_at|format_date) }}</p>
+                    {% endif %}
+
+                    <div class="mt-3 flex items-center justify-between gap-2">
+                        <form method="POST" action="{{ url_for('people.task_status', person_id=person.id, task_id=task.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="status" onchange="this.form.submit()"
+                                    class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                                {% for status_value, status_label in task_statuses %}
+                                <option value="{{ status_value }}" {% if task.status == status_value %}selected{% endif %}>{{ status_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ url_for('people.edit_task', person_id=person.id, task_id=task.id) }}"
+                               class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="{{ _('Edit') }}">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </a>
+                            <form method="POST" action="{{ url_for('people.delete_task', person_id=person.id, task_id=task.id) }}"
+                                  onsubmit="return confirm('{{ _('Delete this task?') }}');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="p-1 text-gray-400 hover:text-red-500" title="{{ _('Delete') }}">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-xs text-gray-400 dark:text-gray-500">{{ _('Nothing here') }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ _('No tasks yet') }}</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Track what you owe %(name)s — and what they owe you.', name=person.name) }}</p>
+        <div class="mt-6">
+            <a href="{{ url_for('people.new_task', person_id=person.id) }}"
+               class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                {{ _('Add Task') }}
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Reminders & Calendar -->
+{% if reminders or calendar_events %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    {% if reminders %}
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center">
+            <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Upcoming Reminders') }}</h2>
+        </div>
+        <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for reminder in reminders[:5] %}
+            <li class="px-6 py-4">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ reminder.title }}</p>
+                            <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300">
+                                {{ dict(reminder_types)[reminder.reminder_type] if reminder.reminder_type in dict(reminder_types) else reminder.reminder_type|capitalize }}
+                            </span>
+                        </div>
+                        {% if reminder.description %}
+                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate">{{ reminder.description }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <div class="text-right">
+                            <p class="text-sm {% if reminder.is_overdue() %}text-red-600 font-medium{% elif reminder.is_upcoming(7) %}text-amber-600{% else %}text-gray-900 dark:text-white{% endif %}">
+                                {{ reminder.due_date|format_date }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {% if reminder.is_overdue() %}
+                                {{ _('%(days)s days overdue', days=reminder.days_until_due()|abs) }}
+                                {% elif reminder.days_until_due() == 0 %}
+                                {{ _('Due today') }}
+                                {% elif reminder.days_until_due() == 1 %}
+                                {{ _('Due tomorrow') }}
+                                {% else %}
+                                {{ _('In %(days)s days', days=reminder.days_until_due()) }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <form method="POST" action="{{ url_for('reminders.complete', reminder_id=reminder.id, return_to='person') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="p-2 text-gray-400 hover:text-green-600" title="{{ _('Mark as completed') }}">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </button>
+                            </form>
+                            <a href="{{ url_for('reminders.edit', reminder_id=reminder.id) }}"
+                               class="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-400" title="{{ _('Edit') }}">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if calendar_events %}
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center">
+            <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Upcoming Events') }}</h2>
+        </div>
+        <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for event in calendar_events %}
+            <li class="px-6 py-4">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ event.title }}</p>
+                        {% if event.location %}
+                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate">{{ event.location }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-sm text-gray-900 dark:text-white">{{ event.start_at|format_date }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {% if event.all_day %}{{ _('All day') }}{% else %}{{ event.start_at.strftime('%H:%M') }}{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Notes -->
+{% if person.notes %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Notes') }}</h2>
+    </div>
+    <div class="px-6 py-4">
+        <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ person.notes }}</p>
+    </div>
+</div>
+{% endif %}
+
+{% if is_owner %}
+<!-- Danger Zone -->
+<div class="mt-8 bg-white dark:bg-gray-800 shadow rounded-lg border border-red-200">
+    <div class="px-6 py-4 border-b border-red-200">
+        <h3 class="text-lg font-medium text-red-600">{{ _('Danger Zone') }}</h3>
+    </div>
+    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+        <!-- Archive/Restore -->
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    {% if person.is_active %}
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ _('Archive this person') }}</h4>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('Archived people won\'t appear in regular lists or summaries. You can restore them later.') }}</p>
+                    {% else %}
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ _('Restore this person') }}</h4>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('Restore this person to make them active again and include them in summaries.') }}</p>
+                    {% endif %}
+                </div>
+                {% if person.is_active %}
+                <form method="POST" action="{{ url_for('people.archive', person_id=person.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="px-4 py-2 border border-amber-300 rounded-md text-sm font-medium text-amber-700 bg-white dark:bg-gray-800 hover:bg-amber-50">
+                        {{ _('Archive Person') }}
+                    </button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('people.unarchive', person_id=person.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="px-4 py-2 border border-green-300 rounded-md text-sm font-medium text-green-700 bg-white dark:bg-gray-800 hover:bg-green-50">
+                        {{ _('Restore Person') }}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Delete -->
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ _('Delete this person') }}</h4>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('Once you delete a person, there is no going back. This will also delete all their tasks, reminders and calendar events.') }}</p>
+                </div>
+                <form method="POST" action="{{ url_for('people.delete', person_id=person.id) }}"
+                      onsubmit="return confirm('{{ _('Are you sure you want to delete this person? This action cannot be undone.') }}');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="px-4 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-white dark:bg-gray-800 hover:bg-red-50">
+                        {{ _('Delete Person') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

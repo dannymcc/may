@@ -24,6 +24,7 @@ class CalendarEventPayload:
     status: str | None = None
     url: str | None = None
     recurrence_rule: str | None = None
+    person_name: str | None = None
     alarms: list[CalendarAlarmPayload] = field(default_factory=list)
 
 
@@ -59,6 +60,16 @@ def _alarm_trigger(minutes_before):
     return f'-PT{minutes}M'
 
 
+def _event_description(event):
+    """Description for an event, prefixed with the person it concerns."""
+    if not event.person_name:
+        return event.description
+    person_line = f'Person: {event.person_name}'
+    if not event.description:
+        return person_line
+    return f'{person_line}\n{event.description}'
+
+
 def create_vevent(event):
     """Create a VEVENT component from a CalendarEventPayload."""
     lines = [
@@ -68,10 +79,15 @@ def create_vevent(event):
         f'SUMMARY:{escape_ical(event.summary)}',
     ]
 
-    if event.description:
-        lines.append(f'DESCRIPTION:{escape_ical(event.description)}')
+    description = _event_description(event)
+    if description:
+        lines.append(f'DESCRIPTION:{escape_ical(description)}')
     if event.location:
         lines.append(f'LOCATION:{escape_ical(event.location)}')
+    elif event.person_name:
+        lines.append(f'LOCATION:{escape_ical(event.person_name)}')
+    if event.person_name:
+        lines.append(f'X-MAY-PERSON:{escape_ical(event.person_name)}')
     if event.status:
         lines.append(f'STATUS:{event.status.upper()}')
     if event.url:
@@ -116,6 +132,7 @@ def create_vevent(event):
 
 
 def payload_from_calendar_event(event):
+    """Build a payload from a CalendarEvent, keeping any person context attached."""
     alarms = [
         CalendarAlarmPayload(
             action=alarm.action,
@@ -138,6 +155,7 @@ def payload_from_calendar_event(event):
         status=event.status,
         url=event.url,
         recurrence_rule=event.recurrence_rule,
+        person_name=event.person.name if event.person else None,
         alarms=alarms,
     )
 

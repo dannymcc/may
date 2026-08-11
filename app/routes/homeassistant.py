@@ -37,7 +37,7 @@ from app.models import (
     RecurringExpense, Document, Reminder
 )
 from datetime import date, timedelta
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from config import APP_VERSION
 
 bp = Blueprint('homeassistant', __name__, url_prefix='/api/ha')
@@ -300,27 +300,38 @@ def alerts(user):
                 'expiry_date': doc.expiry_date.isoformat() if doc.expiry_date else None
             })
 
-    # Check reminders
-    reminders = Reminder.query.join(Vehicle).filter(
-        Vehicle.owner_id == user.id,
+    # Check reminders — a reminder belongs to either a vehicle or a person, so
+    # joining Vehicle would drop every person reminder from the alert feed.
+    vehicle_ids = [vehicle.id for vehicle in user.get_all_vehicles()]
+    person_ids = [person.id for person in user.get_all_people()]
+    reminders = Reminder.query.filter(
+        or_(
+            Reminder.vehicle_id.in_(vehicle_ids),
+            Reminder.person_id.in_(person_ids)
+        ),
         Reminder.is_completed == False
     ).all()
 
     for reminder in reminders:
+        # 'vehicle' stays the vehicle name (None for a person reminder) so existing
+        # sensor templates keep their meaning; 'subject' is the one field an
+        # integration can display for either kind.
+        vehicle_name = reminder.vehicle.name if reminder.vehicle else None
+        person_name = reminder.person.name if reminder.person else None
+        status = None
         if reminder.is_overdue():
-            alerts.append({
-                'type': 'reminder',
-                'vehicle': reminder.vehicle.name,
-                'title': reminder.title,
-                'status': 'overdue',
-                'due_date': reminder.due_date.isoformat() if reminder.due_date else None
-            })
+            status = 'overdue'
         elif reminder.is_upcoming(reminder.notify_days_before or 7):
+            status = 'upcoming'
+
+        if status:
             alerts.append({
                 'type': 'reminder',
-                'vehicle': reminder.vehicle.name,
+                'vehicle': vehicle_name,
+                'person': person_name,
+                'subject': vehicle_name or person_name,
                 'title': reminder.title,
-                'status': 'upcoming',
+                'status': status,
                 'due_date': reminder.due_date.isoformat() if reminder.due_date else None
             })
 

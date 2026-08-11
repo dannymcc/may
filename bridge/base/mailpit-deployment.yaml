@@ -1,0 +1,51 @@
+#! mailpit-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: mailpit
+    namespace: may
+    labels:
+        com.docker.compose.project: may
+        com.docker.compose.service: mailpit
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: may
+            com.docker.compose.service: mailpit
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: may
+                com.docker.compose.service: mailpit
+                com.docker.compose.network.default: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: may-mailpit
+                  image: axllent/mailpit
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: MP_DATABASE
+                      value: "/data/mailpit.db"
+                    - name: MP_SMTP_AUTH_ACCEPT_ANY
+                      value: "1"
+                    - name: MP_SMTP_AUTH_ALLOW_INSECURE
+                      value: "1"
+                  ports:
+                    - name: mailpit-1110
+                      containerPort: 1110
+                    - name: mailpit-8025
+                      containerPort: 8025
+                    - name: mailpit-1025
+                      containerPort: 1025
+                  volumeMounts:
+                    - name: data
+                      mountPath: /data
+            volumes:
+                - name: data
+                  persistentVolumeClaim:
+                    claimName: mailpit-may-mailpit-data

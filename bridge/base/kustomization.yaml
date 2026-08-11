@@ -1,0 +1,15 @@
+#! kustomization.yaml
+# Generated code, do not edit
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+    - 0-may-namespace.yaml
+    - default-network-policy.yaml
+    - mailpit-deployment.yaml
+    - mailpit-expose.yaml
+    - mailpit-may-mailpit-data-persistentVolumeClaim.yaml
+    - mailpit-service.yaml
+    - may-deployment.yaml
+    - may-expose.yaml
+    - may-may-data-persistentVolumeClaim.yaml
+    - may-service.yaml

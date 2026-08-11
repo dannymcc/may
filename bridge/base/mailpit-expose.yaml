@@ -1,0 +1,24 @@
+#! mailpit-expose.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: mailpit
+    namespace: may
+    labels:
+        com.docker.compose.project: may
+        com.docker.compose.service: mailpit
+spec:
+    selector:
+        com.docker.compose.project: may
+        com.docker.compose.service: mailpit
+    ports:
+        - name: mailpit-1110
+          port: 1110
+          targetPort: mailpit-1110
+        - name: mailpit-8025
+          port: 8025
+          targetPort: mailpit-8025
+        - name: mailpit-1025
+          port: 1025
+          targetPort: mailpit-1025

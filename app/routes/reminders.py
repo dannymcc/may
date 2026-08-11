@@ -2,18 +2,33 @@ from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
+from sqlalchemy import or_
 from app import db, DATE_FORMATS
-from app.models import Reminder, Vehicle, REMINDER_TYPES, RECURRENCE_OPTIONS
+from app.models import Reminder, Vehicle, Person, REMINDER_TYPES, RECURRENCE_OPTIONS
 
 bp = Blueprint('reminders', __name__, url_prefix='/reminders')
+
+
+def _can_access(reminder):
+    """A reminder is accessible when its vehicle or its person is visible to the user.
+
+    A reminder belongs to either a vehicle or a person, so checking the vehicle
+    alone would lock the user out of every person reminder.
+    """
+    if reminder.vehicle_id is not None:
+        return reminder.vehicle in current_user.get_all_vehicles()
+    if reminder.person_id is not None:
+        return reminder.person in current_user.get_all_people()
+    return reminder.user_id == current_user.id
 
 
 @bp.route('/')
 @login_required
 def index():
-    """List all reminders for the user's vehicles"""
+    """List all reminders for the user's vehicles and people"""
     vehicles = current_user.get_all_vehicles()
     vehicle_ids = [v.id for v in vehicles]
+    person_ids = [p.id for p in current_user.get_all_people()]
 
     # Get filter parameters
     show_completed = request.args.get('completed', 'false') == 'true'
@@ -21,7 +36,12 @@ def index():
     filter_vehicle = request.args.get('vehicle', type=int)
 
     # Build query
-    query = Reminder.query.filter(Reminder.vehicle_id.in_(vehicle_ids))
+    query = Reminder.query.filter(
+        or_(
+            Reminder.vehicle_id.in_(vehicle_ids),
+            Reminder.person_id.in_(person_ids)
+        )
+    )
 
     if not show_completed:
         query = query.filter_by(is_completed=False)
@@ -54,31 +74,60 @@ def index():
 
 @bp.route('/new', methods=['GET', 'POST'])
 @bp.route('/new/<int:vehicle_id>', methods=['GET', 'POST'])
+@bp.route('/new/person/<int:person_id>', methods=['GET', 'POST'])
 @login_required
-def new(vehicle_id=None):
-    """Create a new reminder"""
+def new(vehicle_id=None, person_id=None):
+    """Create a new reminder for either a vehicle or a person"""
     vehicles = current_user.get_all_vehicles()
+    people = [person for person in current_user.get_all_people() if person.is_active]
 
-    if not vehicles:
-        flash(_('Please add a vehicle first'), 'error')
+    if not vehicles and not people:
+        flash(_('Please add a vehicle or a person first'), 'error')
         return redirect(url_for('vehicles.index'))
 
     if request.method == 'POST':
-        vehicle_id = int(request.form.get('vehicle_id'))
-        vehicle = Vehicle.query.get_or_404(vehicle_id)
+        # The form posts a single "target" ("vehicle:1" / "person:2"); the plain
+        # vehicle_id/person_id fields are still honoured so the vehicle page's
+        # inline form and any bookmarked URL keep working.
+        target = request.form.get('target', '')
+        if target.startswith('vehicle:'):
+            vehicle_id, person_id = target[len('vehicle:'):], None
+        elif target.startswith('person:'):
+            vehicle_id, person_id = None, target[len('person:'):]
+        else:
+            vehicle_id = request.form.get('vehicle_id') or vehicle_id
+            person_id = request.form.get('person_id') or person_id
 
-        if vehicle not in vehicles:
+        vehicle = person = None
+        try:
+            if vehicle_id:
+                vehicle = Vehicle.query.get_or_404(int(vehicle_id))
+            elif person_id:
+                person = Person.query.get_or_404(int(person_id))
+        except (TypeError, ValueError):
+            flash(_('Choose a vehicle or a person for this reminder'), 'error')
+            return redirect(url_for('reminders.new'))
+
+        if vehicle is None and person is None:
+            flash(_('Choose a vehicle or a person for this reminder'), 'error')
+            return redirect(url_for('reminders.new'))
+
+        if (vehicle is not None and vehicle not in vehicles) or \
+                (person is not None and person not in current_user.get_all_people()):
             flash(_('Access denied'), 'error')
             return redirect(url_for('reminders.index'))
 
         try:
             due_date = datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date()
-        except ValueError:
+        except (TypeError, ValueError):
             flash(_('Invalid date format'), 'error')
-            return redirect(url_for('reminders.new', vehicle_id=vehicle_id))
+            if person is not None:
+                return redirect(url_for('reminders.new', person_id=person.id))
+            return redirect(url_for('reminders.new', vehicle_id=vehicle.id))
 
         reminder = Reminder(
-            vehicle_id=vehicle_id,
+            vehicle_id=vehicle.id if vehicle else None,
+            person_id=person.id if person else None,
             user_id=current_user.id,
             title=request.form.get('title'),
             description=request.form.get('description'),
@@ -94,23 +143,34 @@ def new(vehicle_id=None):
 
         flash(_('Reminder "%(title)s" created successfully') % {'title': reminder.title}, 'success')
 
-        # Redirect back to vehicle page if we came from there
-        if request.form.get('return_to') == 'vehicle':
-            return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+        # Redirect back to the vehicle or person page if we came from there
+        return_to = request.form.get('return_to')
+        if return_to == 'vehicle' and vehicle is not None:
+            return redirect(url_for('vehicles.view', vehicle_id=vehicle.id))
+        if return_to == 'person' and person is not None:
+            return redirect(url_for('people.view', person_id=person.id))
 
         return redirect(url_for('reminders.index'))
 
-    # Pre-select vehicle if provided
+    # Pre-select the vehicle or person if provided
     selected_vehicle = None
     if vehicle_id:
         selected_vehicle = Vehicle.query.get(vehicle_id)
         if selected_vehicle not in vehicles:
             selected_vehicle = None
 
+    selected_person = None
+    if person_id:
+        selected_person = Person.query.get(person_id)
+        if selected_person not in people:
+            selected_person = None
+
     return render_template('reminders/form.html',
                            reminder=None,
                            vehicles=vehicles,
+                           people=people,
                            selected_vehicle=selected_vehicle,
+                           selected_person=selected_person,
                            reminder_types=REMINDER_TYPES,
                            recurrence_options=RECURRENCE_OPTIONS)
 
@@ -122,7 +182,7 @@ def edit(reminder_id):
     reminder = Reminder.query.get_or_404(reminder_id)
     vehicles = current_user.get_all_vehicles()
 
-    if reminder.vehicle not in vehicles:
+    if not _can_access(reminder):
         flash(_('Access denied'), 'error')
         return redirect(url_for('reminders.index'))
 
@@ -158,9 +218,8 @@ def edit(reminder_id):
 def complete(reminder_id):
     """Mark a reminder as completed"""
     reminder = Reminder.query.get_or_404(reminder_id)
-    vehicles = current_user.get_all_vehicles()
 
-    if reminder.vehicle not in vehicles:
+    if not _can_access(reminder):
         flash(_('Access denied'), 'error')
         return redirect(url_for('reminders.index'))
 
@@ -176,6 +235,7 @@ def complete(reminder_id):
         # may already exist. Only create one if none is present.
         existing = Reminder.query.filter_by(
             vehicle_id=reminder.vehicle_id,
+            person_id=reminder.person_id,
             user_id=reminder.user_id,
             title=reminder.title,
             reminder_type=reminder.reminder_type,
@@ -193,6 +253,7 @@ def complete(reminder_id):
         else:
             new_reminder = Reminder(
                 vehicle_id=reminder.vehicle_id,
+                person_id=reminder.person_id,
                 user_id=reminder.user_id,
                 title=reminder.title,
                 description=reminder.description,
@@ -211,8 +272,10 @@ def complete(reminder_id):
 
     # Redirect back to referrer if available
     return_to = request.args.get('return_to')
-    if return_to == 'vehicle':
+    if return_to == 'vehicle' and reminder.vehicle_id:
         return redirect(url_for('vehicles.view', vehicle_id=reminder.vehicle_id))
+    if return_to == 'person' and reminder.person_id:
+        return redirect(url_for('people.view', person_id=reminder.person_id))
 
     return redirect(url_for('reminders.index'))
 
@@ -222,9 +285,8 @@ def complete(reminder_id):
 def uncomplete(reminder_id):
     """Mark a completed reminder as not completed"""
     reminder = Reminder.query.get_or_404(reminder_id)
-    vehicles = current_user.get_all_vehicles()
 
-    if reminder.vehicle not in vehicles:
+    if not _can_access(reminder):
         flash(_('Access denied'), 'error')
         return redirect(url_for('reminders.index'))
 
@@ -241,13 +303,13 @@ def uncomplete(reminder_id):
 def delete(reminder_id):
     """Delete a reminder"""
     reminder = Reminder.query.get_or_404(reminder_id)
-    vehicles = current_user.get_all_vehicles()
 
-    if reminder.vehicle not in vehicles:
+    if not _can_access(reminder):
         flash(_('Access denied'), 'error')
         return redirect(url_for('reminders.index'))
 
     vehicle_id = reminder.vehicle_id
+    person_id = reminder.person_id
     db.session.delete(reminder)
     db.session.commit()
 
@@ -255,8 +317,10 @@ def delete(reminder_id):
 
     # Redirect back to referrer if available
     return_to = request.args.get('return_to')
-    if return_to == 'vehicle':
+    if return_to == 'vehicle' and vehicle_id:
         return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+    if return_to == 'person' and person_id:
+        return redirect(url_for('people.view', person_id=person_id))
 
     return redirect(url_for('reminders.index'))
 

@@ -1,0 +1,18 @@
+#! may-expose.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: may
+    namespace: may
+    labels:
+        com.docker.compose.project: may
+        com.docker.compose.service: may
+spec:
+    selector:
+        com.docker.compose.project: may
+        com.docker.compose.service: may
+    ports:
+        - name: may-5050
+          port: 5050
+          targetPort: may-5050

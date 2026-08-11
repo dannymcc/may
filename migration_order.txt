@@ -88,4 +88,10 @@ Generated from migrations/versions revision/down_revision values.
     d4e5f6a7b8c9 during the v0.27.1 upstream sync: upstream independently
     used that id, and fork ids are now random to avoid future collisions)
 
-Current head: 3d5ffcb447c9
+18. 7c3e9a1d5b42
+    File: 7c3e9a1d5b42_add_people_and_person_tasks.py
+    Revises: 3d5ffcb447c9
+    Message: add people and person_tasks tables, show_menu_people preference,
+    person_id on reminders/calendar_events, and nullable reminders.vehicle_id
+
+Current head: 7c3e9a1d5b42

@@ -165,9 +165,15 @@ def test_fresh_db_stamps_head_and_replay_survives(tmp_path):
             rev = conn.execute(
                 text('SELECT version_num FROM alembic_version')
             ).scalar()
-        heads = [s.strip() for s in open('migrations/versions/d4e5f6a7b8c0_add_number_format_prefs_to_users.py')
-                 if s.startswith("revision = ")]
-        head = heads[0].split("'")[1]
+        # Resolve head from the migration graph rather than naming a file:
+        # hardcoding one makes this test fail every time a migration is added.
+        from alembic.script import ScriptDirectory
+        from flask_migrate import current as _  # noqa: F401  (ensures migrate is initialised)
+
+        script = ScriptDirectory('migrations')
+        script_heads = script.get_heads()
+        assert len(script_heads) == 1, f'expected a single alembic head, got {script_heads}'
+        head = script_heads[0]
         assert rev == head, f'fresh db stamped {rev}, expected head {head}'
 
         # Simulate the pre-fix broken state and prove the replay now survives.

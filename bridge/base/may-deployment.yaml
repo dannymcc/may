@@ -1,0 +1,65 @@
+#! may-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: may
+    namespace: may
+    labels:
+        com.docker.compose.project: may
+        com.docker.compose.service: may
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: may
+            com.docker.compose.service: may
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: may
+                com.docker.compose.service: may
+                com.docker.compose.network.default: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: may
+                  image: may-may
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: ADMIN_PASSWORD
+                      value: "4-oNyMyYQe9WVEmBA7oBg3kE7XKPAkxEH0aUhy-SC0zovy-N"
+                    - name: DATABASE_URL
+                      value: "sqlite:////app/data/may.db"
+                    - name: PGID
+                      value: "1000"
+                    - name: PUID
+                      value: "1000"
+                    - name: SECRET_KEY
+                      value: "Qq-s-ZvW7G-cmbr-EKxN73lyXbuRQ4VE5nRFghujC1skBuiu"
+                    - name: SMTP_HOST
+                      value: "mailpit"
+                    - name: SMTP_PORT
+                      value: "1025"
+                    - name: SMTP_SENDER
+                      value: "may@localhost"
+                    - name: SMTP_SENDER_NAME
+                      value: "May"
+                    - name: SMTP_SSL
+                      value: "false"
+                    - name: SMTP_TLS
+                      value: "false"
+                    - name: UPLOAD_FOLDER
+                      value: "/app/data/uploads"
+                  ports:
+                    - name: may-5050
+                      containerPort: 5050
+                  volumeMounts:
+                    - name: app-data
+                      mountPath: /app/data
+            volumes:
+                - name: app-data
+                  persistentVolumeClaim:
+                    claimName: may-may-data

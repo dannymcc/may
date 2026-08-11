@@ -95,11 +95,14 @@ class User(UserMixin, db.Model):
     show_menu_charging = db.Column(db.Boolean, default=True)
     show_menu_notes = db.Column(db.Boolean, default=True)  # issue #204
     show_menu_allowance = db.Column(db.Boolean, default=True)  # issue #208
+    show_menu_people = db.Column(db.Boolean, default=True)
     show_quick_entry = db.Column(db.Boolean, default=False)  # Show quick entry button in navbar
 
     # Relationships
     owned_vehicles = db.relationship('Vehicle', backref='owner', lazy='dynamic',
                                      foreign_keys='Vehicle.owner_id')
+    owned_people = db.relationship('Person', backref='owner', lazy='dynamic',
+                                   foreign_keys='Person.owner_id')
     shared_vehicles = db.relationship('Vehicle', secondary=vehicle_users,
                                       backref=db.backref('shared_users', lazy='dynamic'))
     fuel_logs = db.relationship('FuelLog', backref='user', lazy='dynamic')
@@ -123,6 +126,18 @@ class User(UserMixin, db.Model):
                 seen.add(v.id)
                 unique.append(v)
         return sorted(unique, key=lambda v: (v.make or '', v.model or '', v.name or ''))
+
+    def get_all_people(self):
+        """Get all people user has access to (owned + instance-shared), sorted by name"""
+        owned = list(self.owned_people.all())
+        instance_shared = Person.query.filter_by(is_shared=True).all()
+        seen = set()
+        unique = []
+        for p in owned + instance_shared:
+            if p.id not in seen:
+                seen.add(p.id)
+                unique.append(p)
+        return sorted(unique, key=lambda p: (p.name or '', p.organization or ''))
 
     def generate_reset_token(self):
         """Generate a password reset token valid for 1 hour"""
@@ -847,12 +862,132 @@ class VehicleSpec(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class Person(db.Model):
+    """Someone in the user's inner circle — coworker, dependent, client, family"""
+    __tablename__ = 'people'
+
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    # Basic info
+    name = db.Column(db.String(100), nullable=False)
+    relationship_type = db.Column(db.String(20), nullable=False, default='coworker')  # coworker, dependent, client, family, other
+
+    # Contact details
+    email = db.Column(db.String(120))
+    phone = db.Column(db.String(40))
+
+    # Where they fit professionally
+    organization = db.Column(db.String(120))
+    role_title = db.Column(db.String(120))
+
+    # Notes
+    notes = db.Column(db.Text)
+
+    # Image
+    image_filename = db.Column(db.String(255))
+
+    # Status
+    is_active = db.Column(db.Boolean, default=True)
+
+    # Sharing — if True, all users on this instance can see this person
+    is_shared = db.Column(db.Boolean, default=False)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @property
+    def display_name(self):
+        """Name qualified with role and/or organization when they are known"""
+        if self.role_title and self.organization:
+            return f"{self.name} ({self.role_title}, {self.organization})"
+        if self.organization:
+            return f"{self.name} ({self.organization})"
+        if self.role_title:
+            return f"{self.name} ({self.role_title})"
+        return self.name
+
+    @property
+    def relationship_type_label(self):
+        return dict(RELATIONSHIP_TYPES).get(self.relationship_type,
+                                            (self.relationship_type or '').replace('_', ' ').title())
+
+    def to_dict(self):
+        """Serialize person to dictionary for API"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'relationship_type': self.relationship_type,
+            'email': self.email,
+            'phone': self.phone,
+            'organization': self.organization,
+            'role_title': self.role_title,
+            'notes': self.notes,
+            'image_filename': self.image_filename,
+            'is_active': self.is_active,
+            'is_shared': self.is_shared,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class PersonTask(db.Model):
+    """A task or commitment tracked against a person"""
+    __tablename__ = 'person_tasks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    person_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+
+    status = db.Column(db.String(20), nullable=False, default='todo')  # todo, in_progress, blocked, done
+    priority = db.Column(db.String(20), default='normal')  # low, normal, high, urgent
+
+    due_date = db.Column(db.Date, nullable=True)
+    started_at = db.Column(db.DateTime, nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    person = db.relationship('Person', backref=db.backref('tasks', lazy='dynamic', cascade='all, delete-orphan'))
+    user = db.relationship('User', backref=db.backref('person_tasks', lazy='dynamic'))
+
+    def is_overdue(self):
+        """Check if task is past its due date and still outstanding"""
+        if not self.due_date or self.status == 'done':
+            return False
+        return self.due_date < date.today()
+
+    def to_dict(self):
+        """Serialize task to dictionary for API"""
+        return {
+            'id': self.id,
+            'person_id': self.person_id,
+            'title': self.title,
+            'description': self.description,
+            'status': self.status,
+            'priority': self.priority,
+            'due_date': self.due_date.isoformat() if self.due_date else None,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'is_overdue': self.is_overdue(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
 class Reminder(db.Model):
-    """Reminders for vehicle-related dates and events"""
+    """Reminders for vehicle- and person-related dates and events"""
     __tablename__ = 'reminders'
 
     id = db.Column(db.Integer, primary_key=True)
-    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+    # A reminder belongs to either a vehicle or a person, so both are nullable
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=True)
+    person_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     title = db.Column(db.String(100), nullable=False)
@@ -862,6 +997,7 @@ class Reminder(db.Model):
 
     # Relationships (defined here since this class is defined last)
     vehicle = db.relationship('Vehicle', backref=db.backref('reminders', lazy='dynamic', cascade='all, delete-orphan'))
+    person = db.relationship('Person', backref=db.backref('reminders', lazy='dynamic', cascade='all, delete-orphan'))
     user_rel = db.relationship('User', backref=db.backref('reminders', lazy='dynamic'))
 
     # Recurrence settings
@@ -903,6 +1039,7 @@ class Reminder(db.Model):
         return {
             'id': self.id,
             'vehicle_id': self.vehicle_id,
+            'person_id': self.person_id,
             'title': self.title,
             'description': self.description,
             'reminder_type': self.reminder_type,
@@ -927,6 +1064,7 @@ class CalendarEvent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=True)
+    person_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=True)
 
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
@@ -954,6 +1092,7 @@ class CalendarEvent(db.Model):
 
     user = db.relationship('User', backref=db.backref('calendar_events', lazy='dynamic'))
     vehicle = db.relationship('Vehicle', backref=db.backref('calendar_events', lazy='dynamic', cascade='all, delete-orphan'))
+    person = db.relationship('Person', backref=db.backref('calendar_events', lazy='dynamic', cascade='all, delete-orphan'))
     alarms = db.relationship('CalendarAlarm', backref='event', lazy='dynamic', cascade='all, delete-orphan')
 
     def calendar_uid(self):
@@ -964,6 +1103,7 @@ class CalendarEvent(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'vehicle_id': self.vehicle_id,
+            'person_id': self.person_id,
             'title': self.title,
             'description': self.description,
             'event_type': self.event_type,
@@ -1123,6 +1263,31 @@ VEHICLE_TYPES = [
     ('atv_utv', _l('ATV/UTV')),
     ('boat', _l('Boat')),
     ('other', _l('Other'))
+]
+
+# Relationship types for people
+RELATIONSHIP_TYPES = [
+    ('coworker', _l('Coworker')),
+    ('dependent', _l('Dependent')),
+    ('client', _l('Client')),
+    ('family', _l('Family')),
+    ('other', _l('Other')),
+]
+
+# Person task statuses
+PERSON_TASK_STATUSES = [
+    ('todo', _l('To Do')),
+    ('in_progress', _l('In Progress')),
+    ('blocked', _l('Blocked')),
+    ('done', _l('Done')),
+]
+
+# Person task priorities
+PERSON_TASK_PRIORITIES = [
+    ('low', _l('Low')),
+    ('normal', _l('Normal')),
+    ('high', _l('High')),
+    ('urgent', _l('Urgent')),
 ]
 
 # Tracking unit options

@@ -20,7 +20,9 @@ from app.models import (
     Document, Trip, ChargingSession, VehiclePart, FuelPriceHistory, Attachment,
     CalendarEvent, CalendarAlarm, REMINDER_TYPES, RECURRENCE_OPTIONS,
     CALENDAR_EVENT_TYPES, CALENDAR_EVENT_STATUSES, CALENDAR_ALARM_ACTIONS,
-    TRIP_PURPOSES, CHARGER_TYPES
+    TRIP_PURPOSES, CHARGER_TYPES,
+    Person, PersonTask, RELATIONSHIP_TYPES, PERSON_TASK_STATUSES,
+    PERSON_TASK_PRIORITIES
 )
 from app.services.tessie import TessieService
 from app.utils import parse_decimal
@@ -98,7 +100,9 @@ def _parse_iso_date(value, field_name):
         return None
     try:
         return datetime.strptime(value, '%Y-%m-%d').date()
-    except ValueError as exc:
+    except (TypeError, ValueError) as exc:
+        # A non-string (an unquoted date in the JSON body, say) raises TypeError
+        # rather than ValueError; both are client errors, not 500s.
         raise ValueError(f'{field_name} must use YYYY-MM-DD') from exc
 
 
@@ -121,6 +125,32 @@ def _vehicle_for_api_user(user, vehicle_id):
     if not vehicle or vehicle not in user.get_all_vehicles():
         return None
     return vehicle
+
+
+def _person_for_api_user(user, person_id):
+    if person_id is None:
+        return None
+    person = Person.query.get(person_id)
+    if not person or person not in user.get_all_people():
+        return None
+    return person
+
+
+def _person_task_for_api_user(person, task_id):
+    if task_id is None:
+        return None
+    return PersonTask.query.filter_by(id=task_id, person_id=person.id).first()
+
+
+def _can_access_reminder(user, reminder):
+    """A reminder is visible when its vehicle or its person is visible to the user."""
+    if reminder.vehicle_id is None and reminder.person_id is None:
+        return reminder.user_id == user.id
+    if reminder.vehicle_id is not None and reminder.vehicle in user.get_all_vehicles():
+        return True
+    if reminder.person_id is not None and reminder.person in user.get_all_people():
+        return True
+    return False
 
 
 def _calendar_alarm_from_payload(payload):
@@ -184,6 +214,12 @@ def _apply_calendar_event_payload(event, user, data, partial=False):
             return 'vehicle_id not found or access denied'
         event.vehicle_id = vehicle.id if vehicle else None
 
+    if 'person_id' in data:
+        person = _person_for_api_user(user, data.get('person_id'))
+        if data.get('person_id') is not None and not person:
+            return 'person_id not found or access denied'
+        event.person_id = person.id if person else None
+
     try:
         if 'start_at' in data or 'start' in data:
             event.start_at = _parse_iso_datetime(data.get('start_at') or data.get('start'), 'start_at')
@@ -230,6 +266,117 @@ def _apply_calendar_event_payload(event, user, data, partial=False):
                 'action': 'display',
                 'trigger_minutes_before': data['reminder_minutes_before'],
             }])
+    except ValueError as exc:
+        return str(exc)
+
+    return None
+
+
+def _apply_person_payload(person, data, partial=False):
+    """Apply a JSON payload to a Person. Returns an error message, or None on success.
+
+    When partial is False every writable field is replaced, so unsent fields are
+    reset to their defaults (PUT semantics). When True only the sent fields move.
+    """
+    if not partial and not data.get('name'):
+        return 'name is required'
+
+    valid_types = {relationship_type[0] for relationship_type in RELATIONSHIP_TYPES}
+
+    if 'name' in data:
+        if not data['name']:
+            return 'name is required'
+        person.name = data['name']
+
+    if 'relationship_type' in data:
+        if data['relationship_type'] not in valid_types:
+            return f'relationship_type must be one of: {", ".join(sorted(valid_types))}'
+        person.relationship_type = data['relationship_type']
+    elif not partial:
+        person.relationship_type = 'coworker'
+
+    for field in ('email', 'phone', 'organization', 'role_title', 'notes'):
+        if field in data:
+            setattr(person, field, data[field])
+        elif not partial:
+            setattr(person, field, None)
+
+    if 'is_active' in data:
+        person.is_active = bool(data['is_active'])
+    elif not partial:
+        person.is_active = True
+
+    if 'is_shared' in data:
+        person.is_shared = bool(data['is_shared'])
+    elif not partial:
+        person.is_shared = False
+
+    return None
+
+
+def _apply_person_task_payload(task, data, partial=False):
+    """Apply a JSON payload to a PersonTask. Returns an error message, or None on success."""
+    if not partial and not data.get('title'):
+        return 'title is required'
+
+    valid_statuses = {status[0] for status in PERSON_TASK_STATUSES}
+    valid_priorities = {priority[0] for priority in PERSON_TASK_PRIORITIES}
+
+    if 'title' in data:
+        if not data['title']:
+            return 'title is required'
+        task.title = data['title']
+
+    if 'description' in data:
+        task.description = data['description']
+    elif not partial:
+        task.description = None
+
+    if 'status' in data:
+        if data['status'] not in valid_statuses:
+            return f'status must be one of: {", ".join(sorted(valid_statuses))}'
+        task.status = data['status']
+    elif not partial:
+        task.status = 'todo'
+
+    if 'priority' in data:
+        if data['priority'] not in valid_priorities:
+            return f'priority must be one of: {", ".join(sorted(valid_priorities))}'
+        task.priority = data['priority']
+    elif not partial:
+        task.priority = 'normal'
+
+    try:
+        if 'due_date' in data:
+            task.due_date = _parse_iso_date(data.get('due_date'), 'due_date')
+        elif not partial:
+            task.due_date = None
+    except ValueError as exc:
+        return str(exc)
+
+    if not partial:
+        if 'started_at' not in data:
+            task.started_at = None
+        if 'completed_at' not in data:
+            task.completed_at = None
+
+    # Keep the lifecycle stamps in step with the status, then let the caller
+    # override them. Work that goes straight from "to do" to "done" still gets a
+    # start time, matching apply_task_status() in app/routes/people.py so the
+    # same transition serialises identically whichever surface performed it.
+    if task.status in ('in_progress', 'done') and not task.started_at:
+        task.started_at = datetime.utcnow()
+    if task.status == 'done':
+        if not task.completed_at:
+            task.completed_at = datetime.utcnow()
+    else:
+        task.completed_at = None
+
+    try:
+        if 'started_at' in data:
+            task.started_at = _parse_iso_datetime(data.get('started_at'), 'started_at')
+        if 'completed_at' in data:
+            task.completed_at = _parse_iso_datetime(data.get('completed_at'), 'completed_at')
     except ValueError as exc:
         return str(exc)
 
@@ -972,25 +1119,396 @@ def api_delete_expense(expense_id):
 
 
 # =============================================================================
+# Public API v1 - People
+# =============================================================================
+
+@bp.route('/v1/people/metadata', methods=['GET'])
+@api_auth_required
+def api_people_metadata():
+    """List valid relationship types, task statuses, and task priorities."""
+    return jsonify({
+        'relationship_types': [{'id': item[0], 'name': str(item[1])} for item in RELATIONSHIP_TYPES],
+        'task_statuses': [{'id': item[0], 'name': str(item[1])} for item in PERSON_TASK_STATUSES],
+        'task_priorities': [{'id': item[0], 'name': str(item[1])} for item in PERSON_TASK_PRIORITIES],
+    })
+
+
+@bp.route('/v1/people', methods=['GET'])
+@api_auth_required
+def api_list_people():
+    """
+    List people
+
+    Returns everyone the authenticated user has access to (owned + shared).
+
+    Query parameters:
+    - include_archived: Include inactive people when 'true' (default: false)
+    - relationship_type: Filter by relationship type
+    """
+    user = get_api_user()
+    people = user.get_all_people()
+
+    if request.args.get('include_archived') != 'true':
+        people = [person for person in people if person.is_active]
+
+    relationship_type = request.args.get('relationship_type')
+    if relationship_type:
+        valid_types = {item[0] for item in RELATIONSHIP_TYPES}
+        if relationship_type not in valid_types:
+            return jsonify({
+                'error': f'relationship_type must be one of: {", ".join(sorted(valid_types))}',
+                'code': 'validation_error',
+            }), 400
+        people = [person for person in people if person.relationship_type == relationship_type]
+
+    return jsonify({
+        'people': [person.to_dict() for person in people],
+        'count': len(people),
+    })
+
+
+@bp.route('/v1/people', methods=['POST'])
+@api_auth_required
+def api_create_person():
+    """
+    Create a person
+
+    Required fields: name
+    Optional fields: relationship_type, email, phone, organization, role_title,
+    notes, is_active, is_shared
+    """
+    user = get_api_user()
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    person = Person(owner_id=user.id)
+    error = _apply_person_payload(person, data)
+    if error:
+        return jsonify({'error': error, 'code': 'validation_error'}), 400
+
+    db.session.add(person)
+    db.session.commit()
+    return jsonify(person.to_dict()), 201
+
+
+@bp.route('/v1/people/<int:person_id>', methods=['GET'])
+@api_auth_required
+def api_get_person(person_id):
+    """Get a person."""
+    user = get_api_user()
+    person = _person_for_api_user(user, person_id)
+    if not person:
+        return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+    return jsonify(person.to_dict())
+
+
+@bp.route('/v1/people/<int:person_id>', methods=['PUT', 'PATCH'])
+@api_auth_required
+def api_update_person(person_id):
+    """
+    Update a person
+
+    PUT replaces every writable field, resetting the ones you leave out.
+    PATCH only changes the fields you send.
+    """
+    user = get_api_user()
+    person = _person_for_api_user(user, person_id)
+    if not person:
+        return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+
+    if person.owner_id != user.id:
+        return jsonify({'error': 'Only the owner can update this person', 'code': 'forbidden'}), 403
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    error = _apply_person_payload(person, data, partial=request.method == 'PATCH')
+    if error:
+        return jsonify({'error': error, 'code': 'validation_error'}), 400
+
+    db.session.commit()
+    return jsonify(person.to_dict())
+
+
+@bp.route('/v1/people/<int:person_id>', methods=['DELETE'])
+@api_auth_required
+def api_delete_person(person_id):
+    """
+    Delete a person
+
+    This will also delete all of their tasks, reminders, and calendar events.
+    """
+    user = get_api_user()
+    person = _person_for_api_user(user, person_id)
+    if not person:
+        return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+
+    if person.owner_id != user.id:
+        return jsonify({'error': 'Only the owner can delete this person', 'code': 'forbidden'}), 403
+
+    db.session.delete(person)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Person deleted'})
+
+
+# =============================================================================
+# Public API v1 - Person Tasks
+# =============================================================================
+
+def _filter_person_tasks(query):
+    """Apply the shared status/priority/due_before filters to a PersonTask query.
+
+    Returns (query, error_message). The error message is set when a filter value
+    is not one of the allowed values.
+    """
+    valid_statuses = {status[0] for status in PERSON_TASK_STATUSES}
+    valid_priorities = {priority[0] for priority in PERSON_TASK_PRIORITIES}
+
+    status = request.args.get('status')
+    if status:
+        if status not in valid_statuses:
+            return query, f'status must be one of: {", ".join(sorted(valid_statuses))}'
+        query = query.filter(PersonTask.status == status)
+
+    priority = request.args.get('priority')
+    if priority:
+        if priority not in valid_priorities:
+            return query, f'priority must be one of: {", ".join(sorted(valid_priorities))}'
+        query = query.filter(PersonTask.priority == priority)
+
+    try:
+        if request.args.get('due_before'):
+            due_before = _parse_iso_date(request.args['due_before'], 'due_before')
+            query = query.filter(PersonTask.due_date.isnot(None), PersonTask.due_date <= due_before)
+    except ValueError as exc:
+        return query, str(exc)
+
+    return query, None
+
+
+def _order_person_tasks(query):
+    """Order tasks by due date, keeping the undated ones at the end."""
+    return query.order_by(
+        PersonTask.due_date.is_(None),
+        PersonTask.due_date.asc(),
+        PersonTask.id.asc(),
+    )
+
+
+@bp.route('/v1/tasks', methods=['GET'])
+@api_auth_required
+def api_list_all_person_tasks():
+    """
+    List tasks across everyone in the authenticated user's circle
+
+    This is the endpoint to poll to see what everyone is working on right now.
+
+    Query parameters:
+    - status: Filter by task status
+    - priority: Filter by priority
+    - due_before: Only tasks due on or before this date (YYYY-MM-DD)
+    - person_id: Restrict to a single person
+    - limit: Maximum number of results (default: 100, max: 500)
+    - offset: Number of results to skip (default: 0)
+    """
+    user = get_api_user()
+    people = user.get_all_people()
+    person_names = {person.id: person.name for person in people}
+    limit = min(max(request.args.get('limit', 100, type=int), 1), 500)
+    offset = max(request.args.get('offset', 0, type=int), 0)
+
+    person_id = request.args.get('person_id', type=int)
+    if person_id is not None:
+        person = _person_for_api_user(user, person_id)
+        if not person:
+            return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+        person_ids = [person.id]
+    else:
+        person_ids = list(person_names.keys())
+
+    query = PersonTask.query.filter(PersonTask.person_id.in_(person_ids))
+    query, error = _filter_person_tasks(query)
+    if error:
+        return jsonify({'error': error, 'code': 'validation_error'}), 400
+
+    query = _order_person_tasks(query)
+    total = query.count()
+    tasks = query.offset(offset).limit(limit).all()
+
+    payload = []
+    for task in tasks:
+        task_data = task.to_dict()
+        task_data['person_name'] = person_names.get(task.person_id)
+        payload.append(task_data)
+
+    return jsonify({
+        'tasks': payload,
+        'count': len(payload),
+        'total': total,
+        'limit': limit,
+        'offset': offset,
+    })
+
+
+@bp.route('/v1/people/<int:person_id>/tasks', methods=['GET'])
+@api_auth_required
+def api_list_person_tasks(person_id):
+    """
+    List tasks for a person
+
+    Query parameters:
+    - status: Filter by task status
+    - priority: Filter by priority
+    - due_before: Only tasks due on or before this date (YYYY-MM-DD)
+    - limit: Maximum number of results (default: 100, max: 500)
+    - offset: Number of results to skip (default: 0)
+    """
+    user = get_api_user()
+    person = _person_for_api_user(user, person_id)
+    if not person:
+        return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+
+    limit = min(max(request.args.get('limit', 100, type=int), 1), 500)
+    offset = max(request.args.get('offset', 0, type=int), 0)
+
+    query = PersonTask.query.filter(PersonTask.person_id == person.id)
+    query, error = _filter_person_tasks(query)
+    if error:
+        return jsonify({'error': error, 'code': 'validation_error'}), 400
+
+    query = _order_person_tasks(query)
+    total = query.count()
+    tasks = query.offset(offset).limit(limit).all()
+
+    return jsonify({
+        'tasks': [task.to_dict() for task in tasks],
+        'count': len(tasks),
+        'total': total,
+        'limit': limit,
+        'offset': offset,
+    })
+
+
+@bp.route('/v1/people/<int:person_id>/tasks', methods=['POST'])
+@api_auth_required
+def api_create_person_task(person_id):
+    """
+    Create a task for a person
+
+    Required fields: title
+    Optional fields: description, status, priority, due_date, started_at, completed_at
+    """
+    user = get_api_user()
+    person = _person_for_api_user(user, person_id)
+    if not person:
+        return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    task = PersonTask(person_id=person.id, user_id=user.id)
+    error = _apply_person_task_payload(task, data)
+    if error:
+        return jsonify({'error': error, 'code': 'validation_error'}), 400
+
+    db.session.add(task)
+    db.session.commit()
+    return jsonify(task.to_dict()), 201
+
+
+@bp.route('/v1/people/<int:person_id>/tasks/<int:task_id>', methods=['GET'])
+@api_auth_required
+def api_get_person_task(person_id, task_id):
+    """Get a task."""
+    user = get_api_user()
+    person = _person_for_api_user(user, person_id)
+    if not person:
+        return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+
+    task = _person_task_for_api_user(person, task_id)
+    if not task:
+        return jsonify({'error': 'Task not found or access denied', 'code': 'not_found'}), 404
+
+    return jsonify(task.to_dict())
+
+
+@bp.route('/v1/people/<int:person_id>/tasks/<int:task_id>', methods=['PUT', 'PATCH'])
+@api_auth_required
+def api_update_person_task(person_id, task_id):
+    """
+    Update a task
+
+    PUT replaces every writable field, resetting the ones you leave out.
+    PATCH only changes the fields you send.
+    """
+    user = get_api_user()
+    person = _person_for_api_user(user, person_id)
+    if not person:
+        return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+
+    task = _person_task_for_api_user(person, task_id)
+    if not task:
+        return jsonify({'error': 'Task not found or access denied', 'code': 'not_found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    error = _apply_person_task_payload(task, data, partial=request.method == 'PATCH')
+    if error:
+        return jsonify({'error': error, 'code': 'validation_error'}), 400
+
+    db.session.commit()
+    return jsonify(task.to_dict())
+
+
+@bp.route('/v1/people/<int:person_id>/tasks/<int:task_id>', methods=['DELETE'])
+@api_auth_required
+def api_delete_person_task(person_id, task_id):
+    """Delete a task."""
+    user = get_api_user()
+    person = _person_for_api_user(user, person_id)
+    if not person:
+        return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+
+    task = _person_task_for_api_user(person, task_id)
+    if not task:
+        return jsonify({'error': 'Task not found or access denied', 'code': 'not_found'}), 404
+
+    db.session.delete(task)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Task deleted'})
+
+
+# =============================================================================
 # Public API v1 - Reminders
 # =============================================================================
 
 @bp.route('/v1/reminders', methods=['GET'])
 @api_auth_required
 def api_list_reminders():
-    """List reminders for all vehicles the authenticated user can access."""
+    """List reminders for every vehicle and person the authenticated user can access."""
     user = get_api_user()
     vehicle_ids = [vehicle.id for vehicle in user.get_all_vehicles()]
+    person_ids = [person.id for person in user.get_all_people()]
     limit = min(max(request.args.get('limit', 100, type=int), 1), 500)
     offset = max(request.args.get('offset', 0, type=int), 0)
 
-    query = Reminder.query.filter(Reminder.vehicle_id.in_(vehicle_ids))
+    query = Reminder.query.filter(db.or_(
+        Reminder.vehicle_id.in_(vehicle_ids),
+        Reminder.person_id.in_(person_ids),
+    ))
     if request.args.get('completed') != 'true':
         query = query.filter_by(is_completed=False)
     if request.args.get('type'):
         query = query.filter_by(reminder_type=request.args['type'])
     if request.args.get('vehicle_id', type=int):
         query = query.filter_by(vehicle_id=request.args.get('vehicle_id', type=int))
+    if request.args.get('person_id', type=int):
+        query = query.filter_by(person_id=request.args.get('person_id', type=int))
 
     query = query.order_by(Reminder.due_date.asc())
     total = query.count()
@@ -1007,20 +1525,34 @@ def api_list_reminders():
 @bp.route('/v1/reminders', methods=['POST'])
 @api_auth_required
 def api_create_reminder():
-    """Create a vehicle reminder."""
+    """Create a reminder for a vehicle or a person."""
     user = get_api_user()
     data = request.get_json()
     if not data:
         return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
 
-    required = ['vehicle_id', 'title', 'reminder_type', 'due_date']
+    required = ['title', 'reminder_type', 'due_date']
     for field in required:
         if not data.get(field):
             return jsonify({'error': f'{field} is required', 'code': 'validation_error'}), 400
 
-    vehicle = _vehicle_for_api_user(user, data.get('vehicle_id'))
-    if not vehicle:
-        return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+    if not data.get('vehicle_id') and not data.get('person_id'):
+        return jsonify({
+            'error': 'vehicle_id or person_id is required',
+            'code': 'validation_error',
+        }), 400
+
+    vehicle = None
+    if data.get('vehicle_id') is not None:
+        vehicle = _vehicle_for_api_user(user, data.get('vehicle_id'))
+        if not vehicle:
+            return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+
+    person = None
+    if data.get('person_id') is not None:
+        person = _person_for_api_user(user, data.get('person_id'))
+        if not person:
+            return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
 
     valid_types = {reminder_type[0] for reminder_type in REMINDER_TYPES}
     if data['reminder_type'] not in valid_types:
@@ -1055,7 +1587,8 @@ def api_create_reminder():
         return jsonify({'error': str(exc), 'code': 'validation_error'}), 400
 
     reminder = Reminder(
-        vehicle_id=vehicle.id,
+        vehicle_id=vehicle.id if vehicle else None,
+        person_id=person.id if person else None,
         user_id=user.id,
         title=data['title'],
         description=data.get('description'),
@@ -1076,7 +1609,7 @@ def api_get_reminder(reminder_id):
     """Get a reminder."""
     user = get_api_user()
     reminder = Reminder.query.get_or_404(reminder_id)
-    if reminder.vehicle not in user.get_all_vehicles():
+    if not _can_access_reminder(user, reminder):
         return jsonify({'error': 'Reminder not found or access denied', 'code': 'not_found'}), 404
     return jsonify(reminder.to_dict())
 
@@ -1087,7 +1620,7 @@ def api_update_reminder(reminder_id):
     """Update a reminder."""
     user = get_api_user()
     reminder = Reminder.query.get_or_404(reminder_id)
-    if reminder.vehicle not in user.get_all_vehicles():
+    if not _can_access_reminder(user, reminder):
         return jsonify({'error': 'Reminder not found or access denied', 'code': 'not_found'}), 404
 
     data = request.get_json()
@@ -1097,11 +1630,33 @@ def api_update_reminder(reminder_id):
     valid_types = {reminder_type[0] for reminder_type in REMINDER_TYPES}
     valid_recurrences = {recurrence[0] for recurrence in RECURRENCE_OPTIONS} | {'quarterly', 'biannual'}
 
+    # Resolve the owning vehicle/person first so a reminder is never left orphaned
+    vehicle_id = reminder.vehicle_id
+    person_id = reminder.person_id
     if 'vehicle_id' in data:
-        vehicle = _vehicle_for_api_user(user, data.get('vehicle_id'))
-        if not vehicle:
-            return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
-        reminder.vehicle_id = vehicle.id
+        if data.get('vehicle_id') is None:
+            vehicle_id = None
+        else:
+            vehicle = _vehicle_for_api_user(user, data.get('vehicle_id'))
+            if not vehicle:
+                return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+            vehicle_id = vehicle.id
+    if 'person_id' in data:
+        if data.get('person_id') is None:
+            person_id = None
+        else:
+            person = _person_for_api_user(user, data.get('person_id'))
+            if not person:
+                return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+            person_id = person.id
+    if vehicle_id is None and person_id is None:
+        return jsonify({
+            'error': 'A reminder must belong to a vehicle or a person',
+            'code': 'validation_error',
+        }), 400
+    reminder.vehicle_id = vehicle_id
+    reminder.person_id = person_id
+
     if 'title' in data:
         reminder.title = data['title']
     if 'description' in data:
@@ -1155,7 +1710,7 @@ def api_delete_reminder(reminder_id):
     """Delete a reminder."""
     user = get_api_user()
     reminder = Reminder.query.get_or_404(reminder_id)
-    if reminder.vehicle not in user.get_all_vehicles():
+    if not _can_access_reminder(user, reminder):
         return jsonify({'error': 'Reminder not found or access denied', 'code': 'not_found'}), 404
 
     db.session.delete(reminder)
@@ -1182,6 +1737,12 @@ def api_list_calendar_events():
         if not vehicle:
             return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
         query = query.filter_by(vehicle_id=vehicle.id)
+    person_id = request.args.get('person_id', type=int)
+    if person_id is not None:
+        person = _person_for_api_user(user, person_id)
+        if not person:
+            return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
+        query = query.filter_by(person_id=person.id)
     if request.args.get('type'):
         query = query.filter_by(event_type=request.args['type'])
     try:
@@ -1705,7 +2266,7 @@ def export_csv():
         writer.writerow([
             'id', 'vehicle_id', 'vehicle_name', 'title', 'description', 'reminder_type',
             'due_date', 'recurrence', 'recurrence_interval', 'notify_days_before',
-            'is_completed', 'completed_at', 'created_at'
+            'is_completed', 'completed_at', 'created_at', 'person_id', 'person_name'
         ])
         for vehicle in current_user.get_all_vehicles():
             for reminder in vehicle.reminders.all():
@@ -1716,7 +2277,21 @@ def export_csv():
                     reminder.recurrence, reminder.recurrence_interval, reminder.notify_days_before,
                     reminder.is_completed,
                     reminder.completed_at.isoformat() if reminder.completed_at else '',
-                    reminder.created_at.isoformat() if reminder.created_at else ''
+                    reminder.created_at.isoformat() if reminder.created_at else '',
+                    '', ''
+                ])
+        # Person reminders have no vehicle, so they are written from the person side
+        for person in current_user.get_all_people():
+            for reminder in person.reminders.filter(Reminder.vehicle_id.is_(None)).all():
+                writer.writerow([
+                    reminder.id, '', '', reminder.title,
+                    reminder.description, reminder.reminder_type,
+                    reminder.due_date.isoformat() if reminder.due_date else '',
+                    reminder.recurrence, reminder.recurrence_interval, reminder.notify_days_before,
+                    reminder.is_completed,
+                    reminder.completed_at.isoformat() if reminder.completed_at else '',
+                    reminder.created_at.isoformat() if reminder.created_at else '',
+                    person.id, person.name
                 ])
         zip_file.writestr('reminders.csv', reminders_csv.getvalue())
 
@@ -1890,6 +2465,44 @@ def export_csv():
                 ])
         zip_file.writestr('fuel_price_history.csv', prices_csv.getvalue())
 
+        # Export People
+        people_csv = io.StringIO()
+        writer = csv.writer(people_csv)
+        writer.writerow([
+            'id', 'name', 'relationship_type', 'email', 'phone',
+            'organization', 'role_title', 'notes', 'is_active', 'is_shared',
+            'created_at'
+        ])
+        for person in current_user.get_all_people():
+            writer.writerow([
+                person.id, person.name, person.relationship_type,
+                person.email, person.phone,
+                person.organization, person.role_title, person.notes,
+                person.is_active, person.is_shared,
+                person.created_at.isoformat() if person.created_at else ''
+            ])
+        zip_file.writestr('people.csv', people_csv.getvalue())
+
+        # Export Person Tasks
+        person_tasks_csv = io.StringIO()
+        writer = csv.writer(person_tasks_csv)
+        writer.writerow([
+            'id', 'person_id', 'person_name', 'title', 'description',
+            'status', 'priority', 'due_date', 'started_at', 'completed_at',
+            'created_at'
+        ])
+        for person in current_user.get_all_people():
+            for task in person.tasks.all():
+                writer.writerow([
+                    task.id, person.id, person.name, task.title, task.description,
+                    task.status, task.priority,
+                    task.due_date.isoformat() if task.due_date else '',
+                    task.started_at.isoformat() if task.started_at else '',
+                    task.completed_at.isoformat() if task.completed_at else '',
+                    task.created_at.isoformat() if task.created_at else ''
+                ])
+        zip_file.writestr('person_tasks.csv', person_tasks_csv.getvalue())
+
     zip_buffer.seek(0)
 
     # Generate filename with timestamp
@@ -1924,6 +2537,7 @@ def export_json():
             'currency': current_user.currency
         },
         'vehicles': [],
+        'people': [],
         'fuel_stations': [],
         'fuel_price_history': []
     }
@@ -2132,6 +2746,16 @@ def export_json():
 
         export_data['vehicles'].append(vehicle_data)
 
+    # Add people with their tasks and person-scoped reminders
+    for person in current_user.get_all_people():
+        person_data = person.to_dict()
+        person_data['tasks'] = [task.to_dict() for task in person.tasks.all()]
+        person_data['reminders'] = [
+            reminder.to_dict()
+            for reminder in person.reminders.filter(Reminder.vehicle_id.is_(None)).all()
+        ]
+        export_data['people'].append(person_data)
+
     # Add fuel stations (not vehicle-specific)
     for station in current_user.fuel_stations.all():
         export_data['fuel_stations'].append({
@@ -2200,6 +2824,7 @@ def export_full_backup():
             'currency': current_user.currency
         },
         'vehicles': [],
+        'people': [],
         'fuel_stations': [],
         'fuel_price_history': []
     }
@@ -2456,6 +3081,20 @@ def export_full_backup():
             })
 
         export_data['vehicles'].append(vehicle_data)
+
+    # Add people with their tasks and person-scoped reminders
+    for person in current_user.get_all_people():
+        person_data = person.to_dict()
+        person_data['tasks'] = [task.to_dict() for task in person.tasks.all()]
+        person_data['reminders'] = [
+            reminder.to_dict()
+            for reminder in person.reminders.filter(Reminder.vehicle_id.is_(None)).all()
+        ]
+        export_data['people'].append(person_data)
+
+        # Track person image
+        if person.image_filename:
+            files_to_backup.append((person.image_filename, 'image', 'person', person.id))
 
     # Add fuel stations (not vehicle-specific)
     for station in current_user.fuel_stations.all():

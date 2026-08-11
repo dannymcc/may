@@ -1,0 +1,9 @@
+#! mailpit-may-mailpit-data-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: mailpit-may-mailpit-data
+    namespace: may
+spec:
+    storageClassName: "hostpath" # see docker/desktop-storage-provisioner

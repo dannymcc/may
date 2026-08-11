@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ _('People') }}{% endblock %}
+
+{% block content %}
+<div class="sm:flex sm:items-center sm:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{% if show_archived %}{{ _('Archived People') }}{% else %}{{ _('People') }}{% endif %}</h1>
+        <p class="text-gray-500 dark:text-gray-400">{{ _('Keep track of your coworkers, dependents, clients and family — and what you owe them') }}</p>
+    </div>
+    <div class="mt-4 sm:mt-0 flex items-center gap-3">
+        {% if archived_count > 0 %}
+        <a href="{{ url_for('people.index', archived='true' if not show_archived else 'false') }}"
+           class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-700">
+            {% if show_archived %}
+            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            {{ _('Active People') }}
+            {% else %}
+            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+            </svg>
+            {{ _('Archived') }} ({{ archived_count }})
+            {% endif %}
+        </a>
+        {% endif %}
+        <a href="{{ url_for('people.new') }}"
+           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            {{ _('Add Person') }}
+        </a>
+    </div>
+</div>
+
+{% if people %}
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for person in people %}
+    {% set summary = summaries[person.id] %}
+    <a href="{{ url_for('people.view', person_id=person.id) }}"
+       class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+        <div class="p-4 flex items-start gap-4">
+            {% if person.image_filename %}
+            <img src="{{ url_for('api.uploaded_file', filename=person.image_filename) }}"
+                 alt="{{ person.name }}"
+                 class="h-14 w-14 rounded-full object-cover flex-shrink-0">
+            {% else %}
+            {% set name_parts = (person.name or '').split() %}
+            <div class="h-14 w-14 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center flex-shrink-0">
+                <span class="text-lg font-semibold text-primary-700">
+                    {{ ((name_parts[0][:1] if name_parts else '?') ~ (name_parts[-1][:1] if name_parts|length > 1 else ''))|upper }}
+                </span>
+            </div>
+            {% endif %}
+            <div class="min-w-0 flex-1">
+                <div class="flex items-start justify-between gap-2">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white truncate">{{ person.name }}</h3>
+                    <div class="flex gap-1 flex-shrink-0">
+                        {% if not person.is_active %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300">{{ _('Inactive') }}</span>
+                        {% endif %}
+                        {% if person.is_shared %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">{{ _('Shared') }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    {{ person.role_title or '' }}{% if person.role_title and person.organization %} · {% endif %}{{ person.organization or '' }}
+                </p>
+                <span class="mt-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                             {% if person.relationship_type == 'coworker' %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+                             {% elif person.relationship_type == 'dependent' %}bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300
+                             {% elif person.relationship_type == 'client' %}bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300
+                             {% elif person.relationship_type == 'family' %}bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
+                             {% else %}bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300{% endif %}">
+                    {{ person.relationship_type_label }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Currently working on -->
+        <div class="mt-auto px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+            {% if summary.active_count %}
+            <div class="flex items-center justify-between gap-2 text-sm">
+                <span class="text-gray-500 dark:text-gray-400">{{ _('%(count)s active tasks', count=summary.active_count) }}</span>
+                {% if summary.overdue_count %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                    {{ _('%(count)s overdue', count=summary.overdue_count) }}
+                </span>
+                {% endif %}
+            </div>
+            {% if summary.next_task %}
+            <p class="mt-1 text-sm text-gray-900 dark:text-white truncate">{{ summary.next_task.title }}</p>
+            <p class="text-xs {% if summary.next_task.is_overdue() %}text-red-600 dark:text-red-400 font-medium{% else %}text-gray-500 dark:text-gray-400{% endif %}">
+                {% if summary.next_task.due_date %}
+                {{ _('Due %(date)s', date=summary.next_task.due_date|format_date) }}
+                {% else %}
+                {{ _('No due date') }}
+                {% endif %}
+            </p>
+            {% endif %}
+            {% else %}
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('Nothing outstanding') }}</p>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+        {% if show_archived %}{{ _('No archived people') }}{% else %}{{ _('No people') }}{% endif %}
+    </h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Add the people you work with, care for, or answer to.') }}</p>
+    <div class="mt-6">
+        <a href="{{ url_for('people.new') }}"
+           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            {{ _('Add Person') }}
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

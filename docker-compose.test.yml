@@ -1,0 +1,27 @@
+# Date-named throwaway deployment for testing a freshly pushed image.
+# Intended to be launched via scripts/test-image.sh, which sets:
+#   MAY_TEST_NAME  - container name, e.g. may-test-20260811-1430
+#   MAY_TEST_TAG   - image tag to test (default: dev)
+#   MAY_TEST_PORT  - host port (default: 5052)
+# Each run uses a unique compose project name, so the data volume is
+# isolated per test and never touches the production/staging DB.
+services:
+  may:
+    image: ghcr.io/dannymcc/may:${MAY_TEST_TAG:-dev}
+    pull_policy: always
+    container_name: ${MAY_TEST_NAME:-may-test}
+    restart: "no"
+    ports:
+      - "${MAY_TEST_PORT:-5052}:5050"
+    volumes:
+      - may_test_data:/app/data
+    environment:
+      - SECRET_KEY=test-only-secret
+      - DATABASE_URL=sqlite:////app/data/may.db
+      - UPLOAD_FOLDER=/app/data/uploads
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - RELEASE_CHANNEL=test
+
+volumes:
+  may_test_data:

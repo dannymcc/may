@@ -16,6 +16,8 @@
             <a href="#vehicles" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Vehicles</a>
             <a href="#fuel-logs" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Fuel Logs</a>
             <a href="#expenses" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Expenses</a>
+            <a href="#people" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">People</a>
+            <a href="#tasks" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Tasks</a>
            <a href="#reminders-calendar" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Reminders & Calendar</a>
             <a href="#errors" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Error Handling</a>
         </div>
@@ -426,22 +428,363 @@
             </div>
         </div>
     </section>
+
+    <!-- People -->
+    <section id="people" class="mb-12">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">People</h2>
+                <p class="mt-1 text-gray-500 dark:text-gray-400">Manage your inner circle &mdash; coworkers, dependents, clients, and family</p>
+            </div>
+
+            <!-- List People -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <code class="text-gray-900 dark:text-white">/people</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">List all people you have access to (owned and shared)</p>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Query Parameters</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Parameter</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Default</th>
+                                    <th class="text-left py-2 font-medium text-gray-900 dark:text-white">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 dark:text-gray-400">
+                                <tr class="border-b"><td class="py-2 pr-4"><code>include_archived</code></td><td class="py-2 pr-4">false</td><td class="py-2">Set to <code>true</code> to include inactive people</td></tr>
+                                <tr><td class="py-2 pr-4"><code>relationship_type</code></td><td class="py-2 pr-4">-</td><td class="py-2">Filter by relationship type</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Response</h4>
+                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
+<pre class="text-green-700 dark:text-green-400 text-sm"><code>{
+  "people": [
+    {
+      "id": 1,
+      "name": "Alex Fisher",
+      "relationship_type": "coworker",
+      "email": "alex@example.com",
+      "phone": "+44 7700 900000",
+      "organization": "Acme Ltd",
+      "role_title": "Operations Lead",
+      "notes": null,
+      "image_filename": null,
+      "is_active": true,
+      "is_shared": false,
+      "created_at": "2026-01-15T10:30:00",
+      "updated_at": "2026-01-15T10:30:00"
+    }
+  ],
+  "count": 1
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Get Person -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <code class="text-gray-900 dark:text-white">/people/{id}</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">Get details for a specific person</p>
+                </div>
+            </div>
+
+            <!-- Create Person -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">POST</span>
+                        <code class="text-gray-900 dark:text-white">/people</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Create a new person</p>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Request Body</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Field</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Type</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Required</th>
+                                    <th class="text-left py-2 font-medium text-gray-900 dark:text-white">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 dark:text-gray-400">
+                                <tr class="border-b"><td class="py-2 pr-4"><code>name</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">Yes</td><td class="py-2">Full name</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>relationship_type</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">See relationship types below (default: coworker)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>email</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Email address</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>phone</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Phone number</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>organization</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Company or organization</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>role_title</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Job title or role</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>notes</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Free-form notes</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>is_active</code></td><td class="py-2 pr-4">boolean</td><td class="py-2 pr-4">No</td><td class="py-2">Archive by setting to false (default: true)</td></tr>
+                                <tr><td class="py-2 pr-4"><code>is_shared</code></td><td class="py-2 pr-4">boolean</td><td class="py-2 pr-4">No</td><td class="py-2">Visible to every user on this instance (default: false)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Relationship Types</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">coworker</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">dependent</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">client</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">family</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">other</code>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Example</h4>
+                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
+<pre class="text-green-700 dark:text-green-400 text-sm"><code>curl -X POST "{{ request.host_url }}api/v1/people" \
+  -H "Authorization: Bearer may_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Alex Fisher",
+    "relationship_type": "coworker",
+    "email": "alex@example.com",
+    "organization": "Acme Ltd",
+    "role_title": "Operations Lead"
+  }'</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Person -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">PUT</span>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">PATCH</span>
+                        <code class="text-gray-900 dark:text-white">/people/{id}</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">Update a person. <code>PUT</code> replaces every writable field and resets the ones you leave out; <code>PATCH</code> only changes the fields you send. Only the owner may update a shared person.</p>
+                </div>
+            </div>
+
+            <!-- Delete Person -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">DELETE</span>
+                        <code class="text-gray-900 dark:text-white">/people/{id}</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">Delete a person along with their tasks, reminders, and calendar events. This action cannot be undone.</p>
+                </div>
+            </div>
+
+            <!-- People Metadata -->
+            <div>
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <code class="text-gray-900 dark:text-white">/people/metadata</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">Discover valid relationship types, task statuses, and task priorities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tasks -->
+    <section id="tasks" class="mb-12">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Tasks</h2>
+                <p class="mt-1 text-gray-500 dark:text-gray-400">Track what each person owes you, and what you owe them</p>
+            </div>
+
+            <!-- List All Tasks -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <code class="text-gray-900 dark:text-white">/tasks</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">List tasks across everyone in your circle. This is the endpoint to poll to see what everyone is working on right now. Each item carries a <code>person_name</code> alongside its <code>person_id</code>.</p>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Query Parameters</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Parameter</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Default</th>
+                                    <th class="text-left py-2 font-medium text-gray-900 dark:text-white">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 dark:text-gray-400">
+                                <tr class="border-b"><td class="py-2 pr-4"><code>status</code></td><td class="py-2 pr-4">-</td><td class="py-2">Filter by task status</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>priority</code></td><td class="py-2 pr-4">-</td><td class="py-2">Filter by priority</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>due_before</code></td><td class="py-2 pr-4">-</td><td class="py-2">Only tasks due on or before this date (YYYY-MM-DD)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>person_id</code></td><td class="py-2 pr-4">-</td><td class="py-2">Restrict to a single person</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>limit</code></td><td class="py-2 pr-4">100</td><td class="py-2">Maximum results (max: 500)</td></tr>
+                                <tr><td class="py-2 pr-4"><code>offset</code></td><td class="py-2 pr-4">0</td><td class="py-2">Results to skip for pagination</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Example</h4>
+                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
+<pre class="text-green-700 dark:text-green-400 text-sm"><code>curl -X GET "{{ request.host_url }}api/v1/tasks?status=in_progress&due_before=2026-09-01" \
+  -H "Authorization: Bearer may_your_api_key"</code></pre>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Response</h4>
+                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
+<pre class="text-green-700 dark:text-green-400 text-sm"><code>{
+  "tasks": [
+    {
+      "id": 7,
+      "person_id": 1,
+      "person_name": "Alex Fisher",
+      "title": "Send over the Q3 figures",
+      "description": null,
+      "status": "in_progress",
+      "priority": "high",
+      "due_date": "2026-08-20",
+      "started_at": "2026-08-06T09:12:00",
+      "completed_at": null,
+      "is_overdue": false,
+      "created_at": "2026-08-01T08:00:00",
+      "updated_at": "2026-08-06T09:12:00"
+    }
+  ],
+  "count": 1,
+  "total": 1,
+  "limit": 100,
+  "offset": 0
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List Person Tasks -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <code class="text-gray-900 dark:text-white">/people/{id}/tasks</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">List the tasks for one person. Accepts the same <code>status</code>, <code>priority</code>, <code>due_before</code>, <code>limit</code>, and <code>offset</code> parameters as <code>/tasks</code>. Tasks are ordered by due date, with undated ones last.</p>
+                </div>
+            </div>
+
+            <!-- Create Person Task -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">POST</span>
+                        <code class="text-gray-900 dark:text-white">/people/{id}/tasks</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Create a task for a person</p>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Request Body</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Field</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Type</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Required</th>
+                                    <th class="text-left py-2 font-medium text-gray-900 dark:text-white">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 dark:text-gray-400">
+                                <tr class="border-b"><td class="py-2 pr-4"><code>title</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">Yes</td><td class="py-2">What needs doing</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>description</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Longer detail</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>status</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">See statuses below (default: todo)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>priority</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">See priorities below (default: normal)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>due_date</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Date in YYYY-MM-DD format</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>started_at</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">ISO-8601 datetime (set automatically on in_progress)</td></tr>
+                                <tr><td class="py-2 pr-4"><code>completed_at</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">ISO-8601 datetime (set automatically on done, cleared otherwise)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Task Statuses</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">todo</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">in_progress</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">blocked</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">done</code>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Task Priorities</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">low</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">normal</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">high</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">urgent</code>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Example</h4>
+                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
+<pre class="text-green-700 dark:text-green-400 text-sm"><code>curl -X POST "{{ request.host_url }}api/v1/people/1/tasks" \
+  -H "Authorization: Bearer may_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Send over the Q3 figures",
+    "status": "in_progress",
+    "priority": "high",
+    "due_date": "2026-08-20"
+  }'</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Get/Update/Delete Person Task -->
+            <div>
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">PUT</span>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">PATCH</span>
+                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">DELETE</span>
+                        <code class="text-gray-900 dark:text-white">/people/{id}/tasks/{task_id}</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">Get, update, or delete a specific task. <code>PUT</code> replaces every writable field; <code>PATCH</code> only changes the fields you send.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Reminders & Calendar -->
     <section id="reminders-calendar" class="mb-12">
        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Reminders & Calendar</h2>
-               <p class="mt-1 text-gray-500 dark:text-gray-400">Automate vehicle reminders, generic calendar events, alarms, and CalDAV publishing</p>
+               <p class="mt-1 text-gray-500 dark:text-gray-400">Automate vehicle and people reminders, generic calendar events, alarms, and CalDAV publishing</p>
            </div>
 
            <div class="border-b border-gray-200 dark:border-gray-700">
                <div class="p-6">
-                   <div class="flex items-center gap-3 mb-2">
+                   <div class="flex items-center gap-3 mb-4">
                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">POST</span>
                        <code class="text-gray-900 dark:text-white">/reminders</code>
                    </div>
-                   <p class="text-gray-600 dark:text-gray-400">List or create vehicle reminders. Use <code>/reminders/{id}</code> with GET, PATCH, or DELETE for a single reminder.</p>
+                   <p class="text-gray-600 dark:text-gray-400 mb-4">List or create reminders. Use <code>/reminders/{id}</code> with GET, PATCH, or DELETE for a single reminder.</p>
+                   <p class="text-gray-600 dark:text-gray-400 mb-4">A reminder belongs to either a vehicle or a person, so exactly one of <code>vehicle_id</code> or <code>person_id</code> is required on create. Listing returns both kinds and can be narrowed with <code>?vehicle_id=</code> or <code>?person_id=</code>.</p>
+                   <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
+<pre class="text-green-700 dark:text-green-400 text-sm"><code>{
+  "title": "Alex's work anniversary",
+  "person_id": 1,
+  "reminder_type": "custom",
+  "due_date": "2026-09-14",
+  "recurrence": "yearly",
+  "notify_days_before": 7
+}</code></pre>
+                   </div>
                </div>
            </div>
 
@@ -452,7 +795,7 @@
                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">POST</span>
                        <code class="text-gray-900 dark:text-white">/calendar/events</code>
                    </div>
-                   <p class="text-gray-600 dark:text-gray-400 mb-4">Manage portable calendar events with optional vehicle links, location, recurrence rule, URL, and alarms.</p>
+                   <p class="text-gray-600 dark:text-gray-400 mb-4">Manage portable calendar events with optional vehicle or person links, location, recurrence rule, URL, and alarms. Narrow the list with <code>?vehicle_id=</code> or <code>?person_id=</code>.</p>
                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
 <pre class="text-green-700 dark:text-green-400 text-sm"><code>{
   "title": "Tyre appointment",

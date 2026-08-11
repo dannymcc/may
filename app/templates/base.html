@@ -302,10 +302,11 @@
                                                     (current_user.show_menu_stations is not defined or current_user.show_menu_stations) or
                                                     (current_user.show_menu_charging is not defined or current_user.show_menu_charging) or
                                                     (current_user.show_menu_notes is not defined or current_user.show_menu_notes) or
-                                                    (current_user.show_menu_allowance is not defined or current_user.show_menu_allowance) %}
+                                                    (current_user.show_menu_allowance is not defined or current_user.show_menu_allowance) or
+                                                    (current_user.show_menu_people is not defined or current_user.show_menu_people) %}
                             {% if show_more_menu %}
                             <div class="relative inline-flex items-center" id="more-menu-container">
-                                <button onclick="document.getElementById('more-dropdown').classList.toggle('hidden')" class="inline-flex items-center px-3 py-2 text-sm font-medium {% if 'maintenance' in request.endpoint or 'recurring' in request.endpoint or 'documents' in request.endpoint or 'stations' in request.endpoint %}text-primary-600 border-b-2 border-primary-600{% else %}text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white{% endif %}">
+                                <button onclick="document.getElementById('more-dropdown').classList.toggle('hidden')" class="inline-flex items-center px-3 py-2 text-sm font-medium {% if 'maintenance' in request.endpoint or 'recurring' in request.endpoint or 'documents' in request.endpoint or 'stations' in request.endpoint or 'people' in request.endpoint %}text-primary-600 border-b-2 border-primary-600{% else %}text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white{% endif %}">
                                     {{ _('More') }}
                                     <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -313,6 +314,9 @@
                                 </button>
                                 <div id="more-dropdown" class="hidden absolute right-0 top-full mt-1 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
                                     <div class="py-1">
+                                        {% if current_user.show_menu_people is not defined or current_user.show_menu_people %}
+                                        <a href="{{ url_for('people.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('People') }}</a>
+                                        {% endif %}
                                         {% if current_user.show_menu_maintenance is not defined or current_user.show_menu_maintenance %}
                                         <a href="{{ url_for('maintenance.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Maintenance') }}</a>
                                         {% endif %}
@@ -396,6 +400,9 @@
                     <a href="{{ url_for('search.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Search') }}</a>
                     {% if current_user.show_menu_trips is not defined or current_user.show_menu_trips %}
                     <a href="{{ url_for('trips.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Trips') }}</a>
+                    {% endif %}
+                    {% if current_user.show_menu_people is not defined or current_user.show_menu_people %}
+                    <a href="{{ url_for('people.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('People') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_charging is not defined or current_user.show_menu_charging %}
                     <a href="{{ url_for('charging.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('EV Charging') }}</a>

@@ -4,7 +4,7 @@
 {% block content %}
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Search') }}</h1>
-    <p class="text-gray-500 dark:text-gray-400">{{ _('Find expenses, fuel logs, documents, notes, trips, and charging sessions') }}</p>
+    <p class="text-gray-500 dark:text-gray-400">{{ _('Find expenses, fuel logs, documents, notes, trips, charging sessions, people, and tasks') }}</p>
 </div>
 
 <form method="GET" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
@@ -152,6 +152,48 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ session.vehicle.name }} &middot; {{ session.date|format_date }}</p>
                 </div>
                 <span class="text-sm font-medium text-gray-900 dark:text-white">{% if session.total_cost is not none %}{{ session.total_cost|money }} {{ current_user.currency }}{% else %}-{% endif %}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.people %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('People') }} ({{ results.people|length }}{% if results.people|length == result_limit %}+{% endif %})</h2>
+    </div>
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for person in results.people %}
+        <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <a href="{{ url_for('people.view', person_id=person.id) }}" class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ person.name }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ person.relationship_type_label }}{% if person.role_title %} &middot; {{ person.role_title }}{% endif %}{% if person.organization %} &middot; {{ person.organization }}{% endif %}</p>
+                </div>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ person.email or person.phone or '' }}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.person_tasks %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Tasks') }} ({{ results.person_tasks|length }}{% if results.person_tasks|length == result_limit %}+{% endif %})</h2>
+    </div>
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for task in results.person_tasks %}
+        <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <a href="{{ url_for('people.edit_task', person_id=task.person_id, task_id=task.id) }}" class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ task.title }}</p>
+                    <p class="text-sm {% if task.is_overdue() %}text-red-600 dark:text-red-400 font-medium{% else %}text-gray-500 dark:text-gray-400{% endif %}">{{ task.person.name }}{% if task.due_date %} &middot; {{ task.due_date|format_date }}{% endif %}</p>
+                </div>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ task_status_labels.get(task.status, task.status) }}</span>
             </a>
         </li>
         {% endfor %}

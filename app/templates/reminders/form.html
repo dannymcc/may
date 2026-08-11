@@ -21,23 +21,56 @@
 
         <form method="POST" class="p-6 space-y-6">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <!-- Vehicle Selection -->
+            {% if reminder and reminder.person %}
+            <!-- Person this reminder belongs to -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Person') }}</label>
+                <p class="text-sm text-gray-900 dark:text-white">{{ reminder.person.name }}</p>
+            </div>
+            {% elif reminder %}
+            <!-- Vehicle Selection (editing an existing vehicle reminder) -->
             <div>
                 <label for="vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Vehicle') }}</label>
-                <select name="vehicle_id" id="vehicle_id" required
-                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                        {% if reminder %}disabled{% endif %}>
+                <select name="vehicle_id" id="vehicle_id" required disabled
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">
                     {% for vehicle in vehicles %}
                     <option value="{{ vehicle.id }}"
-                            {% if (selected_vehicle and selected_vehicle.id == vehicle.id) or (reminder and reminder.vehicle_id == vehicle.id) %}selected{% endif %}>
+                            {% if reminder.vehicle_id == vehicle.id %}selected{% endif %}>
                         {{ vehicle.name }}
                     </option>
                     {% endfor %}
                 </select>
-                {% if reminder %}
                 <input type="hidden" name="vehicle_id" value="{{ reminder.vehicle_id }}">
-                {% endif %}
             </div>
+            {% else %}
+            <!-- A reminder belongs to either a vehicle or a person -->
+            <div>
+                <label for="target" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Reminder for') }}</label>
+                <select name="target" id="target" required
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    {% if vehicles %}
+                    <optgroup label="{{ _('Vehicles') }}">
+                        {% for vehicle in vehicles %}
+                        <option value="vehicle:{{ vehicle.id }}"
+                                {% if selected_vehicle and selected_vehicle.id == vehicle.id %}selected{% endif %}>
+                            {{ vehicle.name }}
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endif %}
+                    {% if people %}
+                    <optgroup label="{{ _('People') }}">
+                        {% for person in people %}
+                        <option value="person:{{ person.id }}"
+                                {% if selected_person and selected_person.id == person.id %}selected{% endif %}>
+                            {{ person.name }}
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endif %}
+                </select>
+            </div>
+            {% endif %}
 
             <!-- Title -->
             <div>

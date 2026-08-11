@@ -41,9 +41,15 @@
                     {% endif %}
                 </div>
                 <div class="mt-1 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                    {% if reminder.vehicle %}
                     <a href="{{ url_for('vehicles.view', vehicle_id=reminder.vehicle_id) }}" class="hover:text-primary-600">
                         {{ reminder.vehicle.name }}
                     </a>
+                    {% elif reminder.person %}
+                    <a href="{{ url_for('people.view', person_id=reminder.person_id) }}" class="hover:text-primary-600">
+                        {{ reminder.person.name }}
+                    </a>
+                    {% endif %}
                     {% if reminder.description %}
                     <span>&bull;</span>
                     <span class="truncate max-w-xs">{{ reminder.description }}</span>

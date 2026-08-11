@@ -1,0 +1,23 @@
+# check if there is at least one published port
+
+#! mailpit-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: mailpit-published
+    namespace: may
+    labels:
+        com.docker.compose.project: may
+        com.docker.compose.service: mailpit
+spec:
+    selector:
+        com.docker.compose.project: may
+        com.docker.compose.service: mailpit
+    ports:
+        - name: mailpit-8025
+          port: 8025
+          protocol: TCP
+          targetPort: mailpit-8025
+
+# check if there is at least one published port

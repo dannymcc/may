@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}{% if person %}{{ _('Edit Person') }}{% else %}{{ _('Add Person') }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('people.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">&larr; {{ _('Back to people') }}</a>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">{% if person %}{{ _('Edit Person') }}{% else %}{{ _('Add New Person') }}{% endif %}</h1>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ _('Basic Information') }}</h2>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Name') }} *</label>
+                    <input type="text" name="name" id="name" required
+                           value="{{ person.name if person else '' }}"
+                           placeholder="{{ _('e.g., Alex Morgan') }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+
+                <div>
+                    <label for="relationship_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Relationship') }} *</label>
+                    <select name="relationship_type" id="relationship_type" required
+                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                        {% for value, label in relationship_types %}
+                        <option value="{{ value }}" {% if (person.relationship_type if person else 'coworker') == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="role_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Role / Job Title') }}</label>
+                    <input type="text" name="role_title" id="role_title"
+                           value="{{ person.role_title if person else '' }}"
+                           placeholder="{{ _('e.g., Project Manager') }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="organization" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Organization') }}</label>
+                    <input type="text" name="organization" id="organization"
+                           value="{{ person.organization if person else '' }}"
+                           placeholder="{{ _('e.g., Acme Ltd') }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ _('Contact Details') }}</h2>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Email') }}</label>
+                    <input type="email" name="email" id="email"
+                           value="{{ person.email if person else '' }}"
+                           placeholder="{{ _('e.g., alex@example.com') }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Phone') }}</label>
+                    <input type="tel" name="phone" id="phone"
+                           value="{{ person.phone if person else '' }}"
+                           placeholder="{{ _('e.g., +44 7700 900123') }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ _('Photo') }}</h2>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Profile Image') }}</label>
+                {% if person and person.image_filename %}
+                <div class="mt-2 mb-4">
+                    <img src="{{ url_for('api.uploaded_file', filename=person.image_filename) }}"
+                         alt="{{ person.name }}"
+                         class="h-32 w-32 rounded-full object-cover">
+                </div>
+                {% endif %}
+                <input type="file" name="image" accept="image/*"
+                       class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ _('Notes') }}</h2>
+
+            <div>
+                <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('General Notes') }}</label>
+                <textarea name="notes" id="notes" rows="4"
+                          placeholder="{{ _('Context worth remembering — how you met, what they need from you...') }}"
+                          class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">{{ person.notes if person and person.notes else '' }}</textarea>
+            </div>
+        </div>
+
+        {% if person %}
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ _('Status') }}</h2>
+            <div class="flex items-center">
+                <input type="checkbox" name="is_active" id="is_active"
+                       {% if person.is_active %}checked{% endif %}
+                       class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                <label for="is_active" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Active (show in lists and summaries)') }}</label>
+            </div>
+            <div class="flex items-center mt-3">
+                <input type="checkbox" name="is_shared" id="is_shared"
+                       {% if person.is_shared %}checked{% endif %}
+                       class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                <label for="is_shared" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Shared — all users on this instance can view this person and their tasks') }}</label>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="flex justify-end space-x-3">
+            <a href="{{ url_for('people.index') if not person else url_for('people.view', person_id=person.id) }}"
+               class="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                {{ _('Cancel') }}
+            </a>
+            <button type="submit"
+                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                {% if person %}{{ _('Save Changes') }}{% else %}{{ _('Add Person') }}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
