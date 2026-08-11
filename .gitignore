@@ -36,3 +36,6 @@ Thumbs.db
 
 # Local deploy staging - may contain real secrets, never commit
 deploy/
+
+# Claude Code local settings
+.claude/settings.local.json

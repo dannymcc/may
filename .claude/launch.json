@@ -1,0 +1,21 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "may-docker",
+      "url": "http://localhost:5050",
+      "port": 5050
+    },
+    {
+      "name": "mailpit",
+      "url": "http://localhost:8025",
+      "port": 8025
+    },
+    {
+      "name": "may-flask",
+      "runtimeExecutable": "./venv/bin/python",
+      "runtimeArgs": ["run.py"],
+      "port": 5050
+    }
+  ]
+}
