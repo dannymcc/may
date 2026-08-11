@@ -476,12 +476,17 @@ def edit_task(person_id, task_id):
 
         try:
             due_date_str = request.form.get('due_date')
-            task.due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date() if due_date_str else None
+            new_due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date() if due_date_str else None
         except (ValueError, TypeError):
             flash(_('Invalid data submitted. Please check the due date.'), 'error')
             return render_template('people/task_form.html', person=person, task=task,
                                    task_statuses=PERSON_TASK_STATUSES,
                                    task_priorities=PERSON_TASK_PRIORITIES)
+
+        if new_due_date != task.due_date:
+            # Rescheduled — arm the due-date notification again
+            task.notification_sent = False
+        task.due_date = new_due_date
 
         task.title = title
         task.description = request.form.get('description') or None

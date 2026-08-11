@@ -581,13 +581,15 @@ def _start_reminder_scheduler(app):
                 with app.app_context():
                     from app.services.reminder_processor import (
                         process_due_calendar_alarms,
+                        process_due_person_tasks,
                         process_due_reminders,
                     )
                     stats = process_due_reminders()
                     calendar_stats = process_due_calendar_alarms()
-                    sent = stats['sent'] + calendar_stats['sent']
-                    failed = stats['failed'] + calendar_stats['failed']
-                    skipped = stats['skipped'] + calendar_stats['skipped']
+                    task_stats = process_due_person_tasks()
+                    sent = stats['sent'] + calendar_stats['sent'] + task_stats['sent']
+                    failed = stats['failed'] + calendar_stats['failed'] + task_stats['failed']
+                    skipped = stats['skipped'] + calendar_stats['skipped'] + task_stats['skipped']
                     if sent > 0 or failed > 0:
                         logger.info(
                             f"Reminder check: {sent} sent, "

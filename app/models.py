@@ -949,6 +949,10 @@ class PersonTask(db.Model):
     started_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True)
 
+    # One notification per due date — reset whenever the due date changes so a
+    # rescheduled task notifies again
+    notification_sent = db.Column(db.Boolean, default=False)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -974,6 +978,7 @@ class PersonTask(db.Model):
             'due_date': self.due_date.isoformat() if self.due_date else None,
             'started_at': self.started_at.isoformat() if self.started_at else None,
             'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'notification_sent': self.notification_sent,
             'is_overdue': self.is_overdue(),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None

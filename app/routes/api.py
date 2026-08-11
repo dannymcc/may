@@ -348,8 +348,14 @@ def _apply_person_task_payload(task, data, partial=False):
 
     try:
         if 'due_date' in data:
-            task.due_date = _parse_iso_date(data.get('due_date'), 'due_date')
+            new_due_date = _parse_iso_date(data.get('due_date'), 'due_date')
+            if new_due_date != task.due_date:
+                # Rescheduled — arm the due-date notification again
+                task.notification_sent = False
+            task.due_date = new_due_date
         elif not partial:
+            if task.due_date is not None:
+                task.notification_sent = False
             task.due_date = None
     except ValueError as exc:
         return str(exc)
