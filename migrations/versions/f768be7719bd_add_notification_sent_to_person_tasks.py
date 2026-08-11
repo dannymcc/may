@@ -17,8 +17,10 @@ def upgrade():
     conn = op.get_bind()
     cols = [c['name'] for c in sa.inspect(conn).get_columns('person_tasks')]
     if 'notification_sent' not in cols:
-        op.add_column('person_tasks', sa.Column('notification_sent', sa.Boolean(), nullable=True))
-        op.execute("UPDATE person_tasks SET notification_sent = 0 WHERE notification_sent IS NULL")
+        # server_default keeps the backfill portable — an integer-literal
+        # UPDATE would fail on PostgreSQL's strict boolean typing
+        op.add_column('person_tasks', sa.Column('notification_sent', sa.Boolean(),
+                                                nullable=True, server_default=sa.false()))
 
 
 def downgrade():

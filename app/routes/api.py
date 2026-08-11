@@ -1184,7 +1184,7 @@ def api_list_people():
         people = [person for person in people if person.relationship_type == relationship_type]
 
     return jsonify({
-        'people': [person.to_dict() for person in people],
+        'people': [person.to_dict(viewer=user) for person in people],
         'count': len(people),
     })
 
@@ -1211,7 +1211,7 @@ def api_create_person():
 
     db.session.add(person)
     db.session.commit()
-    return jsonify(person.to_dict()), 201
+    return jsonify(person.to_dict(viewer=user)), 201
 
 
 @bp.route('/v1/people/<int:person_id>', methods=['GET'])
@@ -1222,7 +1222,7 @@ def api_get_person(person_id):
     person = _person_for_api_user(user, person_id)
     if not person:
         return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
-    return jsonify(person.to_dict())
+    return jsonify(person.to_dict(viewer=user))
 
 
 @bp.route('/v1/people/<int:person_id>', methods=['PUT', 'PATCH'])
@@ -1251,7 +1251,7 @@ def api_update_person(person_id):
         return jsonify({'error': error, 'code': 'validation_error'}), 400
 
     db.session.commit()
-    return jsonify(person.to_dict())
+    return jsonify(person.to_dict(viewer=user))
 
 
 @bp.route('/v1/people/<int:person_id>', methods=['DELETE'])
@@ -2786,7 +2786,7 @@ def export_json():
 
     # Add people with their tasks and person-scoped reminders
     for person in current_user.get_all_people():
-        person_data = person.to_dict()
+        person_data = person.to_dict(viewer=current_user)
         person_data['tasks'] = [task.to_dict() for task in person.tasks.all()]
         person_data['reminders'] = [
             reminder.to_dict()
@@ -3122,7 +3122,7 @@ def export_full_backup():
 
     # Add people with their tasks and person-scoped reminders
     for person in current_user.get_all_people():
-        person_data = person.to_dict()
+        person_data = person.to_dict(viewer=current_user)
         person_data['tasks'] = [task.to_dict() for task in person.tasks.all()]
         person_data['reminders'] = [
             reminder.to_dict()

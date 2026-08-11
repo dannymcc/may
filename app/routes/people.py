@@ -4,8 +4,9 @@ from datetime import datetime, date
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
+from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
-from app import db
+from app import db, DATE_FORMATS
 from app.models import (Person, PersonTask, PersonVehicleLink, Reminder, CalendarEvent,
                         Vehicle, RELATIONSHIP_TYPES, PERSON_TASK_STATUSES,
                         PERSON_TASK_PRIORITIES, PERSON_VEHICLE_ROLES, RECURRENCE_OPTIONS,
@@ -74,13 +75,16 @@ def spawn_next_occurrence(task):
     base_date = task.due_date or date.today()
     next_due = calculate_next_due_date(base_date, task.recurrence, task.recurrence_interval)
 
+    # Any open occurrence of the same recurring task blocks a new spawn —
+    # matching on due date alone would let a dateless task re-completed on a
+    # different day (or a rescheduled occurrence) slip past the guard
     existing = PersonTask.query.filter(
+        PersonTask.id != task.id,
         PersonTask.person_id == task.person_id,
         PersonTask.user_id == task.user_id,
         PersonTask.title == task.title,
         PersonTask.recurrence == task.recurrence,
         PersonTask.recurrence_interval == task.recurrence_interval,
-        PersonTask.due_date == next_due,
         PersonTask.status.in_(OPEN_STATUSES),
     ).first()
     if existing:
@@ -108,6 +112,13 @@ def complete_with_recurrence(task, status):
     if status == 'done' and not was_done:
         return spawn_next_occurrence(task)
     return None
+
+
+def format_user_date(d):
+    """Format a date with the current user's configured date format"""
+    user_format = getattr(current_user, 'date_format', None) or 'DD/MM/YYYY'
+    fmt = DATE_FORMATS.get(user_format, DATE_FORMATS['DD/MM/YYYY'])['default']
+    return d.strftime(fmt)
 
 
 def parse_recurrence_form(form):
@@ -308,9 +319,13 @@ def view(person_id):
         CalendarEvent.start_at >= today_start
     ).order_by(CalendarEvent.start_at).limit(10).all()
 
-    # Vehicles this person is connected to, and which vehicles could be linked
-    vehicle_links = person.vehicle_links.order_by(PersonVehicleLink.created_at).all()
+    # Vehicles this person is connected to, scoped to what the viewer can see —
+    # a shared person may be linked to another user's private vehicle
     linkable_vehicles = current_user.get_all_vehicles()
+    visible_vehicle_ids = {v.id for v in linkable_vehicles}
+    vehicle_links = [link for link
+                     in person.vehicle_links.order_by(PersonVehicleLink.created_at)
+                     if link.vehicle_id in visible_vehicle_ids]
 
     return render_template('people/view.html',
                            person=person,
@@ -522,7 +537,7 @@ def new_task(person_id):
 
         flash(_('Task "%(title)s" added successfully') % {'title': task.title}, 'success')
         if next_task:
-            flash(_('Next occurrence scheduled for %(date)s') % {'date': next_task.due_date.strftime('%Y-%m-%d')}, 'success')
+            flash(_('Next occurrence scheduled for %(date)s') % {'date': format_user_date(next_task.due_date)}, 'success')
         return redirect(url_for('people.view', person_id=person.id))
 
     return render_template('people/task_form.html',
@@ -592,7 +607,7 @@ def edit_task(person_id, task_id):
 
         flash(_('Task updated successfully'), 'success')
         if next_task:
-            flash(_('Next occurrence scheduled for %(date)s') % {'date': next_task.due_date.strftime('%Y-%m-%d')}, 'success')
+            flash(_('Next occurrence scheduled for %(date)s') % {'date': format_user_date(next_task.due_date)}, 'success')
         return redirect(url_for('people.view', person_id=person.id))
 
     return render_template('people/task_form.html',
@@ -669,7 +684,15 @@ def link_vehicle(person_id):
     link = PersonVehicleLink(person_id=person.id, vehicle_id=vehicle.id,
                              role=role, notes=notes)
     db.session.add(link)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Concurrent submit lost the race against the unique constraint
+        db.session.rollback()
+        flash(_('%(name)s is already linked to %(vehicle)s as %(role)s') % {
+            'name': person.name, 'vehicle': vehicle.name,
+            'role': dict(PERSON_VEHICLE_ROLES).get(role, role)}, 'error')
+        return _link_redirect(person.id, vehicle.id)
 
     flash(_('%(name)s linked to %(vehicle)s as %(role)s') % {
         'name': person.name, 'vehicle': vehicle.name, 'role': link.role_label}, 'success')
@@ -679,11 +702,22 @@ def link_vehicle(person_id):
 @bp.route('/<int:person_id>/vehicles/<int:link_id>/unlink', methods=['POST'])
 @login_required
 def unlink_vehicle(person_id, link_id):
-    """Remove a person-vehicle association"""
+    """Remove a person-vehicle association.
+
+    Access to either end of the link suffices: the person page shows the
+    control to people-viewers, the vehicle page to vehicle-viewers, and a
+    vehicle owner must be able to clear links shown on their own vehicle.
+    """
     person = Person.query.get_or_404(person_id)
     link = PersonVehicleLink.query.get_or_404(link_id)
 
-    if person not in current_user.get_all_people() or link.person_id != person.id:
+    if link.person_id != person.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('people.index'))
+
+    can_see_person = person in current_user.get_all_people()
+    can_see_vehicle = link.vehicle in current_user.get_all_vehicles()
+    if not (can_see_person or can_see_vehicle or current_user.is_admin):
         flash(_('Access denied'), 'error')
         return redirect(url_for('people.index'))
 
@@ -725,5 +759,5 @@ def task_status(person_id, task_id):
         'status': dict(PERSON_TASK_STATUSES)[status]
     }, 'success')
     if next_task:
-        flash(_('Next occurrence scheduled for %(date)s') % {'date': next_task.due_date.strftime('%Y-%m-%d')}, 'success')
+        flash(_('Next occurrence scheduled for %(date)s') % {'date': format_user_date(next_task.due_date)}, 'success')
     return redirect(url_for('people.view', person_id=person.id))

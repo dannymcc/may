@@ -912,8 +912,19 @@ class Person(db.Model):
         return dict(RELATIONSHIP_TYPES).get(self.relationship_type,
                                             (self.relationship_type or '').replace('_', ' ').title())
 
-    def to_dict(self):
-        """Serialize person to dictionary for API"""
+    def to_dict(self, viewer=None):
+        """Serialize person to dictionary for API.
+
+        Vehicle links are scoped to the viewer: a shared person may be linked
+        to vehicles the caller cannot see, and those associations (and their
+        notes) must not leak through the person payload.
+        """
+        if viewer is not None:
+            visible_ids = {v.id for v in viewer.get_all_vehicles()}
+            vehicles = [link.to_dict() for link in self.vehicle_links
+                        if link.vehicle_id in visible_ids]
+        else:
+            vehicles = []
         return {
             'id': self.id,
             'name': self.name,
@@ -926,7 +937,7 @@ class Person(db.Model):
             'image_filename': self.image_filename,
             'is_active': self.is_active,
             'is_shared': self.is_shared,
-            'vehicles': [link.to_dict() for link in self.vehicle_links],
+            'vehicles': vehicles,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
