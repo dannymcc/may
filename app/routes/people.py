@@ -6,7 +6,10 @@ from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import Person, PersonTask, Reminder, CalendarEvent, RELATIONSHIP_TYPES, PERSON_TASK_STATUSES, PERSON_TASK_PRIORITIES, REMINDER_TYPES
+from app.models import (Person, PersonTask, Reminder, CalendarEvent, RELATIONSHIP_TYPES,
+                        PERSON_TASK_STATUSES, PERSON_TASK_PRIORITIES, RECURRENCE_OPTIONS,
+                        REMINDER_TYPES)
+from app.routes.reminders import calculate_next_due_date
 
 bp = Blueprint('people', __name__, url_prefix='/people')
 
@@ -55,6 +58,67 @@ def apply_task_status(task, status):
         task.completed_at = None
 
     task.status = status
+
+
+def spawn_next_occurrence(task):
+    """Create the next occurrence of a recurring task that was just completed.
+
+    Returns the new open task, or None when the task does not recur or a
+    matching open occurrence already exists (completed, un-completed and
+    completed again — same guard as recurring reminders).
+    """
+    if not task.is_recurring():
+        return None
+
+    base_date = task.due_date or date.today()
+    next_due = calculate_next_due_date(base_date, task.recurrence, task.recurrence_interval)
+
+    existing = PersonTask.query.filter(
+        PersonTask.person_id == task.person_id,
+        PersonTask.user_id == task.user_id,
+        PersonTask.title == task.title,
+        PersonTask.recurrence == task.recurrence,
+        PersonTask.recurrence_interval == task.recurrence_interval,
+        PersonTask.due_date == next_due,
+        PersonTask.status.in_(OPEN_STATUSES),
+    ).first()
+    if existing:
+        return None
+
+    next_task = PersonTask(
+        person_id=task.person_id,
+        user_id=task.user_id,
+        title=task.title,
+        description=task.description,
+        status='todo',
+        priority=task.priority,
+        due_date=next_due,
+        recurrence=task.recurrence,
+        recurrence_interval=task.recurrence_interval,
+    )
+    db.session.add(next_task)
+    return next_task
+
+
+def complete_with_recurrence(task, status):
+    """Apply a status change, spawning the next occurrence on open -> done."""
+    was_done = task.status == 'done'
+    apply_task_status(task, status)
+    if status == 'done' and not was_done:
+        return spawn_next_occurrence(task)
+    return None
+
+
+def parse_recurrence_form(form):
+    """Validated (recurrence, interval) pair from a submitted task form"""
+    recurrence = form.get('recurrence', 'none')
+    if recurrence not in dict(RECURRENCE_OPTIONS):
+        recurrence = 'none'
+    try:
+        interval = max(int(form.get('recurrence_interval') or 1), 1)
+    except (ValueError, TypeError):
+        interval = 1
+    return recurrence, interval
 
 
 def get_task_summary(person):
@@ -158,10 +222,11 @@ def move_task(task_id):
     if status not in dict(PERSON_TASK_STATUSES):
         return {'error': 'Invalid status'}, 400
 
-    apply_task_status(task, status)
+    next_task = complete_with_recurrence(task, status)
     db.session.commit()
 
-    return {'ok': True, 'task_id': task.id, 'status': task.status}
+    return {'ok': True, 'task_id': task.id, 'status': task.status,
+            'next_task_id': next_task.id if next_task else None}
 
 
 @bp.route('/new', methods=['GET', 'POST'])
@@ -410,6 +475,8 @@ def new_task(person_id):
         if priority not in dict(PERSON_TASK_PRIORITIES):
             priority = 'normal'
 
+        recurrence, recurrence_interval = parse_recurrence_form(request.form)
+
         try:
             due_date_str = request.form.get('due_date')
             task = PersonTask(
@@ -420,33 +487,42 @@ def new_task(person_id):
                 status=status,
                 priority=priority,
                 due_date=datetime.strptime(due_date_str, '%Y-%m-%d').date() if due_date_str else None,
+                recurrence=recurrence,
+                recurrence_interval=recurrence_interval,
             )
         except (ValueError, TypeError):
             flash(_('Invalid data submitted. Please check the due date.'), 'error')
             return render_template('people/task_form.html', person=person, task=None,
                                    task_statuses=PERSON_TASK_STATUSES,
-                                   task_priorities=PERSON_TASK_PRIORITIES)
+                                   task_priorities=PERSON_TASK_PRIORITIES,
+                                   recurrence_options=RECURRENCE_OPTIONS)
 
         if not task.title:
             flash(_('Please enter a task title'), 'error')
             return render_template('people/task_form.html', person=person, task=None,
                                    task_statuses=PERSON_TASK_STATUSES,
-                                   task_priorities=PERSON_TASK_PRIORITIES)
+                                   task_priorities=PERSON_TASK_PRIORITIES,
+                                   recurrence_options=RECURRENCE_OPTIONS)
 
         # Keep the timestamps consistent with the status it was created in
         apply_task_status(task, task.status)
-
         db.session.add(task)
+
+        # A recurring task logged directly as done still schedules its next round
+        next_task = spawn_next_occurrence(task) if task.status == 'done' else None
         db.session.commit()
 
         flash(_('Task "%(title)s" added successfully') % {'title': task.title}, 'success')
+        if next_task:
+            flash(_('Next occurrence scheduled for %(date)s') % {'date': next_task.due_date.strftime('%Y-%m-%d')}, 'success')
         return redirect(url_for('people.view', person_id=person.id))
 
     return render_template('people/task_form.html',
                            person=person,
                            task=None,
                            task_statuses=PERSON_TASK_STATUSES,
-                           task_priorities=PERSON_TASK_PRIORITIES)
+                           task_priorities=PERSON_TASK_PRIORITIES,
+                           recurrence_options=RECURRENCE_OPTIONS)
 
 
 @bp.route('/<int:person_id>/tasks/<int:task_id>/edit', methods=['GET', 'POST'])
@@ -472,7 +548,8 @@ def edit_task(person_id, task_id):
             flash(_('Please enter a task title'), 'error')
             return render_template('people/task_form.html', person=person, task=task,
                                    task_statuses=PERSON_TASK_STATUSES,
-                                   task_priorities=PERSON_TASK_PRIORITIES)
+                                   task_priorities=PERSON_TASK_PRIORITIES,
+                                   recurrence_options=RECURRENCE_OPTIONS)
 
         try:
             due_date_str = request.form.get('due_date')
@@ -481,7 +558,8 @@ def edit_task(person_id, task_id):
             flash(_('Invalid data submitted. Please check the due date.'), 'error')
             return render_template('people/task_form.html', person=person, task=task,
                                    task_statuses=PERSON_TASK_STATUSES,
-                                   task_priorities=PERSON_TASK_PRIORITIES)
+                                   task_priorities=PERSON_TASK_PRIORITIES,
+                                   recurrence_options=RECURRENCE_OPTIONS)
 
         if new_due_date != task.due_date:
             # Rescheduled — arm the due-date notification again
@@ -495,20 +573,26 @@ def edit_task(person_id, task_id):
         if submitted_priority in dict(PERSON_TASK_PRIORITIES):
             task.priority = submitted_priority
 
+        task.recurrence, task.recurrence_interval = parse_recurrence_form(request.form)
+
+        next_task = None
         submitted_status = request.form.get('status')
         if submitted_status in dict(PERSON_TASK_STATUSES):
-            apply_task_status(task, submitted_status)
+            next_task = complete_with_recurrence(task, submitted_status)
 
         db.session.commit()
 
         flash(_('Task updated successfully'), 'success')
+        if next_task:
+            flash(_('Next occurrence scheduled for %(date)s') % {'date': next_task.due_date.strftime('%Y-%m-%d')}, 'success')
         return redirect(url_for('people.view', person_id=person.id))
 
     return render_template('people/task_form.html',
                            person=person,
                            task=task,
                            task_statuses=PERSON_TASK_STATUSES,
-                           task_priorities=PERSON_TASK_PRIORITIES)
+                           task_priorities=PERSON_TASK_PRIORITIES,
+                           recurrence_options=RECURRENCE_OPTIONS)
 
 
 @bp.route('/<int:person_id>/tasks/<int:task_id>/delete', methods=['POST'])
@@ -557,11 +641,13 @@ def task_status(person_id, task_id):
         flash(_('Invalid status'), 'error')
         return redirect(url_for('people.view', person_id=person.id))
 
-    apply_task_status(task, status)
+    next_task = complete_with_recurrence(task, status)
     db.session.commit()
 
     flash(_('Task "%(title)s" moved to %(status)s') % {
         'title': task.title,
         'status': dict(PERSON_TASK_STATUSES)[status]
     }, 'success')
+    if next_task:
+        flash(_('Next occurrence scheduled for %(date)s') % {'date': next_task.due_date.strftime('%Y-%m-%d')}, 'success')
     return redirect(url_for('people.view', person_id=person.id))

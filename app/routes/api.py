@@ -386,6 +386,22 @@ def _apply_person_task_payload(task, data, partial=False):
     except ValueError as exc:
         return str(exc)
 
+    valid_recurrences = {value for value, _label in RECURRENCE_OPTIONS}
+    if 'recurrence' in data:
+        if data['recurrence'] not in valid_recurrences:
+            return f'recurrence must be one of: {", ".join(sorted(valid_recurrences))}'
+        task.recurrence = data['recurrence']
+    elif not partial:
+        task.recurrence = 'none'
+
+    if 'recurrence_interval' in data:
+        try:
+            task.recurrence_interval = max(int(data['recurrence_interval']), 1)
+        except (ValueError, TypeError):
+            return 'recurrence_interval must be a positive integer'
+    elif not partial:
+        task.recurrence_interval = 1
+
     return None
 
 
@@ -1421,8 +1437,16 @@ def api_create_person_task(person_id):
         return jsonify({'error': error, 'code': 'validation_error'}), 400
 
     db.session.add(task)
+
+    # A recurring task logged directly as done still schedules its next round
+    from app.routes.people import spawn_next_occurrence
+    next_task = spawn_next_occurrence(task) if task.status == 'done' else None
     db.session.commit()
-    return jsonify(task.to_dict()), 201
+
+    payload = task.to_dict()
+    if next_task:
+        payload['next_occurrence'] = next_task.to_dict()
+    return jsonify(payload), 201
 
 
 @bp.route('/v1/people/<int:person_id>/tasks/<int:task_id>', methods=['GET'])
@@ -1463,12 +1487,20 @@ def api_update_person_task(person_id, task_id):
     if not data:
         return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
 
+    was_done = task.status == 'done'
     error = _apply_person_task_payload(task, data, partial=request.method == 'PATCH')
     if error:
         return jsonify({'error': error, 'code': 'validation_error'}), 400
 
+    # Completing a recurring task through the API also schedules the next round
+    from app.routes.people import spawn_next_occurrence
+    next_task = spawn_next_occurrence(task) if (task.status == 'done' and not was_done) else None
     db.session.commit()
-    return jsonify(task.to_dict())
+
+    payload = task.to_dict()
+    if next_task:
+        payload['next_occurrence'] = next_task.to_dict()
+    return jsonify(payload)
 
 
 @bp.route('/v1/people/<int:person_id>/tasks/<int:task_id>', methods=['DELETE'])

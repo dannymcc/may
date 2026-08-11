@@ -53,6 +53,28 @@
                 </div>
 
                 <div class="sm:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Recurrence') }}</label>
+                    <div class="flex gap-2 items-stretch">
+                        <span class="inline-flex items-center px-3 text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-md">
+                            {{ _('Every') }}
+                        </span>
+                        <input type="number" name="recurrence_interval" id="recurrence_interval"
+                               min="1" step="1"
+                               value="{{ task.recurrence_interval if task and task.recurrence_interval else 1 }}"
+                               class="w-20 border-y border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
+                        <select name="recurrence" id="recurrence"
+                                class="flex-1 rounded-r-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            {% for rec_id, rec_name in recurrence_options %}
+                            <option value="{{ rec_id }}" {% if task and task.recurrence == rec_id %}selected{% endif %}>
+                                {{ rec_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('When a repeating task is completed, the next occurrence is created automatically.') }}</p>
+                </div>
+
+                <div class="sm:col-span-2">
                     <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Description') }}</label>
                     <textarea name="description" id="description" rows="4"
                               placeholder="{{ _('What exactly needs doing, and anything you need from them...') }}"

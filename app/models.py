@@ -953,12 +953,21 @@ class PersonTask(db.Model):
     # rescheduled task notifies again
     notification_sent = db.Column(db.Boolean, default=False)
 
+    # Recurrence: completing a repeating task creates the next occurrence
+    # (unit + interval pair, same vocabulary as Reminder.recurrence)
+    recurrence = db.Column(db.String(20), default='none')  # none, daily, weekly, monthly, yearly
+    recurrence_interval = db.Column(db.Integer, default=1)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     person = db.relationship('Person', backref=db.backref('tasks', lazy='dynamic', cascade='all, delete-orphan'))
     user = db.relationship('User', backref=db.backref('person_tasks', lazy='dynamic'))
+
+    def is_recurring(self):
+        """True when completing this task should schedule the next occurrence"""
+        return bool(self.recurrence) and self.recurrence != 'none'
 
     def is_overdue(self):
         """Check if task is past its due date and still outstanding"""
@@ -979,6 +988,8 @@ class PersonTask(db.Model):
             'started_at': self.started_at.isoformat() if self.started_at else None,
             'completed_at': self.completed_at.isoformat() if self.completed_at else None,
             'notification_sent': self.notification_sent,
+            'recurrence': self.recurrence,
+            'recurrence_interval': self.recurrence_interval,
             'is_overdue': self.is_overdue(),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
