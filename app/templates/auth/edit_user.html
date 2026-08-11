@@ -68,6 +68,161 @@
             </div>
         </div>
 
+        <input type="hidden" name="prefs_included" value="1">
+
+        {% set select_classes = 'mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500' %}
+        {% set check_classes = 'h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500' %}
+
+        <!-- Display & Units -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700 mb-6">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Display & Units') }}</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _("Configure this user's display and unit preferences") }}</p>
+            </div>
+            <div class="p-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label for="date_format" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Date Format') }}</label>
+                    <select name="date_format" id="date_format" class="{{ select_classes }}">
+                        {% for fmt in ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD', 'DD.MM.YYYY'] %}
+                        <option value="{{ fmt }}" {% if user.date_format == fmt %}selected{% endif %}>{{ fmt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="currency" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Currency') }}</label>
+                    <select name="currency" id="currency" class="{{ select_classes }}">
+                        {% for cur in ['USD', 'EUR', 'GBP', 'AUD', 'CAD', 'INR', 'JPY', 'CHF', 'NZD', 'SEK', 'NOK'] %}
+                        <option value="{{ cur }}" {% if user.currency == cur %}selected{% endif %}>{{ cur }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="distance_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Distance Unit') }}</label>
+                    <select name="distance_unit" id="distance_unit" class="{{ select_classes }}">
+                        <option value="km" {% if user.distance_unit == 'km' %}selected{% endif %}>{{ _('Kilometers (km)') }}</option>
+                        <option value="mi" {% if user.distance_unit == 'mi' %}selected{% endif %}>{{ _('Miles (mi)') }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="volume_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Volume Unit') }}</label>
+                    <select name="volume_unit" id="volume_unit" class="{{ select_classes }}">
+                        <option value="L" {% if user.volume_unit == 'L' %}selected{% endif %}>{{ _('Liters (L)') }}</option>
+                        <option value="gal" {% if user.volume_unit == 'gal' %}selected{% endif %}>{{ _('UK Gallons (gal)') }}</option>
+                        <option value="us_gal" {% if user.volume_unit == 'us_gal' %}selected{% endif %}>{{ _('US Gallons (gal)') }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="consumption_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Consumption Unit') }}</label>
+                    <select name="consumption_unit" id="consumption_unit" class="{{ select_classes }}">
+                        {% for unit in ['L/100km', 'mpg', 'mpg_us', 'km/L'] %}
+                        <option value="{{ unit }}" {% if user.consumption_unit == unit %}selected{% endif %}>{{ unit }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="thousand_separator" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Thousand Separator') }}</label>
+                    <select name="thousand_separator" id="thousand_separator" class="{{ select_classes }}">
+                        <option value="none" {% if user.thousand_separator in (none, 'none') %}selected{% endif %}>{{ _('None') }}</option>
+                        <option value="space" {% if user.thousand_separator == 'space' %}selected{% endif %}>{{ _('Space') }}</option>
+                        <option value="comma" {% if user.thousand_separator == 'comma' %}selected{% endif %}>{{ _('Comma') }}</option>
+                        <option value="period" {% if user.thousand_separator == 'period' %}selected{% endif %}>{{ _('Period') }}</option>
+                    </select>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" name="round_costs" id="round_costs" {% if user.round_costs %}checked{% endif %} class="{{ check_classes }}">
+                    <label for="round_costs" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Round costs to whole numbers') }}</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" name="dark_mode" id="dark_mode" {% if user.dark_mode %}checked{% endif %} class="{{ check_classes }}">
+                    <label for="dark_mode" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Dark mode') }}</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700 mb-6">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Notifications') }}</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Reminder delivery settings for this user') }}</p>
+            </div>
+            <div class="p-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div class="flex items-center sm:col-span-2">
+                    <input type="checkbox" name="email_reminders" id="email_reminders" {% if user.email_reminders %}checked{% endif %} class="{{ check_classes }}">
+                    <label for="email_reminders" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Reminder notifications enabled') }}</label>
+                </div>
+                <div>
+                    <label for="notification_method" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Notification Method') }}</label>
+                    <select name="notification_method" id="notification_method" class="{{ select_classes }}">
+                        <option value="email" {% if user.notification_method in (none, 'email') %}selected{% endif %}>{{ _('Email') }}</option>
+                        <option value="ntfy" {% if user.notification_method == 'ntfy' %}selected{% endif %}>{{ _('ntfy (Push Notifications)') }}</option>
+                        <option value="pushover" {% if user.notification_method == 'pushover' %}selected{% endif %}>{{ _('Pushover') }}</option>
+                        <option value="webhook" {% if user.notification_method == 'webhook' %}selected{% endif %}>{{ _('Webhook (HTTP POST)') }}</option>
+                        <option value="none" {% if user.notification_method == 'none' %}selected{% endif %}>{{ _('None') }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="reminder_days_before" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Days Before Due Date') }}</label>
+                    <input type="number" name="reminder_days_before" id="reminder_days_before" min="0" max="365"
+                           value="{{ user.reminder_days_before or 7 }}"
+                           class="{{ select_classes }}">
+                </div>
+                <div>
+                    <label for="webhook_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Webhook URL') }}</label>
+                    <input type="url" name="webhook_url" id="webhook_url" value="{{ user.webhook_url or '' }}"
+                           class="{{ select_classes }}">
+                </div>
+                <div>
+                    <label for="ntfy_topic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('ntfy Topic') }}</label>
+                    <input type="text" name="ntfy_topic" id="ntfy_topic" value="{{ user.ntfy_topic or '' }}"
+                           class="{{ select_classes }}">
+                </div>
+                <div>
+                    <label for="pushover_user_key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Pushover User Key') }}</label>
+                    <input type="text" name="pushover_user_key" id="pushover_user_key" value="{{ user.pushover_user_key or '' }}"
+                           class="{{ select_classes }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu & Navigation -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700 mb-6">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Menu & Navigation') }}</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Which pages this user starts on and sees in the menu') }}</p>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="max-w-xs">
+                    <label for="start_page" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Start Page') }}</label>
+                    <select name="start_page" id="start_page" class="{{ select_classes }}">
+                        {% for value, label in [('dashboard', _('Dashboard')), ('vehicles', _('Vehicles')),
+                                                ('fuel', _('Fuel Logs')), ('fuel_quick', _('Quick Fuel Entry')),
+                                                ('expenses', _('Expenses')), ('reminders', _('Reminders')),
+                                                ('maintenance', _('Maintenance')), ('recurring', _('Recurring Expenses')),
+                                                ('documents', _('Documents')), ('stations', _('Fuel Stations')),
+                                                ('trips', _('Trips')), ('charging', _('EV Charging')),
+                                                ('notes', _('Notes')), ('allowance', _('Allowance'))] %}
+                        <option value="{{ value }}" {% if (user.start_page or 'dashboard') == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {% for field, label in [('show_menu_vehicles', _('Vehicles')), ('show_menu_fuel', _('Fuel Logs')),
+                                            ('show_menu_expenses', _('Expenses')), ('show_menu_reminders', _('Reminders')),
+                                            ('show_menu_maintenance', _('Maintenance')), ('show_menu_recurring', _('Recurring')),
+                                            ('show_menu_documents', _('Documents')), ('show_menu_stations', _('Fuel Stations')),
+                                            ('show_menu_trips', _('Trips')), ('show_menu_charging', _('EV Charging')),
+                                            ('show_menu_notes', _('Notes')), ('show_menu_allowance', _('Allowance')),
+                                            ('show_menu_people', _('People')), ('show_quick_entry', _('Quick Entry Button'))] %}
+                    <div class="flex items-center">
+                        <input type="checkbox" name="{{ field }}" id="{{ field }}"
+                               {% if user|attr(field) %}checked{% endif %} class="{{ check_classes }}">
+                        <label for="{{ field }}" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ label }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
         <div class="flex justify-end">
             <button type="submit"
                     class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">

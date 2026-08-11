@@ -524,11 +524,35 @@ def delete_user(user_id):
     return redirect(url_for('auth.users'))
 
 
+# Allowed values for the preference fields admins may set on any user —
+# mirrors the vocabulary of the user's own settings page
+ADMIN_EDITABLE_PREFS = {
+    'date_format': {'DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD', 'DD.MM.YYYY'},
+    'distance_unit': {'km', 'mi'},
+    'volume_unit': {'L', 'gal', 'us_gal'},
+    'consumption_unit': {'L/100km', 'mpg', 'mpg_us', 'km/L'},
+    'thousand_separator': {'none', 'space', 'comma', 'period'},
+    'currency': {'USD', 'EUR', 'GBP', 'AUD', 'CAD', 'INR', 'JPY', 'CHF', 'NZD', 'SEK', 'NOK'},
+    'notification_method': {'email', 'ntfy', 'pushover', 'webhook', 'none'},
+    'start_page': {'dashboard', 'vehicles', 'fuel', 'fuel_quick', 'expenses', 'reminders',
+                   'maintenance', 'recurring', 'documents', 'stations', 'trips', 'charging',
+                   'notes', 'allowance'},
+}
+
+ADMIN_EDITABLE_TOGGLES = [
+    'email_reminders', 'round_costs', 'dark_mode', 'show_quick_entry',
+    'show_menu_vehicles', 'show_menu_fuel', 'show_menu_expenses', 'show_menu_reminders',
+    'show_menu_maintenance', 'show_menu_recurring', 'show_menu_documents',
+    'show_menu_stations', 'show_menu_trips', 'show_menu_charging', 'show_menu_notes',
+    'show_menu_allowance', 'show_menu_people',
+]
+
+
 @bp.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_user(user_id):
-    """Edit a user's details (admin only)"""
+    """Edit a user's account and preferences (admin only)"""
     user = User.query.get_or_404(user_id)
 
     if request.method == 'POST':
@@ -555,6 +579,34 @@ def edit_user(user_id):
         is_admin = request.form.get('is_admin') == 'on'
         if user.id != current_user.id:
             user.is_admin = is_admin
+
+        # Preference fields are only applied when the form actually carried
+        # them, so absent checkboxes are never mistaken for "turn it all off"
+        if request.form.get('prefs_included') == '1':
+            for field, allowed in ADMIN_EDITABLE_PREFS.items():
+                value = request.form.get(field)
+                if value in allowed:
+                    setattr(user, field, value)
+
+            for toggle in ADMIN_EDITABLE_TOGGLES:
+                setattr(user, toggle, request.form.get(toggle) == 'on')
+
+            try:
+                days = int(request.form.get('reminder_days_before', user.reminder_days_before or 7))
+                user.reminder_days_before = min(max(days, 0), 365)
+            except (ValueError, TypeError):
+                pass
+
+            webhook_url = request.form.get('webhook_url', '').strip() or None
+            if webhook_url:
+                is_valid, error_msg = validate_webhook_url(webhook_url)
+                if not is_valid:
+                    flash(_('Invalid webhook URL: %(error)s') % {'error': error_msg}, 'error')
+                    return render_template('auth/edit_user.html', user=user)
+            user.webhook_url = webhook_url
+
+            user.ntfy_topic = request.form.get('ntfy_topic', '').strip() or None
+            user.pushover_user_key = request.form.get('pushover_user_key', '').strip() or None
 
         db.session.commit()
         flash(_('User %(username)s updated successfully') % {'username': user.username}, 'success')
