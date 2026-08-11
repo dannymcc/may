@@ -1,0 +1,95 @@
+name: Dev Server Compatibility
+
+# Builds the image from the branch and boots a real throwaway server,
+# proving the container starts, migrations apply, and authenticated
+# pages actually render — not just that unit tests pass.
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+
+jobs:
+  server-smoke:
+    runs-on: ubuntu-latest
+    env:
+      ADMIN_PASSWORD: ci-smoke-password-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: may-ci:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Start server
+        run: |
+          docker run -d --name may-ci \
+            -p 5050:5050 \
+            -e SECRET_KEY=ci-smoke-secret \
+            -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
+            may-ci:${{ github.sha }}
+
+      - name: Wait for health
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:5050/health > /dev/null 2>&1; then
+              echo "Server healthy after ${i} attempts"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Server never became healthy"
+          exit 1
+
+      - name: Smoke-test unauthenticated pages
+        run: |
+          set -euo pipefail
+          curl -fsS http://localhost:5050/health | grep -qi 'ok\|healthy'
+          # Login page renders with a CSRF token
+          curl -fsS http://localhost:5050/auth/login | grep -q 'csrf_token'
+          # Protected pages redirect to login rather than erroring
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:5050/people/board)
+          test "$code" = "302"
+
+      - name: Smoke-test authenticated pages
+        run: |
+          set -euo pipefail
+          jar=$(mktemp)
+          token=$(curl -fsS -c "$jar" http://localhost:5050/auth/login \
+            | grep -o 'name="csrf_token" value="[^"]*"' | head -1 | cut -d'"' -f4)
+          code=$(curl -s -o /dev/null -w '%{http_code}' -b "$jar" -c "$jar" \
+            -d "csrf_token=${token}&username=admin&password=${ADMIN_PASSWORD}" \
+            http://localhost:5050/auth/login)
+          test "$code" = "302" || { echo "login failed ($code)"; exit 1; }
+          # Every page a fresh install must serve
+          for page in /dashboard /vehicles/ /people/ /people/board /reminders/ /auth/settings /auth/users; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -b "$jar" "http://localhost:5050${page}")
+            echo "${page} -> ${code}"
+            case "$code" in
+              200|302) ;;
+              *) echo "FAILED: ${page} returned ${code}"; exit 1 ;;
+            esac
+          done
+
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs may-ci
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f may-ci
