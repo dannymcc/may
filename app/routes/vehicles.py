@@ -169,6 +169,11 @@ def view(vehicle_id):
     # Check if Tessie integration is configured
     tessie_configured = TessieService.is_configured()
 
+    # People connected to this vehicle, and who else could be linked
+    from app.models import PersonVehicleLink, PERSON_VEHICLE_ROLES
+    person_links = vehicle.person_links.order_by(PersonVehicleLink.created_at).all()
+    linkable_people = [p for p in current_user.get_all_people() if p.is_active]
+
     return render_template('vehicles/view.html',
                            vehicle=vehicle,
                            recent_logs=recent_logs,
@@ -183,6 +188,9 @@ def view(vehicle_id):
                            today=today,
                            dvla_configured=dvla_configured,
                            tessie_configured=tessie_configured,
+                           person_links=person_links,
+                           linkable_people=linkable_people,
+                           vehicle_roles=PERSON_VEHICLE_ROLES,
                            annual_mileage_stats=vehicle.get_annual_mileage_stats())
 
 

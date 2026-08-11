@@ -6,8 +6,9 @@ from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import (Person, PersonTask, Reminder, CalendarEvent, RELATIONSHIP_TYPES,
-                        PERSON_TASK_STATUSES, PERSON_TASK_PRIORITIES, RECURRENCE_OPTIONS,
+from app.models import (Person, PersonTask, PersonVehicleLink, Reminder, CalendarEvent,
+                        Vehicle, RELATIONSHIP_TYPES, PERSON_TASK_STATUSES,
+                        PERSON_TASK_PRIORITIES, PERSON_VEHICLE_ROLES, RECURRENCE_OPTIONS,
                         REMINDER_TYPES)
 from app.routes.reminders import calculate_next_due_date
 
@@ -307,6 +308,10 @@ def view(person_id):
         CalendarEvent.start_at >= today_start
     ).order_by(CalendarEvent.start_at).limit(10).all()
 
+    # Vehicles this person is connected to, and which vehicles could be linked
+    vehicle_links = person.vehicle_links.order_by(PersonVehicleLink.created_at).all()
+    linkable_vehicles = current_user.get_all_vehicles()
+
     return render_template('people/view.html',
                            person=person,
                            tasks_by_status=tasks_by_status,
@@ -316,6 +321,9 @@ def view(person_id):
                            reminders=reminders,
                            reminder_types=REMINDER_TYPES,
                            calendar_events=calendar_events,
+                           vehicle_links=vehicle_links,
+                           linkable_vehicles=linkable_vehicles,
+                           vehicle_roles=PERSON_VEHICLE_ROLES,
                            today=today)
 
 
@@ -617,6 +625,74 @@ def delete_task(person_id, task_id):
 
     flash(_('Task deleted successfully'), 'success')
     return redirect(url_for('people.view', person_id=person.id))
+
+
+# --- Person <-> Vehicle links ---
+
+def _link_redirect(person_id, vehicle_id):
+    """Send the user back to whichever page they linked from"""
+    if request.form.get('return_to') == 'vehicle' and vehicle_id:
+        return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+    return redirect(url_for('people.view', person_id=person_id))
+
+
+@bp.route('/<int:person_id>/vehicles/link', methods=['POST'])
+@login_required
+def link_vehicle(person_id):
+    """Associate a vehicle with this person in a given role"""
+    person = Person.query.get_or_404(person_id)
+
+    # Check access to both sides of the link
+    if person not in current_user.get_all_people():
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('people.index'))
+
+    vehicle_id = request.form.get('vehicle_id', type=int)
+    vehicle = Vehicle.query.get(vehicle_id) if vehicle_id else None
+    if not vehicle or vehicle not in current_user.get_all_vehicles():
+        flash(_('Vehicle not found'), 'error')
+        return redirect(url_for('people.view', person_id=person.id))
+
+    role = request.form.get('role')
+    if role not in dict(PERSON_VEHICLE_ROLES):
+        role = 'other'
+    notes = (request.form.get('notes') or '').strip() or None
+
+    existing = PersonVehicleLink.query.filter_by(
+        person_id=person.id, vehicle_id=vehicle.id, role=role).first()
+    if existing:
+        flash(_('%(name)s is already linked to %(vehicle)s as %(role)s') % {
+            'name': person.name, 'vehicle': vehicle.name,
+            'role': existing.role_label}, 'error')
+        return _link_redirect(person.id, vehicle.id)
+
+    link = PersonVehicleLink(person_id=person.id, vehicle_id=vehicle.id,
+                             role=role, notes=notes)
+    db.session.add(link)
+    db.session.commit()
+
+    flash(_('%(name)s linked to %(vehicle)s as %(role)s') % {
+        'name': person.name, 'vehicle': vehicle.name, 'role': link.role_label}, 'success')
+    return _link_redirect(person.id, vehicle.id)
+
+
+@bp.route('/<int:person_id>/vehicles/<int:link_id>/unlink', methods=['POST'])
+@login_required
+def unlink_vehicle(person_id, link_id):
+    """Remove a person-vehicle association"""
+    person = Person.query.get_or_404(person_id)
+    link = PersonVehicleLink.query.get_or_404(link_id)
+
+    if person not in current_user.get_all_people() or link.person_id != person.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('people.index'))
+
+    vehicle_id = link.vehicle_id
+    db.session.delete(link)
+    db.session.commit()
+
+    flash(_('Link removed'), 'success')
+    return _link_redirect(person.id, vehicle_id)
 
 
 @bp.route('/<int:person_id>/tasks/<int:task_id>/status', methods=['POST'])

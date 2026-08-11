@@ -926,6 +926,7 @@ class Person(db.Model):
             'image_filename': self.image_filename,
             'is_active': self.is_active,
             'is_shared': self.is_shared,
+            'vehicles': [link.to_dict() for link in self.vehicle_links],
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -993,6 +994,41 @@ class PersonTask(db.Model):
             'is_overdue': self.is_overdue(),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class PersonVehicleLink(db.Model):
+    """Associates a person with a vehicle in a given role (owner, driver, ...)"""
+    __tablename__ = 'person_vehicle_links'
+    __table_args__ = (
+        db.UniqueConstraint('person_id', 'vehicle_id', 'role', name='uq_person_vehicle_role'),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    person_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+
+    role = db.Column(db.String(30), nullable=False, default='other')  # see PERSON_VEHICLE_ROLES
+    notes = db.Column(db.String(200))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    person = db.relationship('Person', backref=db.backref('vehicle_links', lazy='dynamic', cascade='all, delete-orphan'))
+    vehicle = db.relationship('Vehicle', backref=db.backref('person_links', lazy='dynamic', cascade='all, delete-orphan'))
+
+    @property
+    def role_label(self):
+        return dict(PERSON_VEHICLE_ROLES).get(self.role, self.role.capitalize() if self.role else '')
+
+    def to_dict(self):
+        """Serialize link to dictionary for API"""
+        return {
+            'id': self.id,
+            'person_id': self.person_id,
+            'vehicle_id': self.vehicle_id,
+            'role': self.role,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 
 
@@ -1304,6 +1340,16 @@ PERSON_TASK_PRIORITIES = [
     ('normal', _l('Normal')),
     ('high', _l('High')),
     ('urgent', _l('Urgent')),
+]
+
+# Roles a person can hold on a vehicle
+PERSON_VEHICLE_ROLES = [
+    ('owner', _l('Owner')),
+    ('driver', _l('Driver')),
+    ('mechanic', _l('Mechanic')),
+    ('insurer', _l('Insurance Contact')),
+    ('seller', _l('Seller/Dealer')),
+    ('other', _l('Other')),
 ]
 
 # Tracking unit options
