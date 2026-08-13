@@ -1,0 +1,50 @@
+# Dev-image deployment: runs the published Docker Hub dev build of this fork
+# instead of building locally. Equivalent to docker-compose.yml (may + mailpit)
+# minus the optional database profiles.
+#
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# Web UI: http://localhost:5050 - Mailpit inbox: http://localhost:8025
+
+services:
+  may:
+    image: robjects/may:dev
+    pull_policy: always
+    container_name: may-dev
+    restart: unless-stopped
+    ports:
+      - "5050:5050"
+    volumes:
+      - may_dev_data:/app/data
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:////app/data/may.db}
+      - UPLOAD_FOLDER=/app/data/uploads
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-your-secure-password}
+      - SMTP_HOST=${SMTP_HOST:-mailpit}
+      - SMTP_PORT=${SMTP_PORT:-1025}
+      - SMTP_SENDER=${SMTP_SENDER:-may@localhost}
+      - SMTP_SENDER_NAME=${SMTP_SENDER_NAME:-May}
+      - SMTP_TLS=${SMTP_TLS:-false}
+      - SMTP_SSL=${SMTP_SSL:-false}
+    depends_on:
+      - mailpit
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: may-dev-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+    environment:
+      - MP_DATABASE=/data/mailpit.db
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+    volumes:
+      - may_dev_mailpit_data:/data
+
+volumes:
+  may_dev_data:
+  may_dev_mailpit_data:
