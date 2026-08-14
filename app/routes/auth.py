@@ -127,6 +127,44 @@ def reset_password(token):
     return render_template('auth/reset_password.html', token=token)
 
 
+@bp.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def force_change_password():
+    """Force an account flagged with must_change_password to set a new one.
+
+    Reached via the global before_request gate. A user cannot keep a
+    deployment-default password: they must change it before using the app.
+    """
+    if not current_user.must_change_password:
+        return redirect(url_for('main.dashboard'))
+
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if password != confirm_password:
+            flash(_('Passwords do not match'), 'error')
+            return render_template('auth/force_change_password.html')
+
+        is_valid, error_msg = validate_password_strength(password)
+        if not is_valid:
+            flash(error_msg, 'error')
+            return render_template('auth/force_change_password.html')
+
+        if current_user.check_password(password):
+            flash(_('Please choose a password different from the current one'), 'error')
+            return render_template('auth/force_change_password.html')
+
+        current_user.set_password(password)
+        current_user.must_change_password = False
+        db.session.commit()
+
+        flash(_('Your password has been updated.'), 'success')
+        return redirect(url_for('main.dashboard'))
+
+    return render_template('auth/force_change_password.html')
+
+
 def get_start_page_url(user):
     """Get the URL for the user's configured start page."""
     start_page = user.start_page or 'dashboard'

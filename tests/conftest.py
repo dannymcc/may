@@ -81,9 +81,11 @@ def admin_user(app):
     """
     existing = User.query.filter_by(username='admin').first()
     if existing:
-        # Update to known credentials for tests
+        # Update to known credentials for tests. Clear the first-login password
+        # change flag so admin_client behaves like an already-onboarded admin.
         existing.email = 'admin@example.com'
         existing.is_admin = True
+        existing.must_change_password = False
         existing.set_password('AdminPass123!')
         _db_ext.session.commit()
         return existing
@@ -92,6 +94,7 @@ def admin_user(app):
         username='admin',
         email='admin@example.com',
         is_admin=True,
+        must_change_password=False,
     )
     user.set_password('AdminPass123!')
     _db_ext.session.add(user)

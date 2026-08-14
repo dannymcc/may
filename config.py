@@ -108,3 +108,14 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or str(basedir / 'data' / 'uploads')
     MAX_CONTENT_LENGTH = 300 * 1024 * 1024  # 300MB max upload
+
+    # --- CalDAV facade (see docs/CALDAV.md) ---
+    # Two-way sync with Apple Calendar/Reminders, Fantastical, Thunderbird,
+    # DAVx5. Clients authenticate with a May username plus either the account
+    # password or its API key.
+    CALDAV_ENABLED = os.environ.get('CALDAV_ENABLED', 'true').lower() not in ('0', 'false', 'no')
+    CALDAV_PREFIX = os.environ.get('CALDAV_PREFIX', '/caldav')
+    CALDAV_REALM = os.environ.get('CALDAV_REALM', 'May')
+    # Opt in to the model-backed enricher. Off by default: it costs money and
+    # needs a backend installed via app.caldav.enrichment.set_llm_backend().
+    CALDAV_ALLOW_LLM = os.environ.get('CALDAV_ALLOW_LLM', 'false').lower() in ('1', 'true', 'yes')

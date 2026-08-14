@@ -11,7 +11,7 @@ import traceback
 import zipfile
 from functools import wraps
 from datetime import datetime, timezone
-from flask import Blueprint, jsonify, request, send_from_directory, current_app, url_for, render_template, Response, flash, redirect, session
+from flask import Blueprint, jsonify, request, send_from_directory, current_app, url_for, render_template, Response, flash, redirect, session, abort
 from flask_login import login_required, current_user
 from app import db
 from app.models import (
@@ -22,7 +22,7 @@ from app.models import (
     CALENDAR_EVENT_TYPES, CALENDAR_EVENT_STATUSES, CALENDAR_ALARM_ACTIONS,
     TRIP_PURPOSES, CHARGER_TYPES,
     Person, PersonTask, RELATIONSHIP_TYPES, PERSON_TASK_STATUSES,
-    PERSON_TASK_PRIORITIES
+    PERSON_TASK_PRIORITIES, AppSettings
 )
 from app.services.tessie import TessieService
 from app.utils import parse_decimal
@@ -136,10 +136,12 @@ def _person_for_api_user(user, person_id):
     return person
 
 
-def _person_task_for_api_user(person, task_id):
+def _person_task_for_api_user(person, task_id, user):
     if task_id is None:
         return None
-    return PersonTask.query.filter_by(id=task_id, person_id=person.id).first()
+    # Tasks are private to their creator, even on a shared person.
+    return PersonTask.query.filter_by(
+        id=task_id, person_id=person.id, user_id=user.id).first()
 
 
 def _can_access_reminder(user, reminder):
@@ -583,9 +585,63 @@ def process_reminders():
 # File Serving
 # =============================================================================
 
+def _is_public_upload(filename):
+    """Branding assets (logo/favicon) appear on pre-auth pages and are public."""
+    public_names = {AppSettings.get('logo_filename'), AppSettings.get('favicon_filename')}
+    public_names.discard(None)
+    return filename in public_names
+
+
+def _user_can_access_upload(user, filename):
+    """True if the authenticated user owns a record that references this upload."""
+    vehicle_ids = [v.id for v in user.get_all_vehicles()]
+
+    if vehicle_ids:
+        # Vehicle images
+        if Vehicle.query.filter(Vehicle.image_filename == filename,
+                                Vehicle.id.in_(vehicle_ids)).first():
+            return True
+        # Vehicle documents (owned via the vehicle)
+        if Document.query.filter(Document.filename == filename,
+                                 Document.vehicle_id.in_(vehicle_ids)).first():
+            return True
+        # Attachments on the user's vehicles / fuel logs / expenses
+        attachment = Attachment.query.filter(Attachment.filename == filename).first()
+        if attachment:
+            if attachment.vehicle_id in vehicle_ids:
+                return True
+            if attachment.fuel_log and attachment.fuel_log.vehicle_id in vehicle_ids:
+                return True
+            if attachment.expense and attachment.expense.vehicle_id in vehicle_ids:
+                return True
+
+    # Person images (contacts the user owns or has shared access to)
+    people_ids = [p.id for p in user.get_all_people()]
+    if people_ids and Person.query.filter(Person.image_filename == filename,
+                                           Person.id.in_(people_ids)).first():
+        return True
+
+    return False
+
+
 @bp.route('/uploads/<filename>')
 def uploaded_file(filename):
-    """Serve uploaded files (public for branding assets like logo)"""
+    """Serve uploaded files.
+
+    Branding assets (logo/favicon) are public because they render on pre-auth
+    pages. Every other upload is private: it requires an authenticated user who
+    owns a record referencing the file. Unauthorized requests get 404 (not 403)
+    so the endpoint never confirms whether a given filename exists.
+    """
+    if _is_public_upload(filename):
+        return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
+
+    if not current_user.is_authenticated:
+        abort(404)
+
+    if not _user_can_access_upload(current_user, filename):
+        abort(404)
+
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
 
 
@@ -1350,7 +1406,10 @@ def api_list_all_person_tasks():
     else:
         person_ids = list(person_names.keys())
 
-    query = PersonTask.query.filter(PersonTask.person_id.in_(person_ids))
+    query = PersonTask.query.filter(
+        PersonTask.person_id.in_(person_ids),
+        PersonTask.user_id == user.id,
+    )
     query, error = _filter_person_tasks(query)
     if error:
         return jsonify({'error': error, 'code': 'validation_error'}), 400
@@ -1395,7 +1454,10 @@ def api_list_person_tasks(person_id):
     limit = min(max(request.args.get('limit', 100, type=int), 1), 500)
     offset = max(request.args.get('offset', 0, type=int), 0)
 
-    query = PersonTask.query.filter(PersonTask.person_id == person.id)
+    query = PersonTask.query.filter(
+        PersonTask.person_id == person.id,
+        PersonTask.user_id == user.id,
+    )
     query, error = _filter_person_tasks(query)
     if error:
         return jsonify({'error': error, 'code': 'validation_error'}), 400
@@ -1458,7 +1520,7 @@ def api_get_person_task(person_id, task_id):
     if not person:
         return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
 
-    task = _person_task_for_api_user(person, task_id)
+    task = _person_task_for_api_user(person, task_id, user)
     if not task:
         return jsonify({'error': 'Task not found or access denied', 'code': 'not_found'}), 404
 
@@ -1479,7 +1541,7 @@ def api_update_person_task(person_id, task_id):
     if not person:
         return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
 
-    task = _person_task_for_api_user(person, task_id)
+    task = _person_task_for_api_user(person, task_id, user)
     if not task:
         return jsonify({'error': 'Task not found or access denied', 'code': 'not_found'}), 404
 
@@ -1512,7 +1574,7 @@ def api_delete_person_task(person_id, task_id):
     if not person:
         return jsonify({'error': 'Person not found or access denied', 'code': 'not_found'}), 404
 
-    task = _person_task_for_api_user(person, task_id)
+    task = _person_task_for_api_user(person, task_id, user)
     if not task:
         return jsonify({'error': 'Task not found or access denied', 'code': 'not_found'}), 404
 
@@ -2530,7 +2592,7 @@ def export_csv():
             'created_at'
         ])
         for person in current_user.get_all_people():
-            for task in person.tasks.all():
+            for task in person.tasks.filter_by(user_id=current_user.id).all():
                 writer.writerow([
                     task.id, person.id, person.name, task.title, task.description,
                     task.status, task.priority,
@@ -2787,7 +2849,7 @@ def export_json():
     # Add people with their tasks and person-scoped reminders
     for person in current_user.get_all_people():
         person_data = person.to_dict(viewer=current_user)
-        person_data['tasks'] = [task.to_dict() for task in person.tasks.all()]
+        person_data['tasks'] = [task.to_dict() for task in person.tasks.filter_by(user_id=current_user.id).all()]
         person_data['reminders'] = [
             reminder.to_dict()
             for reminder in person.reminders.filter(Reminder.vehicle_id.is_(None)).all()
@@ -3123,7 +3185,7 @@ def export_full_backup():
     # Add people with their tasks and person-scoped reminders
     for person in current_user.get_all_people():
         person_data = person.to_dict(viewer=current_user)
-        person_data['tasks'] = [task.to_dict() for task in person.tasks.all()]
+        person_data['tasks'] = [task.to_dict() for task in person.tasks.filter_by(user_id=current_user.id).all()]
         person_data['reminders'] = [
             reminder.to_dict()
             for reminder in person.reminders.filter(Reminder.vehicle_id.is_(None)).all()
@@ -4220,7 +4282,7 @@ def csv_import_preview():
         return redirect(url_for('api.csv_import_upload'))
 
     vehicle = Vehicle.query.get(vehicle_id)
-    if not vehicle:
+    if not vehicle or vehicle not in current_user.get_all_vehicles():
         flash(_('Vehicle not found.'), 'error')
         return redirect(url_for('api.csv_import_upload'))
 
@@ -4295,7 +4357,7 @@ def csv_import_execute():
         return redirect(url_for('auth.settings') + '#integrations')
 
     vehicle = Vehicle.query.get(vehicle_id)
-    if not vehicle:
+    if not vehicle or vehicle not in current_user.get_all_vehicles():
         flash(_('Vehicle not found.'), 'error')
         return redirect(url_for('auth.settings') + '#integrations')
 

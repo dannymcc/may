@@ -11,7 +11,8 @@ services:
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - DATABASE_URL=${DATABASE_URL:-sqlite:////app/data/may.db}
       - UPLOAD_FOLDER=/app/data/uploads
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-your-secure-password}
+      # Leave unset: a random admin password is generated and logged on first run.
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
 
   postgres:
     image: postgres:16-alpine

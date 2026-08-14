@@ -133,9 +133,14 @@ def parse_recurrence_form(form):
     return recurrence, interval
 
 
-def get_task_summary(person):
-    """Compact 'currently working on' summary used by the index cards"""
-    open_tasks = sort_tasks([t for t in person.tasks.all() if t.status in OPEN_STATUSES])
+def get_task_summary(person, user_id):
+    """Compact 'currently working on' summary used by the index cards.
+
+    Scoped to the viewer: tasks are private to their creator, even on a
+    shared person.
+    """
+    own_tasks = person.tasks.filter_by(user_id=user_id).all()
+    open_tasks = sort_tasks([t for t in own_tasks if t.status in OPEN_STATUSES])
     dated = [t for t in open_tasks if t.due_date]
     return {
         'active_count': len(open_tasks),
@@ -157,7 +162,7 @@ def index():
 
     archived_count = len([p for p in all_people if not p.is_active])
 
-    summaries = {p.id: get_task_summary(p) for p in people}
+    summaries = {p.id: get_task_summary(p, current_user.id) for p in people}
 
     return render_template('people/index.html',
                            people=people,
@@ -182,7 +187,11 @@ def board():
 
     tasks = []
     if people_by_id:
-        query = PersonTask.query.filter(PersonTask.person_id.in_(people_by_id.keys()))
+        # Tasks are private to their creator, even on a shared person.
+        query = PersonTask.query.filter(
+            PersonTask.person_id.in_(people_by_id.keys()),
+            PersonTask.user_id == current_user.id,
+        )
         if person_filter:
             query = query.filter(PersonTask.person_id == person_filter)
         if priority_filter:
@@ -227,6 +236,10 @@ def move_task(task_id):
     task = PersonTask.query.get_or_404(task_id)
 
     if task.person not in current_user.get_all_people():
+        return {'error': 'Access denied'}, 403
+
+    # Tasks are private to their creator, even on a shared person.
+    if task.user_id != current_user.id:
         return {'error': 'Access denied'}, 403
 
     data = request.get_json(silent=True) or {}
@@ -287,8 +300,9 @@ def view(person_id):
         flash(_('Access denied'), 'error')
         return redirect(url_for('people.index'))
 
-    # Group tasks into the board columns
-    all_tasks = person.tasks.all()
+    # Group tasks into the board columns. Tasks are private to their creator,
+    # so even on a shared person a viewer only sees their own.
+    all_tasks = person.tasks.filter_by(user_id=current_user.id).all()
     tasks_by_status = {}
     for value, label in PERSON_TASK_STATUSES:
         tasks_by_status[value] = sort_tasks([t for t in all_tasks if t.status == value])
@@ -565,6 +579,11 @@ def edit_task(person_id, task_id):
         flash(_('Task not found'), 'error')
         return redirect(url_for('people.view', person_id=person.id))
 
+    # Tasks are private to their creator, even on a shared person.
+    if task.user_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('people.index'))
+
     if request.method == 'POST':
         title = request.form.get('title')
         if not title:
@@ -634,6 +653,11 @@ def delete_task(person_id, task_id):
     if task.person_id != person.id:
         flash(_('Task not found'), 'error')
         return redirect(url_for('people.view', person_id=person.id))
+
+    # Tasks are private to their creator, even on a shared person.
+    if task.user_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('people.index'))
 
     db.session.delete(task)
     db.session.commit()
@@ -745,6 +769,11 @@ def task_status(person_id, task_id):
     if task.person_id != person.id:
         flash(_('Task not found'), 'error')
         return redirect(url_for('people.view', person_id=person.id))
+
+    # Tasks are private to their creator, even on a shared person.
+    if task.user_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('people.index'))
 
     status = request.form.get('status')
     if status not in dict(PERSON_TASK_STATUSES):

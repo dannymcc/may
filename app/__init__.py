@@ -1,4 +1,4 @@
-from flask import Flask, request, g
+from flask import Flask, request, g, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, current_user
@@ -493,6 +493,22 @@ def create_app(config_class=Config):
     def health_check():
         return {'status': 'healthy'}, 200
 
+    # Force a password change for accounts flagged with must_change_password
+    # (e.g. the bootstrapped admin) before they can use the rest of the app.
+    @app.before_request
+    def _enforce_password_change():
+        if not current_user.is_authenticated:
+            return
+        if not getattr(current_user, 'must_change_password', False):
+            return
+        # Allow the change form itself, logout, static assets, and health.
+        allowed_endpoints = {
+            'auth.force_change_password', 'auth.logout', 'static', 'health_check',
+        }
+        if request.endpoint in allowed_endpoints:
+            return
+        return redirect(url_for('auth.force_change_password'))
+
     # Security headers
     @app.after_request
     def add_security_headers(response):
@@ -551,10 +567,17 @@ def create_app(config_class=Config):
                 print("Set ADMIN_PASSWORD environment variable to avoid this message.")
                 print("=" * 60)
 
-            admin = User(username=admin_username, email=admin_email, is_admin=True)
+            admin = User(username=admin_username, email=admin_email, is_admin=True,
+                         must_change_password=True)
             admin.set_password(admin_password)
             db.session.add(admin)
             db.session.commit()
+
+    # Mount the CalDAV facade. Must come after every blueprint and any other
+    # middleware, because it wraps app.wsgi_app and dispatches /caldav away
+    # from Flask entirely (which is also why it needs no CSRF exemption).
+    from app.caldav import mount_caldav
+    mount_caldav(app, prefix=app.config.get('CALDAV_PREFIX', '/caldav'))
 
     # Start background reminder scheduler (only in the main process, not reloader)
     if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':

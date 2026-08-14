@@ -1,4 +1,4 @@
-# Dev-image deployment: runs the published Docker Hub dev build of this fork
+# Dev-image deployment: runs the published GHCR dev build of this fork
 # instead of building locally. Equivalent to docker-compose.yml (may + mailpit)
 # minus the optional database profiles.
 #
@@ -8,21 +8,22 @@
 
 services:
   may:
-    image: robjects/may:dev
+    image: ghcr.io/mrmikeymarks/may:dev
     pull_policy: always
     container_name: may-dev
     restart: unless-stopped
     ports:
       - "5050:5050"
     volumes:
-      - may_dev_data:/app/data
+      - ./data:/app/data
     environment:
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - DATABASE_URL=${DATABASE_URL:-sqlite:////app/data/may.db}
       - UPLOAD_FOLDER=/app/data/uploads
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-your-secure-password}
+      # Leave unset: a random admin password is generated and logged on first run.
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
       - SMTP_HOST=${SMTP_HOST:-mailpit}
       - SMTP_PORT=${SMTP_PORT:-1025}
       - SMTP_SENDER=${SMTP_SENDER:-may@localhost}
@@ -46,5 +47,4 @@ services:
       - may_dev_mailpit_data:/data
 
 volumes:
-  may_dev_data:
   may_dev_mailpit_data:

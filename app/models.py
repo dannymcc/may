@@ -48,6 +48,9 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
+    # Forces a password change on next login (e.g. the bootstrapped admin), so
+    # an account can never keep a deployment-default password.
+    must_change_password = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # User preferences
@@ -2059,3 +2062,12 @@ class MileageAllowance(db.Model):
             'amount': self.amount,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
+
+
+# CalDAV facade tables. Imported here (rather than only from app.caldav) so
+# that Flask-Migrate's autogenerate sees them -- it introspects the metadata
+# reachable from app.models. Safe against circular imports: app/caldav/models
+# imports `db` from `app`, never from `app.models`.
+from app.caldav.models import (  # noqa: E402,F401
+    CalDavCollection, CalDavObject, CalDavSidecar, CalDavVersion,
+)

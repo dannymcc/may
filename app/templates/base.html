@@ -251,7 +251,9 @@
     </style>
 </head>
 <body class="h-full bg-gray-50 dark:bg-gray-900">
-    {% if current_user.is_authenticated %}
+    {# Users forced to change their password get the clean, nav-less layout so
+       they can't navigate away before setting a new one. #}
+    {% if current_user.is_authenticated and not current_user.must_change_password %}
     <div class="min-h-full">
         <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

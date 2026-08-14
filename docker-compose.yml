@@ -21,8 +21,10 @@ services:
       # On Unraid, set these to 99 and 100.
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
-      # Optional: set a fixed admin password (default is auto-generated and shown in logs)
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-your-secure-password}
+      # Optional: set a fixed admin password. Leave unset and a secure random
+      # password is generated on first run and printed to the container logs;
+      # you are then forced to change it on first login.
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
       # SMTP defaults point at the bundled mailpit service; values saved in the
       # admin UI (Settings -> Notifications) override these env fallbacks.
       - SMTP_HOST=${SMTP_HOST:-mailpit}

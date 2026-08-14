@@ -7,6 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 from app.models import AppSettings
+from app.security import validate_webhook_url
 
 
 class NotificationService:
@@ -81,6 +82,11 @@ class NotificationService:
         if not webhook_url:
             return False, "Webhook URL not configured"
 
+        # Block SSRF: refuse to POST to localhost / private / reserved hosts.
+        ok, err = validate_webhook_url(webhook_url)
+        if not ok:
+            return False, err
+
         try:
             data = json.dumps(payload).encode('utf-8')
             req = Request(webhook_url, data=data, headers={
@@ -116,6 +122,12 @@ class NotificationService:
                 url = topic
             else:
                 url = f"https://ntfy.sh/{topic}"
+
+            # Block SSRF: a self-hosted ntfy URL must not point at localhost /
+            # private / reserved hosts. Bare topics resolve to public ntfy.sh.
+            ok, err = validate_webhook_url(url)
+            if not ok:
+                return False, err
 
             data = message.encode('utf-8')
             headers = {

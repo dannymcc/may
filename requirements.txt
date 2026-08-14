@@ -13,6 +13,10 @@ requests>=2.34.2
 python-dateutil>=2.9.0.post0
 psycopg[binary]>=3.2.0
 PyMySQL>=1.1.1
+# CalDAV facade (app/caldav). Optional at runtime: mount_caldav() logs a
+# warning and skips mounting if these are absent.
+radicale>=3.3.0,<4.0.0
+vobject>=0.9.7
 pytest>=9.1.1
 pytest-cov>=7.1.0
 coverage>=7.15.1

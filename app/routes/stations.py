@@ -59,6 +59,10 @@ def edit(station_id):
     """Edit a fuel station"""
     station = FuelStation.query.get_or_404(station_id)
 
+    if station.user_id != current_user.id and not current_user.is_admin:
+        flash(_('You can only edit stations you added'), 'error')
+        return redirect(url_for('stations.index'))
+
     if request.method == 'POST':
         station.name = request.form.get('name')
         station.brand = request.form.get('brand')
@@ -90,6 +94,9 @@ def toggle_favorite(station_id):
     """Toggle favorite status"""
     station = FuelStation.query.get_or_404(station_id)
 
+    if station.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({'error': 'Access denied'}), 403
+
     station.is_favorite = not station.is_favorite
     db.session.commit()
 
@@ -101,6 +108,21 @@ def toggle_favorite(station_id):
 def delete(station_id):
     """Delete a fuel station"""
     station = FuelStation.query.get_or_404(station_id)
+
+    if station.user_id != current_user.id and not current_user.is_admin:
+        flash(_('You can only delete stations you added'), 'error')
+        return redirect(url_for('stations.index'))
+
+    # Deleting a station cascades its price_history rows (station_id is NOT
+    # NULL, so they cannot be reassigned). Refuse when other users own price
+    # rows here, otherwise one user's delete would destroy another's data.
+    others_price = FuelPriceHistory.query.filter(
+        FuelPriceHistory.station_id == station_id,
+        FuelPriceHistory.user_id != current_user.id
+    ).first()
+    if others_price:
+        flash(_('This station has fuel prices recorded by other users and cannot be deleted.'), 'error')
+        return redirect(url_for('stations.index'))
 
     name = station.name
     db.session.delete(station)
