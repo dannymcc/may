@@ -2,9 +2,54 @@
 import logging
 from datetime import date
 from app import db
-from app.models import RecurringExpense, Expense
+from app.models import RecurringExpense, Expense, Reminder
 
 logger = logging.getLogger(__name__)
+
+
+def sync_reminder_for(recurring):
+    """Keep a single Reminder in step with a recurring expense.
+
+    An active recurring expense with a ``next_due`` gets a linked Reminder
+    pointing at that date, so it appears in the Reminders list. A paused,
+    ended, or dateless one has its reminder removed. The caller commits.
+    """
+    if not recurring.is_active or not recurring.next_due:
+        remove_reminder_for(recurring)
+        return None
+
+    reminder = Reminder.query.get(recurring.reminder_id) if recurring.reminder_id else None
+    is_new = reminder is None
+    if is_new:
+        reminder = Reminder(vehicle_id=recurring.vehicle_id,
+                            user_id=recurring.user_id,
+                            reminder_type='custom')
+        db.session.add(reminder)
+
+    # Re-arm the notification only when the target date actually moves.
+    if reminder.due_date != recurring.next_due:
+        reminder.notification_sent = False
+    reminder.title = recurring.name
+    reminder.description = recurring.description
+    reminder.due_date = recurring.next_due
+    reminder.recurrence = 'none'  # advancement is driven by the recurring expense
+    reminder.notify_days_before = recurring.notify_before_days or 7
+    reminder.is_completed = False
+    reminder.completed_at = None
+
+    if is_new:  # flush only after NOT NULL fields (title, due_date) are set
+        db.session.flush()
+        recurring.reminder_id = reminder.id
+    return reminder
+
+
+def remove_reminder_for(recurring):
+    """Delete the linked reminder, if any, and clear the link. Caller commits."""
+    if recurring.reminder_id:
+        reminder = Reminder.query.get(recurring.reminder_id)
+        if reminder:
+            db.session.delete(reminder)
+        recurring.reminder_id = None
 
 # Defensive cap on how many periods a single recurring expense may catch up in
 # one run. Protects against a very old (or non-advancing) next_due date spinning
@@ -99,6 +144,7 @@ def process_due_recurring_expenses():
                     break
 
             if count:
+                sync_reminder_for(recurring)  # point the reminder at the new next_due
                 db.session.commit()
                 stats['generated'] += count
                 logger.info(

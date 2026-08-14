@@ -394,6 +394,7 @@ def menu_preferences():
     current_user.show_menu_vehicles = request.form.get('show_menu_vehicles') == 'on'
     current_user.show_menu_fuel = request.form.get('show_menu_fuel') == 'on'
     current_user.show_menu_expenses = request.form.get('show_menu_expenses') == 'on'
+    current_user.show_menu_spending = request.form.get('show_menu_spending') == 'on'
     current_user.show_menu_reminders = request.form.get('show_menu_reminders') == 'on'
     current_user.show_menu_maintenance = request.form.get('show_menu_maintenance') == 'on'
     current_user.show_menu_recurring = request.form.get('show_menu_recurring') == 'on'
@@ -579,7 +580,7 @@ ADMIN_EDITABLE_PREFS = {
 
 ADMIN_EDITABLE_TOGGLES = [
     'email_reminders', 'round_costs', 'dark_mode', 'show_quick_entry',
-    'show_menu_vehicles', 'show_menu_fuel', 'show_menu_expenses', 'show_menu_reminders',
+    'show_menu_vehicles', 'show_menu_fuel', 'show_menu_expenses', 'show_menu_spending', 'show_menu_reminders',
     'show_menu_maintenance', 'show_menu_recurring', 'show_menu_documents',
     'show_menu_stations', 'show_menu_trips', 'show_menu_charging', 'show_menu_notes',
     'show_menu_allowance', 'show_menu_people',

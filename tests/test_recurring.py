@@ -1,7 +1,7 @@
 import pytest
 from app import db
-from app.models import RecurringExpense
-from datetime import date
+from app.models import RecurringExpense, Reminder
+from datetime import date, timedelta
 
 
 @pytest.fixture
@@ -62,6 +62,33 @@ class TestRecurringNew:
         assert recurring is not None
         assert recurring.user_id == test_user.id
         assert recurring.frequency == 'yearly'
+
+    def test_create_links_a_reminder(self, auth_client, sample_vehicle):
+        auth_client.post('/recurring/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'name': 'Monthly Insurance',
+            'category': 'insurance',
+            'frequency': 'monthly',
+            'amount': '100.00',
+            'start_date': '2030-06-01',
+        }, follow_redirects=True)
+        rec = RecurringExpense.query.filter_by(name='Monthly Insurance').first()
+        assert rec.reminder_id is not None
+        reminder = Reminder.query.get(rec.reminder_id)
+        assert reminder.title == 'Monthly Insurance'
+        assert reminder.due_date == date(2030, 6, 1)
+
+    def test_create_without_date_defaults_due_next_week(self, auth_client, sample_vehicle):
+        auth_client.post('/recurring/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'name': 'Weekly Wash',
+            'category': 'other',
+            'frequency': 'weekly',
+            'amount': '5.00',
+        }, follow_redirects=True)
+        rec = RecurringExpense.query.filter_by(name='Weekly Wash').first()
+        assert rec.next_due == date.today() + timedelta(days=7)
+        assert Reminder.query.get(rec.reminder_id).due_date == date.today() + timedelta(days=7)
 
 
 class TestRecurringEdit:

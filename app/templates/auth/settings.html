@@ -481,14 +481,22 @@
                                         <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Vehicles') }}</span>
                                     </label>
                                     <label class="flex items-center">
+                                        <input type="checkbox" name="show_menu_spending" {% if current_user.show_menu_spending is not defined or current_user.show_menu_spending %}checked{% endif %}
+                                               class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                                        <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Spending') }}</span>
+                                        <span class="ml-2 text-xs text-gray-400 dark:text-gray-500">{{ _('(fuel, expenses & charging)') }}</span>
+                                    </label>
+                                    <label class="flex items-center pl-6">
                                         <input type="checkbox" name="show_menu_fuel" {% if current_user.show_menu_fuel is not defined or current_user.show_menu_fuel %}checked{% endif %}
                                                class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
                                         <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Fuel Logs') }}</span>
+                                        <span class="ml-2 text-xs text-gray-400 dark:text-gray-500">{{ _('in Spending') }}</span>
                                     </label>
-                                    <label class="flex items-center">
+                                    <label class="flex items-center pl-6">
                                         <input type="checkbox" name="show_menu_expenses" {% if current_user.show_menu_expenses is not defined or current_user.show_menu_expenses %}checked{% endif %}
                                                class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
                                         <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Expenses') }}</span>
+                                        <span class="ml-2 text-xs text-gray-400 dark:text-gray-500">{{ _('in Spending') }}</span>
                                     </label>
                                     <label class="flex items-center">
                                         <input type="checkbox" name="show_menu_reminders" {% if current_user.show_menu_reminders is not defined or current_user.show_menu_reminders %}checked{% endif %}
@@ -520,10 +528,11 @@
                                                class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
                                         <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Trips') }}</span>
                                     </label>
-                                    <label class="flex items-center">
+                                    <label class="flex items-center pl-6">
                                         <input type="checkbox" name="show_menu_charging" {% if current_user.show_menu_charging is not defined or current_user.show_menu_charging %}checked{% endif %}
                                                class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
                                         <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('EV Charging') }}</span>
+                                        <span class="ml-2 text-xs text-gray-400 dark:text-gray-500">{{ _('in Spending') }}</span>
                                     </label>
                                     <label class="flex items-center">
                                         <input type="checkbox" name="show_menu_allowance" {% if current_user.show_menu_allowance is not defined or current_user.show_menu_allowance %}checked{% endif %}

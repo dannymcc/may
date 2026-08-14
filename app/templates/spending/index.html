@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Spending') }}{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Spending') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Fuel, expenses, and charging — everything that costs you money, in one place.') }}</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+        {% if fuel_enabled %}
+        <a href="{{ url_for('fuel.new') }}" class="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+            + {{ _('Fuel') }}
+        </a>
+        {% if has_ev %}
+        <a href="{{ url_for('charging.new') }}" class="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+            + {{ _('Charge') }}
+        </a>
+        {% endif %}
+        {% endif %}
+        {% if expenses_enabled %}
+        <a href="{{ url_for('expenses.new') }}" class="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-rose-600 hover:bg-rose-700">
+            + {{ _('Expense') }}
+        </a>
+        {% endif %}
+        <a href="{{ url_for('recurring.index') }}" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+            {{ _('Recurring') }}
+        </a>
+        {% if fuel_enabled %}
+        <a href="{{ url_for('fuel.quick') }}" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+            {{ _('Quick Fuel') }}
+        </a>
+        {% endif %}
+        <a href="{{ url_for('allowance.index') }}" class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+            {{ _('Mileage Allowance') }}
+        </a>
+    </div>
+</div>
+
+<!-- Totals -->
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    {% if fuel_enabled %}
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Fuel') }}</p>
+        <p class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ totals.fuel|money }} {{ current_user.currency }}</p>
+    </div>
+    {% endif %}
+    {% if expenses_enabled %}
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Expenses') }}</p>
+        <p class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ totals.expenses|money }} {{ current_user.currency }}</p>
+    </div>
+    {% endif %}
+    <div class="bg-primary-50 dark:bg-primary-900/40 shadow rounded-lg p-4">
+        <p class="text-xs font-medium text-primary-700 dark:text-primary-300 uppercase tracking-wider">{{ _('Total') }}</p>
+        <p class="mt-1 text-xl font-bold text-primary-700 dark:text-primary-200">{{ totals.all|money }} {{ current_user.currency }}</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="flex flex-wrap gap-2">
+        {% set pill_base = 'px-3 py-1.5 rounded-full text-sm font-medium border' %}
+        {% set pill_on = 'bg-primary-600 text-white border-primary-600' %}
+        {% set pill_off = 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700' %}
+        <a href="{{ url_for('spending.index', vehicle=vehicle_filter) }}" class="{{ pill_base }} {{ pill_on if not type_filter else pill_off }}">{{ _('All') }}</a>
+        {% if fuel_enabled %}
+        <a href="{{ url_for('spending.index', type='fuel', vehicle=vehicle_filter) }}" class="{{ pill_base }} {{ pill_on if type_filter == 'fuel' else pill_off }}">{{ _('Fuel') }}</a>
+        {% endif %}
+        {% if expenses_enabled %}
+        <a href="{{ url_for('spending.index', type='expenses', vehicle=vehicle_filter) }}" class="{{ pill_base }} {{ pill_on if type_filter == 'expenses' else pill_off }}">{{ _('Expenses') }}</a>
+        {% endif %}
+    </div>
+    {% if vehicles %}
+    <form method="get" class="flex items-center gap-2">
+        {% if type_filter %}<input type="hidden" name="type" value="{{ type_filter }}">{% endif %}
+        <select name="vehicle" onchange="this.form.submit()"
+                class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 px-3 py-1.5 focus:border-primary-500 focus:ring-primary-500">
+            <option value="">{{ _('All vehicles') }}</option>
+            {% for v in vehicles %}
+            <option value="{{ v.id }}" {% if vehicle_filter == v.id %}selected{% endif %}>{{ v.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% endif %}
+</div>
+
+<!-- Ledger -->
+{% if entries %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+    <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Date') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Type') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Vehicle') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Details') }}</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Cost') }}</th>
+                <th class="px-4 py-3"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for e in entries %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ e.date|format_date }}</td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    {% if e.type == 'fuel' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">{{ e.type_label }}</span>
+                    {% elif e.type == 'expense' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-200">{{ e.type_label }}</span>
+                    {% else %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">{{ e.type_label }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ e.vehicle }}</td>
+                <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {{ e.title }}
+                    {% if e.subtitle %}<span class="text-gray-400 dark:text-gray-500">· {{ e.subtitle }}</span>{% endif %}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
+                    {% if e.cost is not none %}{{ e.cost|money }} {{ current_user.currency }}{% else %}—{% endif %}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-right">
+                    <a href="{{ e.edit_url }}" class="text-primary-600 hover:text-primary-500 text-sm">{{ _('Edit') }}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2m-3-4h6m0 0l-2-2m2 2l-2 2"/>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ _('Nothing logged yet') }}</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Log a fuel fill-up, an expense, or a charging session to see it here.') }}</p>
+</div>
+{% endif %}
+{% endblock %}

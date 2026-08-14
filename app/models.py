@@ -96,6 +96,8 @@ class User(UserMixin, db.Model):
     show_menu_stations = db.Column(db.Boolean, default=True)
     show_menu_trips = db.Column(db.Boolean, default=True)
     show_menu_charging = db.Column(db.Boolean, default=True)
+    # Unified "Spending" section: fuel + expenses + charging in one page.
+    show_menu_spending = db.Column(db.Boolean, default=True)
     show_menu_notes = db.Column(db.Boolean, default=True)  # issue #204
     show_menu_allowance = db.Column(db.Boolean, default=True)  # issue #208
     show_menu_people = db.Column(db.Boolean, default=True)
@@ -1492,6 +1494,7 @@ DOCUMENT_TYPES = [
     ('purchase', _l('Purchase Invoice')),
     ('warranty', _l('Warranty Document')),
     ('manual', _l("Owner's Manual")),
+    ('analysis', _l('For Analysis')),
     ('other', _l('Other')),
 ]
 
@@ -1633,11 +1636,16 @@ class RecurringExpense(db.Model):
     notify_before_days = db.Column(db.Integer, default=3)
 
     is_active = db.Column(db.Boolean, default=True)
+    # A recurring expense keeps a single linked Reminder pointing at its next
+    # due date, so it surfaces in Reminders; advanced when an occurrence is
+    # generated and cleared when paused or deleted.
+    reminder_id = db.Column(db.Integer, db.ForeignKey('reminders.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
     vehicle = db.relationship('Vehicle', backref=db.backref('recurring_expenses', lazy='dynamic', cascade='all, delete-orphan'))
     user = db.relationship('User', backref=db.backref('recurring_expenses', lazy='dynamic'))
+    reminder = db.relationship('Reminder', foreign_keys=[reminder_id])
 
     def calculate_next_due(self):
         """Calculate next due date based on frequency"""

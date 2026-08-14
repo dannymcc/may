@@ -12,9 +12,17 @@ bp = Blueprint('documents', __name__, url_prefix='/documents')
 
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'doc', 'docx', 'xlsx', 'xls', 'txt', 'csv', 'epub'}
 
+# Broader set for the "Insert File" intake: any document whose text/data can be
+# extracted later for analysis. Deliberately excludes executables/archives —
+# stored files are always served as attachments, never executed or inlined.
+ANALYSIS_EXTENSIONS = ALLOWED_EXTENSIONS | {
+    'md', 'rtf', 'json', 'xml', 'tsv', 'odt', 'ods', 'odp',
+    'ppt', 'pptx', 'heic', 'tiff', 'tif', 'bmp',
+}
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def allowed_file(filename, allowed=ALLOWED_EXTENSIONS):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed
 
 
 @bp.route('/')
@@ -46,6 +54,62 @@ def index():
                            vehicles=vehicles,
                            vehicle_filter=vehicle_filter,
                            document_types=DOCUMENT_TYPES)
+
+
+@bp.route('/insert', methods=['GET', 'POST'])
+@login_required
+def insert():
+    """Minimal one-click intake: store any analysable file against a vehicle.
+
+    Accepts a broad set of document/data types and files them as
+    ``document_type='analysis'`` so their contents can be extracted later.
+    """
+    vehicles = current_user.get_all_vehicles()
+    if not vehicles:
+        flash(_('Please add a vehicle first.'), 'warning')
+        return redirect(url_for('vehicles.new'))
+
+    if request.method == 'POST':
+        vehicle = Vehicle.query.get(request.form.get('vehicle_id'))
+        if not vehicle or vehicle not in vehicles:
+            flash(_('Invalid vehicle'), 'error')
+            return redirect(url_for('documents.insert'))
+
+        file = request.files.get('file')
+        if not file or file.filename == '':
+            flash(_('No file selected'), 'error')
+            return redirect(url_for('documents.insert'))
+
+        if not allowed_file(file.filename, ANALYSIS_EXTENSIONS):
+            flash(_('That file type is not supported.'), 'error')
+            return redirect(url_for('documents.insert'))
+
+        original_filename = secure_filename(file.filename)
+        filename = f"doc_{uuid.uuid4().hex}_{original_filename}"
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        file_type = original_filename.rsplit('.', 1)[1].lower() if '.' in original_filename else None
+
+        document = Document(
+            vehicle_id=vehicle.id,
+            user_id=current_user.id,
+            title=request.form.get('title') or original_filename,
+            document_type='analysis',
+            description=request.form.get('description'),
+            filename=filename,
+            original_filename=original_filename,
+            file_type=file_type,
+            file_size=os.path.getsize(file_path),
+        )
+        db.session.add(document)
+        db.session.commit()
+
+        flash(_('File inserted.'), 'success')
+        return redirect(url_for('documents.index'))
+
+    return render_template('documents/insert.html',
+                           vehicles=vehicles,
+                           selected_vehicle=request.args.get('vehicle'))
 
 
 @bp.route('/new', methods=['GET', 'POST'])

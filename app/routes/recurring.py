@@ -4,8 +4,10 @@ from flask_babel import gettext as _
 from app import db
 from app.utils import parse_decimal
 from app.models import RecurringExpense, Vehicle, EXPENSE_CATEGORIES
-from app.services.recurring_processor import generate_expense_for_period
-from datetime import date
+from app.services.recurring_processor import (
+    generate_expense_for_period, sync_reminder_for, remove_reminder_for,
+)
+from datetime import date, timedelta
 
 bp = Blueprint('recurring', __name__, url_prefix='/recurring')
 
@@ -46,12 +48,13 @@ def new():
             flash(_('Invalid vehicle.'), 'error')
             return redirect(url_for('recurring.new'))
 
-        # Parse dates
-        start_date = None
-        next_due = None
+        # Parse dates. Default to next week when none is given, so a new
+        # recurring expense always has a due date (and therefore a reminder).
         if request.form.get('start_date'):
             start_date = date.fromisoformat(request.form['start_date'])
-            next_due = start_date
+        else:
+            start_date = date.today() + timedelta(days=7)
+        next_due = start_date
 
         recurring = RecurringExpense(
             vehicle_id=vehicle_id,
@@ -68,6 +71,8 @@ def new():
         )
 
         db.session.add(recurring)
+        db.session.flush()
+        sync_reminder_for(recurring)
         db.session.commit()
 
         flash(_('Recurring expense created.'), 'success')
@@ -110,6 +115,7 @@ def edit(recurring_id):
         recurring.auto_create = request.form.get('auto_create') == 'on'
         recurring.notify_before_days = int(request.form.get('remind_days_before', 7))
 
+        sync_reminder_for(recurring)
         db.session.commit()
 
         flash(_('Recurring expense updated.'), 'success')
@@ -132,6 +138,7 @@ def delete(recurring_id):
         RecurringExpense.vehicle_id.in_(vehicle_ids)
     ).first_or_404()
 
+    remove_reminder_for(recurring)
     db.session.delete(recurring)
     db.session.commit()
 
@@ -153,6 +160,7 @@ def generate(recurring_id):
     # Create a single expense for the current period and advance the schedule,
     # sharing the same logic as the background auto-generation processor.
     generate_expense_for_period(recurring)
+    sync_reminder_for(recurring)  # advance the linked reminder to the new next_due
     db.session.commit()
 
     flash(_('Expense created for %(name)s.') % {'name': recurring.name}, 'success')
@@ -171,6 +179,7 @@ def toggle_active(recurring_id):
     ).first_or_404()
 
     recurring.is_active = not recurring.is_active
+    sync_reminder_for(recurring)  # create/refresh when active, remove when paused
     db.session.commit()
 
     status = 'activated' if recurring.is_active else 'paused'
