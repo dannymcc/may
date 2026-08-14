@@ -62,7 +62,7 @@
                     <label for="volume" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Volume') }} ({{ current_user.volume_unit }})</label>
                     <input type="number" name="volume" id="volume" step="0.001"
                            value="{{ log.volume if log else '' }}"
-                           onchange="calculateTotal()"
+                           onchange="calculateFuelAmounts()"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -70,7 +70,7 @@
                     <label for="price_per_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Price per') }} {{ current_user.volume_unit }} ({{ current_user.currency }})</label>
                     <input type="number" name="price_per_unit" id="price_per_unit" step="0.001"
                            value="{{ log.price_per_unit if log else '' }}"
-                           onchange="calculateTotal()"
+                           onchange="calculateFuelAmounts()"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -78,7 +78,7 @@
                     <label for="discount_per_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Discount per') }} {{ current_user.volume_unit }} ({{ current_user.currency }})</label>
                     <input type="number" name="discount_per_unit" id="discount_per_unit" step="0.001" min="0"
                            value="{{ log.discount_per_unit if log and log.discount_per_unit is not none else '' }}"
-                           onchange="calculateTotal()"
+                           onchange="calculateFuelAmounts()"
                            placeholder="0.000"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('Optional loyalty discount, subtracted from the price per unit.') }}</p>
@@ -88,6 +88,7 @@
                     <label for="total_cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Total Cost') }} ({{ current_user.currency }})</label>
                     <input type="number" name="total_cost" id="total_cost" step="0.01"
                            value="{{ log.total_cost if log else '' }}"
+                           onchange="calculateFuelAmounts()"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -243,13 +244,23 @@ function updateFuelTypeSelector(selectedOption) {
     }
 }
 
-function calculateTotal() {
+function calculateFuelAmounts() {
     const volume = parseDecimal(document.getElementById('volume').value) || 0;
-    const pricePerUnit = parseDecimal(document.getElementById('price_per_unit').value) || 0;
+    const priceInput = document.getElementById('price_per_unit');
+    const totalInput = document.getElementById('total_cost');
+    let pricePerUnit = parseDecimal(priceInput.value) || 0;
     const discountPerUnit = parseDecimal(document.getElementById('discount_per_unit').value) || 0;
+
+    // When the price is omitted, derive it from the total paid and volume.
+    // Keep a manually entered price untouched.
+    if (!priceInput.value && volume && totalInput.value) {
+        pricePerUnit = (parseDecimal(totalInput.value) / volume) + discountPerUnit;
+        priceInput.value = pricePerUnit.toFixed(3);
+    }
+
     if (volume && pricePerUnit) {
         const effectivePrice = Math.max(pricePerUnit - discountPerUnit, 0);
-        document.getElementById('total_cost').value = (volume * effectivePrice).toFixed(2);
+        totalInput.value = (volume * effectivePrice).toFixed(2);
     }
 }
 

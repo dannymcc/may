@@ -93,6 +93,12 @@ def new():
             flash(err, 'error')
             return render_template('fuel/new.html', vehicles=vehicles)
 
+        # Derive the unit price from the amount paid when it was omitted.
+        # Add the discount back because total_cost represents the amount paid
+        # after the per-unit discount has been applied (#209).
+        if price_per_unit is None and volume and total_cost is not None:
+            price_per_unit = round(total_cost / volume + (discount_per_unit or 0), 3)
+
         log = FuelLog(
             vehicle_id=vehicle_id,
             user_id=current_user.id,
