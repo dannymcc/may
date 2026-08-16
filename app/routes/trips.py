@@ -6,6 +6,7 @@ from app import db
 from app.utils import parse_decimal
 from flask import jsonify
 from app.models import Vehicle, Trip, TripTemplate, TRIP_PURPOSES
+import math
 
 bp = Blueprint('trips', __name__, url_prefix='/trips')
 
@@ -83,10 +84,10 @@ def new():
         end_fuel_level = parse_decimal(request.form.get('end_fuel_level')) if request.form.get(
             'end_fuel_level') else None
 
-        if start_fuel_level is not None and (start_fuel_level < 0. or start_fuel_level > 100.):
+        if start_fuel_level is not None and (not math.isfinite(start_fuel_level) or start_fuel_level < 0. or start_fuel_level > 100.):
             flash(_('Start fuel level is outside of allowed 0 - 100 range'), 'error')  #
-        if end_fuel_level is not None and (end_fuel_level < 0. or end_fuel_level > 100.):
-            flash(_('Start fuel level is outside of allowed 0 - 100 range'), 'error')
+        if end_fuel_level is not None and (not math.isfinite(end_fuel_level) or end_fuel_level < 0. or end_fuel_level > 100.):
+            flash(_('End fuel level is outside of allowed 0 - 100 range'), 'error')
 
         trip = Trip(
             vehicle_id=vehicle_id,
@@ -160,7 +161,7 @@ def edit(trip_id):
         if start_fuel_level is not None and (start_fuel_level < 0. or start_fuel_level > 100.):
             flash(_('Start fuel level is outside of allowed 0 - 100 range'), 'error')#
         if end_fuel_level is not None and (end_fuel_level < 0. or end_fuel_level > 100.):
-            flash(_('Start fuel level is outside of allowed 0 - 100 range'), 'error')
+            flash(_('End fuel level is outside of allowed 0 - 100 range'), 'error')
 
         date_str = request.form.get('date')
         trip.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else trip.date

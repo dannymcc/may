@@ -2962,7 +2962,7 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
         if start_fuel_level is not None and (start_fuel_level < 0. or start_fuel_level > 100.):
             raise ValueError('Start fuel level is outside of allowed 0 - 100 range')
         if end_fuel_level is not None and (end_fuel_level < 0. or end_fuel_level > 100.):
-            raise ValueError('Start fuel level is outside of allowed 0 - 100 range')
+            raise ValueError('End fuel level is outside of allowed 0 - 100 range')
         purpose = mapped_row.get('purpose', '').strip().lower()
         valid_purposes = [p[0] for p in TRIP_PURPOSES]
         if purpose not in valid_purposes:
