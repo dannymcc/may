@@ -126,6 +126,7 @@ def new():
                 price_history = FuelPriceHistory(
                     station_id=station_id,
                     user_id=current_user.id,
+                    fuel_log_id=log.id,
                     date=log.date,
                     fuel_type=log.fuel_type or vehicle.fuel_type or 'petrol',
                     price_per_unit=log.price_per_unit
@@ -214,13 +215,21 @@ def edit(log_id):
         # both create the price-history row (so it shows in "cheapest fuel")
         # and bump the station's `times_used` counter.
         station_id = request.form.get('station_id', type=int)
-        existing_entry = None
-        if old_price and old_date:
+        # Prefer the exact FK link (#254); fall back to the legacy heuristic
+        # only for rows created before fuel_log_id existed. Restricting the
+        # heuristic to unlinked rows stops it from grabbing a different log's
+        # entry that happens to share the same date and price.
+        existing_entry = FuelPriceHistory.query.filter_by(fuel_log_id=log.id).first()
+        if not existing_entry and old_price and old_date:
             existing_entry = FuelPriceHistory.query.filter_by(
                 user_id=current_user.id,
                 date=old_date,
                 price_per_unit=old_price,
+                fuel_log_id=None,
             ).first()
+            if existing_entry:
+                # Adopt the legacy row so future edits match exactly.
+                existing_entry.fuel_log_id = log.id
 
         if existing_entry:
             if not log.price_per_unit:
@@ -245,6 +254,7 @@ def edit(log_id):
                 db.session.add(FuelPriceHistory(
                     station_id=station_id,
                     user_id=current_user.id,
+                    fuel_log_id=log.id,
                     date=log.date,
                     fuel_type=log.fuel_type or log.vehicle.fuel_type or 'petrol',
                     price_per_unit=log.price_per_unit,
@@ -307,12 +317,17 @@ def delete(log_id):
     # station's usage counter in step with the chart view (#252): deleting a
     # log must decrement the overview "used N times" counter, not just drop the
     # price-history row the chart reads from.
-    if log.price_per_unit and log.date:
+    # Prefer the exact FK link (#254); the legacy heuristic only considers
+    # unlinked rows so it can never delete another log's price entry.
+    entries = FuelPriceHistory.query.filter_by(fuel_log_id=log.id).all()
+    if not entries and log.price_per_unit and log.date:
         entries = FuelPriceHistory.query.filter(
             FuelPriceHistory.user_id == current_user.id,
             FuelPriceHistory.date == log.date,
-            FuelPriceHistory.price_per_unit == log.price_per_unit
+            FuelPriceHistory.price_per_unit == log.price_per_unit,
+            FuelPriceHistory.fuel_log_id.is_(None)
         ).all()
+    if entries:
         for entry in entries:
             station = entry.station
             if station and station.times_used:
@@ -422,6 +437,7 @@ def quick():
             db.session.add(FuelPriceHistory(
                 station_id=station.id,
                 user_id=current_user.id,
+                fuel_log_id=log.id,
                 date=log.date,
                 fuel_type=log.fuel_type or vehicle.fuel_type or 'petrol',
                 price_per_unit=log.price_per_unit,

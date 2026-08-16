@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Charging Sessions{% endblock %}
+{% block title %}{{ _('Charging Sessions') }}{% endblock %}
 
 {% block content %}
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -24,7 +24,7 @@
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Total Cost') }}</dt>
-        <dd class="mt-1 text-2xl font-semibold text-green-600 dark:text-green-400">{{ "%.2f"|format(total_cost) }} {{ current_user.currency }}</dd>
+        <dd class="mt-1 text-2xl font-semibold text-green-600 dark:text-green-400">{{ total_cost|money }} {{ current_user.currency }}</dd>
     </div>
 </div>
 
@@ -105,7 +105,7 @@
                         <p class="text-sm font-medium text-gray-900 dark:text-white">{{ "%.1f"|format(session.kwh_added) }} kWh</p>
                         {% endif %}
                         {% if session.total_cost %}
-                        <p class="text-sm text-green-600 dark:text-green-400">{{ "%.2f"|format(session.total_cost) }} {{ current_user.currency }}</p>
+                        <p class="text-sm text-green-600 dark:text-green-400">{{ session.total_cost|money }} {{ current_user.currency }}</p>
                         {% endif %}
                     </div>
                     <div class="flex items-center gap-2">

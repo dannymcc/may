@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Search') }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Search') }}</h1>
+    <p class="text-gray-500 dark:text-gray-400">{{ _('Find expenses, fuel logs, documents, notes, trips, and charging sessions') }}</p>
+</div>
+
+<form method="GET" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <div class="sm:col-span-2">
+            <label for="q" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Search term') }}</label>
+            <input type="text" name="q" id="q" value="{{ q }}" autofocus
+                   placeholder="{{ _('e.g. brake pads, invoice, garage name') }}"
+                   class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+        </div>
+        <div>
+            <label for="date_from" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('From') }}</label>
+            <input type="text" name="date_from" id="date_from" value="{{ date_from }}" data-datepicker
+                   class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+        </div>
+        <div>
+            <label for="date_to" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('To') }}</label>
+            <input type="text" name="date_to" id="date_to" value="{{ date_to }}" data-datepicker
+                   class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+        </div>
+    </div>
+    <div class="mt-4 flex justify-end">
+        <button type="submit"
+                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+            {{ _('Search') }}
+        </button>
+    </div>
+</form>
+
+{% if results is not none %}
+<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">{{ _('%(count)s results', count=total) }}</p>
+
+{% if results.expenses %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Expenses') }} ({{ results.expenses|length }}{% if results.expenses|length == result_limit %}+{% endif %})</h2>
+    </div>
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for expense in results.expenses %}
+        <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <a href="{{ url_for('expenses.edit', expense_id=expense.id) }}" class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ expense.description }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ expense.vehicle.name }} &middot; {{ expense.category|category_label }}{% if expense.vendor %} &middot; {{ expense.vendor }}{% endif %} &middot; {{ expense.date|format_date }}</p>
+                </div>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ expense.cost|money }} {{ current_user.currency }}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.fuel_logs %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Fuel Logs') }} ({{ results.fuel_logs|length }}{% if results.fuel_logs|length == result_limit %}+{% endif %})</h2>
+    </div>
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for log in results.fuel_logs %}
+        <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <a href="{{ url_for('fuel.edit', log_id=log.id) }}" class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ log.station or _('Fuel Log') }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ log.vehicle.name }} &middot; {{ log.date|format_date }}{% if log.volume %} &middot; {{ "%.1f"|format(log.volume) }} {{ current_user.volume_unit }}{% endif %}</p>
+                </div>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{% if log.total_cost is not none %}{{ log.total_cost|money }} {{ current_user.currency }}{% else %}-{% endif %}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.documents %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Documents') }} ({{ results.documents|length }}{% if results.documents|length == result_limit %}+{% endif %})</h2>
+    </div>
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for document in results.documents %}
+        <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <a href="{{ url_for('documents.view', document_id=document.id) }}" class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ document.title }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ document.vehicle.name }}{% if document.issue_date %} &middot; {{ document.issue_date|format_date }}{% endif %}</p>
+                </div>
+                <span class="text-xs text-gray-400 uppercase">{{ document.file_type }}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.notes %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Notes') }} ({{ results.notes|length }}{% if results.notes|length == result_limit %}+{% endif %})</h2>
+    </div>
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for note in results.notes %}
+        <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <a href="{{ url_for('notes.edit', note_id=note.id) }}" class="block">
+                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ note.title or note.content[:60] }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ note.vehicle.name }} &middot; {{ note.date|format_date }}</p>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.trips %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Trips') }} ({{ results.trips|length }}{% if results.trips|length == result_limit %}+{% endif %})</h2>
+    </div>
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for trip in results.trips %}
+        <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <a href="{{ url_for('trips.edit', trip_id=trip.id) }}" class="block">
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                    {% if trip.start_location or trip.end_location %}{{ trip.start_location or '?' }} &rarr; {{ trip.end_location or '?' }}{% else %}{{ trip.description or _('Trip') }}{% endif %}
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ trip.vehicle.name }} &middot; {{ trip.date|format_date }}{% if trip.distance %} &middot; {{ "%.1f"|format(trip.distance) }} {{ current_user.distance_unit }}{% endif %}</p>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.charging %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Charging Sessions') }} ({{ results.charging|length }}{% if results.charging|length == result_limit %}+{% endif %})</h2>
+    </div>
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for session in results.charging %}
+        <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <a href="{{ url_for('charging.edit', session_id=session.id) }}" class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ session.location or _('Charging Session') }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ session.vehicle.name }} &middot; {{ session.date|format_date }}</p>
+                </div>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{% if session.total_cost is not none %}{{ session.total_cost|money }} {{ current_user.currency }}{% else %}-{% endif %}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if total == 0 %}
+<div class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ _('No results') }}</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Try a different search term or a wider date range.') }}</p>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

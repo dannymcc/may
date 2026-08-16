@@ -263,6 +263,27 @@ class TestFuelLogConsumption:
         assert consumption is not None
         assert abs(consumption - 7.0) < 0.01
 
+    def test_get_consumption_km_per_litre(self, app, test_user, sample_vehicle):
+        """km/L unit added for #212: 500 km on 35 L = 14.29 km/L."""
+        log1 = FuelLog(
+            vehicle_id=sample_vehicle.id, user_id=test_user.id,
+            date=date(2024, 1, 1), odometer=10000.0,
+            volume=40.0, is_full_tank=True,
+        )
+        log2 = FuelLog(
+            vehicle_id=sample_vehicle.id, user_id=test_user.id,
+            date=date(2024, 1, 15), odometer=10500.0,
+            volume=35.0, is_full_tank=True,
+        )
+        db.session.add_all([log1, log2])
+        db.session.commit()
+
+        consumption = log2.get_consumption('km/L', 'L')
+        assert consumption is not None
+        assert abs(consumption - 500.0 / 35.0) < 0.01
+        avg = sample_vehicle.get_average_consumption('km/L', 'L')
+        assert abs(avg - 500.0 / 35.0) < 0.01
+
     def test_get_consumption_not_full_tank_returns_none(self, app, test_user, sample_vehicle):
         log = FuelLog(
             vehicle_id=sample_vehicle.id, user_id=test_user.id,

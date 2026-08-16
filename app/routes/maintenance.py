@@ -148,8 +148,16 @@ def complete(schedule_id):
         flash(_('Access denied'), 'error')
         return redirect(url_for('maintenance.index'))
 
-    # Update last performed
-    schedule.last_performed_date = date.today()
+    # Update last performed — honouring a user-chosen completion date (#220)
+    performed_date = date.today()
+    if request.form.get('performed_date'):
+        try:
+            performed_date = datetime.strptime(
+                request.form.get('performed_date'), '%Y-%m-%d'
+            ).date()
+        except ValueError:
+            pass
+    schedule.last_performed_date = performed_date
     if request.form.get('odometer'):
         schedule.last_performed_odometer = parse_decimal(request.form.get('odometer'))
     else:
@@ -160,20 +168,21 @@ def complete(schedule_id):
 
     # Create expense if requested
     if request.form.get('create_expense') == 'on':
+        # The checkbox is an explicit request: zero-cost DIY jobs still get an
+        # expense entry so they appear in the vehicle's history (#271).
         cost = parse_decimal(request.form.get('actual_cost') or schedule.estimated_cost or 0)
-        if cost > 0:
-            expense = Expense(
-                vehicle_id=schedule.vehicle_id,
-                user_id=current_user.id,
-                date=date.today(),
-                category='maintenance',
-                description=schedule.name,
-                cost=cost,
-                odometer=schedule.last_performed_odometer,
-                vendor=request.form.get('vendor'),
-                notes=f'From maintenance schedule: {schedule.name}'
-            )
-            db.session.add(expense)
+        expense = Expense(
+            vehicle_id=schedule.vehicle_id,
+            user_id=current_user.id,
+            date=performed_date,
+            category='maintenance',
+            description=schedule.name,
+            cost=cost,
+            odometer=schedule.last_performed_odometer,
+            vendor=request.form.get('vendor'),
+            notes=f'From maintenance schedule: {schedule.name}'
+        )
+        db.session.add(expense)
 
     db.session.commit()
     flash(_('Maintenance "%(name)s" marked as completed') % {'name': schedule.name}, 'success')

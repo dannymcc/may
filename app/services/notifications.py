@@ -84,10 +84,18 @@ class NotificationService:
             return False, str(e)
 
     @staticmethod
-    def send_ntfy(topic, title, message, priority='default'):
-        """Send a notification via ntfy.sh or self-hosted ntfy server."""
+    def send_ntfy(topic, title, message, priority='default', token=None):
+        """Send a notification via ntfy.sh or self-hosted ntfy server.
+
+        ``token`` is an optional ntfy access token for self-hosted servers
+        with authentication enabled (#90), sent as a Bearer header.
+        """
         if not topic:
             return False, "ntfy topic not configured"
+
+        # Never leak the access token over an unencrypted connection.
+        if token and topic.startswith('http://'):
+            return False, "Refusing to send the ntfy access token over plain HTTP - use an https:// server URL"
 
         try:
             # Determine URL - if it looks like a URL, use it directly
@@ -97,12 +105,15 @@ class NotificationService:
                 url = f"https://ntfy.sh/{topic}"
 
             data = message.encode('utf-8')
-            req = Request(url, data=data, headers={
+            headers = {
                 'Title': title,
                 'Priority': priority,
                 'Tags': 'car',
                 'User-Agent': 'May-Vehicle-Manager/1.0',
-            })
+            }
+            if token:
+                headers['Authorization'] = f'Bearer {token}'
+            req = Request(url, data=data, headers=headers)
             with urlopen(req, timeout=10) as response:
                 return True, None
         except HTTPError as e:
@@ -193,7 +204,7 @@ class NotificationService:
             return NotificationService.send_webhook(user.webhook_url, payload)
 
         elif method == 'ntfy':
-            return NotificationService.send_ntfy(user.ntfy_topic, title, message)
+            return NotificationService.send_ntfy(user.ntfy_topic, title, message, token=user.ntfy_token)
 
         elif method == 'pushover':
             return NotificationService.send_pushover(user.pushover_user_key, title, message)

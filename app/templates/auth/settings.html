@@ -148,10 +148,29 @@
                                         <option value="L/100km" {% if current_user.consumption_unit == 'L/100km' %}selected{% endif %}>L/100km</option>
                                         <option value="mpg" {% if current_user.consumption_unit == 'mpg' %}selected{% endif %}>MPG (UK)</option>
                                         <option value="mpg_us" {% if current_user.consumption_unit == 'mpg_us' %}selected{% endif %}>MPG (US)</option>
+                                        <option value="km/L" {% if current_user.consumption_unit == 'km/L' %}selected{% endif %}>km/L</option>
                                     </select>
                                 </div>
 
-                                {% set known_currencies = ['USD', 'EUR', 'GBP', 'AUD', 'CAD', 'INR', 'JPY', 'CHF', 'NZD', 'SEK', 'NOK', 'DKK', 'PLN', 'BRL', 'MXN', 'ZAR'] %}
+                                <div>
+                                    <label for="thousand_separator" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Thousand Separator') }}</label>
+                                    <select name="thousand_separator" id="thousand_separator"
+                                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                                        <option value="none" {% if current_user.thousand_separator in (None, 'none') %}selected{% endif %}>{{ _('None') }} (1000000.00)</option>
+                                        <option value="space" {% if current_user.thousand_separator == 'space' %}selected{% endif %}>{{ _('Space') }} (1 000 000.00)</option>
+                                        <option value="comma" {% if current_user.thousand_separator == 'comma' %}selected{% endif %}>{{ _('Comma') }} (1,000,000.00)</option>
+                                        <option value="period" {% if current_user.thousand_separator == 'period' %}selected{% endif %}>{{ _('Period') }} (1.000.000,00)</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="round_costs" id="round_costs"
+                                           {% if current_user.round_costs %}checked{% endif %}
+                                           class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                                    <label for="round_costs" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Round costs to whole numbers') }}</label>
+                                </div>
+
+                                {% set known_currencies =['USD', 'EUR', 'GBP', 'AUD', 'CAD', 'INR', 'JPY', 'CHF', 'NZD', 'SEK', 'NOK', 'DKK', 'PLN', 'BRL', 'MXN', 'ZAR'] %}
                                 {% set is_custom_currency = current_user.currency not in known_currencies %}
                                 <div>
                                     <label for="currency" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Currency') }}</label>
@@ -1266,6 +1285,21 @@
                                                class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('For ntfy.sh, just enter your topic name. For self-hosted, enter the full URL.') }}</p>
                                     </div>
+                                    <div>
+                                        <label for="ntfy_token" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('ntfy Access Token') }}</label>
+                                        <input type="password" name="ntfy_token" id="ntfy_token"
+                                               placeholder="{% if current_user.ntfy_token %}{{ _('Token saved — enter a new one to replace it') }}{% else %}tk_...{% endif %}"
+                                               autocomplete="off"
+                                               class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('Optional — only needed for self-hosted ntfy servers with authentication enabled. Leave blank to keep the saved token.') }}</p>
+                                        {% if current_user.ntfy_token %}
+                                        <div class="mt-2 flex items-center">
+                                            <input type="checkbox" name="clear_ntfy_token" id="clear_ntfy_token"
+                                                   class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                                            <label for="clear_ntfy_token" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Remove the saved token') }}</label>
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
 
                                 <!-- Pushover settings -->
@@ -1935,6 +1969,8 @@ function sendTestNotification() {
 
     const ntfyTopic = document.getElementById('ntfy_topic');
     if (ntfyTopic) formData.append('ntfy_topic', ntfyTopic.value);
+    const ntfyToken = document.getElementById('ntfy_token');
+    if (ntfyToken && ntfyToken.value) formData.append('ntfy_token', ntfyToken.value);
 
     const pushoverKey = document.getElementById('pushover_user_key');
     if (pushoverKey) formData.append('pushover_user_key', pushoverKey.value);

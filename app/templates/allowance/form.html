@@ -84,8 +84,8 @@
 {% block extra_scripts %}
 <script>
     function calculateAmount() {
-        const distance = parseFloat(document.getElementById('distance').value) || 0;
-        const rate = parseFloat(document.getElementById('rate_per_unit').value) || 0;
+        const distance = parseDecimal(document.getElementById('distance').value) || 0;
+        const rate = parseDecimal(document.getElementById('rate_per_unit').value) || 0;
         if (distance && rate) {
             document.getElementById('amount').value = (distance * rate).toFixed(2);
         }

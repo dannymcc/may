@@ -126,3 +126,36 @@ class TestMaintenanceComplete:
         ).first()
         assert expense is not None
         assert expense.cost == 55.0
+
+    def test_complete_with_zero_cost_expense(self, auth_client, sample_schedule):
+        """Ticking 'create expense' with a $0 cost must still create it (#271)."""
+        from app.models import Expense
+        resp = auth_client.post(f'/maintenance/{sample_schedule.id}/complete', data={
+            'create_expense': 'on',
+            'actual_cost': '0',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        expense = Expense.query.filter_by(
+            vehicle_id=sample_schedule.vehicle_id,
+            description=sample_schedule.name
+        ).first()
+        assert expense is not None
+        assert expense.cost == 0.0
+
+    def test_complete_with_performed_date(self, auth_client, sample_schedule):
+        """A user-chosen completion date is applied to schedule and expense (#220)."""
+        from app.models import Expense
+        resp = auth_client.post(f'/maintenance/{sample_schedule.id}/complete', data={
+            'performed_date': '2026-07-15',
+            'create_expense': 'on',
+            'actual_cost': '10.00',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(sample_schedule)
+        assert sample_schedule.last_performed_date == date(2026, 7, 15)
+        expense = Expense.query.filter_by(
+            vehicle_id=sample_schedule.vehicle_id,
+            description=sample_schedule.name
+        ).first()
+        assert expense is not None
+        assert expense.date == date(2026, 7, 15)

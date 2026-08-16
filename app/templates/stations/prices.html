@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Price History - {{ station.name }}{% endblock %}
+{% block title %}{{ _('Price History') }} - {{ station.name }}{% endblock %}
 
 {% block extra_scripts %}
 <!-- Chart.js - Needed for price history chart -->
@@ -35,7 +35,7 @@
         <li class="px-6 py-4 flex items-center justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ price.date|format_date }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400 capitalize">{{ price.fuel_type }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ price.fuel_type|fuel_type_label }}</p>
             </div>
             <div class="flex items-center gap-4">
                 <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ "%.3f"|format(price.price_per_unit) }} {{ current_user.currency }}/{{ current_user.volume_unit }}</p>

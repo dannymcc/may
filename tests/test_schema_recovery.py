@@ -144,3 +144,41 @@ def test_add_column_clause_emits_fk_and_default():
     start_page = User.__table__.columns['start_page']
     clause = _add_column_clause(start_page, dialect)
     assert "DEFAULT 'dashboard'" in clause
+
+
+def test_fresh_db_stamps_head_and_replay_survives(tmp_path):
+    """Issue #278: fresh installs must not replay migrations over create_all.
+
+    A brand-new database gets the complete current schema from create_all(),
+    so it must be stamped at alembic head — replaying historical migrations
+    on top used to crash in 42b26bf6d488's batch rebuild once a column
+    existed after is_shared. Even a database already stuck in the bad state
+    (full schema, stamped at the old checkpoint) must now upgrade cleanly.
+    """
+    from sqlalchemy import text
+    from flask_migrate import upgrade as alembic_upgrade
+
+    db_path = tmp_path / 'fresh.db'
+    app = create_app(_TempDBConfig(db_path))
+    with app.app_context():
+        with db.engine.begin() as conn:
+            rev = conn.execute(
+                text('SELECT version_num FROM alembic_version')
+            ).scalar()
+        heads = [s.strip() for s in open('migrations/versions/d4e5f6a7b8c0_add_number_format_prefs_to_users.py')
+                 if s.startswith("revision = ")]
+        head = heads[0].split("'")[1]
+        assert rev == head, f'fresh db stamped {rev}, expected head {head}'
+
+        # Simulate the pre-fix broken state and prove the replay now survives.
+        with db.engine.begin() as conn:
+            conn.execute(text('DELETE FROM alembic_version'))
+            conn.execute(text("INSERT INTO alembic_version VALUES ('b2c3d4e5f6a7')"))
+        alembic_upgrade()
+        with db.engine.begin() as conn:
+            rev = conn.execute(
+                text('SELECT version_num FROM alembic_version')
+            ).scalar()
+        assert rev == head
+        db.session.remove()
+        db.engine.dispose()

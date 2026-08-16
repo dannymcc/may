@@ -50,12 +50,12 @@
                             {{ expense.vehicle.name }}
                         </a>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 capitalize">{{ expense.category }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ expense.category|category_label }}</td>
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">{{ expense.description }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {% if expense.odometer %}{{ expense.odometer|int }} {{ expense.vehicle.get_effective_odometer_unit() }}{% else %}-{% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ "%.2f"|format(expense.cost) }} {{ current_user.currency }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ expense.cost|money }} {{ current_user.currency }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onclick="event.stopPropagation()">
                         <a href="{{ url_for('expenses.edit', expense_id=expense.id) }}" class="text-primary-600 hover:text-primary-900 mr-3">{{ _('Edit') }}</a>
                         <form method="POST" action="{{ url_for('expenses.delete', expense_id=expense.id) }}" class="inline"
@@ -107,6 +107,33 @@
             {{ _('Add Expense') }}
         </a>
     </div>
+</div>
+{% endif %}
+
+{% if vendor_totals %}
+<!-- Spend by vendor (#213) -->
+<div class="mt-8 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Spend by Vendor') }}</h2>
+    </div>
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Vendor') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Expenses') }}</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Total') }}</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            {% for vendor, total, count in vendor_totals %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ vendor }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ count }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">{{ total|money }} {{ current_user.currency }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endif %}
 

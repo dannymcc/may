@@ -67,11 +67,32 @@
 
                 <div>
                     <label for="vendor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Vendor / Service Provider') }}</label>
-                    <input type="text" name="vendor" id="vendor"
+                    <input type="text" name="vendor" id="vendor" list="vendor-suggestions"
                            value="{{ expense.vendor if expense and expense.vendor is not none else '' }}"
                            placeholder="{{ _('e.g., Local Garage') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    {% if known_vendors %}
+                    <datalist id="vendor-suggestions">
+                        {% for v in known_vendors %}
+                        <option value="{{ v }}"></option>
+                        {% endfor %}
+                    </datalist>
+                    {% endif %}
                 </div>
+
+                {% if not expense and maintenance_schedules %}
+                <div>
+                    <label for="maintenance_schedule_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Mark Maintenance as Performed') }}</label>
+                    <select name="maintenance_schedule_id" id="maintenance_schedule_id"
+                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                        <option value="">{{ _('— none —') }}</option>
+                        {% for schedule in maintenance_schedules %}
+                        <option value="{{ schedule.id }}" data-vehicle-id="{{ schedule.vehicle_id }}">{{ schedule.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Optional — records the schedule as performed on the expense date') }}</p>
+                </div>
+                {% endif %}
 
                 <div class="sm:col-span-2">
                     <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Notes') }}</label>
@@ -134,6 +155,25 @@
 
         vehicleSelect.addEventListener('change', updateOdometerUnit);
         updateOdometerUnit();
+
+        // Only offer maintenance schedules belonging to the chosen vehicle (#86)
+        const scheduleSelect = document.getElementById('maintenance_schedule_id');
+        if (scheduleSelect) {
+            function filterSchedules() {
+                const vehicleId = vehicleSelect.value;
+                let visible = 0;
+                Array.from(scheduleSelect.options).forEach(function(opt) {
+                    if (!opt.value) return;
+                    const match = opt.dataset.vehicleId === vehicleId;
+                    opt.hidden = !match;
+                    if (match) visible++;
+                    if (!match && opt.selected) scheduleSelect.value = '';
+                });
+                scheduleSelect.closest('div').style.display = visible ? '' : 'none';
+            }
+            vehicleSelect.addEventListener('change', filterSchedules);
+            filterSchedules();
+        }
     })();
 </script>
 {% endblock %}

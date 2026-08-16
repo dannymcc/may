@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if recurring %}Edit{% else %}Add{% endif %} Recurring Expense{% endblock %}
+{% block title %}{% if recurring %}{{ _('Edit Recurring Expense') }}{% else %}{{ _('Add Recurring Expense') }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="mb-6">

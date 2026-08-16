@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full {% if current_user.is_authenticated and current_user.dark_mode %}dark{% endif %}">
+<html lang="{{ CURRENT_LOCALE }}" dir="{{ 'rtl' if CURRENT_LOCALE == 'ar' else 'ltr' }}" class="h-full {% if current_user.is_authenticated and current_user.dark_mode %}dark{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -351,6 +351,11 @@
                             <span>{{ _('Fuel') }}</span>
                         </a>
                         {% endif %}
+                        <a href="{{ url_for('search.index') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" title="{{ _('Search') }}">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </a>
                         <a href="{{ url_for('auth.settings') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" title="{{ _('Settings') }}">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
@@ -388,6 +393,7 @@
                     {% if current_user.show_menu_reminders is not defined or current_user.show_menu_reminders %}
                     <a href="{{ url_for('reminders.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Reminders') }}</a>
                     {% endif %}
+                    <a href="{{ url_for('search.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Search') }}</a>
                     {% if current_user.show_menu_trips is not defined or current_user.show_menu_trips %}
                     <a href="{{ url_for('trips.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Trips') }}</a>
                     {% endif %}
@@ -653,6 +659,13 @@
             return isNaN(parseFloat(out)) || !/^-?[0-9]*\.?[0-9]+$/.test(out) ? raw : out;
         }
         window.normaliseDecimalString = normaliseDecimalString;
+
+        // Locale-tolerant parseFloat for the inline auto-calculations, which
+        // run on every keystroke — before the blur/submit normalisation above
+        // has rewritten a comma decimal (#267, #269).
+        window.parseDecimal = function(value) {
+            return parseFloat(normaliseDecimalString(value));
+        };
 
         function isDecimalInput(el) {
             if (el.tagName !== 'INPUT') return false;
