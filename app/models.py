@@ -435,13 +435,13 @@ class Vehicle(db.Model):
 
         return max(fuel_odo, trip_odo, charge_odo)
 
-    def get_last_fuel_level(self, distance_unit=None):
+    def get_last_fuel_level(self) -> float | None:
         """Get the most recent fuel level.
 
-        Returns the highest from trips or charging sessions.
+        Returns the latest from trips or charging sessions.
         """
         # If Tessie is enabled, use Tessie battery level exclusively
-        if self.uses_tessie_battery() and self.tessie_battery_level:
+        if self.uses_tessie_battery() and self.tessie_battery_level is not None:
             return round(self.tessie_battery_level)
 
         last_trip = self.trips.filter(Trip.end_fuel_level.isnot(None)).order_by(Trip.date.desc()).first()
@@ -449,9 +449,12 @@ class Vehicle(db.Model):
         last_charge = self.charging_sessions.filter(ChargingSession.end_soc.isnot(None)).order_by(
             ChargingSession.date.desc()).first()
 
-        if not last_trip and not last_charge: return 0
-        if not last_trip: return last_charge.end_soc
-        if not last_charge: return last_trip.end_fuel_level
+        if not last_trip and not last_charge:
+            return None
+        if not last_trip:
+            return last_charge.end_soc
+        if not last_charge:
+            return last_trip.end_fuel_level
 
         return last_trip.end_fuel_level if last_trip.date > last_charge.date else last_charge.end_soc
 
@@ -1403,13 +1406,16 @@ class Trip(db.Model):
     def fuel_consumption_human_readable(self) -> str | None:
         """Calculate trip fuel consumption with a plus sign instead of negative for negative fuel consumption"""
         consumption = self.fuel_consumption
-        if consumption is None: return None
+        if consumption is None:
+            return None
         if self.vehicle.tank_capacity:
             abs_consumption = self.vehicle.tank_capacity * consumption / 100
-            if abs_consumption < 0: return "~+{:.1f} L".format(abs(abs_consumption))
+            if abs_consumption < 0:
+                return "~+{:.1f} L".format(abs(abs_consumption))
             return "~{:.1f} L".format(abs_consumption)
-        if consumption < 0: return '+' + str(abs(consumption)) + ' %'
-        return str(consumption) + ' %'
+        if consumption < 0:
+            return '+' + "~{:.1f} L".format(abs(consumption)) + ' %'
+        return "~{:.1f} L".format(consumption) + ' %'
 
     def to_dict(self):
         """Serialize trip to dictionary for API"""

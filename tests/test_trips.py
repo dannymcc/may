@@ -68,7 +68,7 @@ class TestTripNew:
         assert trip.start_odometer == 12000.0
         assert trip.end_odometer == 12200.0
         assert trip.start_fuel_level == 85.3
-        assert trip.send_fuel_level == 80.0
+        assert trip.end_fuel_level == 80.0
         assert trip.user_id == test_user.id
 
 class TestTripNewNoEndOdometer:

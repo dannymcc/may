@@ -718,6 +718,8 @@ class TestTrip:
         assert d['purpose'] == 'personal'
         assert d['start_location'] == 'Home'
         assert d['end_location'] == 'Office'
+        assert d['start_fuel_level'] == 59.3
+        assert d['end_fuel_level'] == 56.8
         assert 'id' in d
         assert 'vehicle_id' in d
 

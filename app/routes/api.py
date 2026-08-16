@@ -2743,7 +2743,7 @@ _COLUMN_ALIASES = {
     'cost': ['cost', 'amount', 'total', 'price', 'expense'],
     'vendor': ['vendor', 'shop', 'store', 'supplier', 'merchant', 'provider'],
     'start_odometer': ['start odometer', 'start odo', 'start miles', 'start km', 'odometer start'],
-    'end_fuel_level': ['end fuel level', 'end fuel', 'end gas', 'fuel level', 'fuel', 'end battery', 'battery'],
+    'end_fuel_level': ['end fuel level', 'end fuel', 'end gas', 'end battery'],
     'start_fuel_level': ['start fuel level', 'start fuel', 'start gas', 'start battery'],
     'end_odometer': ['end odometer', 'end odo', 'end miles', 'end km', 'odometer end'],
     'purpose': ['purpose', 'trip purpose', 'reason', 'trip type'],
@@ -2957,6 +2957,12 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
             raise ValueError('Missing or invalid start odometer')
         if end_odo is None:
             raise ValueError('Missing or invalid end odometer')
+        start_fuel_level = parse_float_value(mapped_row.get('start_fuel_level'))
+        end_fuel_level = parse_float_value(mapped_row.get('end_fuel_level'))
+        if start_fuel_level is not None and (start_fuel_level < 0. or start_fuel_level > 100.):
+            raise ValueError('Start fuel level is outside of allowed 0 - 100 range')
+        if end_fuel_level is not None and (end_fuel_level < 0. or end_fuel_level > 100.):
+            raise ValueError('Start fuel level is outside of allowed 0 - 100 range')
         purpose = mapped_row.get('purpose', '').strip().lower()
         valid_purposes = [p[0] for p in TRIP_PURPOSES]
         if purpose not in valid_purposes:
@@ -2967,8 +2973,8 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
             date=date_val,
             start_odometer=start_odo,
             end_odometer=end_odo,
-            start_fuel_level=parse_float_value(mapped_row.get('start_fuel_level')),
-            end_fuel_level=parse_float_value(mapped_row.get('end_fuel_level')),
+            start_fuel_level=start_fuel_level,
+            end_fuel_level=end_fuel_level,
             purpose=purpose,
             description=mapped_row.get('description', '').strip() or None,
             start_location=mapped_row.get('start_location', '').strip() or None,

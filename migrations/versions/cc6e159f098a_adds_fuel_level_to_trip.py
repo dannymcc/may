@@ -17,16 +17,9 @@ depends_on = None
 
 
 def upgrade():
-    bind = op.get_bind()
-    inspector = sa.inspect(bind)
-    if 'trips' in inspector.get_table_names():
-        existing_cols_trip = [col['name'] for col in inspector.get_columns('trips')]
-        if 'start_fuel_level' not in existing_cols_trip or 'end_fuel_level' not in existing_cols_trip:
-            with op.batch_alter_table('trips', schema=None) as batch_op:
-                if 'start_fuel_level' not in existing_cols_trip:
-                    batch_op.add_column(sa.Column('start_fuel_level', sa.Float(), nullable=True))
-                if 'end_fuel_level' not in existing_cols_trip:
-                    batch_op.add_column(sa.Column('end_fuel_level', sa.Float(), nullable=True))
+    with op.batch_alter_table('trips', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('start_fuel_level', sa.Float(), nullable=True))
+        batch_op.add_column(sa.Column('end_fuel_level', sa.Float(), nullable=True))
 
 
 def downgrade():

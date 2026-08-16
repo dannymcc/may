@@ -78,12 +78,24 @@ def new():
         date_str = request.form.get('date')
         date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.now().date()
 
+        start_fuel_level = parse_decimal(request.form.get('start_fuel_level')) if request.form.get(
+            'start_fuel_level') else None
+        end_fuel_level = parse_decimal(request.form.get('end_fuel_level')) if request.form.get(
+            'end_fuel_level') else None
+
+        if start_fuel_level is not None and (start_fuel_level < 0. or start_fuel_level > 100.):
+            flash(_('Start fuel level is outside of allowed 0 - 100 range'), 'error')  #
+        if end_fuel_level is not None and (end_fuel_level < 0. or end_fuel_level > 100.):
+            flash(_('Start fuel level is outside of allowed 0 - 100 range'), 'error')
+
         trip = Trip(
             vehicle_id=vehicle_id,
             user_id=current_user.id,
             date=date,
             start_odometer=parse_decimal(request.form.get('start_odometer')),
             end_odometer=parse_decimal(request.form.get('end_odometer')) if request.form.get('end_odometer') else None,
+            start_fuel_level=start_fuel_level,
+            end_fuel_level=end_fuel_level,
             purpose=request.form.get('purpose'),
             description=request.form.get('description'),
             start_location=request.form.get('start_location'),
@@ -140,12 +152,22 @@ def edit(trip_id):
         return redirect(url_for('trips.index'))
 
     if request.method == 'POST':
+        start_fuel_level = parse_decimal(request.form.get('start_fuel_level')) if request.form.get(
+            'start_fuel_level') else None
+        end_fuel_level = parse_decimal(request.form.get('end_fuel_level')) if request.form.get(
+            'end_fuel_level') else None
+
+        if start_fuel_level is not None and (start_fuel_level < 0. or start_fuel_level > 100.):
+            flash(_('Start fuel level is outside of allowed 0 - 100 range'), 'error')#
+        if end_fuel_level is not None and (end_fuel_level < 0. or end_fuel_level > 100.):
+            flash(_('Start fuel level is outside of allowed 0 - 100 range'), 'error')
+
         date_str = request.form.get('date')
         trip.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else trip.date
         trip.start_odometer = parse_decimal(request.form.get('start_odometer'))
         trip.end_odometer = parse_decimal(request.form.get('end_odometer')) if request.form.get('end_odometer') else None
-        trip.start_fuel_level = parse_decimal(request.form.get('start_fuel_level')) if request.form.get('start_fuel_level') else None
-        trip.end_fuel_level = parse_decimal(request.form.get('end_fuel_level')) if request.form.get('end_fuel_level') else None
+        trip.start_fuel_level = start_fuel_level
+        trip.end_fuel_level = end_fuel_level
         trip.purpose = request.form.get('purpose')
         trip.description = request.form.get('description')
         trip.start_location = request.form.get('start_location')
