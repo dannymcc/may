@@ -46,7 +46,7 @@
                 </div>
             </div>
 
-            <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Type') }}</dt>
                     <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ vehicle.vehicle_type_label }}</dd>
@@ -62,6 +62,10 @@
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Last Odometer') }}</dt>
                     <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ "%.0f"|format(vehicle.get_last_odometer(vehicle.get_effective_odometer_unit())) }} {{ vehicle.get_effective_odometer_unit() }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Last Fuel Level') }}</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{% if vehicle.get_last_fuel_level() is not none %}{{ "%.0f"|format(vehicle.get_last_fuel_level())}} %{% else %}–{% endif %}</dd>
                 </div>
             </div>
         </div>

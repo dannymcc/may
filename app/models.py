@@ -428,6 +428,13 @@ class Vehicle(db.Model):
                 self.tessie_vin and
                 TessieService.is_configured())
 
+    def uses_tessie_battery(self):
+        """Check if this vehicle uses Tessie for battery tracking"""
+        from app.services.tessie import TessieService
+        return (self.tessie_enabled and
+                self.tessie_vin and
+                TessieService.is_configured())
+
     def get_last_odometer(self, distance_unit=None):
         """Get the most recent odometer reading.
 
@@ -458,6 +465,29 @@ class Vehicle(db.Model):
         charge_odo = last_charge.odometer if last_charge else 0
 
         return max(fuel_odo, trip_odo, charge_odo)
+
+    def get_last_fuel_level(self) -> float | None:
+        """Get the most recent fuel level.
+
+        Returns the latest from trips or charging sessions.
+        """
+        # If Tessie is enabled, use Tessie battery level exclusively
+        if self.uses_tessie_battery() and self.tessie_battery_level is not None:
+            return round(self.tessie_battery_level)
+
+        last_trip = self.trips.filter(Trip.end_fuel_level.isnot(None)).order_by(Trip.date.desc()).first()
+
+        last_charge = self.charging_sessions.filter(ChargingSession.end_soc.isnot(None)).order_by(
+            ChargingSession.date.desc()).first()
+
+        if not last_trip and not last_charge:
+            return None
+        if not last_trip:
+            return last_charge.end_soc
+        if not last_charge:
+            return last_trip.end_fuel_level
+
+        return last_trip.end_fuel_level if last_trip.date > last_charge.date else last_charge.end_soc
 
     def get_total_charging_cost(self):
         """Get total cost of all charging sessions"""
@@ -1393,6 +1423,8 @@ class Trip(db.Model):
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     start_odometer = db.Column(db.Float, nullable=False)
     end_odometer = db.Column(db.Float, nullable=True)
+    start_fuel_level = db.Column(db.Float, nullable=True)
+    end_fuel_level = db.Column(db.Float, nullable=True)
 
     purpose = db.Column(db.String(20), nullable=False)  # business, personal, commute, etc.
     description = db.Column(db.String(200))
@@ -1412,6 +1444,28 @@ class Trip(db.Model):
             return 0
         return self.end_odometer - self.start_odometer
 
+    @property
+    def fuel_consumption(self) -> float | None:
+        """Calculate trip fuel consumption"""
+        if self.end_fuel_level is None or self.start_fuel_level is None:
+            return None
+        return self.start_fuel_level - self.end_fuel_level
+
+    @property
+    def fuel_consumption_human_readable(self) -> str | None:
+        """Calculate trip fuel consumption with a plus sign instead of negative for negative fuel consumption"""
+        consumption = self.fuel_consumption
+        if consumption is None:
+            return None
+        if self.vehicle.tank_capacity:
+            abs_consumption = self.vehicle.tank_capacity * consumption / 100
+            if abs_consumption < 0:
+                return "~+{:.1f} L".format(abs(abs_consumption))
+            return "~{:.1f} L".format(abs_consumption)
+        if consumption < 0:
+            return '+' + "~{:.1f} L".format(abs(consumption)) + ' %'
+        return "~{:.1f} L".format(consumption) + ' %'
+
     def to_dict(self):
         """Serialize trip to dictionary for API"""
         return {
@@ -1420,6 +1474,8 @@ class Trip(db.Model):
             'date': self.date.isoformat() if self.date else None,
             'start_odometer': self.start_odometer,
             'end_odometer': self.end_odometer,
+            'start_fuel_level': self.start_fuel_level,
+            'end_fuel_level': self.end_fuel_level,
             'distance': self.distance,
             'purpose': self.purpose,
             'description': self.description,

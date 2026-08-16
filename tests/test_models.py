@@ -690,6 +690,34 @@ class TestTrip:
         db.session.commit()
         assert trip.distance == 150.0
 
+    def test_trip_fuel_consumption_property(self, app, test_user, sample_vehicle):
+        trip = Trip(
+            vehicle_id=sample_vehicle.id,
+            user_id=test_user.id,
+            date=date(2024, 1, 10),
+            start_odometer=11000,
+            start_fuel_level=37.2,
+            end_fuel_level=30,
+            purpose='business',
+        )
+        db.session.add(trip)
+        db.session.commit()
+        assert trip.fuel_consumption == pytest.approx(7.2)
+
+    def test_trip_fuel_consumption_human_readable_property(self, app, test_user, sample_vehicle):
+        trip = Trip(
+            vehicle_id=sample_vehicle.id,
+            user_id=test_user.id,
+            date=date(2024, 1, 10),
+            start_odometer=11000,
+            start_fuel_level=37.2,
+            end_fuel_level=30,
+            purpose='business',
+        )
+        db.session.add(trip)
+        db.session.commit()
+        assert trip.fuel_consumption_human_readable == '~3.6 L'
+
     def test_trip_to_dict(self, app, test_user, sample_vehicle):
         trip = Trip(
             vehicle_id=sample_vehicle.id,
@@ -697,6 +725,8 @@ class TestTrip:
             date=date(2024, 1, 10),
             start_odometer=10000.0,
             end_odometer=10150.0,
+            start_fuel_level=59.3,
+            end_fuel_level=56.8,
             purpose='personal',
             start_location='Home',
             end_location='Office',
@@ -709,6 +739,8 @@ class TestTrip:
         assert d['purpose'] == 'personal'
         assert d['start_location'] == 'Home'
         assert d['end_location'] == 'Office'
+        assert d['start_fuel_level'] == 59.3
+        assert d['end_fuel_level'] == 56.8
         assert 'id' in d
         assert 'vehicle_id' in d
 

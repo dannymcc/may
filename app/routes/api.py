@@ -1284,8 +1284,8 @@ def export_csv():
         trips_csv = io.StringIO()
         writer = csv.writer(trips_csv)
         writer.writerow([
-            'id', 'vehicle_id', 'vehicle_name', 'date', 'start_odometer', 'end_odometer',
-            'distance', 'distance_unit', 'purpose', 'description', 'start_location', 'end_location',
+            'id', 'vehicle_id', 'vehicle_name', 'date', 'start_odometer', 'end_odometer', 'start_fuel_level',
+            'end_fuel_level', 'distance', 'distance_unit', 'purpose', 'description', 'start_location', 'end_location',
             'notes', 'created_at'
         ])
         for vehicle in current_user.get_all_vehicles():
@@ -1294,7 +1294,9 @@ def export_csv():
                 writer.writerow([
                     trip.id, vehicle.id, vehicle.name,
                     trip.date.isoformat() if trip.date else '',
-                    trip.start_odometer, trip.end_odometer, trip.distance, odometer_unit,
+                    trip.start_odometer, trip.end_odometer,
+                    trip.start_fuel_level, trip.end_fuel_level,
+                    trip.distance, odometer_unit,
                     trip.purpose, trip.description,
                     trip.start_location, trip.end_location,
                     trip.notes,
@@ -1576,6 +1578,8 @@ def export_json():
                 'date': trip.date.isoformat() if trip.date else None,
                 'start_odometer': trip.start_odometer,
                 'end_odometer': trip.end_odometer,
+                'start_fuel_level': trip.start_fuel_level,
+                'end_fuel_level': trip.end_fuel_level,
                 'distance': trip.distance,
                 'purpose': trip.purpose,
                 'description': trip.description,
@@ -1901,6 +1905,8 @@ def export_full_backup():
                 'date': trip.date.isoformat() if trip.date else None,
                 'start_odometer': trip.start_odometer,
                 'end_odometer': trip.end_odometer,
+                'start_fuel_level': trip.start_fuel_level,
+                'end_fuel_level': trip.end_fuel_level,
                 'distance': trip.distance,
                 'purpose': trip.purpose,
                 'description': trip.description,
@@ -2705,6 +2711,8 @@ def get_import_fields(data_type):
             {'name': 'date', 'label': 'Date', 'required': True, 'type': 'date'},
             {'name': 'start_odometer', 'label': 'Start Odometer', 'required': True, 'type': 'float'},
             {'name': 'end_odometer', 'label': 'End Odometer', 'required': True, 'type': 'float'},
+            {'name': 'start_fuel_level', 'label': 'Start Fuel Level', 'required': False, 'type': 'float'},
+            {'name': 'end_fuel_level', 'label': 'End Fuel Level', 'required': False, 'type': 'float'},
             {'name': 'purpose', 'label': 'Purpose', 'required': True, 'type': 'str'},
             {'name': 'description', 'label': 'Description', 'required': False, 'type': 'str'},
             {'name': 'start_location', 'label': 'Start Location', 'required': False, 'type': 'str'},
@@ -2746,6 +2754,8 @@ _COLUMN_ALIASES = {
     'cost': ['cost', 'amount', 'total', 'price', 'expense'],
     'vendor': ['vendor', 'shop', 'store', 'supplier', 'merchant', 'provider'],
     'start_odometer': ['start odometer', 'start odo', 'start miles', 'start km', 'odometer start'],
+    'end_fuel_level': ['end fuel level', 'end fuel', 'end gas', 'end battery'],
+    'start_fuel_level': ['start fuel level', 'start fuel', 'start gas', 'start battery'],
     'end_odometer': ['end odometer', 'end odo', 'end miles', 'end km', 'odometer end'],
     'purpose': ['purpose', 'trip purpose', 'reason', 'trip type'],
     'start_location': ['start location', 'from', 'origin', 'departure'],
@@ -2958,6 +2968,12 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
             raise ValueError('Missing or invalid start odometer')
         if end_odo is None:
             raise ValueError('Missing or invalid end odometer')
+        start_fuel_level = parse_float_value(mapped_row.get('start_fuel_level'))
+        end_fuel_level = parse_float_value(mapped_row.get('end_fuel_level'))
+        if start_fuel_level is not None and (start_fuel_level < 0. or start_fuel_level > 100.):
+            raise ValueError('Start fuel level is outside of allowed 0 - 100 range')
+        if end_fuel_level is not None and (end_fuel_level < 0. or end_fuel_level > 100.):
+            raise ValueError('End fuel level is outside of allowed 0 - 100 range')
         purpose = mapped_row.get('purpose', '').strip().lower()
         valid_purposes = [p[0] for p in TRIP_PURPOSES]
         if purpose not in valid_purposes:
@@ -2968,6 +2984,8 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
             date=date_val,
             start_odometer=start_odo,
             end_odometer=end_odo,
+            start_fuel_level=start_fuel_level,
+            end_fuel_level=end_fuel_level,
             purpose=purpose,
             description=mapped_row.get('description', '').strip() or None,
             start_location=mapped_row.get('start_location', '').strip() or None,

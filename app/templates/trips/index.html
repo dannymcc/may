@@ -117,8 +117,14 @@
                 </div>
                 <div class="ml-4 flex items-center gap-4">
                     <div class="text-right">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ "%.1f"|format(trip.distance) }} {{ current_user.distance_unit }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ "%.0f"|format(trip.start_odometer) }} &rarr; {{ "%.0f"|format(trip.end_odometer or 0) }}</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">
+                            {{ "%.1f"|format(trip.distance) }} {{ current_user.distance_unit }}
+                            {% if trip.fuel_consumption_human_readable is not none %}&middot; {{ trip.fuel_consumption_human_readable }}{% endif %}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ "%.0f"|format(trip.start_odometer) }} &rarr; {{ "%.0f"|format(trip.end_odometer or 0) }}
+                            {% if trip.start_fuel_level is not none and trip.end_fuel_level is not none %}&middot; {{ trip.start_fuel_level }} % &rarr; {{ trip.end_fuel_level }} %{% endif %}
+                        </p>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{{ url_for('trips.edit', trip_id=trip.id) }}"
