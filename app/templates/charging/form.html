@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if session %}Edit Charging Session{% else %}Log Charging Session{% endif %}{% endblock %}
+{% block title %}{% if session %}{{ _('Edit Charging Session') }}{% else %}{{ _('Log Charging Session') }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
@@ -163,8 +163,8 @@
 
 <script>
 function calculateTotalCost() {
-    const kwh = parseFloat(document.getElementById('kwh_added').value) || 0;
-    const costPerKwh = parseFloat(document.getElementById('cost_per_kwh').value) || 0;
+    const kwh = parseDecimal(document.getElementById('kwh_added').value) || 0;
+    const costPerKwh = parseDecimal(document.getElementById('cost_per_kwh').value) || 0;
     if (kwh && costPerKwh) {
         document.getElementById('total_cost').value = (kwh * costPerKwh).toFixed(2);
     }

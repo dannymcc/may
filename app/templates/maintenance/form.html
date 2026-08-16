@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if schedule %}Edit{% else %}New{% endif %} Maintenance Schedule{% endblock %}
+{% block title %}{% if schedule %}{{ _('Edit Maintenance Schedule') }}{% else %}{{ _('New Maintenance Schedule') }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="mb-6">

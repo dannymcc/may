@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if station %}Edit{% else %}Add{% endif %} Fuel Station{% endblock %}
+{% block title %}{% if station %}{{ _('Edit Fuel Station') }}{% else %}{{ _('Add Fuel Station') }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="mb-6">

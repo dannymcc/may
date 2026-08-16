@@ -43,7 +43,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {% if allowance.distance %}{{ allowance.distance|int }} {{ allowance.vehicle.get_effective_odometer_unit() }}{% else %}-{% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ "%.2f"|format(allowance.amount) }} {{ current_user.currency }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ allowance.amount|money }} {{ current_user.currency }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <a href="{{ url_for('allowance.edit', allowance_id=allowance.id) }}" class="text-primary-600 hover:text-primary-900 mr-3">{{ _('Edit') }}</a>
                         <form method="POST" action="{{ url_for('allowance.delete', allowance_id=allowance.id) }}" class="inline"

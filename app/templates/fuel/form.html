@@ -244,9 +244,9 @@ function updateFuelTypeSelector(selectedOption) {
 }
 
 function calculateTotal() {
-    const volume = parseFloat(document.getElementById('volume').value) || 0;
-    const pricePerUnit = parseFloat(document.getElementById('price_per_unit').value) || 0;
-    const discountPerUnit = parseFloat(document.getElementById('discount_per_unit').value) || 0;
+    const volume = parseDecimal(document.getElementById('volume').value) || 0;
+    const pricePerUnit = parseDecimal(document.getElementById('price_per_unit').value) || 0;
+    const discountPerUnit = parseDecimal(document.getElementById('discount_per_unit').value) || 0;
     if (volume && pricePerUnit) {
         const effectivePrice = Math.max(pricePerUnit - discountPerUnit, 0);
         document.getElementById('total_cost').value = (volume * effectivePrice).toFixed(2);

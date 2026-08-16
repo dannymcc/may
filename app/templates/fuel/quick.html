@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Quick Fuel Entry{% endblock %}
+{% block title %}{{ _('Quick Fuel Entry') }}{% endblock %}
 
 {% block content %}
 <div class="max-w-md mx-auto">
@@ -184,9 +184,9 @@ function updateQuickStationName(selectEl) {
 }
 
 function calcQuickFuel(changed) {
-    const volume = parseFloat(document.getElementById('volume').value);
-    const price = parseFloat(document.getElementById('price_per_unit').value);
-    const total = parseFloat(document.getElementById('total_cost').value);
+    const volume = parseDecimal(document.getElementById('volume').value);
+    const price = parseDecimal(document.getElementById('price_per_unit').value);
+    const total = parseDecimal(document.getElementById('total_cost').value);
 
     if (changed === 'volume' || changed === 'price') {
         if (volume > 0 && price > 0) {

@@ -5,9 +5,10 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from flask_babel import gettext as _
+from sqlalchemy import func
 from app import db
 from app.utils import parse_decimal
-from app.models import Vehicle, Expense, Attachment, EXPENSE_CATEGORIES
+from app.models import Vehicle, Expense, Attachment, MaintenanceSchedule, EXPENSE_CATEGORIES
 
 bp = Blueprint('expenses', __name__, url_prefix='/expenses')
 
@@ -26,6 +27,28 @@ def parse_optional_float(value):
     return parse_decimal(value)
 
 
+def _known_vendors(vehicle_ids):
+    """Distinct vendors previously used on the user's expenses (#213)."""
+    if not vehicle_ids:
+        return []
+    rows = db.session.query(Expense.vendor).filter(
+        Expense.vehicle_id.in_(vehicle_ids),
+        Expense.vendor.isnot(None),
+        Expense.vendor != '',
+    ).distinct().order_by(Expense.vendor).all()
+    return [r[0] for r in rows]
+
+
+def _active_schedules(vehicle_ids):
+    """Active maintenance schedules for the linking dropdown (#86)."""
+    if not vehicle_ids:
+        return []
+    return MaintenanceSchedule.query.filter(
+        MaintenanceSchedule.vehicle_id.in_(vehicle_ids),
+        MaintenanceSchedule.is_active.is_(True),
+    ).order_by(MaintenanceSchedule.name).all()
+
+
 @bp.route('/')
 @login_required
 def index():
@@ -37,7 +60,17 @@ def index():
         Expense.vehicle_id.in_(vehicle_ids)
     ).order_by(Expense.date.desc()).all()
 
-    return render_template('expenses/index.html', expenses=expenses, vehicles=vehicles)
+    # Spend per vendor (#213)
+    vendor_rows = db.session.query(
+        Expense.vendor, func.sum(Expense.cost), func.count(Expense.id)
+    ).filter(
+        Expense.vehicle_id.in_(vehicle_ids),
+        Expense.vendor.isnot(None),
+        Expense.vendor != '',
+    ).group_by(Expense.vendor).order_by(func.sum(Expense.cost).desc()).all()
+
+    return render_template('expenses/index.html', expenses=expenses, vehicles=vehicles,
+                           vendor_totals=vendor_rows)
 
 
 @bp.route('/new', methods=['GET', 'POST'])
@@ -74,6 +107,20 @@ def new():
         )
 
         db.session.add(expense)
+
+        # Optionally mark a maintenance schedule as performed by this
+        # expense (#86): stamps the expense's date/odometer onto the
+        # schedule and recalculates the next due point.
+        schedule_id = request.form.get('maintenance_schedule_id', type=int)
+        if schedule_id:
+            schedule = MaintenanceSchedule.query.get(schedule_id)
+            if schedule and schedule.vehicle_id == vehicle_id:
+                schedule.last_performed_date = date
+                schedule.last_performed_odometer = (
+                    expense.odometer or vehicle.get_last_odometer()
+                )
+                schedule.calculate_next_due()
+
         db.session.commit()
 
         # Handle attachment upload
@@ -98,10 +145,13 @@ def new():
     # Pre-select vehicle if provided
     selected_vehicle_id = request.args.get('vehicle_id', type=int) or current_user.default_vehicle_id
 
+    vehicle_ids = [v.id for v in vehicles]
     return render_template('expenses/form.html',
                            expense=None,
                            vehicles=vehicles,
                            categories=EXPENSE_CATEGORIES,
+                           known_vendors=_known_vendors(vehicle_ids),
+                           maintenance_schedules=_active_schedules(vehicle_ids),
                            selected_vehicle_id=selected_vehicle_id)
 
 

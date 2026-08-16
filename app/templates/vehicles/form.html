@@ -227,6 +227,17 @@
                           placeholder="{{ _('Any additional notes about this vehicle...') }}"
                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">{{ vehicle.notes if vehicle and vehicle.notes else '' }}</textarea>
             </div>
+
+            <div class="mt-6">
+                <label for="default_trip_purpose" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Default Trip Type') }}</label>
+                <select name="default_trip_purpose" id="default_trip_purpose"
+                        class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    {% for value, label in trip_purposes %}
+                    <option value="{{ value }}" {% if (vehicle.default_trip_purpose if vehicle else 'business') == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Pre-selected when logging a new trip for this vehicle') }}</p>
+            </div>
         </div>
 
         {% if vehicle %}

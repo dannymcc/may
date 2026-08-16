@@ -26,6 +26,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Vehicle') }}</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Odometer') }}</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Volume') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Price/Unit') }}</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Cost') }}</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Consumption') }}</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Actions') }}</th>
@@ -50,7 +51,8 @@
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 ml-1">{{ _('Missed') }}</span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ "%.2f"|format(log.total_cost or 0) }} {{ current_user.currency }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{% if log.price_per_unit %}{{ "%.3f"|format(log.price_per_unit) }}{% else %}-{% endif %}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ (log.total_cost or 0)|money }} {{ current_user.currency }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {% set consumption = log.get_consumption(current_user.consumption_unit, current_user.volume_unit) %}
                         {% if consumption %}{{ "%.1f"|format(consumption) }} {{ current_user.consumption_unit }}{% else %}-{% endif %}
@@ -132,7 +134,7 @@
                         {% if session.kwh_added %}{{ "%.1f"|format(session.kwh_added) }} kWh{% else %}-{% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {% if session.total_cost %}{{ "%.2f"|format(session.total_cost) }} {{ current_user.currency }}{% else %}-{% endif %}
+                        {% if session.total_cost %}{{ session.total_cost|money }} {{ current_user.currency }}{% else %}-{% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ session.location or '-' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

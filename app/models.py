@@ -58,6 +58,10 @@ class User(UserMixin, db.Model):
     currency = db.Column(db.String(10), default='USD')
     dark_mode = db.Column(db.Boolean, default=False)  # Dark mode preference
     date_format = db.Column(db.String(20), default='DD/MM/YYYY')  # DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD, DD.MM.YYYY
+    # Number display (#134): grouping separator for large numbers and
+    # optional whole-number rounding for money amounts
+    thousand_separator = db.Column(db.String(10), default='none')  # none, space, comma, period
+    round_costs = db.Column(db.Boolean, default=False)
 
     # Notification preferences
     email_reminders = db.Column(db.Boolean, default=True)
@@ -65,6 +69,7 @@ class User(UserMixin, db.Model):
     notification_method = db.Column(db.String(20), default='email')  # email, webhook, ntfy, pushover, none
     webhook_url = db.Column(db.String(500))  # URL to POST notifications to
     ntfy_topic = db.Column(db.String(200))  # ntfy.sh topic or custom server URL
+    ntfy_token = db.Column(db.String(200))  # access token for authenticated ntfy servers (#90)
     pushover_user_key = db.Column(db.String(50))  # Pushover user key
 
     # Password reset
@@ -221,6 +226,9 @@ class Vehicle(db.Model):
     # Sharing — if True, all users on this instance can view and log against this vehicle
     is_shared = db.Column(db.Boolean, default=False, nullable=False)
 
+    # Default trip purpose pre-selected when logging a trip for this vehicle (#272)
+    default_trip_purpose = db.Column(db.String(20), default='business')
+
     # Relationships
     fuel_logs = db.relationship('FuelLog', backref='vehicle', lazy='dynamic',
                                 cascade='all, delete-orphan')
@@ -252,6 +260,27 @@ class Vehicle(db.Model):
 
     def get_total_expense_cost(self):
         return sum(exp.cost for exp in self.expenses.all() if exp.cost)
+
+    def get_total_fuel_volume(self):
+        """Total fuel logged, in the unit the logs were entered in."""
+        return sum(log.volume for log in self.fuel_logs.all() if log.volume)
+
+    def get_total_co2_kg(self, volume_unit='L'):
+        """Estimated lifetime tailpipe CO2 in kg from logged fuel (#218).
+
+        Uses per-fuel-type DEFRA conversion factors; each log's own fuel
+        type wins (dual-fuel vehicles), falling back to the vehicle's.
+        Electric charging is not counted — grid intensity varies too much
+        to state honestly.
+        """
+        total = 0.0
+        for log in self.fuel_logs.all():
+            if not log.volume:
+                continue
+            fuel_type = log.fuel_type or self.fuel_type
+            factor = FUEL_CO2_KG_PER_LITRE.get(fuel_type, FUEL_CO2_KG_PER_LITRE['petrol'])
+            total += _to_litres(log.volume, volume_unit) * factor
+        return total
 
     def get_total_cost(self):
         return self.get_total_fuel_cost() + self.get_total_expense_cost() + self.get_total_charging_cost()
@@ -360,6 +389,8 @@ class Vehicle(db.Model):
                 return miles / gallons if gallons > 0 else None
             km = _distance_in(total_distance, odometer_unit, 'km')
             litres = _to_litres(total_fuel, volume_unit)
+            if consumption_unit == 'km/L':
+                return km / litres if litres > 0 else None
             return (litres / km) * 100  # L/100km
         return None
 
@@ -629,6 +660,22 @@ class Vehicle(db.Model):
         }
 
 
+# Tailpipe CO2 emitted per litre of fuel burned, in kg — standard UK
+# DEFRA/BEIS conversion factors (#218). Zero-tailpipe types are listed
+# explicitly so unknown/custom types can fall back to the petrol factor.
+FUEL_CO2_KG_PER_LITRE = {
+    'petrol': 2.31,
+    'diesel': 2.68,
+    'lpg': 1.51,
+    'cng': 2.75,  # approximation: CNG is normally metered by kg, not litres
+    'e85': 1.61,
+    'hybrid': 2.31,
+    'plugin_hybrid': 2.31,
+    'electric': 0.0,
+    'hydrogen': 0.0,
+}
+
+
 def _to_litres(volume, volume_unit):
     if volume_unit == 'gal':
         return volume * 4.54609
@@ -673,7 +720,7 @@ class FuelLog(db.Model):
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     odometer = db.Column(db.Float, nullable=False)  # stored in km
     volume = db.Column(db.Float)  # stored in liters
-    price_per_unit = db.Column(db.Float)  # price per liter
+    price_per_unit = db.Column(db.Float)  # price per the user's volume unit, as entered
     discount_per_unit = db.Column(db.Float)  # optional loyalty discount per liter (issue #209)
     total_cost = db.Column(db.Float)
 
@@ -736,6 +783,8 @@ class FuelLog(db.Model):
                 return miles / gallons if gallons > 0 else None
             km = _distance_in(distance, odometer_unit, 'km')
             litres = _to_litres(volume_native, volume_unit)
+            if consumption_unit == 'km/L':
+                return km / litres if litres > 0 else None
             return (litres / km) * 100  # L/100km
         return None
 
@@ -1596,6 +1645,9 @@ class FuelPriceHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     station_id = db.Column(db.Integer, db.ForeignKey('fuel_stations.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    # Exact link to the fuel log that produced this row (#254). Nullable:
+    # legacy rows and manually recorded station prices have no owning log.
+    fuel_log_id = db.Column(db.Integer, db.ForeignKey('fuel_logs.id'), nullable=True)
 
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     fuel_type = db.Column(db.String(20), nullable=False)  # petrol, diesel, premium, etc.
@@ -1611,6 +1663,9 @@ class FuelPriceHistory(db.Model):
         backref=db.backref('price_history', lazy='dynamic', cascade='all, delete-orphan'),
     )
     user = db.relationship('User', backref=db.backref('fuel_price_history', lazy='dynamic'))
+    fuel_log = db.relationship(
+        'FuelLog', backref=db.backref('price_history_entries', lazy='dynamic')
+    )
 
 
 class Note(db.Model):

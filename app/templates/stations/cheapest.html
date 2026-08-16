@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Cheapest Fuel{% endblock %}
+{% block title %}{{ _('Cheapest Fuel') }}{% endblock %}
 
 {% block content %}
 <div class="mb-6">
@@ -12,7 +12,7 @@
 {% for fuel_type, prices in prices_by_type.items() %}
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-lg font-medium text-gray-900 dark:text-white capitalize">{{ fuel_type }}</h2>
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ fuel_type|fuel_type_label }}</h2>
     </div>
     <ul class="divide-y divide-gray-200 dark:divide-gray-700">
         {% for price in prices[:10] %}

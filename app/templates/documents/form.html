@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if document %}Edit{% else %}Upload{% endif %} Document{% endblock %}
+{% block title %}{% if document %}{{ _('Edit Document') }}{% else %}{{ _('Upload Document') }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="mb-6">

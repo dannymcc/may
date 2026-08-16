@@ -139,7 +139,8 @@ def test_notification():
         topic = request.form.get('ntfy_topic')
         if not topic:
             return jsonify({'success': False, 'error': 'Please enter an ntfy topic'})
-        success, error = NotificationService.send_ntfy(topic, title, message)
+        token = request.form.get('ntfy_token') or current_user.ntfy_token or None
+        success, error = NotificationService.send_ntfy(topic, title, message, token=token)
     elif method == 'pushover':
         user_key = request.form.get('pushover_user_key')
         if not user_key:
@@ -292,8 +293,18 @@ def vehicle_stats(vehicle_id):
         else:
             category_totals[exp.category] = exp.cost
 
+    # Price paid per unit over time, from every log that recorded one (#249)
+    price_logs = vehicle.fuel_logs.filter(
+        FuelLog.price_per_unit.isnot(None)
+    ).order_by(FuelLog.date, FuelLog.odometer).all()
+    price_data = [
+        {'date': log.date.isoformat(), 'price': round(log.price_per_unit, 3)}
+        for log in price_logs
+    ]
+
     return jsonify({
         'consumption': consumption_data,
+        'price_per_unit': price_data,
         'expenses_by_category': category_totals,
         'total_fuel_cost': vehicle.get_total_fuel_cost(),
         'total_expense_cost': vehicle.get_total_expense_cost(),

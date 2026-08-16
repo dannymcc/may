@@ -4,7 +4,7 @@ from pathlib import Path
 basedir = Path(__file__).parent.absolute()
 
 
-APP_VERSION = '0.25.0'
+APP_VERSION = '0.27.1'
 RELEASE_CHANNEL = os.environ.get('RELEASE_CHANNEL', 'stable')
 GIT_SHA = os.environ.get('GIT_SHA', '')[:7]  # Short SHA
 GITHUB_REPO = 'dannymcc/may'
@@ -51,7 +51,12 @@ class Config:
             "Sessions will not persist across restarts. Set SECRET_KEY for production.",
             RuntimeWarning
         )
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{basedir}/data/may.db'
+    _database_url = os.environ.get('DATABASE_URL') or f'sqlite:///{basedir}/data/may.db'
+    # SQLAlchemy 2.x dropped the legacy 'postgres://' scheme still emitted by
+    # some hosting providers; normalise it so those URLs keep working (#239).
+    if _database_url.startswith('postgres://'):
+        _database_url = _database_url.replace('postgres://', 'postgresql://', 1)
+    SQLALCHEMY_DATABASE_URI = _database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or str(basedir / 'data' / 'uploads')
     MAX_CONTENT_LENGTH = 300 * 1024 * 1024  # 300MB max upload

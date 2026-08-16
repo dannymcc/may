@@ -130,6 +130,8 @@ SECRET_KEY=your-secure-random-string
 
 # Database location (default: SQLite)
 DATABASE_URL=sqlite:///data/may.db
+# PostgreSQL is also supported:
+# DATABASE_URL=postgresql://user:password@host:5432/may
 
 # Upload folder for attachments
 UPLOAD_FOLDER=/app/data/uploads
@@ -140,7 +142,7 @@ UPLOAD_FOLDER=/app/data/uploads
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `SECRET_KEY` | Session encryption key | Random |
-| `DATABASE_URL` | Database connection string | `sqlite:///data/may.db` |
+| `DATABASE_URL` | Database connection string (SQLite or PostgreSQL) | `sqlite:///data/may.db` |
 | `UPLOAD_FOLDER` | Path for file uploads | `/app/data/uploads` |
 | `PUID` | User ID the container runs as (linuxserver.io convention) | `1000` |
 | `PGID` | Group ID the container runs as (linuxserver.io convention) | `1000` |

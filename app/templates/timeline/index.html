@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Timeline - {{ vehicle.name }}{% endblock %}
+{% block title %}{{ _('Timeline') }} - {{ vehicle.name }}{% endblock %}
 
 {% block extra_scripts %}
 <!-- Chart.js - Needed for timeline charts -->
@@ -71,7 +71,7 @@
                             <div class="whitespace-nowrap text-right">
                                 <time class="text-sm text-gray-500 dark:text-gray-400">{{ event.date|format_date }}</time>
                                 {% if event.cost %}
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ "%.2f"|format(event.cost) }} {{ current_user.currency }}</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ event.cost|money }} {{ current_user.currency }}</p>
                                 {% endif %}
                             </div>
                         </div>
@@ -99,19 +99,19 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: chartData.labels,
             datasets: [
                 {
-                    label: '{{ _("Fuel") }}',
+                    label: {{ _('Fuel')|tojson }},
                     data: chartData.fuel,
                     backgroundColor: 'rgba(234, 179, 8, 0.8)',
                     borderRadius: 4
                 },
                 {
-                    label: '{{ _("Expenses") }}',
+                    label: {{ _('Expenses')|tojson }},
                     data: chartData.expenses,
                     backgroundColor: 'rgba(239, 68, 68, 0.8)',
                     borderRadius: 4
                 },
                 {
-                    label: '{{ _("Charging") }}',
+                    label: {{ _('Charging')|tojson }},
                     data: chartData.charging,
                     backgroundColor: 'rgba(34, 197, 94, 0.8)',
                     borderRadius: 4

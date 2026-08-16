@@ -207,17 +207,17 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Total Cost</div>
-            <div class="stat-value">{{ "%.2f"|format(stats.total_cost) }}</div>
+            <div class="stat-value">{{ stats.total_cost|money }}</div>
             <div class="stat-unit">{{ user.currency }}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Fuel Cost</div>
-            <div class="stat-value">{{ "%.2f"|format(stats.total_fuel_cost) }}</div>
+            <div class="stat-value">{{ stats.total_fuel_cost|money }}</div>
             <div class="stat-unit">{{ user.currency }}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Other Expenses</div>
-            <div class="stat-value">{{ "%.2f"|format(stats.total_expense_cost) }}</div>
+            <div class="stat-value">{{ stats.total_expense_cost|money }}</div>
             <div class="stat-unit">{{ user.currency }}</div>
         </div>
         <div class="stat-card">
@@ -318,7 +318,7 @@
             <td class="text-right">{{ "%.0f"|format(log.odometer) }} {{ user.distance_unit }}</td>
             <td class="text-right">{% if log.volume %}{{ "%.2f"|format(log.volume) }} {{ user.volume_unit }}{% else %}-{% endif %}</td>
             <td class="text-right">{% if log.price_per_unit %}{{ "%.3f"|format(log.price_per_unit) }}{% else %}-{% endif %}</td>
-            <td class="text-right">{% if log.total_cost %}{{ "%.2f"|format(log.total_cost) }} {{ user.currency }}{% else %}-{% endif %}</td>
+            <td class="text-right">{% if log.total_cost %}{{ log.total_cost|money }} {{ user.currency }}{% else %}-{% endif %}</td>
             <td class="text-center">{% if log.is_full_tank %}Yes{% else %}No{% endif %}</td>
             <td>{{ log.station or '-' }}</td>
         </tr>
@@ -343,7 +343,7 @@
             <td>{{ expense.date|format_date }}</td>
             <td style="text-transform: capitalize;">{{ expense.category }}</td>
             <td>{{ expense.description }}</td>
-            <td class="text-right">{{ "%.2f"|format(expense.cost) }} {{ user.currency }}</td>
+            <td class="text-right">{{ expense.cost|money }} {{ user.currency }}</td>
             <td>{{ expense.vendor or '-' }}</td>
         </tr>
         {% endfor %}
