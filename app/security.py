@@ -185,7 +185,10 @@ def validate_positive_number(value, field_name, max_value=None, allow_zero=True)
     except (ValueError, TypeError):
         return None, f"{field_name} must be a valid number"
     if num is None:
-        return None, None
+        # parse_decimal returned its default/None for inputs like the
+        # literal string "None" or other absent-value markers. Treat this
+        # as an invalid number rather than silently accepting it.
+        return None, f"{field_name} must be a valid number"
 
     if not allow_zero and num == 0:
         return None, f"{field_name} cannot be zero"
