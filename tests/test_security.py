@@ -155,6 +155,11 @@ class TestValidatePositiveNumber:
         assert abs(val - 10.5) < 0.001
         assert error is None
 
+    def test_comma_decimal(self):
+        val, error = validate_positive_number('9,99', 'price')
+        assert val == 9.99
+        assert error is None
+
     def test_invalid_string(self):
         val, error = validate_positive_number('abc', 'cost')
         assert val is None

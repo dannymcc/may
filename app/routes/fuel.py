@@ -98,6 +98,12 @@ def new():
         # after the per-unit discount has been applied (#209).
         if price_per_unit is None and volume and total_cost is not None:
             price_per_unit = round(total_cost / volume + (discount_per_unit or 0), 3)
+            price_per_unit, err = validate_positive_number(
+                price_per_unit, 'Price per unit', max_value=1000
+            )
+            if err:
+                flash(err, 'error')
+                return redirect(url_for('fuel.new'))
 
         log = FuelLog(
             vehicle_id=vehicle_id,

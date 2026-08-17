@@ -112,6 +112,23 @@ class TestFuelNew:
         assert log is not None
         assert log.price_per_unit == 1.6
 
+    def test_calculated_price_respects_maximum(self, auth_client, sample_vehicle, sample_station):
+        resp = auth_client.post('/fuel/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-03-05',
+            'odometer': '15401',
+            'volume': '1',
+            'total_cost': '2000',
+            'station_id': str(sample_station.id),
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        assert FuelLog.query.filter_by(
+            vehicle_id=sample_vehicle.id, odometer=15401.0
+        ).first() is None
+        assert FuelPriceHistory.query.filter_by(
+            station_id=sample_station.id
+        ).first() is None
+
     def test_calculated_price_includes_discount(self, auth_client, sample_vehicle):
         auth_client.post('/fuel/new', data={
             'vehicle_id': str(sample_vehicle.id),

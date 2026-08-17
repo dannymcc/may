@@ -7,6 +7,7 @@ from urllib.parse import urlparse, urljoin
 from functools import wraps
 from flask import request, redirect, url_for, flash
 from flask_login import current_user
+from app.utils import parse_decimal
 
 # File signature (magic bytes) mappings
 FILE_SIGNATURES = {
@@ -180,9 +181,11 @@ def validate_positive_number(value, field_name, max_value=None, allow_zero=True)
         return None, None  # Empty is OK
 
     try:
-        num = float(value)
+        num = parse_decimal(value)
     except (ValueError, TypeError):
         return None, f"{field_name} must be a valid number"
+    if num is None:
+        return None, None
 
     if not allow_zero and num == 0:
         return None, f"{field_name} cannot be zero"
