@@ -160,6 +160,16 @@ class TestValidatePositiveNumber:
         assert val == 9.99
         assert error is None
 
+    def test_grouped_number(self):
+        val, error = validate_positive_number('1,234,567.89', 'price')
+        assert val == 1234567.89
+        assert error is None
+
+    def test_malformed_grouping_is_rejected(self):
+        val, error = validate_positive_number('1,2,3', 'price')
+        assert val is None
+        assert error is not None
+
     def test_invalid_string(self):
         val, error = validate_positive_number('abc', 'cost')
         assert val is None

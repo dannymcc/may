@@ -19,7 +19,7 @@ def parse_decimal(value, default=None):
     Empty / missing input returns ``default`` (``None`` by default) so callers can
     drop the ``... if request.form.get('x') else None`` guards.
 
-    Genuinely non-numeric input raises ``ValueError`` (matching ``float()``), so
+    Non-numeric or malformed grouped input raises ``ValueError`` (matching ``float()``), so
     existing error handling in the routes continues to work.
     """
     if value is None:
@@ -42,6 +42,11 @@ def parse_decimal(value, default=None):
 
     has_dot = '.' in s
     has_comma = ',' in s
+
+    if s.count(',') > 1 and not re.fullmatch(
+        r'[+-]?\d{1,3}(?:,\d{3})+(?:\.\d+)?', s
+    ):
+        raise ValueError(f"Cannot parse malformed grouped decimal {value!r}")
 
     if has_dot and has_comma:
         # Both separators present: the right-most one is the decimal separator,

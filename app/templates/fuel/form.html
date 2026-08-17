@@ -180,6 +180,8 @@
 </div>
 
 <script>
+let pricePerUnitWasDerived = false;
+
 function updateVehicleOdometer(vehicleId) {
     const select = document.getElementById('vehicle_id');
     const selectedOption = select.options[select.selectedIndex];
@@ -248,14 +250,23 @@ function calculateFuelAmounts() {
     const volume = parseDecimal(document.getElementById('volume').value) || 0;
     const priceInput = document.getElementById('price_per_unit');
     const totalInput = document.getElementById('total_cost');
-    let pricePerUnit = parseDecimal(priceInput.value) || 0;
     const discountPerUnit = parseDecimal(document.getElementById('discount_per_unit').value) || 0;
 
-    // When the price is omitted, derive it from the total paid and volume.
-    // Keep a manually entered price untouched.
-    if (!priceInput.value && volume && totalInput.value) {
-        pricePerUnit = (parseDecimal(totalInput.value) / volume) + discountPerUnit;
-        priceInput.value = pricePerUnit.toFixed(3);
+    // Preserve an explicitly entered total cost when the unit price is derived from it.
+    // Keep the derived-state flag until the user edits the price manually.
+    if ((pricePerUnitWasDerived || !priceInput.value) && volume && totalInput.value) {
+        const totalCost = parseDecimal(totalInput.value);
+        if (totalCost !== null) {
+            const pricePerUnit = (totalCost / volume) + discountPerUnit;
+            priceInput.value = pricePerUnit.toFixed(3);
+            pricePerUnitWasDerived = true;
+            return;
+        }
+    }
+
+    let pricePerUnit = parseDecimal(priceInput.value) || 0;
+    if (pricePerUnitWasDerived && !priceInput.value) {
+        pricePerUnitWasDerived = false;
     }
 
     if (volume && pricePerUnit) {
@@ -275,6 +286,19 @@ function updateStationName(select) {
 // Initialize odometer and fuel type for selected vehicle
 document.addEventListener('DOMContentLoaded', function() {
     const vehicleSelect = document.getElementById('vehicle_id');
+    const priceInput = document.getElementById('price_per_unit');
+    const totalInput = document.getElementById('total_cost');
+
+    priceInput.addEventListener('change', function() {
+        pricePerUnitWasDerived = false;
+    });
+
+    totalInput.addEventListener('change', function() {
+        if (!priceInput.value || pricePerUnitWasDerived) {
+            calculateFuelAmounts();
+        }
+    });
+
     updateVehicleOdometer(vehicleSelect.value);
     const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
     updateFuelTypeSelector(selectedOption);

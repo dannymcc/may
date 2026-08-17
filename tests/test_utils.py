@@ -31,6 +31,10 @@ class TestParseDecimal:
     def test_multiple_commas_are_thousands_separators(self):
         assert parse_decimal('1,234,567') == 1234567.0
 
+    def test_malformed_comma_grouping_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_decimal('1,2,3')
+
     def test_negative_comma_decimal(self):
         assert parse_decimal('-3,5') == -3.5
 
