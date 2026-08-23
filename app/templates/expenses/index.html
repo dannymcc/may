@@ -34,7 +34,8 @@
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {% for expense in expenses %}
-                {% set has_details = expense.vendor or expense.notes %}
+                {% set attachments = expense_attachments.get(expense.id, []) %}
+                {% set has_details = expense.vendor or expense.notes or attachments %}
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 {% if has_details %}cursor-pointer{% endif %}"
                     {% if has_details %}onclick="toggleExpenseDetail({{ expense.id }})"{% endif %}>
                     <td class="px-3 py-4 text-center">
@@ -80,6 +81,16 @@
                             <div>
                                 <span class="font-medium text-gray-500 dark:text-gray-400">{{ _('Notes:') }} </span>
                                 <span class="text-gray-900 dark:text-white">{{ expense.notes }}</span>
+                            </div>
+                            {% endif %}
+                            {% if attachments %}
+                            <div>
+                                <span class="font-medium text-gray-500 dark:text-gray-400">{{ _('Receipts:') }} </span>
+                                {% for attachment in attachments %}
+                                <a href="{{ url_for('api.uploaded_file', filename=attachment.filename) }}"
+                                   target="_blank" rel="noopener" onclick="event.stopPropagation()"
+                                   class="text-primary-600 hover:text-primary-500 mr-3">{{ attachment.original_filename }}</a>
+                                {% endfor %}
                             </div>
                             {% endif %}
                         </div>

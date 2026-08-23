@@ -16,6 +16,8 @@
             <a href="#vehicles" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Vehicles</a>
             <a href="#fuel-logs" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Fuel Logs</a>
             <a href="#expenses" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Expenses</a>
+            <a href="#trips" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Trips</a>
+            <a href="#charging" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Charging</a>
             <a href="#errors" class="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-md text-sm hover:bg-gray-200">Error Handling</a>
         </div>
     </div>
@@ -421,6 +423,211 @@
                         <code class="text-gray-900 dark:text-white">/expenses/{id}</code>
                     </div>
                     <p class="text-gray-600 dark:text-gray-400">Get, update, or delete a specific expense</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trips -->
+    <section id="trips" class="mb-12">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Trips</h2>
+                <p class="mt-1 text-gray-500 dark:text-gray-400">Log journeys for mileage and tax purposes</p>
+            </div>
+
+            <!-- List Trips -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <code class="text-gray-900 dark:text-white">/vehicles/{id}/trips</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">List trips for a vehicle</p>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Query Parameters</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Parameter</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Default</th>
+                                    <th class="text-left py-2 font-medium text-gray-900 dark:text-white">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 dark:text-gray-400">
+                                <tr class="border-b"><td class="py-2 pr-4"><code>limit</code></td><td class="py-2 pr-4">100</td><td class="py-2">Maximum results (max: 500)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>offset</code></td><td class="py-2 pr-4">0</td><td class="py-2">Results to skip for pagination</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>purpose</code></td><td class="py-2 pr-4">-</td><td class="py-2">Filter by purpose</td></tr>
+                                <tr><td class="py-2 pr-4"><code>sort</code></td><td class="py-2 pr-4">desc</td><td class="py-2">Sort by date: asc or desc</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Trip -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">POST</span>
+                        <code class="text-gray-900 dark:text-white">/vehicles/{id}/trips</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Create a trip</p>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Request Body</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Field</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Type</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Required</th>
+                                    <th class="text-left py-2 font-medium text-gray-900 dark:text-white">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 dark:text-gray-400">
+                                <tr class="border-b"><td class="py-2 pr-4"><code>date</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">Yes</td><td class="py-2">Date in YYYY-MM-DD format</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>start_odometer</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">Yes</td><td class="py-2">Odometer at the start of the trip</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>purpose</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">Yes</td><td class="py-2">See purposes below</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>end_odometer</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Odometer at the end of the trip</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>description</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Description of the trip</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>start_location</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Where the trip started</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>end_location</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Where the trip ended</td></tr>
+                                <tr><td class="py-2 pr-4"><code>notes</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Additional notes</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Trip Purposes</h4>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Also available from <code>GET /v1/trip-purposes</code></p>
+                    <div class="flex flex-wrap gap-2">
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">business</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">personal</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">commute</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">medical</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">charity</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">other</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Get/Update/Delete Trip -->
+            <div>
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">PATCH</span>
+                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">DELETE</span>
+                        <code class="text-gray-900 dark:text-white">/trips/{id}</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">Get, update, or delete a specific trip</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charging -->
+    <section id="charging" class="mb-12">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Charging</h2>
+                <p class="mt-1 text-gray-500 dark:text-gray-400">Record EV charging sessions with energy, state of charge, and cost</p>
+            </div>
+
+            <!-- List Charging Sessions -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <code class="text-gray-900 dark:text-white">/vehicles/{id}/charging</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">List charging sessions for a vehicle</p>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Query Parameters</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Parameter</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Default</th>
+                                    <th class="text-left py-2 font-medium text-gray-900 dark:text-white">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 dark:text-gray-400">
+                                <tr class="border-b"><td class="py-2 pr-4"><code>limit</code></td><td class="py-2 pr-4">100</td><td class="py-2">Maximum results (max: 500)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>offset</code></td><td class="py-2 pr-4">0</td><td class="py-2">Results to skip for pagination</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>charger_type</code></td><td class="py-2 pr-4">-</td><td class="py-2">Filter by charger type</td></tr>
+                                <tr><td class="py-2 pr-4"><code>sort</code></td><td class="py-2 pr-4">desc</td><td class="py-2">Sort by date: asc or desc</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mt-4">Sessions are returned under a <code>charging_sessions</code> key.</p>
+                </div>
+            </div>
+
+            <!-- Create Charging Session -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">POST</span>
+                        <code class="text-gray-900 dark:text-white">/vehicles/{id}/charging</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Create a charging session</p>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Request Body</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Field</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Type</th>
+                                    <th class="text-left py-2 pr-4 font-medium text-gray-900 dark:text-white">Required</th>
+                                    <th class="text-left py-2 font-medium text-gray-900 dark:text-white">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 dark:text-gray-400">
+                                <tr class="border-b"><td class="py-2 pr-4"><code>date</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">Yes</td><td class="py-2">Date in YYYY-MM-DD format</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>start_time</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Start time in HH:MM format</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>end_time</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">End time in HH:MM format</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>odometer</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Odometer at time of charge</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>kwh_added</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Energy added in kWh</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>start_soc</code></td><td class="py-2 pr-4">integer</td><td class="py-2 pr-4">No</td><td class="py-2">State of charge at start (%)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>end_soc</code></td><td class="py-2 pr-4">integer</td><td class="py-2 pr-4">No</td><td class="py-2">State of charge at end (%)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>cost_per_kwh</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Price per kWh</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>total_cost</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Calculated from kWh and price if omitted</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>charger_type</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">See charger types below</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>location</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Station name or "Home"</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>network</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Charging network name</td></tr>
+                                <tr><td class="py-2 pr-4"><code>notes</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Additional notes</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Charger Types</h4>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Also available from <code>GET /v1/charger-types</code></p>
+                    <div class="flex flex-wrap gap-2">
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">home</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">level1</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">level2</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">dcfc</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">tesla</code>
+                        <code class="px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-sm">other</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Get/Update/Delete Charging Session -->
+            <div>
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">GET</span>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">PATCH</span>
+                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">DELETE</span>
+                        <code class="text-gray-900 dark:text-white">/charging/{id}</code>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">Get, update, or delete a specific charging session</p>
                 </div>
             </div>
         </div>

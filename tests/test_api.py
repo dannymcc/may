@@ -4,6 +4,19 @@ from app import db as _db_ext
 from app.models import User, Vehicle
 
 
+class TestApiDocs:
+    def test_docs_page_renders(self, auth_client):
+        resp = auth_client.get('/api/docs')
+        assert resp.status_code == 200
+        body = resp.get_data(as_text=True)
+        assert 'id="trips"' in body
+        assert 'id="charging"' in body
+
+    def test_docs_page_requires_login(self, client):
+        resp = client.get('/api/docs')
+        assert resp.status_code in (302, 401)
+
+
 class TestToggleDarkMode:
     def test_toggle_dark_mode_on(self, auth_client, test_user):
         initial = test_user.dark_mode

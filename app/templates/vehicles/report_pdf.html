@@ -177,6 +177,28 @@
             page-break-before: always;
         }
 
+        .receipt {
+            margin: 12pt 0;
+            padding-bottom: 10pt;
+            border-bottom: 1pt solid #e2e8f0;
+            page-break-inside: avoid;
+        }
+
+        .receipt-caption {
+            font-size: 9pt;
+            color: #475569;
+            margin-bottom: 6pt;
+        }
+
+        .receipt-subtitle {
+            color: #64748b;
+        }
+
+        .receipt-image {
+            max-width: 100%;
+            max-height: 20cm;
+        }
+
         .footer {
             margin-top: 30pt;
             padding-top: 15pt;
@@ -291,6 +313,28 @@
     </table>
     {% endif %}
 
+    {% if parts %}
+    <h3>Parts ({{ parts|length }})</h3>
+    <table>
+        <tr>
+            <th style="width: 25%">Part</th>
+            <th style="width: 20%">Type</th>
+            <th>Specification</th>
+            <th class="text-right">Quantity</th>
+            <th>Part Number</th>
+        </tr>
+        {% for part in parts %}
+        <tr>
+            <td>{{ part.name }}</td>
+            <td>{{ part_type_labels.get(part.part_type, part.part_type) if part_type_labels else part.part_type }}</td>
+            <td>{{ part.specification or '-' }}</td>
+            <td class="text-right">{% if part.quantity %}{{ part.quantity }}{% if part.unit %} {{ part.unit }}{% endif %}{% else %}-{% endif %}</td>
+            <td>{{ part.part_number or '-' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
     {% if vehicle.notes %}
     <div class="notes">
         <div class="notes-title">Notes</div>
@@ -348,6 +392,46 @@
         </tr>
         {% endfor %}
     </table>
+    {% endif %}
+
+    {% if include_receipts %}
+    <!-- Receipts -->
+    <div class="page-break"></div>
+    <h2>Receipts ({{ receipts|length }} image{% if receipts|length != 1 %}s{% endif %})</h2>
+    {% if receipts %}
+    {% for receipt in receipts %}
+    <div class="receipt">
+        <div class="receipt-caption">
+            {{ receipt.date|format_date }} &bull; {{ receipt.kind }} &bull; {{ receipt.title }}
+            {% if receipt.cost %}&bull; {{ receipt.cost|money }} {{ user.currency }}{% endif %}
+            {% if receipt.subtitle %}<div class="receipt-subtitle">{{ receipt.subtitle }}</div>{% endif %}
+        </div>
+        <img class="receipt-image" src="{{ receipt.data_uri }}" alt="{{ receipt.filename }}">
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>No receipt images are attached to this vehicle's fuel logs or expenses.</p>
+    {% endif %}
+
+    {% if receipts_omitted %}
+    <h3>Attachments not included</h3>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Entry</th>
+            <th>File</th>
+            <th>Reason</th>
+        </tr>
+        {% for item in receipts_omitted %}
+        <tr>
+            <td>{{ item.date|format_date }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.filename }}</td>
+            <td>{{ item.reason }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
     {% endif %}
 
     <!-- Footer -->

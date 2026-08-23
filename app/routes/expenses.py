@@ -27,6 +27,56 @@ def parse_optional_float(value):
     return parse_decimal(value)
 
 
+def _save_attachments(expense, files):
+    """Save uploaded receipts against an expense (#234).
+
+    Accepts any number of files, ignores empty file inputs, and returns the
+    names of the files skipped because of a disallowed extension so the
+    caller can tell the user rather than dropping them silently.
+    """
+    skipped = []
+    for file in files:
+        if not file or not file.filename:
+            continue
+        if not allowed_file(file.filename):
+            skipped.append(file.filename)
+            continue
+
+        filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
+        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+
+        db.session.add(Attachment(
+            filename=filename,
+            original_filename=file.filename,
+            file_type=file.filename.rsplit('.', 1)[1].lower(),
+            expense_id=expense.id
+        ))
+    return skipped
+
+
+def _flash_skipped_attachments(skipped):
+    if skipped:
+        flash(_('These files were not saved because the file type is not '
+                'supported: %(names)s') % {'names': ', '.join(skipped)}, 'warning')
+
+
+def _attachments_by_expense(expense_ids):
+    """Attachments for the listed expenses, keyed by expense id.
+
+    Expense.attachments is lazy='dynamic', so loading them in the template
+    would run one query per row.
+    """
+    grouped = {}
+    if not expense_ids:
+        return grouped
+    attachments = Attachment.query.filter(
+        Attachment.expense_id.in_(expense_ids)
+    ).order_by(Attachment.id).all()
+    for attachment in attachments:
+        grouped.setdefault(attachment.expense_id, []).append(attachment)
+    return grouped
+
+
 def _known_vendors(vehicle_ids):
     """Distinct vendors previously used on the user's expenses (#213)."""
     if not vehicle_ids:
@@ -70,7 +120,8 @@ def index():
     ).group_by(Expense.vendor).order_by(func.sum(Expense.cost).desc()).all()
 
     return render_template('expenses/index.html', expenses=expenses, vehicles=vehicles,
-                           vendor_totals=vendor_rows)
+                           vendor_totals=vendor_rows,
+                           expense_attachments=_attachments_by_expense([e.id for e in expenses]))
 
 
 @bp.route('/new', methods=['GET', 'POST'])
@@ -123,21 +174,10 @@ def new():
 
         db.session.commit()
 
-        # Handle attachment upload
-        if 'attachment' in request.files:
-            file = request.files['attachment']
-            if file and file.filename and allowed_file(file.filename):
-                filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-
-                attachment = Attachment(
-                    filename=filename,
-                    original_filename=file.filename,
-                    file_type=file.filename.rsplit('.', 1)[1].lower(),
-                    expense_id=expense.id
-                )
-                db.session.add(attachment)
-                db.session.commit()
+        # Handle attachment uploads (one or more)
+        skipped = _save_attachments(expense, request.files.getlist('attachment'))
+        db.session.commit()
+        _flash_skipped_attachments(skipped)
 
         flash(_('Expense added successfully'), 'success')
         return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
@@ -184,22 +224,11 @@ def edit(expense_id):
                                    categories=EXPENSE_CATEGORIES,
                                    selected_vehicle_id=expense.vehicle_id)
 
-        # Handle attachment upload
-        if 'attachment' in request.files:
-            file = request.files['attachment']
-            if file and file.filename and allowed_file(file.filename):
-                filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-
-                attachment = Attachment(
-                    filename=filename,
-                    original_filename=file.filename,
-                    file_type=file.filename.rsplit('.', 1)[1].lower(),
-                    expense_id=expense.id
-                )
-                db.session.add(attachment)
+        # Handle attachment uploads (one or more)
+        skipped = _save_attachments(expense, request.files.getlist('attachment'))
 
         db.session.commit()
+        _flash_skipped_attachments(skipped)
         flash(_('Expense updated successfully'), 'success')
         return redirect(url_for('vehicles.view', vehicle_id=expense.vehicle_id))
 

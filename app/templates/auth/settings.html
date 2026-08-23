@@ -855,6 +855,28 @@
                             <span class="mt-3 inline-flex items-center px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-400 dark:bg-gray-700 dark:text-gray-400 rounded">{{ _('Not configured') }}</span>
                             {% endif %}
                         </button>
+
+                        <!-- UK Fuel Prices Card (Admin Only) -->
+                        <button type="button" onclick="showIntegration('uk-fuel')"
+                                class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 text-left hover:shadow-md hover:border-primary-300 border-2 border-transparent transition-all">
+                            <div class="flex items-center mb-3">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                    <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ _('UK Fuel Prices') }}</h3>
+                                    <span class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded">{{ _('Admin') }}</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('Pull live forecourt prices for saved stations') }}</p>
+                            {% if uk_fuel_settings.enabled %}
+                            <span class="mt-3 inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded">{{ _('Enabled') }}</span>
+                            {% else %}
+                            <span class="mt-3 inline-flex items-center px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-400 dark:bg-gray-700 dark:text-gray-400 rounded">{{ _('Disabled') }}</span>
+                            {% endif %}
+                        </button>
                         {% endif %}
                     </div>
                 </div>
@@ -1183,6 +1205,79 @@
                                         <button type="submit"
                                                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
                                             {{ _('Save Tessie Settings') }}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UK Fuel Prices Integration Detail -->
+                <div id="integration-uk-fuel" class="integration-detail hidden">
+                    <div class="mb-6">
+                        <button type="button" onclick="hideIntegration()" class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4">
+                            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            {{ _('Back to Integrations') }}
+                        </button>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+                        <div class="p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                    <svg class="h-7 w-7 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('UK Fuel Prices') }}</h2>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('Pull live forecourt prices for saved stations') }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <div class="space-y-4">
+                                <p class="text-sm text-gray-600 dark:text-gray-300">
+                                    {{ _('UK retailers publish forecourt prices under the government fuel price transparency scheme. May matches your saved stations to those forecourts by postcode and records the prices, so price history and Cheapest Fuel stay up to date without manual entry.') }}
+                                </p>
+
+                                <div class="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                                    <h4 class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">{{ _('Before you start') }}</h4>
+                                    <ul class="text-sm text-blue-700 dark:text-blue-400 list-disc list-inside space-y-1">
+                                        <li>{{ _('No API key is needed; the feeds are open data') }}</li>
+                                        <li>{{ _('Give each station a postcode so it can be matched to a forecourt') }}</li>
+                                        <li>{{ _('Prices refresh automatically every few hours, or on demand from the Fuel Stations page') }}</li>
+                                        <li>{{ _('See the') }} <a href="https://www.gov.uk/guidance/access-the-latest-fuel-prices-and-forecourt-data-via-api-or-email" target="_blank" class="underline">{{ _('gov.uk guidance') }}</a> {{ _('for the current retailer list') }}</li>
+                                    </ul>
+                                </div>
+
+                                <form method="POST" action="{{ url_for('auth.uk_fuel_settings') }}" class="space-y-4">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" name="uk_fuel_prices_enabled" id="uk_fuel_prices_enabled"
+                                               {% if uk_fuel_settings.enabled %}checked{% endif %}
+                                               class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500">
+                                        <label for="uk_fuel_prices_enabled" class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ _('Enable UK fuel price updates') }}</label>
+                                    </div>
+
+                                    <div>
+                                        <label for="uk_fuel_feed_urls" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ _('Retailer feeds (optional)') }}</label>
+                                        <textarea name="uk_fuel_feed_urls" id="uk_fuel_feed_urls" rows="4"
+                                                  placeholder="Retailer name|https://example.co.uk/fuel_prices_data.json"
+                                                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">{{ uk_fuel_settings.feed_urls or '' }}</textarea>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            {{ _('One feed per line. Leave blank to use the built-in list (%(count)s retailers).', count=uk_fuel_settings.retailer_count) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="flex justify-end">
+                                        <button type="submit"
+                                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+                                            {{ _('Save UK Fuel Price Settings') }}
                                         </button>
                                     </div>
                                 </form>

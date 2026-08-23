@@ -108,7 +108,7 @@ Migrations run automatically on container startup via the entrypoint script.
 
 ### GitHub Actions Workflow
 
-The project uses GitHub Actions (`.github/workflows/docker-build.yml`) to automatically build and push Docker images:
+The project uses GitHub Actions (`.github/workflows/docker.yml`) to automatically build and push Docker images:
 
 1. On push to `main`, `dev`, or new tags, the workflow triggers
 2. Builds a multi-platform Docker image (linux/amd64, linux/arm64)
@@ -117,7 +117,7 @@ The project uses GitHub Actions (`.github/workflows/docker-build.yml`) to automa
 
 ### Creating a Release
 
-1. Update `APP_VERSION` in `config.py`
+1. Update `APP_VERSION` in `config.py` and add the release section to `CHANGELOG.md`
 2. Commit the version bump to `dev`
 3. Create a pull request from `dev` to `main` with comprehensive changelog
 4. Merge the PR to `main`

@@ -1,7 +1,13 @@
+import io
 import pytest
 from datetime import date
 from app import db
-from app.models import Expense, EXPENSE_CATEGORIES
+from app.models import Attachment, Expense, EXPENSE_CATEGORIES
+
+
+def _upload(filename, content=b'fake-image-bytes'):
+    """Build a file tuple for a multipart POST."""
+    return (io.BytesIO(content), filename)
 
 
 class TestExpenseIndex:
@@ -153,6 +159,100 @@ class TestExpenseDelete:
         resp = auth_client.post(f'/expenses/{expense_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
         assert Expense.query.get(expense_id) is None
+
+
+class TestExpenseAttachments:
+    def test_create_expense_with_two_attachments(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/expenses/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-05-01',
+            'category': 'repairs',
+            'description': 'Two receipts',
+            'cost': '99.00',
+            'attachment': [_upload('receipt-one.jpg'), _upload('receipt-two.png')],
+        }, content_type='multipart/form-data', follow_redirects=True)
+        assert resp.status_code == 200
+
+        expense = Expense.query.filter_by(description='Two receipts').first()
+        assert expense is not None
+        names = sorted(a.original_filename for a in expense.attachments.all())
+        assert names == ['receipt-one.jpg', 'receipt-two.png']
+
+    def test_create_expense_with_single_attachment(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/expenses/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-05-02',
+            'category': 'repairs',
+            'description': 'One receipt',
+            'cost': '10.00',
+            'attachment': _upload('single.pdf'),
+        }, content_type='multipart/form-data', follow_redirects=True)
+        assert resp.status_code == 200
+
+        expense = Expense.query.filter_by(description='One receipt').first()
+        attachments = expense.attachments.all()
+        assert len(attachments) == 1
+        assert attachments[0].original_filename == 'single.pdf'
+        assert attachments[0].file_type == 'pdf'
+
+    def test_disallowed_extension_is_skipped_and_reported(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/expenses/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-05-03',
+            'category': 'repairs',
+            'description': 'Mixed uploads',
+            'cost': '20.00',
+            'attachment': [_upload('notes.exe'), _upload('receipt.jpg')],
+        }, content_type='multipart/form-data', follow_redirects=True)
+        assert resp.status_code == 200
+        assert b'notes.exe' in resp.data
+
+        expense = Expense.query.filter_by(description='Mixed uploads').first()
+        attachments = expense.attachments.all()
+        assert len(attachments) == 1
+        assert attachments[0].original_filename == 'receipt.jpg'
+
+    def test_edit_adds_further_attachments(self, auth_client, sample_expense):
+        resp = auth_client.post(f'/expenses/{sample_expense.id}/edit', data={
+            'date': '2024-01-20',
+            'category': 'maintenance',
+            'description': 'Oil change',
+            'cost': '75.00',
+            'attachment': [_upload('a.jpg'), _upload('b.jpg')],
+        }, content_type='multipart/form-data', follow_redirects=True)
+        assert resp.status_code == 200
+        assert sample_expense.attachments.count() == 2
+
+    def test_index_links_to_attachments(self, auth_client, sample_expense):
+        attachment = Attachment(
+            filename='abc123_receipt.jpg',
+            original_filename='receipt.jpg',
+            file_type='jpg',
+            expense_id=sample_expense.id,
+        )
+        db.session.add(attachment)
+        db.session.commit()
+
+        resp = auth_client.get('/expenses/')
+        assert resp.status_code == 200
+        assert b'/api/uploads/abc123_receipt.jpg' in resp.data
+        assert b'receipt.jpg' in resp.data
+
+    def test_delete_attachment_removes_only_that_row(self, auth_client, sample_expense):
+        first = Attachment(filename='one.jpg', original_filename='one.jpg',
+                           file_type='jpg', expense_id=sample_expense.id)
+        second = Attachment(filename='two.jpg', original_filename='two.jpg',
+                            file_type='jpg', expense_id=sample_expense.id)
+        db.session.add_all([first, second])
+        db.session.commit()
+        first_id = first.id
+
+        resp = auth_client.post(
+            f'/expenses/{sample_expense.id}/attachments/{first_id}/delete',
+            follow_redirects=True)
+        assert resp.status_code == 200
+        assert Attachment.query.get(first_id) is None
+        assert sample_expense.attachments.count() == 1
 
 
 class TestExpenseCategories:

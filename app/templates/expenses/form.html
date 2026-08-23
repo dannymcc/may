@@ -101,7 +101,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Receipt / Attachment') }}</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Receipts / Attachments') }}</label>
                     {% if expense %}
                     {% for attachment in expense.attachments.all() %}
                     <div class="mt-2 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
@@ -114,8 +114,9 @@
                     </div>
                     {% endfor %}
                     {% endif %}
-                    <input type="file" name="attachment" accept="image/*,.pdf"
+                    <input type="file" name="attachment" accept="image/*,.pdf" multiple
                            class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('You can select more than one file') }}</p>
                 </div>
             </div>
         </div>

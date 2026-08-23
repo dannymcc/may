@@ -2,7 +2,7 @@
 import pytest
 from datetime import date
 from app import db as _db_ext
-from app.models import User, Vehicle, FuelLog, Expense
+from app.models import User, Vehicle, FuelLog, Expense, Trip, ChargingSession
 
 
 class TestApiKeyAuth:
@@ -405,6 +405,362 @@ class TestV1Expenses:
         assert resp.status_code == 404
 
 
+class TestV1Trips:
+    def test_list_trips_requires_api_key(self, client, sample_vehicle):
+        resp = client.get(f'/api/v1/vehicles/{sample_vehicle.id}/trips')
+        assert resp.status_code == 401
+
+    def test_list_trips_empty(self, client, api_headers, sample_vehicle):
+        resp = client.get(f'/api/v1/vehicles/{sample_vehicle.id}/trips', headers=api_headers)
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert 'trips' in data
+        assert data['total'] == 0
+
+    def test_list_trips_with_entry(self, client, api_headers, sample_vehicle, sample_trip):
+        resp = client.get(f'/api/v1/vehicles/{sample_vehicle.id}/trips', headers=api_headers)
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['total'] == 1
+        assert data['trips'][0]['distance'] == 50.0
+
+    def test_list_trips_filter_by_purpose(self, client, api_headers, sample_vehicle, sample_trip):
+        resp = client.get(
+            f'/api/v1/vehicles/{sample_vehicle.id}/trips?purpose=personal',
+            headers=api_headers
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()['total'] == 0
+
+    def test_list_trips_vehicle_not_found(self, client, api_headers):
+        resp = client.get('/api/v1/vehicles/99999/trips', headers=api_headers)
+        assert resp.status_code == 404
+
+    def test_create_trip(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/trips',
+            json={
+                'date': '2024-03-05',
+                'start_odometer': 20000,
+                'end_odometer': 20120,
+                'purpose': 'business',
+                'description': 'Site survey',
+            },
+            headers=api_headers
+        )
+        assert resp.status_code == 201
+        data = resp.get_json()
+        assert data['purpose'] == 'business'
+        assert data['distance'] == 120.0
+        assert 'id' in data
+
+    def test_create_trip_missing_required(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/trips',
+            json={'date': '2024-03-05', 'purpose': 'business'},
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_create_trip_invalid_purpose(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/trips',
+            json={
+                'date': '2024-03-05',
+                'start_odometer': 20000,
+                'purpose': 'unicorn',
+            },
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_create_trip_invalid_date(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/trips',
+            json={
+                'date': 'not-a-date',
+                'start_odometer': 20000,
+                'purpose': 'business',
+            },
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_create_trip_non_string_date(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/trips',
+            json={
+                'date': 20240305,
+                'start_odometer': 20000,
+                'purpose': 'business',
+            },
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_create_trip_invalid_odometer(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/trips',
+            json={
+                'date': '2024-03-05',
+                'start_odometer': 'abc',
+                'purpose': 'business',
+            },
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_create_trip_zero_start_odometer(self, client, api_headers, sample_vehicle):
+        """A zero start odometer is a real value, not a missing one."""
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/trips',
+            json={
+                'date': '2024-03-05',
+                'start_odometer': 0,
+                'purpose': 'personal',
+            },
+            headers=api_headers
+        )
+        assert resp.status_code == 201
+        assert resp.get_json()['start_odometer'] == 0
+
+    def test_get_trip(self, client, api_headers, sample_trip):
+        resp = client.get(f'/api/v1/trips/{sample_trip.id}', headers=api_headers)
+        assert resp.status_code == 200
+        assert resp.get_json()['id'] == sample_trip.id
+
+    def test_get_trip_not_found(self, client, api_headers):
+        resp = client.get('/api/v1/trips/99999', headers=api_headers)
+        assert resp.status_code == 404
+
+    def test_get_trip_other_user(self, client, api_headers, admin_user):
+        """Cannot access another user's trip."""
+        other_vehicle = Vehicle(
+            owner_id=admin_user.id,
+            name='Admin Car',
+            vehicle_type='car',
+        )
+        _db_ext.session.add(other_vehicle)
+        _db_ext.session.commit()
+        trip = Trip(
+            vehicle_id=other_vehicle.id,
+            user_id=admin_user.id,
+            date=date(2024, 2, 1),
+            start_odometer=100.0,
+            purpose='personal',
+        )
+        _db_ext.session.add(trip)
+        _db_ext.session.commit()
+        resp = client.get(f'/api/v1/trips/{trip.id}', headers=api_headers)
+        assert resp.status_code == 404
+
+    def test_update_trip(self, client, api_headers, sample_trip):
+        resp = client.put(
+            f'/api/v1/trips/{sample_trip.id}',
+            json={'end_odometer': 10100, 'notes': 'Return leg included'},
+            headers=api_headers
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['end_odometer'] == 10100.0
+        assert data['notes'] == 'Return leg included'
+
+    def test_update_trip_invalid_purpose(self, client, api_headers, sample_trip):
+        resp = client.put(
+            f'/api/v1/trips/{sample_trip.id}',
+            json={'purpose': 'invalid'},
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_update_trip_no_body(self, client, api_headers, sample_trip):
+        resp = client.put(f'/api/v1/trips/{sample_trip.id}', headers=api_headers)
+        assert resp.status_code in (400, 415)
+
+    def test_delete_trip(self, client, api_headers, sample_trip):
+        resp = client.delete(f'/api/v1/trips/{sample_trip.id}', headers=api_headers)
+        assert resp.status_code == 200
+        assert resp.get_json()['success'] is True
+        assert _db_ext.session.get(Trip, sample_trip.id) is None
+
+    def test_delete_trip_not_found(self, client, api_headers):
+        resp = client.delete('/api/v1/trips/99999', headers=api_headers)
+        assert resp.status_code == 404
+
+
+class TestV1Charging:
+    def test_list_charging_requires_api_key(self, client, sample_vehicle):
+        resp = client.get(f'/api/v1/vehicles/{sample_vehicle.id}/charging')
+        assert resp.status_code == 401
+
+    def test_list_charging_empty(self, client, api_headers, sample_vehicle):
+        resp = client.get(f'/api/v1/vehicles/{sample_vehicle.id}/charging', headers=api_headers)
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert 'charging_sessions' in data
+        assert data['total'] == 0
+
+    def test_list_charging_with_entry(self, client, api_headers, sample_vehicle,
+                                      sample_charging_session):
+        resp = client.get(f'/api/v1/vehicles/{sample_vehicle.id}/charging', headers=api_headers)
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['total'] == 1
+        assert data['charging_sessions'][0]['kwh_added'] == 40.0
+
+    def test_list_charging_filter_by_charger_type(self, client, api_headers, sample_vehicle,
+                                                  sample_charging_session):
+        resp = client.get(
+            f'/api/v1/vehicles/{sample_vehicle.id}/charging?charger_type=dcfc',
+            headers=api_headers
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()['total'] == 0
+
+    def test_list_charging_vehicle_not_found(self, client, api_headers):
+        resp = client.get('/api/v1/vehicles/99999/charging', headers=api_headers)
+        assert resp.status_code == 404
+
+    def test_create_charging_session(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/charging',
+            json={
+                'date': '2024-03-10',
+                'start_time': '08:30',
+                'end_time': '09:45',
+                'kwh_added': 30.0,
+                'cost_per_kwh': 0.25,
+                'charger_type': 'level2',
+                'start_soc': 20,
+                'end_soc': 80,
+            },
+            headers=api_headers
+        )
+        assert resp.status_code == 201
+        data = resp.get_json()
+        # Total cost derived from kWh and unit price
+        assert data['total_cost'] == 7.5
+        assert data['start_time'] == '08:30:00'
+        assert data['start_soc'] == 20
+        assert 'id' in data
+
+    def test_create_charging_session_minimal(self, client, api_headers, sample_vehicle):
+        """Only the date is required."""
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/charging',
+            json={'date': '2024-03-11'},
+            headers=api_headers
+        )
+        assert resp.status_code == 201
+        assert resp.get_json()['date'] == '2024-03-11'
+
+    def test_create_charging_session_missing_date(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/charging',
+            json={'kwh_added': 10.0},
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_create_charging_session_invalid_charger_type(self, client, api_headers,
+                                                          sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/charging',
+            json={'date': '2024-03-10', 'charger_type': 'unicorn'},
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_create_charging_session_invalid_date(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/charging',
+            json={'date': 'not-a-date'},
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_create_charging_session_invalid_time(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/charging',
+            json={'date': '2024-03-10', 'start_time': 'half past eight'},
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_create_charging_session_invalid_kwh(self, client, api_headers, sample_vehicle):
+        resp = client.post(
+            f'/api/v1/vehicles/{sample_vehicle.id}/charging',
+            json={'date': '2024-03-10', 'kwh_added': 'lots'},
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_get_charging_session(self, client, api_headers, sample_charging_session):
+        resp = client.get(f'/api/v1/charging/{sample_charging_session.id}', headers=api_headers)
+        assert resp.status_code == 200
+        assert resp.get_json()['id'] == sample_charging_session.id
+
+    def test_get_charging_session_not_found(self, client, api_headers):
+        resp = client.get('/api/v1/charging/99999', headers=api_headers)
+        assert resp.status_code == 404
+
+    def test_get_charging_session_other_user(self, client, api_headers, admin_user):
+        """Cannot access another user's charging session."""
+        other_vehicle = Vehicle(
+            owner_id=admin_user.id,
+            name='Admin EV',
+            vehicle_type='car',
+            fuel_type='electric',
+        )
+        _db_ext.session.add(other_vehicle)
+        _db_ext.session.commit()
+        session = ChargingSession(
+            vehicle_id=other_vehicle.id,
+            user_id=admin_user.id,
+            date=date(2024, 2, 5),
+            kwh_added=10.0,
+        )
+        _db_ext.session.add(session)
+        _db_ext.session.commit()
+        resp = client.get(f'/api/v1/charging/{session.id}', headers=api_headers)
+        assert resp.status_code == 404
+
+    def test_update_charging_session(self, client, api_headers, sample_charging_session):
+        resp = client.patch(
+            f'/api/v1/charging/{sample_charging_session.id}',
+            json={'total_cost': 15.0, 'network': 'Home'},
+            headers=api_headers
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['total_cost'] == 15.0
+        assert data['network'] == 'Home'
+
+    def test_update_charging_session_invalid_charger_type(self, client, api_headers,
+                                                          sample_charging_session):
+        resp = client.put(
+            f'/api/v1/charging/{sample_charging_session.id}',
+            json={'charger_type': 'invalid'},
+            headers=api_headers
+        )
+        assert resp.status_code == 400
+
+    def test_update_charging_session_no_body(self, client, api_headers, sample_charging_session):
+        resp = client.put(f'/api/v1/charging/{sample_charging_session.id}', headers=api_headers)
+        assert resp.status_code in (400, 415)
+
+    def test_delete_charging_session(self, client, api_headers, sample_charging_session):
+        session_id = sample_charging_session.id
+        resp = client.delete(f'/api/v1/charging/{session_id}', headers=api_headers)
+        assert resp.status_code == 200
+        assert resp.get_json()['success'] is True
+        assert _db_ext.session.get(ChargingSession, session_id) is None
+
+    def test_delete_charging_session_not_found(self, client, api_headers):
+        resp = client.delete('/api/v1/charging/99999', headers=api_headers)
+        assert resp.status_code == 404
+
+
 class TestV1Categories:
     def test_list_categories(self, client, api_headers):
         resp = client.get('/api/v1/categories', headers=api_headers)
@@ -416,6 +772,28 @@ class TestV1Categories:
         first = data['categories'][0]
         assert 'id' in first
         assert 'name' in first
+
+    def test_list_trip_purposes(self, client, api_headers):
+        resp = client.get('/api/v1/trip-purposes', headers=api_headers)
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert 'purposes' in data
+        assert 'business' in [p['id'] for p in data['purposes']]
+
+    def test_list_trip_purposes_no_key(self, client):
+        resp = client.get('/api/v1/trip-purposes')
+        assert resp.status_code == 401
+
+    def test_list_charger_types(self, client, api_headers):
+        resp = client.get('/api/v1/charger-types', headers=api_headers)
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert 'charger_types' in data
+        assert 'home' in [c['id'] for c in data['charger_types']]
+
+    def test_list_charger_types_no_key(self, client):
+        resp = client.get('/api/v1/charger-types')
+        assert resp.status_code == 401
 
     def test_list_categories_no_key(self, client):
         resp = client.get('/api/v1/categories')

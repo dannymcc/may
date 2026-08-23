@@ -295,6 +295,16 @@ def settings():
             'api_token': AppSettings.get('tessie_api_token'),
         }
 
+    # Get UK fuel price settings for admins
+    uk_fuel_settings = {}
+    if current_user.is_admin:
+        from app.services.uk_fuel_prices import SETTING_FEEDS, UKFuelPriceService
+        uk_fuel_settings = {
+            'enabled': UKFuelPriceService.is_enabled(),
+            'feed_urls': AppSettings.get(SETTING_FEEDS, ''),
+            'retailer_count': len(UKFuelPriceService.get_feeds()),
+        }
+
     # Get registration setting
     registration_enabled = AppSettings.get('registration_enabled', 'true') == 'true'
 
@@ -305,6 +315,7 @@ def settings():
                            pushover_configured=pushover_configured,
                            dvla_settings=dvla_settings,
                            tessie_settings=tessie_settings,
+                           uk_fuel_settings=uk_fuel_settings,
                            app_version=DISPLAY_VERSION,
                            release_channel=RELEASE_CHANNEL,
                            github_repo=GITHUB_REPO,
@@ -452,6 +463,21 @@ def dvla_settings():
 
     flash(_('DVLA settings updated'), 'success')
     return redirect(url_for('auth.settings') + '#services-dvla')
+
+
+@bp.route('/uk-fuel-settings', methods=['POST'])
+@login_required
+@admin_required
+def uk_fuel_settings():
+    """Update UK fuel price feed settings (admin only)"""
+    from app.services.uk_fuel_prices import SETTING_ENABLED, SETTING_FEEDS
+
+    enabled = request.form.get('uk_fuel_prices_enabled') == 'on'
+    AppSettings.set(SETTING_ENABLED, 'true' if enabled else 'false')
+    AppSettings.set(SETTING_FEEDS, request.form.get('uk_fuel_feed_urls', '').strip())
+
+    flash(_('UK fuel price settings updated'), 'success')
+    return redirect(url_for('auth.settings') + '#services-uk-fuel')
 
 
 @bp.route('/tessie-settings', methods=['POST'])

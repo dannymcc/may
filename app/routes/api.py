@@ -813,6 +813,421 @@ def api_delete_expense(expense_id):
 
 
 # =============================================================================
+# Public API v1 - Trips
+# =============================================================================
+
+def _parse_api_time(value):
+    """Parse a time string from an API request.
+
+    Accepts HH:MM (as the web forms submit) and HH:MM:SS (as ``to_dict``
+    returns), so values can be round-tripped. Raises ValueError otherwise.
+    """
+    if not isinstance(value, str):
+        raise ValueError(f'Invalid time format: {value}')
+    for fmt in ('%H:%M', '%H:%M:%S'):
+        try:
+            return datetime.strptime(value, fmt).time()
+        except ValueError:
+            continue
+    raise ValueError(f'Invalid time format: {value}')
+
+
+@bp.route('/v1/vehicles/<int:vehicle_id>/trips', methods=['GET'])
+@api_auth_required
+def api_list_trips(vehicle_id):
+    """
+    List trips for a vehicle
+
+    Query parameters:
+    - limit: Maximum number of results (default: 100)
+    - offset: Number of results to skip (default: 0)
+    - purpose: Filter by purpose
+    - sort: Sort order, 'asc' or 'desc' by date (default: desc)
+    """
+    user = get_api_user()
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+
+    if vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+
+    limit = min(request.args.get('limit', 100, type=int), 500)
+    offset = request.args.get('offset', 0, type=int)
+    purpose = request.args.get('purpose')
+    sort = request.args.get('sort', 'desc')
+
+    query = vehicle.trips
+    if purpose:
+        query = query.filter_by(purpose=purpose)
+
+    if sort == 'asc':
+        query = query.order_by(Trip.date.asc(), Trip.id.asc())
+    else:
+        query = query.order_by(Trip.date.desc(), Trip.id.desc())
+
+    total = query.count()
+    trips = query.offset(offset).limit(limit).all()
+
+    return jsonify({
+        'trips': [trip.to_dict() for trip in trips],
+        'count': len(trips),
+        'total': total,
+        'limit': limit,
+        'offset': offset
+    })
+
+
+@bp.route('/v1/vehicles/<int:vehicle_id>/trips', methods=['POST'])
+@api_auth_required
+def api_create_trip(vehicle_id):
+    """
+    Create a trip
+
+    Required fields: date, start_odometer, purpose
+    Optional fields: end_odometer, description, start_location, end_location, notes
+    """
+    user = get_api_user()
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+
+    if vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    required = ['date', 'start_odometer', 'purpose']
+    for field in required:
+        if data.get(field) is None or data.get(field) == '':
+            return jsonify({'error': f'{field} is required', 'code': 'validation_error'}), 400
+
+    valid_purposes = [p[0] for p in TRIP_PURPOSES]
+    if data['purpose'] not in valid_purposes:
+        return jsonify({
+            'error': f'purpose must be one of: {", ".join(valid_purposes)}',
+            'code': 'validation_error'
+        }), 400
+
+    try:
+        date = datetime.strptime(data['date'], '%Y-%m-%d').date()
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD', 'code': 'validation_error'}), 400
+
+    try:
+        start_odometer = parse_decimal(data['start_odometer'])
+        end_odometer = parse_decimal(data.get('end_odometer'))
+    except ValueError:
+        return jsonify({'error': 'Odometer values must be numeric', 'code': 'validation_error'}), 400
+
+    trip = Trip(
+        vehicle_id=vehicle_id,
+        user_id=user.id,
+        date=date,
+        start_odometer=start_odometer,
+        end_odometer=end_odometer,
+        purpose=data['purpose'],
+        description=data.get('description'),
+        start_location=data.get('start_location'),
+        end_location=data.get('end_location'),
+        notes=data.get('notes')
+    )
+
+    db.session.add(trip)
+    db.session.commit()
+
+    return jsonify(trip.to_dict()), 201
+
+
+@bp.route('/v1/trips/<int:trip_id>', methods=['GET'])
+@api_auth_required
+def api_get_trip(trip_id):
+    """Get a specific trip"""
+    user = get_api_user()
+    trip = Trip.query.get_or_404(trip_id)
+
+    if trip.vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Trip not found or access denied', 'code': 'not_found'}), 404
+
+    return jsonify(trip.to_dict())
+
+
+@bp.route('/v1/trips/<int:trip_id>', methods=['PUT', 'PATCH'])
+@api_auth_required
+def api_update_trip(trip_id):
+    """Update a trip"""
+    user = get_api_user()
+    trip = Trip.query.get_or_404(trip_id)
+
+    if trip.vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Trip not found or access denied', 'code': 'not_found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    if 'date' in data:
+        try:
+            trip.date = datetime.strptime(data['date'], '%Y-%m-%d').date()
+        except (TypeError, ValueError):
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD', 'code': 'validation_error'}), 400
+
+    if 'purpose' in data:
+        valid_purposes = [p[0] for p in TRIP_PURPOSES]
+        if data['purpose'] not in valid_purposes:
+            return jsonify({
+                'error': f'purpose must be one of: {", ".join(valid_purposes)}',
+                'code': 'validation_error'
+            }), 400
+        trip.purpose = data['purpose']
+
+    try:
+        if 'start_odometer' in data:
+            start_odometer = parse_decimal(data['start_odometer'])
+            if start_odometer is None:
+                return jsonify({'error': 'start_odometer is required', 'code': 'validation_error'}), 400
+            trip.start_odometer = start_odometer
+        if 'end_odometer' in data:
+            trip.end_odometer = parse_decimal(data['end_odometer'])
+    except ValueError:
+        return jsonify({'error': 'Odometer values must be numeric', 'code': 'validation_error'}), 400
+
+    if 'description' in data:
+        trip.description = data['description']
+    if 'start_location' in data:
+        trip.start_location = data['start_location']
+    if 'end_location' in data:
+        trip.end_location = data['end_location']
+    if 'notes' in data:
+        trip.notes = data['notes']
+
+    db.session.commit()
+    return jsonify(trip.to_dict())
+
+
+@bp.route('/v1/trips/<int:trip_id>', methods=['DELETE'])
+@api_auth_required
+def api_delete_trip(trip_id):
+    """Delete a trip"""
+    user = get_api_user()
+    trip = Trip.query.get_or_404(trip_id)
+
+    if trip.vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Trip not found or access denied', 'code': 'not_found'}), 404
+
+    db.session.delete(trip)
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'Trip deleted'})
+
+
+# =============================================================================
+# Public API v1 - Charging Sessions
+# =============================================================================
+
+@bp.route('/v1/vehicles/<int:vehicle_id>/charging', methods=['GET'])
+@api_auth_required
+def api_list_charging_sessions(vehicle_id):
+    """
+    List charging sessions for a vehicle
+
+    Query parameters:
+    - limit: Maximum number of results (default: 100)
+    - offset: Number of results to skip (default: 0)
+    - charger_type: Filter by charger type
+    - sort: Sort order, 'asc' or 'desc' by date (default: desc)
+    """
+    user = get_api_user()
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+
+    if vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+
+    limit = min(request.args.get('limit', 100, type=int), 500)
+    offset = request.args.get('offset', 0, type=int)
+    charger_type = request.args.get('charger_type')
+    sort = request.args.get('sort', 'desc')
+
+    query = vehicle.charging_sessions
+    if charger_type:
+        query = query.filter_by(charger_type=charger_type)
+
+    if sort == 'asc':
+        query = query.order_by(ChargingSession.date.asc(), ChargingSession.id.asc())
+    else:
+        query = query.order_by(ChargingSession.date.desc(), ChargingSession.id.desc())
+
+    total = query.count()
+    sessions = query.offset(offset).limit(limit).all()
+
+    return jsonify({
+        'charging_sessions': [s.to_dict() for s in sessions],
+        'count': len(sessions),
+        'total': total,
+        'limit': limit,
+        'offset': offset
+    })
+
+
+@bp.route('/v1/vehicles/<int:vehicle_id>/charging', methods=['POST'])
+@api_auth_required
+def api_create_charging_session(vehicle_id):
+    """
+    Create a charging session
+
+    Required fields: date
+    Optional fields: start_time, end_time, odometer, kwh_added, start_soc, end_soc,
+    cost_per_kwh, total_cost, charger_type, location, network, notes
+    """
+    user = get_api_user()
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+
+    if vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    if not data.get('date'):
+        return jsonify({'error': 'date is required (YYYY-MM-DD)', 'code': 'validation_error'}), 400
+
+    try:
+        date = datetime.strptime(data['date'], '%Y-%m-%d').date()
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD', 'code': 'validation_error'}), 400
+
+    if data.get('charger_type'):
+        valid_charger_types = [c[0] for c in CHARGER_TYPES]
+        if data['charger_type'] not in valid_charger_types:
+            return jsonify({
+                'error': f'charger_type must be one of: {", ".join(valid_charger_types)}',
+                'code': 'validation_error'
+            }), 400
+
+    try:
+        start_time = _parse_api_time(data['start_time']) if data.get('start_time') else None
+        end_time = _parse_api_time(data['end_time']) if data.get('end_time') else None
+    except ValueError:
+        return jsonify({'error': 'Invalid time format. Use HH:MM', 'code': 'validation_error'}), 400
+
+    try:
+        session = ChargingSession(
+            vehicle_id=vehicle_id,
+            user_id=user.id,
+            date=date,
+            start_time=start_time,
+            end_time=end_time,
+            odometer=parse_decimal(data.get('odometer')),
+            kwh_added=parse_decimal(data.get('kwh_added')),
+            start_soc=int(data['start_soc']) if data.get('start_soc') is not None else None,
+            end_soc=int(data['end_soc']) if data.get('end_soc') is not None else None,
+            cost_per_kwh=parse_decimal(data.get('cost_per_kwh')),
+            total_cost=parse_decimal(data.get('total_cost')),
+            charger_type=data.get('charger_type'),
+            location=data.get('location'),
+            network=data.get('network'),
+            notes=data.get('notes')
+        )
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Numeric fields must be valid numbers', 'code': 'validation_error'}), 400
+
+    # Auto-calculate total cost if not provided
+    if session.kwh_added and session.cost_per_kwh and not session.total_cost:
+        session.total_cost = round(session.kwh_added * session.cost_per_kwh, 2)
+
+    db.session.add(session)
+    db.session.commit()
+
+    return jsonify(session.to_dict()), 201
+
+
+@bp.route('/v1/charging/<int:session_id>', methods=['GET'])
+@api_auth_required
+def api_get_charging_session(session_id):
+    """Get a specific charging session"""
+    user = get_api_user()
+    charge = ChargingSession.query.get_or_404(session_id)
+
+    if charge.vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Charging session not found or access denied', 'code': 'not_found'}), 404
+
+    return jsonify(charge.to_dict())
+
+
+@bp.route('/v1/charging/<int:session_id>', methods=['PUT', 'PATCH'])
+@api_auth_required
+def api_update_charging_session(session_id):
+    """Update a charging session"""
+    user = get_api_user()
+    charge = ChargingSession.query.get_or_404(session_id)
+
+    if charge.vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Charging session not found or access denied', 'code': 'not_found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'JSON body required', 'code': 'invalid_request'}), 400
+
+    if 'date' in data:
+        try:
+            charge.date = datetime.strptime(data['date'], '%Y-%m-%d').date()
+        except (TypeError, ValueError):
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD', 'code': 'validation_error'}), 400
+
+    if 'charger_type' in data:
+        if data['charger_type']:
+            valid_charger_types = [c[0] for c in CHARGER_TYPES]
+            if data['charger_type'] not in valid_charger_types:
+                return jsonify({
+                    'error': f'charger_type must be one of: {", ".join(valid_charger_types)}',
+                    'code': 'validation_error'
+                }), 400
+        charge.charger_type = data['charger_type']
+
+    try:
+        for field in ('start_time', 'end_time'):
+            if field in data:
+                setattr(charge, field, _parse_api_time(data[field]) if data[field] else None)
+    except ValueError:
+        return jsonify({'error': 'Invalid time format. Use HH:MM', 'code': 'validation_error'}), 400
+
+    try:
+        for field in ('odometer', 'kwh_added', 'cost_per_kwh', 'total_cost'):
+            if field in data:
+                setattr(charge, field, parse_decimal(data[field]))
+        for field in ('start_soc', 'end_soc'):
+            if field in data:
+                setattr(charge, field, int(data[field]) if data[field] is not None else None)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Numeric fields must be valid numbers', 'code': 'validation_error'}), 400
+
+    if 'location' in data:
+        charge.location = data['location']
+    if 'network' in data:
+        charge.network = data['network']
+    if 'notes' in data:
+        charge.notes = data['notes']
+
+    db.session.commit()
+    return jsonify(charge.to_dict())
+
+
+@bp.route('/v1/charging/<int:session_id>', methods=['DELETE'])
+@api_auth_required
+def api_delete_charging_session(session_id):
+    """Delete a charging session"""
+    user = get_api_user()
+    charge = ChargingSession.query.get_or_404(session_id)
+
+    if charge.vehicle not in user.get_all_vehicles():
+        return jsonify({'error': 'Charging session not found or access denied', 'code': 'not_found'}), 404
+
+    db.session.delete(charge)
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'Charging session deleted'})
+
+
+# =============================================================================
 # Public API v1 - Metadata
 # =============================================================================
 
@@ -822,6 +1237,24 @@ def api_list_categories():
     """List all expense categories"""
     return jsonify({
         'categories': [{'id': c[0], 'name': c[1]} for c in EXPENSE_CATEGORIES]
+    })
+
+
+@bp.route('/v1/trip-purposes', methods=['GET'])
+@api_auth_required
+def api_list_trip_purposes():
+    """List all trip purposes"""
+    return jsonify({
+        'purposes': [{'id': p[0], 'name': p[1]} for p in TRIP_PURPOSES]
+    })
+
+
+@bp.route('/v1/charger-types', methods=['GET'])
+@api_auth_required
+def api_list_charger_types():
+    """List all charger types"""
+    return jsonify({
+        'charger_types': [{'id': c[0], 'name': c[1]} for c in CHARGER_TYPES]
     })
 
 

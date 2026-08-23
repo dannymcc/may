@@ -2,7 +2,7 @@ import pytest
 from datetime import date
 
 from app import create_app, db as _db_ext
-from app.models import User, Vehicle, FuelLog, Expense
+from app.models import User, Vehicle, FuelLog, Expense, Trip, ChargingSession
 
 
 class TestConfig:
@@ -169,6 +169,41 @@ def sample_expense(app, test_user, sample_vehicle):
     _db_ext.session.add(expense)
     _db_ext.session.commit()
     return expense
+
+
+@pytest.fixture(scope='function')
+def sample_trip(app, test_user, sample_vehicle):
+    """Create a sample trip entry."""
+    trip = Trip(
+        vehicle_id=sample_vehicle.id,
+        user_id=test_user.id,
+        date=date(2024, 1, 25),
+        start_odometer=10000.0,
+        end_odometer=10050.0,
+        purpose='business',
+        description='Client visit',
+    )
+    _db_ext.session.add(trip)
+    _db_ext.session.commit()
+    return trip
+
+
+@pytest.fixture(scope='function')
+def sample_charging_session(app, test_user, sample_vehicle):
+    """Create a sample charging session entry."""
+    session = ChargingSession(
+        vehicle_id=sample_vehicle.id,
+        user_id=test_user.id,
+        date=date(2024, 1, 30),
+        odometer=10100.0,
+        kwh_added=40.0,
+        cost_per_kwh=0.30,
+        total_cost=12.0,
+        charger_type='home',
+    )
+    _db_ext.session.add(session)
+    _db_ext.session.commit()
+    return session
 
 
 @pytest.fixture(scope='function')

@@ -189,6 +189,35 @@ class TestFuelDelete:
         assert resp.status_code == 200
         assert FuelLog.query.get(log_id) is None
 
+    def test_delete_returns_to_fuel_log(self, auth_client, sample_fuel_log):
+        """#298 — deleting from the fuel log stays on the fuel log."""
+        log_id = sample_fuel_log.id
+        resp = auth_client.post(f'/fuel/{log_id}/delete',
+                                data={'next': '/fuel/'}, follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/fuel/')
+        assert FuelLog.query.get(log_id) is None
+
+    def test_delete_without_next_returns_to_vehicle(self, auth_client, sample_fuel_log):
+        """Deleting from the vehicle page still returns there."""
+        log_id = sample_fuel_log.id
+        vehicle_id = sample_fuel_log.vehicle_id
+        resp = auth_client.post(f'/fuel/{log_id}/delete', follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+        assert FuelLog.query.get(log_id) is None
+
+    def test_delete_ignores_offsite_next(self, auth_client, sample_fuel_log):
+        """An off-site next falls back to the vehicle page (open redirect guard)."""
+        log_id = sample_fuel_log.id
+        vehicle_id = sample_fuel_log.vehicle_id
+        resp = auth_client.post(f'/fuel/{log_id}/delete',
+                                data={'next': 'http://evil.example/'},
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert 'evil.example' not in resp.headers['Location']
+        assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+
 
 class TestPartialFillConsumption:
     """#194 — partial fills return no consumption; the next full fill

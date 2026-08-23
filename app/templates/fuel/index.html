@@ -62,6 +62,7 @@
                         <form method="POST" action="{{ url_for('fuel.delete', log_id=log.id) }}" class="inline"
                               onsubmit="return confirm('{{ _('Delete this fuel log?') }}');">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="next" value="{{ url_for('fuel.index') }}">
                             <button type="submit" class="text-red-600 hover:text-red-900">{{ _('Delete') }}</button>
                         </form>
                     </td>

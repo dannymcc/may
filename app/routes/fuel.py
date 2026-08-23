@@ -7,7 +7,10 @@ from werkzeug.utils import secure_filename
 from app import db
 from app.utils import parse_decimal
 from app.models import Vehicle, FuelLog, Attachment, FuelStation, FuelPriceHistory, FUEL_TYPES
-from app.security import validate_file_upload, secure_filename_with_uuid, validate_positive_number
+from app.security import (
+    validate_file_upload, secure_filename_with_uuid, validate_positive_number,
+    get_safe_redirect_url
+)
 from flask_babel import gettext as _
 from app.services.tessie import TessieService
 
@@ -349,7 +352,10 @@ def delete(log_id):
     db.session.delete(log)
     db.session.commit()
     flash(_('Fuel log deleted successfully'), 'success')
-    return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+    # Return to wherever the delete came from (#298): deleting from the fuel
+    # log should stay there rather than bouncing to the vehicle page.
+    next_url = get_safe_redirect_url(request.form.get('next'), default=None)
+    return redirect(next_url or url_for('vehicles.view', vehicle_id=vehicle_id))
 
 
 @bp.route('/<int:log_id>/attachments/<int:attachment_id>/delete', methods=['POST'])

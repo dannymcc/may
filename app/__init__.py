@@ -543,6 +543,20 @@ def _start_reminder_scheduler(app):
             except Exception as e:
                 logger.error(f"Error in recurring expense scheduler: {e}")
 
+            try:
+                with app.app_context():
+                    from app.services.uk_fuel_prices import UKFuelPriceService
+                    fuel_stats = UKFuelPriceService.refresh_if_due()
+                    if fuel_stats:
+                        logger.info(
+                            f"UK fuel price check: {fuel_stats['prices']} prices "
+                            f"from {fuel_stats['matched']} forecourts, "
+                            f"{fuel_stats['unmatched']} unmatched, "
+                            f"{len(fuel_stats['errors'])} feed errors"
+                        )
+            except Exception as e:
+                logger.error(f"Error in UK fuel price scheduler: {e}")
+
             # Check every hour
             time.sleep(3600)
 

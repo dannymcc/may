@@ -30,6 +30,29 @@ class TestDashboard:
         resp = auth_client.get('/dashboard')
         assert resp.status_code == 200
 
+    def test_dashboard_charts_label_currency(self, auth_client, sample_expense):
+        """Both dashboard charts must say what their money axis is in (#289)."""
+        resp = auth_client.get('/dashboard')
+        assert resp.status_code == 200
+        body = resp.get_data(as_text=True)
+        assert 'const currency = "GBP";' in body
+        # The category chart's value axis (x, because indexAxis is 'y') and the
+        # monthly spending chart's y axis both carry the currency as a title.
+        assert body.count('text: currency') == 2
+        assert body.count("' ' + currency") == 2
+
+    def test_dashboard_chart_currency_is_escaped(self, app, auth_client, test_user):
+        """A custom currency is free text, so it must not break out of the JS."""
+        import json
+
+        test_user.currency = 'X"Y'
+        db.session.commit()
+        resp = auth_client.get('/dashboard')
+        assert resp.status_code == 200
+        body = resp.get_data(as_text=True)
+        assert 'const currency = %s;' % json.dumps('X"Y') in body
+        assert 'const currency = "X"Y";' not in body
+
 
 class TestTimeline:
     def test_timeline_requires_auth(self, client, sample_vehicle):

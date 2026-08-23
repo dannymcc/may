@@ -37,7 +37,7 @@ Named after James May, completing the trio of Top Gear presenters (alongside [Cl
 - **👥 Multi-User**: Share vehicles between family members or team members
 - **📊 Analytics Dashboard**: View spending trends and consumption statistics with interactive charts
 - **📎 Attachment Support**: Upload receipts and documents to fuel logs and expenses
-- **📄 PDF Reports**: Generate comprehensive vehicle reports for record-keeping
+- **📄 PDF Reports**: Generate comprehensive vehicle reports for record-keeping, optionally with receipt images attached
 - **🔧 Customizable Units**: Support for metric/imperial, multiple currencies
 - **🎛️ Menu Customization**: Show/hide menu items and set your preferred start page
 - **🌍 Internationalization**: Available in multiple languages (English, German, Spanish, French, and more)
@@ -45,6 +45,7 @@ Named after James May, completing the trio of Top Gear presenters (alongside [Cl
 - **🌙 Dark Mode**: Toggle between light and dark themes
 - **📥 Import/Export**: Import from Fuelly CSV, export all data as JSON or CSV
 - **🇬🇧 DVLA Integration**: Look up UK vehicle MOT and tax status automatically
+- **⛽ UK Fuel Prices**: Pull live forecourt prices for your saved UK stations from the government fuel price feeds, no API key needed
 - **📱 PWA Support**: Install as a mobile app with offline capabilities
 - **🔌 REST API**: Full API access for integrations and automation
 - **🏠 Home Assistant Integration**: Create sensors and automations for your vehicles
@@ -128,23 +129,33 @@ Copy `.env.example` to `.env` and configure:
 # Secret key for session encryption
 SECRET_KEY=your-secure-random-string
 
-# Database location (default: SQLite)
-DATABASE_URL=sqlite:///data/may.db
+# Database location (optional, defaults to SQLite in the app's data folder)
+# Note the slashes: sqlite:///path is relative, sqlite:////path is absolute.
+DATABASE_URL=sqlite:////srv/may/data/may.db
 # PostgreSQL, MySQL, and MariaDB are also supported:
 # DATABASE_URL=postgresql://user:password@host:5432/may
 # DATABASE_URL=mysql+pymysql://user:password@host:3306/may
 
-# Upload folder for attachments
-UPLOAD_FOLDER=/app/data/uploads
+# Upload folder for attachments (optional)
+UPLOAD_FOLDER=/srv/may/data/uploads
 ```
+
+The `.env` file must sit next to `config.py` in the application directory, and
+it is read when May starts. Variables set in the real environment take
+precedence over `.env`.
+
+Under Docker Compose, `.env` is only used for `${VAR}` substitution in
+`docker-compose.yml` (for example `SECRET_KEY`). `DATABASE_URL` and
+`UPLOAD_FOLDER` are set in the compose `environment:` block, so changing them
+in `.env` has no effect — edit `docker-compose.yml` instead.
 
 ### Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `SECRET_KEY` | Session encryption key | Random |
-| `DATABASE_URL` | Database connection string (SQLite or PostgreSQL) | `sqlite:///data/may.db` |
-| `UPLOAD_FOLDER` | Path for file uploads | `/app/data/uploads` |
+| `DATABASE_URL` | Database connection string (SQLite or PostgreSQL) | SQLite at `data/may.db` inside the application directory (`/app/data/may.db` in Docker) |
+| `UPLOAD_FOLDER` | Path for file uploads | `data/uploads` inside the application directory (`/app/data/uploads` in Docker) |
 | `PUID` | User ID the container runs as (linuxserver.io convention) | `1000` |
 | `PGID` | Group ID the container runs as (linuxserver.io convention) | `1000` |
 | `TAILWIND_ASSET_URL` | Local Tailwind Play CDN JS path | `/static/vendor/tailwindcss.js` |
@@ -171,6 +182,7 @@ Add and manage your vehicles with detailed information:
 - **Vehicle Sharing**: Mark a vehicle as "Shared" to make it visible and loggable by all users on the instance
 - **Upcoming Maintenance**: Vehicle detail pages show a live panel of scheduled maintenance tasks, with overdue and due-soon alerts
 - **Parts & Consumables**: Collapsible section on the vehicle page remembers your expand/collapse preference per vehicle
+- **PDF Report**: The "PDF" button downloads a summary of the vehicle, its specifications, its parts and consumables, its fuel logs and its expenses. "PDF + Receipts" does the same and appends the receipt images attached to those entries, which is the version to hand to an accountant or employer. Non-image attachments (PDF scans, for example) are listed at the end of the report rather than embedded.
 
 ### Fuel Logs
 Track every fill-up with:
@@ -189,7 +201,7 @@ Categorize all vehicle-related costs:
 - Accessories
 - Other expenses
 
-Record odometer readings alongside costs, and expand any expense row to see vendor and notes details inline.
+Record odometer readings alongside costs, and expand any expense row to see vendor, notes, and links to any attached receipts inline. An expense can have several receipts — select more than one file when adding or editing it.
 
 ### Reminders
 Never miss important dates:
@@ -227,6 +239,8 @@ Save your favorite stations:
 - Quick selection during fuel logging
 - Track prices at different stations
 - Notes and location information
+- UK stations can pull live prices from the government fuel price feeds
+  (see [UK Fuel Prices](#uk-fuel-prices))
 
 ### Notifications
 Configure your preferred notification method:
@@ -241,6 +255,7 @@ Administrators can configure:
 - **SMTP Settings**: Email server for notifications
 - **Pushover**: Application token for push notifications
 - **DVLA API**: API key for UK vehicle lookups ([get one here](https://developer-portal.driver-vehicle-licensing.api.gov.uk/))
+- **UK Fuel Prices**: live forecourt prices for saved stations (see below)
 - **Branding**: Custom logo, app name, tagline, and primary color
 - **User Management**: Create, edit, and manage user accounts
 
@@ -254,9 +269,37 @@ curl -H "Authorization: Bearer may_your_api_key" \
   http://localhost:5050/api/v1/vehicles
 ```
 
-See the API documentation at `/api/docs` when logged in.
+Vehicles, fuel logs, expenses, trips, and charging sessions can all be read and
+created through the API. See the API documentation at `/api/docs` when logged in.
 
 ## 🔗 Integrations
+
+### UK Fuel Prices
+
+UK retailers publish their forecourt prices as open JSON feeds under the
+government [fuel price transparency scheme](https://www.gov.uk/guidance/access-the-latest-fuel-prices-and-forecourt-data-via-api-or-email).
+May can read those feeds and record the prices against your saved stations, so
+price history and Cheapest Fuel stay current without manual entry. No API key is
+needed.
+
+To use it:
+
+1. An admin enables it in **Settings → Integrations → UK Fuel Prices**.
+2. Give each saved station its postcode — that is what stations are matched on.
+   Where a postcode covers more than one forecourt, coordinates (if set) and
+   then brand break the tie.
+3. Prices refresh in the background every six hours, and on demand with the
+   **Update UK Prices** button on the Fuel Stations page or on a single
+   station's price history.
+
+Prices are stored one row per station, fuel type and day, so re-running the
+refresh updates the day's entry rather than adding duplicates. Premium grades
+are recorded separately (E5 as "Petrol Premium", SDV as "Diesel Premium").
+
+The built-in retailer list follows the gov.uk guidance page. Retailers join and
+leave the scheme, so the settings panel takes an optional override — one feed
+per line, either `Retailer name|https://...` or a bare URL. A feed that is
+unreachable is reported and the rest still apply.
 
 ### Home Assistant
 Create vehicle sensors in Home Assistant:
@@ -295,14 +338,16 @@ May is available in the following languages:
 
 | Language | Code | Language | Code |
 |----------|------|----------|------|
-| English | `en` | Swedish | `sv` |
+| English | `en` | Swedish (Svenska) | `sv` |
 | German (Deutsch) | `de` | Danish (Dansk) | `da` |
 | Spanish (Español) | `es` | Norwegian (Norsk) | `no` |
 | French (Français) | `fr` | Finnish (Suomi) | `fi` |
 | Italian (Italiano) | `it` | Japanese (日本語) | `ja` |
 | Dutch (Nederlands) | `nl` | Chinese (中文) | `zh` |
 | Portuguese (Português) | `pt` | Korean (한국어) | `ko` |
-| Polish (Polski) | `pl` | | |
+| Polish (Polski) | `pl` | Czech (Čeština) | `cs` |
+| Russian (Русский) | `ru` | Turkish (Türkçe) | `tr` |
+| Arabic (العربية) | `ar` | | |
 
 You can change your language in **Settings > Units & Values > Language**.
 

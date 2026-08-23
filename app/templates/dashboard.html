@@ -331,6 +331,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const currency = {{ (current_user.currency or '')|tojson }};
     const categoryEl = document.getElementById('categoryChart');
     if (categoryEl) {
         const categoryData = {{ expenses_by_category | tojson }};
@@ -357,10 +358,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => context.formattedValue + ' ' + currency
+                        }
+                    }
                 },
                 scales: {
-                    x: { beginAtZero: true }
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: currency
+                        }
+                    }
                 }
             }
         });
@@ -392,6 +404,11 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: {
                     position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => context.dataset.label + ': ' + context.formattedValue + ' ' + currency
+                    }
                 }
             },
             scales: {
@@ -400,7 +417,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 y: {
                     stacked: true,
-                    beginAtZero: true
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: currency
+                    }
                 }
             }
         }

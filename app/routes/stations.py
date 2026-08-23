@@ -6,6 +6,7 @@ from flask_babel import gettext as _
 from app import db
 from app.utils import parse_decimal
 from app.models import FuelStation, FuelPriceHistory
+from app.services.uk_fuel_prices import UKFuelPriceService
 
 bp = Blueprint('stations', __name__, url_prefix='/stations')
 
@@ -19,7 +20,11 @@ def index():
         FuelStation.times_used.desc()
     ).all()
 
-    return render_template('stations/index.html', stations=stations)
+    return render_template(
+        'stations/index.html',
+        stations=stations,
+        uk_fuel_enabled=UKFuelPriceService.is_enabled(),
+    )
 
 
 @bp.route('/new', methods=['GET', 'POST'])
@@ -149,7 +154,65 @@ def price_history(station_id):
         for p in price_records
     ]
 
-    return render_template('stations/prices.html', station=station, prices=prices, prices_json=prices_json)
+    return render_template(
+        'stations/prices.html',
+        station=station,
+        prices=prices,
+        prices_json=prices_json,
+        uk_fuel_enabled=UKFuelPriceService.is_enabled(),
+    )
+
+
+def _flash_uk_refresh(stats):
+    """Summarise a UK fuel price refresh as flash messages"""
+    if stats['matched']:
+        flash(
+            _('Updated %(prices)s live prices from %(matched)s forecourts')
+            % {'prices': stats['prices'], 'matched': stats['matched']},
+            'success',
+        )
+    else:
+        flash(
+            _('No matching forecourts found. Check the station postcodes.'),
+            'info',
+        )
+
+    if stats['errors']:
+        flash(
+            _('Some retailer feeds could not be read: %(errors)s')
+            % {'errors': ', '.join(stats['errors'][:3])},
+            'warning',
+        )
+
+
+@bp.route('/uk-prices/refresh', methods=['POST'])
+@login_required
+def refresh_uk_prices():
+    """Pull live UK forecourt prices for every saved station"""
+    if not UKFuelPriceService.is_enabled():
+        flash(_('UK fuel prices are not enabled. An admin can turn them on in Settings.'), 'error')
+        return redirect(url_for('stations.index'))
+
+    stats = UKFuelPriceService.refresh_prices()
+    _flash_uk_refresh(stats)
+
+    return redirect(url_for('stations.index'))
+
+
+@bp.route('/<int:station_id>/uk-prices/refresh', methods=['POST'])
+@login_required
+def refresh_station_uk_prices(station_id):
+    """Pull live UK forecourt prices for a single station"""
+    station = FuelStation.query.get_or_404(station_id)
+
+    if not UKFuelPriceService.is_enabled():
+        flash(_('UK fuel prices are not enabled. An admin can turn them on in Settings.'), 'error')
+        return redirect(url_for('stations.price_history', station_id=station.id))
+
+    stats = UKFuelPriceService.refresh_prices([station])
+    _flash_uk_refresh(stats)
+
+    return redirect(url_for('stations.price_history', station_id=station.id))
 
 
 @bp.route('/prices/<int:price_id>/delete', methods=['POST'])

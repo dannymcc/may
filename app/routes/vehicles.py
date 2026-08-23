@@ -1,5 +1,6 @@
 import os
 import uuid
+from base64 import b64encode
 from io import BytesIO
 from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, Response
@@ -8,12 +9,19 @@ from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 from app import db
 from app.utils import parse_decimal
-from app.models import Vehicle, VehicleSpec, VehiclePart, FuelLog, Expense, User, Reminder, MaintenanceSchedule, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, PART_TYPES, TRACKING_UNITS, ODOMETER_UNITS, TRIP_PURPOSES, AppSettings
+from app.models import Vehicle, VehicleSpec, VehiclePart, FuelLog, Expense, User, Reminder, MaintenanceSchedule, Attachment, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, PART_TYPES, TRACKING_UNITS, ODOMETER_UNITS, TRIP_PURPOSES, AppSettings
 from app.services.tessie import TessieService
 
 bp = Blueprint('vehicles', __name__, url_prefix='/vehicles')
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# Attachment types that can be inlined into the PDF report as pictures.
+RECEIPT_IMAGE_TYPES = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# Receipts are base64-encoded into the document, so cap the total to keep
+# both the PDF and the memory used to build it within reason.
+MAX_RECEIPT_BYTES = 20 * 1024 * 1024
 
 
 def allowed_file(filename):
@@ -377,6 +385,80 @@ def unarchive(vehicle_id):
     return redirect(url_for('vehicles.index'))
 
 
+def collect_receipts(fuel_logs, expenses, upload_folder):
+    """Collect receipt attachments for the PDF report (#219).
+
+    Returns a (receipts, omitted) pair. Receipts are image attachments read
+    off disk and inlined as data URIs: WeasyPrint fetches remote URLs without
+    the user's session, so a link to the uploads route would land it on the
+    login page instead of the picture. Anything we cannot inline — a PDF scan,
+    a missing file, or one big enough to bloat the document — is listed in
+    omitted so the report can say so rather than silently dropping it.
+    """
+    receipts = []
+    omitted = []
+    budget_left = MAX_RECEIPT_BYTES
+
+    def add(record, kind, title, subtitle, cost):
+        nonlocal budget_left
+        for attachment in record.attachments.order_by(Attachment.id).all():
+            extension = (attachment.file_type or '').lower().lstrip('.')
+            if not extension and '.' in attachment.filename:
+                extension = attachment.filename.rsplit('.', 1)[1].lower()
+
+            entry = {
+                'kind': kind,
+                'date': record.date,
+                'title': title,
+                'subtitle': subtitle,
+                'cost': cost,
+                'filename': attachment.original_filename or attachment.filename,
+            }
+
+            if extension not in RECEIPT_IMAGE_TYPES:
+                omitted.append(dict(entry, reason='not an image'))
+                continue
+
+            path = os.path.join(upload_folder, attachment.filename)
+            try:
+                size = os.path.getsize(path)
+            except OSError:
+                omitted.append(dict(entry, reason='file missing'))
+                continue
+
+            if size > budget_left:
+                omitted.append(dict(entry, reason='too large to embed'))
+                continue
+
+            try:
+                with open(path, 'rb') as handle:
+                    data = handle.read()
+            except OSError:
+                omitted.append(dict(entry, reason='file could not be read'))
+                continue
+
+            budget_left -= len(data)
+            mime = 'image/jpeg' if extension in ('jpg', 'jpeg') else f'image/{extension}'
+            entry['data_uri'] = 'data:%s;base64,%s' % (mime, b64encode(data).decode('ascii'))
+            receipts.append(entry)
+
+    for log in fuel_logs:
+        add(log, 'Fuel',
+            log.station or 'Fuel fill-up',
+            log.notes or '',
+            log.total_cost)
+
+    for expense in expenses:
+        add(expense, 'Expense',
+            expense.description,
+            expense.vendor or '',
+            expense.cost)
+
+    receipts.sort(key=lambda entry: entry['date'], reverse=True)
+    omitted.sort(key=lambda entry: entry['date'], reverse=True)
+    return receipts, omitted
+
+
 @bp.route('/<int:vehicle_id>/report')
 @login_required
 def report(vehicle_id):
@@ -398,6 +480,7 @@ def report(vehicle_id):
     fuel_logs = vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all()
     expenses = vehicle.expenses.order_by(Expense.date.desc()).all()
     specs = vehicle.specs.all()
+    parts = vehicle.parts.order_by(VehiclePart.part_type, VehiclePart.name).all()
 
     # Calculate statistics
     stats = {
@@ -413,6 +496,15 @@ def report(vehicle_id):
     # Get branding
     branding = AppSettings.get_all_branding()
 
+    # Receipts are opt-in (#219): they are what an accountant or employer
+    # asks for, but they also make the file much bigger, so only attach
+    # them when asked.
+    include_receipts = request.args.get('receipts') == '1'
+    receipts, receipts_omitted = [], []
+    if include_receipts:
+        receipts, receipts_omitted = collect_receipts(
+            fuel_logs, expenses, current_app.config['UPLOAD_FOLDER'])
+
     # Render HTML template
     html_content = render_template(
         'vehicles/report_pdf.html',
@@ -420,9 +512,14 @@ def report(vehicle_id):
         fuel_logs=fuel_logs,
         expenses=expenses,
         specs=specs,
+        parts=parts,
+        part_type_labels=dict(PART_TYPES),
         stats=stats,
         user=current_user,
         branding=branding,
+        include_receipts=include_receipts,
+        receipts=receipts,
+        receipts_omitted=receipts_omitted,
         generated_at=datetime.utcnow()
     )
 
