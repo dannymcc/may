@@ -376,6 +376,68 @@ class TestPartialFillConsumption:
         assert abs(avg - 6.286) < 0.01
 
 
+    def test_secondary_fluid_does_not_affect_primary_consumption(
+            self, app, test_user, sample_vehicle):
+        sample_vehicle.fuel_type = 'diesel'
+        sample_vehicle.secondary_fuel_type = 'adblue'
+        logs = [
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2026, 1, 1), odometer=10000, volume=40,
+                    fuel_type='diesel', is_full_tank=True),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2026, 1, 8), odometer=10200, volume=10,
+                    fuel_type='adblue', is_full_tank=True),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2026, 1, 15), odometer=10500, volume=35,
+                    fuel_type='diesel', is_full_tank=True),
+        ]
+        db.session.add_all(logs)
+        db.session.commit()
+
+        # Diesel is 35 L / 500 km, not (10 + 35) L / 300 km from AdBlue.
+        assert abs(logs[-1].get_consumption() - 7.0) < 0.01
+
+    def test_average_consumption_is_separate_for_each_fluid(
+            self, app, test_user, sample_vehicle):
+        sample_vehicle.fuel_type = 'diesel'
+        sample_vehicle.secondary_fuel_type = 'adblue'
+        logs = [
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2026, 1, 1), odometer=10000, volume=40,
+                    fuel_type='diesel', is_full_tank=True),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2026, 1, 2), odometer=10100, volume=8,
+                    fuel_type='adblue', is_full_tank=True),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2026, 1, 15), odometer=10500, volume=35,
+                    fuel_type='diesel', is_full_tank=True),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2026, 2, 1), odometer=12100, volume=6,
+                    fuel_type='adblue', is_full_tank=True),
+        ]
+        db.session.add_all(logs)
+        db.session.commit()
+
+        assert abs(sample_vehicle.get_average_consumption() - 7.0) < 0.01
+        assert abs(sample_vehicle.get_average_consumption(fuel_type='adblue') - 0.3) < 0.01
+
+    def test_legacy_null_fuel_type_is_primary_fuel(
+            self, app, test_user, sample_vehicle):
+        sample_vehicle.fuel_type = 'diesel'
+        logs = [
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2026, 1, 1), odometer=10000, volume=40,
+                    fuel_type=None, is_full_tank=True),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                    date=date(2026, 1, 15), odometer=10500, volume=35,
+                    fuel_type='diesel', is_full_tank=True),
+        ]
+        db.session.add_all(logs)
+        db.session.commit()
+
+        assert abs(logs[-1].get_consumption() - 7.0) < 0.01
+
+
 @pytest.fixture
 def sample_station(app, test_user):
     station = FuelStation(

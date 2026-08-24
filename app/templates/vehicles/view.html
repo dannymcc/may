@@ -1143,25 +1143,35 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!consumptionEl) return;
             if (data.consumption && data.consumption.length > 0) {
                 const ctx = consumptionEl.getContext('2d');
+                const fuelTypes = [...new Set(data.consumption.map(d => d.fuel_type || 'other'))];
+                const palette = [
+                    ['rgb(14, 165, 233)', 'rgba(14, 165, 233, 0.1)'],
+                    ['rgb(37, 99, 235)', 'rgba(37, 99, 235, 0.1)'],
+                    ['rgb(245, 158, 11)', 'rgba(245, 158, 11, 0.1)'],
+                    ['rgb(16, 185, 129)', 'rgba(16, 185, 129, 0.1)']
+                ];
+                const fuelLabel = type => type === 'adblue' ? 'AdBlue' : type.charAt(0).toUpperCase() + type.slice(1).replaceAll('_', ' ');
+                const consumptionDatasets = fuelTypes.map((type, index) => ({
+                    label: fuelLabel(type) + ' ({{ current_user.consumption_unit }})',
+                    data: data.consumption.map(d => (d.fuel_type || 'other') === type ? d.consumption : null),
+                    borderColor: palette[index % palette.length][0],
+                    backgroundColor: palette[index % palette.length][1],
+                    tension: 0.3,
+                    fill: false,
+                    spanGaps: true
+                }));
                 chartInstances['consumption'] = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.consumption.map(d => d.date),
-                        datasets: [{
-                            label: {{ (_('Consumption') + ' (' + current_user.consumption_unit + ')')|tojson }},
-                            data: data.consumption.map(d => d.consumption),
-                            borderColor: 'rgb(14, 165, 233)',
-                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        }]
+                        datasets: consumptionDatasets
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                display: false
+                                display: fuelTypes.length > 1
                             }
                         },
                         scales: {

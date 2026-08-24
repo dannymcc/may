@@ -404,7 +404,7 @@ class Vehicle(db.Model):
             return _distance_in(raw_distance, self.get_effective_odometer_unit(), distance_unit)
         return raw_distance
 
-    def _valid_consumption_segments(self):
+    def _valid_consumption_segments(self, fuel_type=None):
         """Collect (distance, fuel) spans usable for the consumption average.
 
         Each span runs between consecutive full-tank fill-ups, counting every
@@ -417,13 +417,25 @@ class Vehicle(db.Model):
         Returns ``None`` when there are fewer than two full-tank anchors,
         otherwise a (possibly empty) list of ``(distance, fuel)`` tuples.
         """
-        full_logs = self.fuel_logs.filter_by(is_full_tank=True).order_by(FuelLog.odometer).all()
+        # Keep each fuel or auxiliary fluid in its own consumption series.
+        # By default, vehicle summary figures describe the primary fuel only.
+        target_fuel_type = fuel_type or self.fuel_type
+        same_fuel_type = FuelLog.fuel_type == target_fuel_type
+        if target_fuel_type == self.fuel_type:
+            # Older primary-fuel records predate the per-log fuel type field.
+            same_fuel_type = same_fuel_type | FuelLog.fuel_type.is_(None)
+
+        full_logs = self.fuel_logs.filter(
+            FuelLog.is_full_tank == True,
+            same_fuel_type,
+        ).order_by(FuelLog.odometer).all()
         if len(full_logs) < 2:
             return None
 
         range_logs = self.fuel_logs.filter(
             FuelLog.odometer > full_logs[0].odometer,
             FuelLog.odometer <= full_logs[-1].odometer,
+            same_fuel_type,
         ).order_by(FuelLog.odometer).all()
 
         segments = []
@@ -438,7 +450,7 @@ class Vehicle(db.Model):
                 segments.append((distance, fuel))
         return segments
 
-    def get_average_consumption(self, consumption_unit=None, volume_unit='L'):
+    def get_average_consumption(self, consumption_unit=None, volume_unit='L', fuel_type=None):
         """Calculate average fuel consumption across full-tank fill-up spans.
 
         Spans contaminated by a missed fill-up are excluded rather than
@@ -446,7 +458,7 @@ class Vehicle(db.Model):
         remaining span, partial fills included (issue #169). Returns None
         when no honest span exists.
         """
-        segments = self._valid_consumption_segments()
+        segments = self._valid_consumption_segments(fuel_type)
         if not segments:
             return None
 
@@ -813,10 +825,20 @@ class FuelLog(db.Model):
         if not self.volume or not self.is_full_tank:
             return None
 
+        # Secondary fluids (for example AdBlue) must never be mixed into the
+        # primary fuel consumption. Compare this fill only with records of the
+        # same effective fuel type. Legacy NULL values count as the vehicle's
+        # primary fuel type.
+        effective_fuel_type = self.fuel_type or self.vehicle.fuel_type
+        same_fuel_type = FuelLog.fuel_type == effective_fuel_type
+        if effective_fuel_type == self.vehicle.fuel_type:
+            same_fuel_type = same_fuel_type | FuelLog.fuel_type.is_(None)
+
         prev_full = FuelLog.query.filter(
             FuelLog.vehicle_id == self.vehicle_id,
             FuelLog.odometer < self.odometer,
             FuelLog.is_full_tank == True,
+            same_fuel_type,
         ).order_by(FuelLog.odometer.desc()).first()
         if not prev_full:
             return None
@@ -825,6 +847,7 @@ class FuelLog(db.Model):
             FuelLog.vehicle_id == self.vehicle_id,
             FuelLog.odometer > prev_full.odometer,
             FuelLog.odometer <= self.odometer,
+            same_fuel_type,
         ).all()
         if any(log.is_missed for log in between):
             return None
@@ -859,6 +882,7 @@ class FuelLog(db.Model):
             'price_per_unit': self.price_per_unit,
             'discount_per_unit': self.discount_per_unit,
             'total_cost': self.total_cost,
+            'fuel_type': self.fuel_type or self.vehicle.fuel_type,
             'is_full_tank': self.is_full_tank,
             'is_missed': self.is_missed,
             'station': self.station,
@@ -1128,6 +1152,7 @@ FUEL_TYPES = [
     ('cng', _l('CNG')),
     ('hydrogen', _l('Hydrogen')),
     ('e85', _l('E85/Flex Fuel')),
+    ('adblue', _l('AdBlue')),
     ('other', _l('Other'))
 ]
 
