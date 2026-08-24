@@ -285,7 +285,8 @@ def vehicle_stats(vehicle_id):
             consumption_data.append({
                 'date': log.date.isoformat(),
                 'consumption': round(consumption, 2),
-                'odometer': log.odometer
+                'odometer': log.odometer,
+                'fuel_type': log.fuel_type or vehicle.fuel_type
             })
 
     expenses = vehicle.expenses.all()
