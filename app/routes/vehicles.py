@@ -6,10 +6,11 @@ from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, Response
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
+from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from app import db
-from app.utils import parse_decimal
-from app.models import Vehicle, VehicleSpec, VehiclePart, FuelLog, Expense, User, Reminder, MaintenanceSchedule, Attachment, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, PART_TYPES, TRACKING_UNITS, ODOMETER_UNITS, TRIP_PURPOSES, AppSettings
+from app.utils import parse_decimal, utcnow
+from app.models import Vehicle, VehicleSpec, VehiclePart, FuelLog, Expense, User, Reminder, MaintenanceSchedule, Attachment, VEHICLE_TYPES, FUEL_TYPES, VEHICLE_SPEC_TYPES, REMINDER_TYPES, PART_TYPES, TRACKING_UNITS, ODOMETER_UNITS, TRIP_PURPOSES, EXPENSE_CATEGORIES, AppSettings
 from app.services.tessie import TessieService
 
 bp = Blueprint('vehicles', __name__, url_prefix='/vehicles')
@@ -26,6 +27,42 @@ MAX_RECEIPT_BYTES = 20 * 1024 * 1024
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def _upload_path(filename):
+    return os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+
+
+def _delete_upload(filename):
+    """Remove an uploaded file, ignoring one that has already gone."""
+    if not filename:
+        return
+    path = _upload_path(filename)
+    if os.path.exists(path):
+        os.remove(path)
+
+
+def _delete_unused_upload(filename):
+    """Remove an uploaded file unless a gallery photo still points at it.
+
+    The main image and the gallery share the uploads folder, and setting a
+    gallery photo as the main image reuses its file (#147), so a file may be
+    referenced by both.
+    """
+    if not filename:
+        return
+    if Attachment.query.filter_by(filename=filename).first():
+        return
+    _delete_upload(filename)
+
+
+def _vehicle_photos(vehicle):
+    """Gallery photos for a vehicle, oldest first (#147)."""
+    return vehicle.attachments.order_by(Attachment.id).all()
+
+
+def _owns_vehicle(vehicle):
+    return vehicle.owner_id == current_user.id or current_user.is_admin
 
 
 @bp.route('/')
@@ -120,7 +157,7 @@ def new():
 @bp.route('/<int:vehicle_id>')
 @login_required
 def view(vehicle_id):
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check access
     if vehicle not in current_user.get_all_vehicles():
@@ -147,12 +184,28 @@ def view(vehicle_id):
         'net_cost': vehicle.get_net_cost(),
         'total_distance': vehicle.get_total_distance(vehicle.get_effective_odometer_unit()),
         'avg_consumption': vehicle.get_average_consumption(current_user.consumption_unit, current_user.volume_unit),
+        # Dual-fuel vehicles get a figure per fuel rather than one blended
+        # number that describes neither fuel (#221).
+        'consumption_by_fuel': vehicle.get_average_consumption_by_fuel(
+            current_user.consumption_unit, current_user.volume_unit),
         'cost_per_distance': vehicle.get_cost_per_distance(),
         'total_fuel_volume': vehicle.get_total_fuel_volume(),
         'total_co2_kg': vehicle.get_total_co2_kg(current_user.volume_unit),
         'fuel_logs_count': vehicle.fuel_logs.count(),
         'expenses_count': vehicle.expenses.count(),
         'charging_sessions_count': vehicle.charging_sessions.count(),
+    }
+
+    # Expenses grouped by category for this vehicle only (#287),
+    # with labels translated server-side like the dashboard chart
+    category_rows = db.session.query(
+        Expense.category, func.sum(Expense.cost)
+    ).filter(
+        Expense.vehicle_id == vehicle.id
+    ).group_by(Expense.category).all()
+    expenses_by_category = {
+        str(dict(EXPENSE_CATEGORIES).get(cat, (cat or '').capitalize())): round(total, 2)
+        for cat, total in category_rows if total
     }
 
     # Get reminders for this vehicle (not completed, ordered by due date)
@@ -183,6 +236,7 @@ def view(vehicle_id):
                            recent_expenses=recent_expenses,
                            specs=specs,
                            stats=stats,
+                           expenses_by_category=expenses_by_category,
                            reminders=reminders,
                            reminder_types=REMINDER_TYPES,
                            parts=parts,
@@ -191,13 +245,15 @@ def view(vehicle_id):
                            today=today,
                            dvla_configured=dvla_configured,
                            tessie_configured=tessie_configured,
+                           photos=_vehicle_photos(vehicle),
+                           can_edit=_owns_vehicle(vehicle),
                            annual_mileage_stats=vehicle.get_annual_mileage_stats())
 
 
 @bp.route('/<int:vehicle_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit(vehicle_id):
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check ownership
     if vehicle.owner_id != current_user.id and not current_user.is_admin:
@@ -207,7 +263,16 @@ def edit(vehicle_id):
     if request.method == 'POST':
         vehicle.name = request.form.get('name')
         vehicle.vehicle_type = request.form.get('vehicle_type')
-        vehicle.tracking_unit = request.form.get('tracking_unit', 'mileage')
+        # Changing the tracking unit would reinterpret every reading already
+        # logged — 50 miles silently becoming 50 engine hours — so once a
+        # vehicle has readings the unit is fixed (#323). The rest of the edit
+        # still saves; only this field is refused.
+        submitted_tracking_unit = request.form.get('tracking_unit', 'mileage')
+        if submitted_tracking_unit != vehicle.tracking_unit and vehicle.has_odometer_readings():
+            flash(_('Tracking unit cannot be changed once readings have been logged '
+                    'for this vehicle. Existing readings were kept as they are.'), 'error')
+        else:
+            vehicle.tracking_unit = submitted_tracking_unit
         vehicle.odometer_unit = request.form.get('odometer_unit') or None
         vehicle.make = request.form.get('make')
         vehicle.model = request.form.get('model')
@@ -235,11 +300,8 @@ def edit(vehicle_id):
         if 'image' in request.files:
             file = request.files['image']
             if file and file.filename and allowed_file(file.filename):
-                # Delete old image
-                if vehicle.image_filename:
-                    old_path = os.path.join(current_app.config['UPLOAD_FOLDER'], vehicle.image_filename)
-                    if os.path.exists(old_path):
-                        os.remove(old_path)
+                # Delete the old image, unless it is also a gallery photo
+                _delete_unused_upload(vehicle.image_filename)
 
                 filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
                 file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
@@ -284,18 +346,17 @@ def edit(vehicle_id):
 @bp.route('/<int:vehicle_id>/delete', methods=['POST'])
 @login_required
 def delete(vehicle_id):
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check ownership
     if vehicle.owner_id != current_user.id and not current_user.is_admin:
         flash(_('Access denied'), 'error')
         return redirect(url_for('vehicles.index'))
 
-    # Delete image
-    if vehicle.image_filename:
-        old_path = os.path.join(current_app.config['UPLOAD_FOLDER'], vehicle.image_filename)
-        if os.path.exists(old_path):
-            os.remove(old_path)
+    # Delete the main image and every gallery photo (#147)
+    _delete_upload(vehicle.image_filename)
+    for photo in _vehicle_photos(vehicle):
+        _delete_upload(photo.filename)
 
     db.session.delete(vehicle)
     db.session.commit()
@@ -303,10 +364,136 @@ def delete(vehicle_id):
     return redirect(url_for('vehicles.index'))
 
 
+@bp.route('/<int:vehicle_id>/photos', methods=['POST'])
+@login_required
+def add_photos(vehicle_id):
+    """Add one or more photos to a vehicle's gallery (#147).
+
+    Photos are stored as attachments against the vehicle, which is the same
+    record type used for fuel and expense receipts, so they are already
+    covered by the backup export.
+    """
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
+
+    if not _owns_vehicle(vehicle):
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('vehicles.index'))
+
+    skipped = []
+    saved = 0
+    for file in request.files.getlist('photo'):
+        if not file or not file.filename:
+            continue
+        if not allowed_file(file.filename):
+            skipped.append(file.filename)
+            continue
+
+        filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
+        path = _upload_path(filename)
+        file.save(path)
+
+        db.session.add(Attachment(
+            filename=filename,
+            original_filename=file.filename,
+            file_type=file.filename.rsplit('.', 1)[1].lower(),
+            file_size=os.path.getsize(path) if os.path.exists(path) else None,
+            vehicle_id=vehicle.id
+        ))
+        saved += 1
+
+        # A vehicle with no picture yet gets its first photo as the main one
+        if not vehicle.image_filename:
+            vehicle.image_filename = filename
+
+    db.session.commit()
+
+    if skipped:
+        flash(_('These files were not saved because the file type is not '
+                'supported: %(names)s') % {'names': ', '.join(skipped)}, 'warning')
+    if saved == 1:
+        flash(_('Photo added'), 'success')
+    elif saved:
+        flash(_('%(count)s photos added') % {'count': saved}, 'success')
+    elif not skipped:
+        flash(_('No photos were selected'), 'info')
+
+    return redirect(url_for('vehicles.view', vehicle_id=vehicle.id) + '#photos')
+
+
+@bp.route('/<int:vehicle_id>/photos/<int:attachment_id>/primary', methods=['POST'])
+@login_required
+def set_primary_photo(vehicle_id, attachment_id):
+    """Use a gallery photo as the vehicle's main picture (#147)."""
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
+
+    if not _owns_vehicle(vehicle):
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('vehicles.index'))
+
+    photo = db.get_or_404(Attachment, attachment_id)
+    if photo.vehicle_id != vehicle.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('vehicles.view', vehicle_id=vehicle.id))
+
+    previous = vehicle.image_filename
+    if previous and previous != photo.filename and not Attachment.query.filter_by(
+            filename=previous).first():
+        # The outgoing main image was uploaded through the vehicle form and is
+        # not in the gallery. Keep it as a photo rather than losing it.
+        original = previous.split('_', 1)[1] if '_' in previous else previous
+        extension = original.rsplit('.', 1)[1].lower() if '.' in original else None
+        path = _upload_path(previous)
+        db.session.add(Attachment(
+            filename=previous,
+            original_filename=original,
+            file_type=extension,
+            file_size=os.path.getsize(path) if os.path.exists(path) else None,
+            vehicle_id=vehicle.id
+        ))
+
+    vehicle.image_filename = photo.filename
+    db.session.commit()
+    flash(_('Main photo updated'), 'success')
+    return redirect(url_for('vehicles.view', vehicle_id=vehicle.id) + '#photos')
+
+
+@bp.route('/<int:vehicle_id>/photos/<int:attachment_id>/delete', methods=['POST'])
+@login_required
+def delete_photo(vehicle_id, attachment_id):
+    """Remove a gallery photo (#147)."""
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
+
+    if not _owns_vehicle(vehicle):
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('vehicles.index'))
+
+    photo = db.get_or_404(Attachment, attachment_id)
+    if photo.vehicle_id != vehicle.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('vehicles.view', vehicle_id=vehicle.id))
+
+    was_main = vehicle.image_filename == photo.filename
+    filename = photo.filename
+
+    db.session.delete(photo)
+    db.session.flush()
+
+    if was_main:
+        # Fall back to another photo so the vehicle keeps a picture
+        remaining = _vehicle_photos(vehicle)
+        vehicle.image_filename = remaining[0].filename if remaining else None
+
+    db.session.commit()
+    _delete_unused_upload(filename)
+
+    flash(_('Photo deleted'), 'success')
+    return redirect(url_for('vehicles.view', vehicle_id=vehicle.id) + '#photos')
+
+
 @bp.route('/<int:vehicle_id>/share', methods=['GET', 'POST'])
 @login_required
 def share(vehicle_id):
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check ownership
     if vehicle.owner_id != current_user.id and not current_user.is_admin:
@@ -337,14 +524,14 @@ def share(vehicle_id):
 @bp.route('/<int:vehicle_id>/unshare/<int:user_id>', methods=['POST'])
 @login_required
 def unshare(vehicle_id, user_id):
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check ownership
     if vehicle.owner_id != current_user.id and not current_user.is_admin:
         flash(_('Access denied'), 'error')
         return redirect(url_for('vehicles.index'))
 
-    user = User.query.get_or_404(user_id)
+    user = db.get_or_404(User, user_id)
     if user in vehicle.shared_users.all():
         vehicle.shared_users.remove(user)
         db.session.commit()
@@ -356,7 +543,7 @@ def unshare(vehicle_id, user_id):
 @bp.route('/<int:vehicle_id>/archive', methods=['POST'])
 @login_required
 def archive(vehicle_id):
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check ownership
     if vehicle.owner_id != current_user.id and not current_user.is_admin:
@@ -372,7 +559,7 @@ def archive(vehicle_id):
 @bp.route('/<int:vehicle_id>/unarchive', methods=['POST'])
 @login_required
 def unarchive(vehicle_id):
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check ownership
     if vehicle.owner_id != current_user.id and not current_user.is_admin:
@@ -463,7 +650,7 @@ def collect_receipts(fuel_logs, expenses, upload_folder):
 @login_required
 def report(vehicle_id):
     """Generate a PDF report for a vehicle"""
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check access
     if vehicle not in current_user.get_all_vehicles():
@@ -520,7 +707,7 @@ def report(vehicle_id):
         include_receipts=include_receipts,
         receipts=receipts,
         receipts_omitted=receipts_omitted,
-        generated_at=datetime.utcnow()
+        generated_at=utcnow()
     )
 
     # Generate PDF
@@ -543,7 +730,7 @@ def report(vehicle_id):
 @login_required
 def parts(vehicle_id):
     """List all parts for a vehicle"""
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check access
     if vehicle not in current_user.get_all_vehicles():
@@ -572,7 +759,7 @@ def parts(vehicle_id):
 @login_required
 def new_part(vehicle_id):
     """Add a new part to a vehicle"""
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check access
     if vehicle not in current_user.get_all_vehicles():
@@ -609,8 +796,8 @@ def new_part(vehicle_id):
 @login_required
 def edit_part(vehicle_id, part_id):
     """Edit an existing part"""
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
-    part = VehiclePart.query.get_or_404(part_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
+    part = db.get_or_404(VehiclePart, part_id)
 
     # Check access
     if vehicle not in current_user.get_all_vehicles():
@@ -647,8 +834,8 @@ def edit_part(vehicle_id, part_id):
 @login_required
 def delete_part(vehicle_id, part_id):
     """Delete a part"""
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
-    part = VehiclePart.query.get_or_404(part_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
+    part = db.get_or_404(VehiclePart, part_id)
 
     # Check access
     if vehicle not in current_user.get_all_vehicles():

@@ -185,11 +185,11 @@ msgstr ""
 msgid "Hours"
 msgstr ""
 
-#: app/models.py:1022
+#: app/models.py:1116 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr ""
 
-#: app/models.py:1023
+#: app/models.py:1117 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr ""
 
@@ -227,6 +227,10 @@ msgstr ""
 
 #: app/models.py:1036
 msgid "E85/Flex Fuel"
+msgstr ""
+
+#: app/models.py:1037
+msgid "AdBlue/DEF"
 msgstr ""
 
 #: app/models.py:1042
@@ -935,6 +939,12 @@ msgstr ""
 #: app/routes/vehicles.py:97
 #, python-format
 msgid "Vehicle \"%(name)s\" added successfully"
+msgstr ""
+
+#: app/routes/vehicles.py:268
+msgid ""
+"Tracking unit cannot be changed once readings have been logged for this "
+"vehicle. Existing readings were kept as they are."
 msgstr ""
 
 #: app/routes/vehicles.py:259
@@ -2833,6 +2843,16 @@ msgstr ""
 msgid "Discount per"
 msgstr ""
 
+#: app/templates/fuel/form.html:138
+msgid "Distance on this fuel"
+msgstr ""
+
+#: app/templates/fuel/form.html:143
+msgid ""
+"Distance run on this fuel since your last fill-up of it. The odometer can’t"
+" tell the fuels apart, so consumption for a dual-fuel vehicle needs this."
+msgstr ""
+
 #: app/templates/fuel/form.html:84
 msgid "Optional loyalty discount, subtracted from the price per unit."
 msgstr ""
@@ -4046,8 +4066,49 @@ msgstr ""
 msgid "Select unit..."
 msgstr ""
 
+#: app/templates/auth/settings.html:138
 #: app/templates/vehicles/part_form.html:58
 msgid "Liters (L)"
+msgstr ""
+
+#: app/templates/auth/settings.html:118
+msgid "DD/MM/YYYY"
+msgstr ""
+
+#: app/templates/auth/settings.html:119
+msgid "MM/DD/YYYY"
+msgstr ""
+
+#: app/templates/auth/settings.html:120
+msgid "YYYY-MM-DD"
+msgstr ""
+
+#: app/templates/auth/settings.html:121
+msgid "DD.MM.YYYY"
+msgstr ""
+
+#: app/templates/auth/settings.html:139
+msgid "UK Gallons (gal)"
+msgstr ""
+
+#: app/templates/auth/settings.html:140
+msgid "US Gallons (gal)"
+msgstr ""
+
+#: app/templates/auth/settings.html:149
+msgid "MPG (UK)"
+msgstr ""
+
+#: app/templates/auth/settings.html:150
+msgid "MPG (US)"
+msgstr ""
+
+#: app/templates/auth/settings.html:148
+msgid "L/100km"
+msgstr ""
+
+#: app/templates/auth/settings.html:151
+msgid "km/L"
 msgstr ""
 
 #: app/templates/vehicles/part_form.html:59
@@ -4162,6 +4223,13 @@ msgstr ""
 
 #: app/templates/vehicles/view.html:118
 msgid "A missed fill-up in the range means we can’t calculate this honestly."
+msgstr ""
+
+#: app/templates/vehicles/view.html:181
+msgid ""
+"Consumption can’t be worked out until the distance run on each fuel is "
+"recorded — the odometer can’t tell petrol from LPG. Add it to your fill-"
+"ups."
 msgstr ""
 
 #: app/templates/vehicles/view.html:120
@@ -4426,3 +4494,77 @@ msgstr ""
 msgid "No fuel prices recorded yet."
 msgstr ""
 
+
+#: app/templates/fuel/form.html:95
+msgid "Sales Tax"
+msgstr ""
+
+#: app/templates/fuel/form.html:101
+msgid ""
+"Optional. Sales tax shown on the receipt, already included in the total "
+"cost. Add the amounts together where more than one tax applies."
+msgstr ""
+
+#: app/templates/fuel/index.html:23
+msgid "Sales Tax Paid"
+msgstr ""
+
+#: app/templates/fuel/index.html:76
+msgid "incl. tax %(amount)s"
+msgstr ""
+
+#: app/models.py:388 app/templates/maintenance/form.html:115
+msgid "Engine hours"
+msgstr ""
+
+#: app/templates/maintenance/form.html:81
+msgid "Every (hours)"
+msgstr ""
+
+#: app/templates/maintenance/form.html:84
+msgid "e.g., 250"
+msgstr ""
+
+#: app/templates/vehicles/view.html:162
+msgid "Total Hours"
+msgstr ""
+
+#: app/templates/maintenance/form.html:86
+msgid "This vehicle is metered in engine hours, so its service interval is counted in hours."
+msgstr ""
+
+
+#: app/templates/fuel/form.html:38 app/templates/fuel/form.html:202
+#: app/templates/trips/form.html:56 app/templates/trips/form.html:183
+msgid "Last engine hours"
+msgstr ""
+
+#: app/templates/trips/form.html:84 app/templates/trips/form.html:185
+msgid "Start Hours"
+msgstr ""
+
+#: app/templates/trips/form.html:92 app/templates/trips/form.html:187
+msgid "End Hours"
+msgstr ""
+
+#: app/templates/tires/form.html:75
+msgid "Odometer when bought"
+msgstr ""
+
+#: app/templates/tires/form.html:75 app/templates/tires/form.html:117
+msgid "Engine hours when bought"
+msgstr ""
+
+#: app/templates/dashboard.html:102 app/templates/trips/index.html:41
+#: app/templates/trips/report.html:36
+msgid "mixed units"
+msgstr ""
+
+#: app/templates/dashboard.html:119
+msgid "unit"
+msgstr ""
+
+#: app/templates/dashboard.html:102 app/templates/trips/index.html:41
+#: app/templates/trips/report.html:36
+msgid "This total covers vehicles metered in distance and in engine hours."
+msgstr ""

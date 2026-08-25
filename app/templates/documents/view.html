@@ -9,7 +9,7 @@
 <div class="max-w-2xl mx-auto">
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
         <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div class="flex items-start justify-between">
+            <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ document.title }}</h1>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -17,7 +17,7 @@
                         {{ dict(document_types).get(document.document_type, document.document_type) }}
                     </p>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <a href="{{ url_for('documents.download', document_id=document.id) }}"
                        class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 dark:bg-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600">
                         <svg class="-ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -25,10 +25,12 @@
                         </svg>
                         {{ _('Download') }}
                     </a>
+                    {% if can_write('documents') %}
                     <a href="{{ url_for('documents.edit', document_id=document.id) }}"
                        class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 dark:bg-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600">
                         {{ _('Edit') }}
                     </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

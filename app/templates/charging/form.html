@@ -2,6 +2,9 @@
 {% block title %}{% if session %}{{ _('Edit Charging Session') }}{% else %}{{ _('Log Charging Session') }}{% endif %}{% endblock %}
 
 {% block content %}
+{% set selected_id = (session.vehicle_id if session else selected_vehicle_id) %}
+{% set preselected = vehicles | selectattr('id', 'equalto', selected_id if selected_id else -1) | list %}
+{% set form_vehicle = preselected[0] if preselected else (vehicles[0] if vehicles else None) %}
 <div class="max-w-2xl mx-auto">
     <div class="mb-6">
         <a href="{{ url_for('charging.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">&larr; {{ _('Back to charging sessions') }}</a>
@@ -21,6 +24,8 @@
                         <option value="{{ vehicle.id }}"
                                 {% if (session and session.vehicle_id == vehicle.id) or (selected_vehicle_id == vehicle.id) %}selected{% endif %}
                                 data-uses-tessie="{{ 'true' if vehicle.uses_tessie_odometer() else 'false' }}"
+                                data-odometer-unit="{{ vehicle.get_reading_unit() }}"
+                                data-reading-label="{{ vehicle.get_reading_label() }}"
                                 data-tessie-odometer="{% if vehicle.tessie_last_odometer %}{% if current_user.distance_unit == 'mi' %}{{ (vehicle.tessie_last_odometer * 0.621371)|round|int }}{% else %}{{ vehicle.tessie_last_odometer|round|int }}{% endif %}{% endif %}">
                             {{ vehicle.name }}
                         </option>
@@ -78,7 +83,7 @@
 
                 <div>
                     <label for="odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {{ _('Odometer') }} ({{ current_user.distance_unit }})
+                        <span id="odometer-reading-label">{{ form_vehicle.get_reading_label() if form_vehicle else _('Odometer') }}</span> (<span id="odometer-reading-unit">{{ form_vehicle.get_reading_unit() if form_vehicle else current_user.distance_unit }}</span>)
                         <span id="tessie-odometer-badge" class="hidden ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                             <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -176,6 +181,15 @@ function updateVehicleOdometer(vehicleId) {
     const odometerInput = document.getElementById('odometer');
     const tessieBadge = document.getElementById('tessie-odometer-badge');
     const tessieNote = document.getElementById('tessie-odometer-note');
+
+    // Electric plant is metered in engine hours like any other machine, so
+    // the field is labelled from the vehicle rather than the account (#324).
+    const readingLabel = selectedOption.getAttribute('data-reading-label');
+    const readingUnit = selectedOption.getAttribute('data-odometer-unit');
+    const readingLabelEl = document.getElementById('odometer-reading-label');
+    const readingUnitEl = document.getElementById('odometer-reading-unit');
+    if (readingLabel && readingLabelEl) readingLabelEl.textContent = readingLabel;
+    if (readingUnit && readingUnitEl) readingUnitEl.textContent = readingUnit;
 
     const usesTessie = selectedOption.getAttribute('data-uses-tessie') === 'true';
     const tessieOdometer = selectedOption.getAttribute('data-tessie-odometer');

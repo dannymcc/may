@@ -18,7 +18,8 @@
                 {% for vehicle in vehicles %}
                 <option value="{{ vehicle.id }}"
                         data-odometer="{{ vehicle.get_last_odometer(vehicle.get_effective_odometer_unit()) }}"
-                        data-odometer-unit="{{ vehicle.get_effective_odometer_unit() }}"
+                        data-odometer-unit="{{ vehicle.get_reading_unit() }}"
+                        data-reading-label="{{ vehicle.get_reading_label() }}"
                         data-uses-tessie="{{ 'true' if vehicle.uses_tessie_odometer() else 'false' }}"
                         data-tessie-odometer="{% if vehicle.tessie_last_odometer %}{% if vehicle.get_effective_odometer_unit() == 'mi' %}{{ (vehicle.tessie_last_odometer * 0.621371)|round|int }}{% else %}{{ vehicle.tessie_last_odometer|round|int }}{% endif %}{% endif %}"
                         {% if selected_vehicle_id and selected_vehicle_id|int == vehicle.id %}selected{% endif %}>
@@ -31,7 +32,7 @@
         <!-- Odometer -->
         <div>
             <label for="odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {{ _('Odometer') }} *
+                <span id="odometer-reading-label">{{ _('Odometer') }}</span> *
                 <span id="tessie-badge" class="hidden ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                     <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -151,6 +152,11 @@ function updateVehicleOdometer() {
 
     // Update odometer unit display
     if (unitBadge) unitBadge.textContent = odometerUnit;
+
+    // An hours-metered vehicle is asked for engine hours (#324).
+    const readingLabel = option.dataset.readingLabel;
+    const readingLabelEl = document.getElementById('odometer-reading-label');
+    if (readingLabel && readingLabelEl) readingLabelEl.textContent = readingLabel;
 
     if (usesTessie && tessieOdometer) {
         // Show Tessie badge and auto-fill

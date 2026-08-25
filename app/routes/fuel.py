@@ -6,7 +6,10 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
 from app.utils import parse_decimal
-from app.models import Vehicle, FuelLog, Attachment, FuelStation, FuelPriceHistory, FUEL_TYPES
+from app.models import (
+    Vehicle, FuelLog, Attachment, FuelStation, FuelPriceHistory, FUEL_TYPES,
+    resolve_price_fuel_type,
+)
 from app.security import (
     validate_file_upload, secure_filename_with_uuid, validate_positive_number,
     get_safe_redirect_url
@@ -41,9 +44,22 @@ def index():
         ChargingSession.vehicle_id.in_(vehicle_ids)
     ).order_by(ChargingSession.date.desc()).all() if vehicle_ids else []
 
+    # Sales tax paid per calendar year (#225): businesses reclaim it annually,
+    # so the yearly total is what the page needs to show. Only years with tax
+    # recorded appear, newest first, and the block is hidden entirely for users
+    # who never log it.
+    sales_tax_by_year = {}
+    for log in logs:
+        if log.sales_tax and log.date:
+            year = log.date.year
+            sales_tax_by_year[year] = sales_tax_by_year.get(year, 0) + log.sales_tax
+    sales_tax_by_year = [(year, round(total, 2))
+                         for year, total in sorted(sales_tax_by_year.items(), reverse=True)]
+
     return render_template('fuel/index.html',
                            logs=logs,
                            vehicles=vehicles,
+                           sales_tax_by_year=sales_tax_by_year,
                            charging_sessions=charging_sessions)
 
 
@@ -58,7 +74,7 @@ def new():
 
     if request.method == 'POST':
         vehicle_id = int(request.form.get('vehicle_id'))
-        vehicle = Vehicle.query.get_or_404(vehicle_id)
+        vehicle = db.get_or_404(Vehicle, vehicle_id)
 
         # Check access
         if vehicle not in vehicles:
@@ -68,33 +84,51 @@ def new():
         date_str = request.form.get('date')
         date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.now().date()
 
-        # Validate numeric inputs
+        # Validate numeric inputs. A failure sends the user back to the form
+        # with the flash: there is no `fuel/new.html` template to re-render.
         odometer, err = validate_positive_number(request.form.get('odometer'), 'Odometer', max_value=9999999)
         if err:
             flash(err, 'error')
-            return render_template('fuel/new.html', vehicles=vehicles)
+            return redirect(url_for('fuel.new', vehicle_id=vehicle_id))
 
         volume, err = validate_positive_number(request.form.get('volume'), 'Volume', max_value=10000)
         if err:
             flash(err, 'error')
-            return render_template('fuel/new.html', vehicles=vehicles)
+            return redirect(url_for('fuel.new', vehicle_id=vehicle_id))
 
         price_per_unit, err = validate_positive_number(request.form.get('price_per_unit'), 'Price per unit', max_value=1000)
         if err:
             flash(err, 'error')
-            return render_template('fuel/new.html', vehicles=vehicles)
+            return redirect(url_for('fuel.new', vehicle_id=vehicle_id))
 
         discount_per_unit = None
         if request.form.get('discount_per_unit'):
             discount_per_unit, err = validate_positive_number(request.form.get('discount_per_unit'), 'Discount per unit', max_value=1000)
             if err:
                 flash(err, 'error')
-                return render_template('fuel/new.html', vehicles=vehicles)
+                return redirect(url_for('fuel.new', vehicle_id=vehicle_id))
 
         total_cost, err = validate_positive_number(request.form.get('total_cost'), 'Total cost', max_value=100000)
         if err:
             flash(err, 'error')
-            return render_template('fuel/new.html', vehicles=vehicles)
+            return redirect(url_for('fuel.new', vehicle_id=vehicle_id))
+
+        # Sales tax paid on the fill-up, already included in the total cost (#225)
+        sales_tax = None
+        if request.form.get('sales_tax'):
+            sales_tax, err = validate_positive_number(request.form.get('sales_tax'), 'Sales tax', max_value=100000)
+            if err:
+                flash(err, 'error')
+                return redirect(url_for('fuel.new', vehicle_id=vehicle_id))
+
+        # Distance run on this fuel — only bi-fuel vehicles need it (#221)
+        fuel_distance = None
+        if request.form.get('fuel_distance'):
+            fuel_distance, err = validate_positive_number(
+                request.form.get('fuel_distance'), 'Distance on this fuel', max_value=9999999)
+            if err:
+                flash(err, 'error')
+                return redirect(url_for('fuel.new', vehicle_id=vehicle_id))
 
         # Derive the unit price from the amount paid when it was omitted.
         # Add the discount back because total_cost represents the amount paid
@@ -117,7 +151,9 @@ def new():
             price_per_unit=price_per_unit,
             discount_per_unit=discount_per_unit,
             total_cost=total_cost,
+            sales_tax=sales_tax,
             fuel_type=request.form.get('fuel_type') or None,
+            fuel_distance=fuel_distance,
             is_full_tank=request.form.get('is_full_tank') == 'on',
             is_missed=request.form.get('is_missed') == 'on',
             station=request.form.get('station'),
@@ -135,7 +171,7 @@ def new():
         # Auto-save fuel price to history if station is selected
         station_id = request.form.get('station_id', type=int)
         if station_id and log.price_per_unit:
-            station = FuelStation.query.get(station_id)
+            station = db.session.get(FuelStation, station_id)
             if station:
                 # Save price history
                 price_history = FuelPriceHistory(
@@ -143,7 +179,7 @@ def new():
                     user_id=current_user.id,
                     fuel_log_id=log.id,
                     date=log.date,
-                    fuel_type=log.fuel_type or vehicle.fuel_type or 'petrol',
+                    fuel_type=resolve_price_fuel_type(log.fuel_type, vehicle.fuel_type),
                     price_per_unit=log.price_per_unit
                 )
                 db.session.add(price_history)
@@ -167,7 +203,12 @@ def new():
                 db.session.commit()
 
         flash(_('Fuel log added successfully'), 'success')
-        return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+
+        # Redirect back to vehicle page if we came from there (#283)
+        if request.form.get('return_to') == 'vehicle':
+            return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+
+        return redirect(url_for('fuel.index'))
 
     # Pre-select vehicle: explicit param > default vehicle preference
     selected_vehicle_id = request.args.get('vehicle_id', type=int) or current_user.default_vehicle_id
@@ -189,7 +230,7 @@ def new():
 @bp.route('/<int:log_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit(log_id):
-    log = FuelLog.query.get_or_404(log_id)
+    log = db.get_or_404(FuelLog, log_id)
     vehicles = current_user.get_all_vehicles()
 
     # Check access
@@ -204,7 +245,7 @@ def edit(log_id):
 
         new_vehicle_id = request.form.get('vehicle_id', type=int)
         if new_vehicle_id:
-            new_vehicle = Vehicle.query.get_or_404(new_vehicle_id)
+            new_vehicle = db.get_or_404(Vehicle, new_vehicle_id)
             if new_vehicle in vehicles:
                 log.vehicle_id = new_vehicle_id
         date_str = request.form.get('date')
@@ -214,7 +255,9 @@ def edit(log_id):
         log.price_per_unit = parse_decimal(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else None
         log.discount_per_unit = parse_decimal(request.form.get('discount_per_unit')) if request.form.get('discount_per_unit') else None
         log.total_cost = parse_decimal(request.form.get('total_cost')) if request.form.get('total_cost') else None
+        log.sales_tax = parse_decimal(request.form.get('sales_tax')) if request.form.get('sales_tax') else None
         log.fuel_type = request.form.get('fuel_type') or None
+        log.fuel_distance = parse_decimal(request.form.get('fuel_distance')) if request.form.get('fuel_distance') else None
         log.is_full_tank = request.form.get('is_full_tank') == 'on'
         log.is_missed = request.form.get('is_missed') == 'on'
         log.station = request.form.get('station')
@@ -252,8 +295,14 @@ def edit(log_id):
             else:
                 existing_entry.price_per_unit = log.price_per_unit
                 existing_entry.date = log.date
+                # Keep the charted fuel type in step with the log (#268):
+                # changing a fill-up from petrol to diesel has to move the
+                # price row onto the diesel series too.
+                existing_entry.fuel_type = resolve_price_fuel_type(
+                    log.fuel_type, log.vehicle.fuel_type
+                )
                 if station_id and existing_entry.station_id != station_id:
-                    new_station = FuelStation.query.get(station_id)
+                    new_station = db.session.get(FuelStation, station_id)
                     if new_station:
                         # Reassigning the log moves the usage count too (#252):
                         # decrement the station we're leaving before bumping the
@@ -264,14 +313,14 @@ def edit(log_id):
                         existing_entry.station_id = station_id
                         new_station.increment_usage()
         elif station_id and log.price_per_unit:
-            new_station = FuelStation.query.get(station_id)
+            new_station = db.session.get(FuelStation, station_id)
             if new_station:
                 db.session.add(FuelPriceHistory(
                     station_id=station_id,
                     user_id=current_user.id,
                     fuel_log_id=log.id,
                     date=log.date,
-                    fuel_type=log.fuel_type or log.vehicle.fuel_type or 'petrol',
+                    fuel_type=resolve_price_fuel_type(log.fuel_type, log.vehicle.fuel_type),
                     price_per_unit=log.price_per_unit,
                 ))
                 new_station.increment_usage()
@@ -293,7 +342,12 @@ def edit(log_id):
 
         db.session.commit()
         flash(_('Fuel log updated successfully'), 'success')
-        return redirect(url_for('vehicles.view', vehicle_id=log.vehicle_id))
+
+        # Redirect back to vehicle page if we came from there (#283)
+        if request.form.get('return_to') == 'vehicle':
+            return redirect(url_for('vehicles.view', vehicle_id=log.vehicle_id))
+
+        return redirect(url_for('fuel.index'))
 
     # Get all fuel stations for dropdown (stations are system-wide)
     stations = FuelStation.query.order_by(
@@ -312,7 +366,7 @@ def edit(log_id):
 @bp.route('/<int:log_id>/delete', methods=['POST'])
 @login_required
 def delete(log_id):
-    log = FuelLog.query.get_or_404(log_id)
+    log = db.get_or_404(FuelLog, log_id)
     vehicles = current_user.get_all_vehicles()
 
     # Check access
@@ -352,8 +406,15 @@ def delete(log_id):
     db.session.delete(log)
     db.session.commit()
     flash(_('Fuel log deleted successfully'), 'success')
+    # Redirect back to vehicle page if we came from there (#283), using the
+    # same `return_to` token the new and edit routes take (#312).
+    return_to = request.form.get('return_to') or request.args.get('return_to')
+    if return_to == 'vehicle':
+        return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+
     # Return to wherever the delete came from (#298): deleting from the fuel
-    # log should stay there rather than bouncing to the vehicle page.
+    # log should stay there rather than bouncing to the vehicle page. `next`
+    # stays supported so existing links and bookmarks keep working.
     next_url = get_safe_redirect_url(request.form.get('next'), default=None)
     return redirect(next_url or url_for('vehicles.view', vehicle_id=vehicle_id))
 
@@ -361,14 +422,14 @@ def delete(log_id):
 @bp.route('/<int:log_id>/attachments/<int:attachment_id>/delete', methods=['POST'])
 @login_required
 def delete_attachment(log_id, attachment_id):
-    log = FuelLog.query.get_or_404(log_id)
+    log = db.get_or_404(FuelLog, log_id)
     vehicles = current_user.get_all_vehicles()
 
     if log.vehicle not in vehicles:
         flash(_('Access denied'), 'error')
         return redirect(url_for('fuel.index'))
 
-    attachment = Attachment.query.get_or_404(attachment_id)
+    attachment = db.get_or_404(Attachment, attachment_id)
     if attachment.fuel_log_id != log_id:
         flash(_('Access denied'), 'error')
         return redirect(url_for('fuel.edit', log_id=log_id))
@@ -403,7 +464,7 @@ def quick():
 
     if request.method == 'POST':
         vehicle_id = int(request.form.get('vehicle_id'))
-        vehicle = Vehicle.query.get_or_404(vehicle_id)
+        vehicle = db.get_or_404(Vehicle, vehicle_id)
 
         if vehicle not in vehicles:
             flash(_('Access denied'), 'error')
@@ -443,7 +504,7 @@ def quick():
         station_id = request.form.get('station_id', type=int)
         station = None
         if station_id:
-            station = FuelStation.query.get(station_id)
+            station = db.session.get(FuelStation, station_id)
         else:
             station_name = request.form.get('station')
             if station_name:
@@ -457,7 +518,7 @@ def quick():
                 user_id=current_user.id,
                 fuel_log_id=log.id,
                 date=log.date,
-                fuel_type=log.fuel_type or vehicle.fuel_type or 'petrol',
+                fuel_type=resolve_price_fuel_type(log.fuel_type, vehicle.fuel_type),
                 price_per_unit=log.price_per_unit,
             ))
             station.increment_usage()
@@ -480,7 +541,7 @@ def quick():
     # Get last odometer for selected vehicle
     last_odometer = None
     if selected_vehicle_id:
-        vehicle = Vehicle.query.get(selected_vehicle_id)
+        vehicle = db.session.get(Vehicle, selected_vehicle_id)
         if vehicle:
             last_odometer = vehicle.get_last_odometer()
 

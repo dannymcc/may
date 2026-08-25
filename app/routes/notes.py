@@ -33,7 +33,7 @@ def new():
 
     if request.method == 'POST':
         vehicle_id = int(request.form.get('vehicle_id'))
-        vehicle = Vehicle.query.get_or_404(vehicle_id)
+        vehicle = db.get_or_404(Vehicle, vehicle_id)
 
         # Check access
         if vehicle not in vehicles:
@@ -63,7 +63,12 @@ def new():
         db.session.add(note)
         db.session.commit()
         flash(_('Note added successfully'), 'success')
-        return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+
+        # Redirect back to vehicle page if we came from there (#283)
+        if request.form.get('return_to') == 'vehicle':
+            return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+
+        return redirect(url_for('notes.index'))
 
     selected_vehicle_id = request.args.get('vehicle_id', type=int) or current_user.default_vehicle_id
 
@@ -74,7 +79,7 @@ def new():
 @bp.route('/<int:note_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit(note_id):
-    note = Note.query.get_or_404(note_id)
+    note = db.get_or_404(Note, note_id)
     vehicles = current_user.get_all_vehicles()
 
     # Check access
@@ -101,7 +106,12 @@ def edit(note_id):
 
         db.session.commit()
         flash(_('Note updated successfully'), 'success')
-        return redirect(url_for('vehicles.view', vehicle_id=note.vehicle_id))
+
+        # Redirect back to vehicle page if we came from there (#283)
+        if request.form.get('return_to') == 'vehicle':
+            return redirect(url_for('vehicles.view', vehicle_id=note.vehicle_id))
+
+        return redirect(url_for('notes.index'))
 
     return render_template('notes/form.html', note=note, vehicles=vehicles,
                            selected_vehicle_id=note.vehicle_id)
@@ -110,7 +120,7 @@ def edit(note_id):
 @bp.route('/<int:note_id>/delete', methods=['POST'])
 @login_required
 def delete(note_id):
-    note = Note.query.get_or_404(note_id)
+    note = db.get_or_404(Note, note_id)
     vehicles = current_user.get_all_vehicles()
 
     # Check access
@@ -122,4 +132,9 @@ def delete(note_id):
     db.session.delete(note)
     db.session.commit()
     flash(_('Note deleted successfully'), 'success')
-    return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+
+    # Redirect back to vehicle page if we came from there (#283)
+    if request.args.get('return_to') == 'vehicle':
+        return redirect(url_for('vehicles.view', vehicle_id=vehicle_id))
+
+    return redirect(url_for('notes.index'))

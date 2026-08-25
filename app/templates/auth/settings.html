@@ -115,10 +115,10 @@
                                     <label for="date_format" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Date Format') }}</label>
                                     <select name="date_format" id="date_format"
                                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                                        <option value="DD/MM/YYYY" {% if current_user.date_format == 'DD/MM/YYYY' %}selected{% endif %}>DD/MM/YYYY (15/01/2024)</option>
-                                        <option value="MM/DD/YYYY" {% if current_user.date_format == 'MM/DD/YYYY' %}selected{% endif %}>MM/DD/YYYY (01/15/2024)</option>
-                                        <option value="YYYY-MM-DD" {% if current_user.date_format == 'YYYY-MM-DD' %}selected{% endif %}>YYYY-MM-DD (2024-01-15)</option>
-                                        <option value="DD.MM.YYYY" {% if current_user.date_format == 'DD.MM.YYYY' %}selected{% endif %}>DD.MM.YYYY (15.01.2024)</option>
+                                        <option value="DD/MM/YYYY" {% if current_user.date_format == 'DD/MM/YYYY' %}selected{% endif %}>{{ _('DD/MM/YYYY') }} (15/01/2024)</option>
+                                        <option value="MM/DD/YYYY" {% if current_user.date_format == 'MM/DD/YYYY' %}selected{% endif %}>{{ _('MM/DD/YYYY') }} (01/15/2024)</option>
+                                        <option value="YYYY-MM-DD" {% if current_user.date_format == 'YYYY-MM-DD' %}selected{% endif %}>{{ _('YYYY-MM-DD') }} (2024-01-15)</option>
+                                        <option value="DD.MM.YYYY" {% if current_user.date_format == 'DD.MM.YYYY' %}selected{% endif %}>{{ _('DD.MM.YYYY') }} (15.01.2024)</option>
                                     </select>
                                 </div>
 
@@ -126,8 +126,8 @@
                                     <label for="distance_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Distance') }}</label>
                                     <select name="distance_unit" id="distance_unit"
                                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                                        <option value="km" {% if current_user.distance_unit == 'km' %}selected{% endif %}>Kilometers (km)</option>
-                                        <option value="mi" {% if current_user.distance_unit == 'mi' %}selected{% endif %}>Miles (mi)</option>
+                                        <option value="km" {% if current_user.distance_unit == 'km' %}selected{% endif %}>{{ _('Kilometres (km)') }}</option>
+                                        <option value="mi" {% if current_user.distance_unit == 'mi' %}selected{% endif %}>{{ _('Miles (mi)') }}</option>
                                     </select>
                                 </div>
 
@@ -135,9 +135,9 @@
                                     <label for="volume_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Volume') }}</label>
                                     <select name="volume_unit" id="volume_unit"
                                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                                        <option value="L" {% if current_user.volume_unit == 'L' %}selected{% endif %}>Liters (L)</option>
-                                        <option value="gal" {% if current_user.volume_unit == 'gal' %}selected{% endif %}>UK Gallons (gal)</option>
-                                        <option value="us_gal" {% if current_user.volume_unit == 'us_gal' %}selected{% endif %}>US Gallons (gal)</option>
+                                        <option value="L" {% if current_user.volume_unit == 'L' %}selected{% endif %}>{{ _('Liters (L)') }}</option>
+                                        <option value="gal" {% if current_user.volume_unit == 'gal' %}selected{% endif %}>{{ _('UK Gallons (gal)') }}</option>
+                                        <option value="us_gal" {% if current_user.volume_unit == 'us_gal' %}selected{% endif %}>{{ _('US Gallons (gal)') }}</option>
                                     </select>
                                 </div>
 
@@ -145,10 +145,10 @@
                                     <label for="consumption_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Fuel Consumption') }}</label>
                                     <select name="consumption_unit" id="consumption_unit"
                                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                                        <option value="L/100km" {% if current_user.consumption_unit == 'L/100km' %}selected{% endif %}>L/100km</option>
-                                        <option value="mpg" {% if current_user.consumption_unit == 'mpg' %}selected{% endif %}>MPG (UK)</option>
-                                        <option value="mpg_us" {% if current_user.consumption_unit == 'mpg_us' %}selected{% endif %}>MPG (US)</option>
-                                        <option value="km/L" {% if current_user.consumption_unit == 'km/L' %}selected{% endif %}>km/L</option>
+                                        <option value="L/100km" {% if current_user.consumption_unit == 'L/100km' %}selected{% endif %}>{{ _('L/100km') }}</option>
+                                        <option value="mpg" {% if current_user.consumption_unit == 'mpg' %}selected{% endif %}>{{ _('MPG (UK)') }}</option>
+                                        <option value="mpg_us" {% if current_user.consumption_unit == 'mpg_us' %}selected{% endif %}>{{ _('MPG (US)') }}</option>
+                                        <option value="km/L" {% if current_user.consumption_unit == 'km/L' %}selected{% endif %}>{{ _('km/L') }}</option>
                                     </select>
                                 </div>
 
@@ -229,6 +229,19 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Username') }}</label>
                                     <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ current_user.username }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Role') }}</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ current_user.role_label }}</p>
+                                    {% if not current_user.is_admin and not current_user.has_full_write_access %}
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        {% if current_user.is_read_only %}
+                                        {{ _('Your account can see the data but cannot change it. Ask an administrator if you need more access.') }}
+                                        {% else %}
+                                        {{ _('Your account can record fuel fill-ups and charging sessions. Ask an administrator if you need more access.') }}
+                                        {% endif %}
+                                    </p>
+                                    {% endif %}
                                 </div>
                                 <div>
                                     <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Email') }}</label>
@@ -523,6 +536,11 @@
                                         <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Mileage Allowance') }}</span>
                                     </label>
                                     <label class="flex items-center">
+                                        <input type="checkbox" name="show_menu_tires" {% if current_user.show_menu_tires is not defined or current_user.show_menu_tires %}checked{% endif %}
+                                               class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                                        <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Tires') }}</span>
+                                    </label>
+                                    <label class="flex items-center">
                                         <input type="checkbox" name="show_menu_notes" {% if current_user.show_menu_notes is not defined or current_user.show_menu_notes %}checked{% endif %}
                                                class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
                                         <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Notes') }}</span>
@@ -548,11 +566,22 @@
                     <div class="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
                         <div class="p-6">
                             <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Import Data') }}</h2>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Import your data from other fuel tracking applications') }}</p>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Restore a May backup, or import your data from other fuel tracking applications') }}</p>
                         </div>
 
                         <div class="p-6 space-y-4">
                             <div class="flex items-center justify-between py-3">
+                                <div>
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ _('Restore May Backup') }}</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('Restore a JSON export (.json) or full backup (.zip) from another May instance') }}</p>
+                                </div>
+                                <a href="{{ url_for('api.backup_restore_upload') }}"
+                                   class="w-24 text-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 dark:bg-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600">
+                                    {{ _('Restore') }}
+                                </a>
+                            </div>
+
+                            <div class="flex items-center justify-between py-3 border-t border-gray-200 dark:border-gray-700">
                                 <div>
                                     <h3 class="text-sm font-medium text-gray-900 dark:text-white">Hammond</h3>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">Import from Hammond SQLite database (.db file)</p>

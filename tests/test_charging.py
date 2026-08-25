@@ -118,6 +118,65 @@ class TestChargingIndex:
         resp = auth_client.get('/charging/')
         assert resp.status_code == 200
 
+    def test_index_orders_same_day_sessions_by_odometer(self, auth_client, test_user, ev_vehicle):
+        """Charging sessions logged on the same date should be listed by
+        odometer (most recently reached reading first), not by insertion
+        order — same issue as #325 for trips (#329)."""
+        earlier = ChargingSession(
+            vehicle_id=ev_vehicle.id,
+            user_id=test_user.id,
+            date=date(2026, 8, 22),
+            odometer=10000.0,
+            kwh_added=20.0,
+            location='Morning charge',
+        )
+        db.session.add(earlier)
+        db.session.commit()
+
+        later = ChargingSession(
+            vehicle_id=ev_vehicle.id,
+            user_id=test_user.id,
+            date=date(2026, 8, 22),
+            odometer=10200.0,
+            kwh_added=15.0,
+            location='Afternoon charge',
+        )
+        db.session.add(later)
+        db.session.commit()
+
+        resp = auth_client.get('/charging/')
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        # The session with the higher (later) odometer reading should be
+        # listed before the earlier same-day session.
+        assert html.index('Afternoon charge') < html.index('Morning charge')
+
+    def test_index_still_orders_by_date_first(self, auth_client, test_user, ev_vehicle):
+        """The odometer tie-break must not displace the date ordering (#329)."""
+        older = ChargingSession(
+            vehicle_id=ev_vehicle.id,
+            user_id=test_user.id,
+            date=date(2026, 8, 1),
+            odometer=20000.0,
+            kwh_added=20.0,
+            location='Older high-odometer charge',
+        )
+        newer = ChargingSession(
+            vehicle_id=ev_vehicle.id,
+            user_id=test_user.id,
+            date=date(2026, 8, 22),
+            odometer=10000.0,
+            kwh_added=15.0,
+            location='Newer low-odometer charge',
+        )
+        db.session.add_all([older, newer])
+        db.session.commit()
+
+        resp = auth_client.get('/charging/')
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert html.index('Newer low-odometer charge') < html.index('Older high-odometer charge')
+
 
 class TestChargingNew:
     def test_new_requires_auth(self, client):
@@ -184,4 +243,4 @@ class TestChargingDelete:
         session_id = sample_session.id
         resp = auth_client.post(f'/charging/{session_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert ChargingSession.query.get(session_id) is None
+        assert db.session.get(ChargingSession, session_id) is None

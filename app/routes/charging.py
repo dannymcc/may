@@ -29,7 +29,7 @@ def index():
     if vehicle_filter:
         query = query.filter(ChargingSession.vehicle_id == vehicle_filter)
 
-    sessions = query.order_by(ChargingSession.date.desc()).all()
+    sessions = query.order_by(ChargingSession.date.desc(), ChargingSession.odometer.desc()).all()
 
     # Calculate totals
     total_kwh = sum(s.kwh_added or 0 for s in sessions)
@@ -57,7 +57,7 @@ def new():
 
     if request.method == 'POST':
         vehicle_id = int(request.form.get('vehicle_id'))
-        vehicle = Vehicle.query.get_or_404(vehicle_id)
+        vehicle = db.get_or_404(Vehicle, vehicle_id)
 
         if vehicle not in vehicles:
             flash(_('Access denied'), 'error')
@@ -115,7 +115,7 @@ def new():
 @login_required
 def edit(session_id):
     """Edit an existing charging session"""
-    session = ChargingSession.query.get_or_404(session_id)
+    session = db.get_or_404(ChargingSession, session_id)
     vehicles = current_user.get_all_vehicles()
     ev_vehicles = [v for v in vehicles if v.is_electric()]
 
@@ -166,7 +166,7 @@ def edit(session_id):
 @login_required
 def delete(session_id):
     """Delete a charging session"""
-    session = ChargingSession.query.get_or_404(session_id)
+    session = db.get_or_404(ChargingSession, session_id)
     vehicles = current_user.get_all_vehicles()
 
     if session.vehicle not in vehicles:

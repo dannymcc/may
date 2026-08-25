@@ -7,7 +7,7 @@
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Trips') }}</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Track your trips for mileage and tax deductions') }}</p>
     </div>
-    <div class="flex gap-2">
+    <div class="flex flex-wrap gap-2">
         <a href="{{ url_for('trips.templates_index') }}"
            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -22,6 +22,7 @@
             </svg>
             {{ _('Report') }}
         </a>
+        {% if can_write('trips') %}
         <a href="{{ url_for('trips.new') }}"
            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -29,6 +30,7 @@
             </svg>
             {{ _('Log Trip') }}
         </a>
+        {% endif %}
     </div>
 </div>
 
@@ -36,11 +38,11 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Total Distance') }}</dt>
-        <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{{ "%.1f"|format(total_distance) }} {{ current_user.distance_unit }}</dd>
+        <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{{ "%.1f"|format(total_distance) }} {% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('mixed units') }}</span>{% endif %}</dd>
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Business Distance') }}</dt>
-        <dd class="mt-1 text-2xl font-semibold text-green-600 dark:text-green-400">{{ "%.1f"|format(business_distance) }} {{ current_user.distance_unit }}</dd>
+        <dd class="mt-1 text-2xl font-semibold text-green-600 dark:text-green-400">{{ "%.1f"|format(business_distance) }} {% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('mixed units') }}</span>{% endif %}</dd>
     </div>
 </div>
 
@@ -117,16 +119,24 @@
                 </div>
                 <div class="ml-4 flex items-center gap-4">
                     <div class="text-right">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ "%.1f"|format(trip.distance) }} {{ current_user.distance_unit }}</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ "%.1f"|format(trip.distance) }} {{ trip.vehicle.get_reading_unit() }}</p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ "%.0f"|format(trip.start_odometer) }} &rarr; {{ "%.0f"|format(trip.end_odometer or 0) }}</p>
+                        {% if trip.fuel_used is not none %}
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ _('Fuel used') }}: {{ "%.1f"|format(trip.fuel_used) }} {{ current_user.volume_unit }}</p>
+                        {% elif trip.start_fuel_level is not none or trip.end_fuel_level is not none %}
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ _('Fuel') }}: {{ "%.0f%%"|format(trip.start_fuel_level) if trip.start_fuel_level is not none else '?' }} &rarr; {{ "%.0f%%"|format(trip.end_fuel_level) if trip.end_fuel_level is not none else '?' }}</p>
+                        {% endif %}
                     </div>
                     <div class="flex items-center gap-2">
+                        {% if can_write('trips') %}
                         <a href="{{ url_for('trips.edit', trip_id=trip.id) }}"
                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
                         </a>
+                        {% endif %}
+                        {% if can_write('trips') %}
                         <form method="POST" action="{{ url_for('trips.delete', trip_id=trip.id) }}" class="inline"
                               onsubmit="return confirm('Delete this trip?');">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -136,6 +146,7 @@
                                 </svg>
                             </button>
                         </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -151,6 +162,7 @@
     <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ _('No trips logged') }}</h3>
     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Start logging your trips for mileage tracking and tax deductions.') }}</p>
     <div class="mt-6">
+        {% if can_write('trips') %}
         <a href="{{ url_for('trips.new') }}"
            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,6 +170,7 @@
             </svg>
             {{ _('Log Your First Trip') }}
         </a>
+        {% endif %}
     </div>
 </div>
 {% endif %}

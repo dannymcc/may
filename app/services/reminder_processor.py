@@ -31,7 +31,7 @@ def process_due_reminders():
         stats['checked'] += 1
 
         # Get the user who owns this reminder
-        user = User.query.get(reminder.user_id)
+        user = db.session.get(User, reminder.user_id)
         if not user:
             stats['skipped'] += 1
             continue

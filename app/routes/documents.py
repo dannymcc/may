@@ -56,7 +56,7 @@ def new():
 
     if request.method == 'POST':
         vehicle_id = request.form.get('vehicle_id')
-        vehicle = Vehicle.query.get(vehicle_id)
+        vehicle = db.session.get(Vehicle, vehicle_id)
 
         if not vehicle or vehicle not in vehicles:
             flash(_('Invalid vehicle'), 'error')
@@ -123,7 +123,7 @@ def new():
 @login_required
 def view(document_id):
     """View document details"""
-    document = Document.query.get_or_404(document_id)
+    document = db.get_or_404(Document, document_id)
     vehicles = current_user.get_all_vehicles()
 
     if document.vehicle not in vehicles:
@@ -139,7 +139,7 @@ def view(document_id):
 @login_required
 def download(document_id):
     """Download a document"""
-    document = Document.query.get_or_404(document_id)
+    document = db.get_or_404(Document, document_id)
     vehicles = current_user.get_all_vehicles()
 
     if document.vehicle not in vehicles:
@@ -158,7 +158,7 @@ def download(document_id):
 @login_required
 def edit(document_id):
     """Edit document metadata"""
-    document = Document.query.get_or_404(document_id)
+    document = db.get_or_404(Document, document_id)
     vehicles = current_user.get_all_vehicles()
 
     if document.vehicle not in vehicles:
@@ -198,7 +198,7 @@ def edit(document_id):
 @login_required
 def delete(document_id):
     """Delete a document"""
-    document = Document.query.get_or_404(document_id)
+    document = db.get_or_404(Document, document_id)
     vehicles = current_user.get_all_vehicles()
 
     if document.vehicle not in vehicles:

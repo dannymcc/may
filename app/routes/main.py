@@ -3,7 +3,8 @@ from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from app import db
-from app.models import Vehicle, FuelLog, Expense, ChargingSession, FuelPriceHistory, FuelStation, MileageAllowance, EXPENSE_CATEGORIES
+from app.models import Vehicle, FuelLog, Expense, ChargingSession, FuelPriceHistory, FuelStation, MileageAllowance, Attachment, EXPENSE_CATEGORIES
+from app.utils import shared_reading_unit
 
 bp = Blueprint('main', __name__)
 
@@ -144,7 +145,15 @@ def dashboard():
             )
         ).order_by(FuelPriceHistory.price_per_unit.asc()).limit(3).all()
 
+    # A fleet total is only honest while every vehicle meters the same way.
+    # One hours-metered machine among the cars and the sum mixes engine hours
+    # with distance, so the template says so rather than labelling it with a
+    # distance unit (#324).
+    total_distance_unit = (shared_reading_unit(vehicles, current_user.distance_unit)
+                           if vehicles else current_user.distance_unit)
+
     return render_template('dashboard.html',
+                           total_distance_unit=total_distance_unit,
                            vehicles=vehicles,
                            total_fuel_cost=total_fuel_cost,
                            total_expense_cost=total_expense_cost,
@@ -213,7 +222,7 @@ def get_monthly_spending(vehicle_ids):
 def timeline(vehicle_id):
     """Service timeline showing maintenance history and expenses"""
     vehicles = current_user.get_all_vehicles()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in vehicles:
         return redirect(url_for('main.dashboard'))
@@ -222,6 +231,22 @@ def timeline(vehicle_id):
     fuel_logs = vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all()
     expenses = vehicle.expenses.order_by(Expense.date.desc()).all()
     charging_sessions = vehicle.charging_sessions.order_by(ChargingSession.date.desc()).all()
+
+    # Attachments for this vehicle's fuel logs and expenses, fetched in two
+    # grouped queries so the timeline doesn't issue a query per event (#284).
+    # Joining through the parent keeps the filter on vehicle_id rather than a
+    # long IN list of entry ids.
+    fuel_attachments = {}
+    for attachment in Attachment.query.join(
+            FuelLog, Attachment.fuel_log_id == FuelLog.id).filter(
+            FuelLog.vehicle_id == vehicle_id).all():
+        fuel_attachments.setdefault(attachment.fuel_log_id, []).append(attachment)
+
+    expense_attachments = {}
+    for attachment in Attachment.query.join(
+            Expense, Attachment.expense_id == Expense.id).filter(
+            Expense.vehicle_id == vehicle_id).all():
+        expense_attachments.setdefault(attachment.expense_id, []).append(attachment)
 
     # Combine into timeline events
     timeline_events = []
@@ -233,7 +258,9 @@ def timeline(vehicle_id):
             'title': f"Fuel: {log.volume:.1f} L" if log.volume else "Fuel Log",
             'description': log.station or '',
             'cost': log.total_cost or 0,
-            'odometer': log.odometer
+            'odometer': log.odometer,
+            'notes': log.notes,
+            'attachments': fuel_attachments.get(log.id, [])
         })
 
     for expense in expenses:
@@ -243,7 +270,9 @@ def timeline(vehicle_id):
             'title': expense.description,
             'description': str(dict(EXPENSE_CATEGORIES).get(expense.category, expense.category.capitalize())),
             'cost': expense.cost or 0,
-            'odometer': expense.odometer
+            'odometer': expense.odometer,
+            'notes': expense.notes,
+            'attachments': expense_attachments.get(expense.id, [])
         })
 
     for session in charging_sessions:
@@ -253,7 +282,9 @@ def timeline(vehicle_id):
             'title': f"Charging: {session.kwh_added:.1f} kWh" if session.kwh_added else "Charging Session",
             'description': session.location or '',
             'cost': session.total_cost or 0,
-            'odometer': session.odometer
+            'odometer': session.odometer,
+            'notes': session.notes,
+            'attachments': []
         })
 
     # Sort by date descending

@@ -75,6 +75,39 @@ class TestVehicleStats:
         assert 'total_fuel_cost' in data
         assert 'total_expense_cost' in data
 
+    def test_vehicle_stats_labels_each_consumption_point(
+            self, auth_client, test_user, app):
+        """#319 — the trend chart needs the fuel type of every point so it can
+        plot diesel and AdBlue as separate, labelled series."""
+        from datetime import date
+        from app.models import FuelLog
+
+        vehicle = Vehicle(
+            owner_id=test_user.id, name='Diesel Van', vehicle_type='car',
+            fuel_type='diesel', secondary_fuel_type='adblue', odometer_unit='km',
+        )
+        _db_ext.session.add(vehicle)
+        _db_ext.session.commit()
+        for odometer, volume, fuel_type in ((10000, 50, 'diesel'),
+                                            (10100, 10, 'adblue'),
+                                            (10500, 45, 'diesel'),
+                                            (10600, 5, 'adblue')):
+            _db_ext.session.add(FuelLog(
+                vehicle_id=vehicle.id, user_id=test_user.id, date=date(2024, 1, 1),
+                odometer=odometer, volume=volume, fuel_type=fuel_type,
+                is_full_tank=True,
+            ))
+        _db_ext.session.commit()
+
+        resp = auth_client.get(f'/api/vehicles/{vehicle.id}/stats')
+        assert resp.status_code == 200
+        points = resp.get_json()['consumption']
+        by_type = {p['fuel_type']: p for p in points}
+        assert set(by_type) == {'diesel', 'adblue'}
+        assert by_type['diesel']['consumption'] == 9.0
+        assert by_type['adblue']['consumption'] == 1.0
+        assert by_type['adblue']['fuel_type_label'] == 'AdBlue/DEF'
+
     def test_get_vehicle_stats_unauthenticated(self, client, sample_vehicle):
         resp = client.get(f'/api/vehicles/{sample_vehicle.id}/stats')
         assert resp.status_code in (302, 401)

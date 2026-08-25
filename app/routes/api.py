@@ -18,10 +18,13 @@ from app.models import (
     User, Vehicle, VehicleSpec, FuelLog, Expense, EXPENSE_CATEGORIES,
     Reminder, MaintenanceSchedule, RecurringExpense, FuelStation,
     Document, Trip, ChargingSession, VehiclePart, FuelPriceHistory, Attachment,
-    TRIP_PURPOSES, CHARGER_TYPES
+    TRIP_PURPOSES, CHARGER_TYPES, fuel_type_label
 )
 from app.services.tessie import TessieService
-from app.utils import parse_decimal
+from app.services.backup_restore import (
+    BackupError, SECTION_LABELS, describe_backup, read_backup, restore_backup
+)
+from app.utils import parse_decimal, parse_fuel_level, utcnow
 from flask_babel import gettext as _
 from config import APP_VERSION
 
@@ -269,7 +272,7 @@ def uploaded_file(filename):
 @login_required
 def vehicle_stats(vehicle_id):
     """Get statistics for a specific vehicle (for charts)"""
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in current_user.get_all_vehicles():
         return jsonify({'error': 'Access denied'}), 403
@@ -282,7 +285,12 @@ def vehicle_stats(vehicle_id):
             consumption_data.append({
                 'date': log.date.isoformat(),
                 'consumption': round(consumption, 2),
-                'odometer': log.odometer
+                'odometer': log.odometer,
+                # Each fuel gets its own series in the trend chart; mixing a
+                # diesel's AdBlue refills into its diesel line would be
+                # nonsense (#319).
+                'fuel_type': log.effective_fuel_type,
+                'fuel_type_label': str(fuel_type_label(log.effective_fuel_type)),
             })
 
     expenses = vehicle.expenses.all()
@@ -317,7 +325,7 @@ def vehicle_stats(vehicle_id):
 @login_required
 def last_odometer(vehicle_id):
     """Get the last recorded odometer reading for a vehicle"""
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in current_user.get_all_vehicles():
         return jsonify({'error': 'Access denied'}), 403
@@ -354,7 +362,7 @@ def api_get_vehicle(vehicle_id):
     Returns detailed information about a single vehicle.
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
@@ -414,7 +422,7 @@ def api_update_vehicle(vehicle_id):
     All fields are optional. Only provided fields will be updated.
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle.owner_id != user.id:
         return jsonify({'error': 'Only the owner can update this vehicle', 'code': 'forbidden'}), 403
@@ -459,7 +467,7 @@ def api_delete_vehicle(vehicle_id):
     This will also delete all associated fuel logs and expenses.
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle.owner_id != user.id:
         return jsonify({'error': 'Only the owner can delete this vehicle', 'code': 'forbidden'}), 403
@@ -486,7 +494,7 @@ def api_list_fuel_logs(vehicle_id):
     - sort: Sort order, 'asc' or 'desc' by date (default: desc)
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
@@ -520,10 +528,11 @@ def api_create_fuel_log(vehicle_id):
     Create a fuel log
 
     Required fields: date, odometer
-    Optional fields: volume, price_per_unit, total_cost, is_full_tank, is_missed, station, notes
+    Optional fields: volume, price_per_unit, total_cost, sales_tax, fuel_type,
+    fuel_distance, is_full_tank, is_missed, station, notes
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
@@ -551,6 +560,9 @@ def api_create_fuel_log(vehicle_id):
         volume=parse_decimal(data['volume']) if data.get('volume') else None,
         price_per_unit=parse_decimal(data['price_per_unit']) if data.get('price_per_unit') else None,
         total_cost=parse_decimal(data['total_cost']) if data.get('total_cost') else None,
+        sales_tax=parse_decimal(data['sales_tax']) if data.get('sales_tax') else None,
+        fuel_type=data.get('fuel_type') or None,
+        fuel_distance=parse_decimal(data['fuel_distance']) if data.get('fuel_distance') else None,
         is_full_tank=data.get('is_full_tank', True),
         is_missed=data.get('is_missed', False),
         station=data.get('station'),
@@ -572,7 +584,7 @@ def api_create_fuel_log(vehicle_id):
 def api_get_fuel_log(log_id):
     """Get a specific fuel log"""
     user = get_api_user()
-    log = FuelLog.query.get_or_404(log_id)
+    log = db.get_or_404(FuelLog, log_id)
 
     if log.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Fuel log not found or access denied', 'code': 'not_found'}), 404
@@ -585,7 +597,7 @@ def api_get_fuel_log(log_id):
 def api_update_fuel_log(log_id):
     """Update a fuel log"""
     user = get_api_user()
-    log = FuelLog.query.get_or_404(log_id)
+    log = db.get_or_404(FuelLog, log_id)
 
     if log.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Fuel log not found or access denied', 'code': 'not_found'}), 404
@@ -608,6 +620,12 @@ def api_update_fuel_log(log_id):
         log.price_per_unit = parse_decimal(data['price_per_unit']) if data['price_per_unit'] else None
     if 'total_cost' in data:
         log.total_cost = parse_decimal(data['total_cost']) if data['total_cost'] else None
+    if 'sales_tax' in data:
+        log.sales_tax = parse_decimal(data['sales_tax']) if data['sales_tax'] else None
+    if 'fuel_type' in data:
+        log.fuel_type = data['fuel_type'] or None
+    if 'fuel_distance' in data:
+        log.fuel_distance = parse_decimal(data['fuel_distance']) if data['fuel_distance'] else None
     if 'is_full_tank' in data:
         log.is_full_tank = data['is_full_tank']
     if 'is_missed' in data:
@@ -626,7 +644,7 @@ def api_update_fuel_log(log_id):
 def api_delete_fuel_log(log_id):
     """Delete a fuel log"""
     user = get_api_user()
-    log = FuelLog.query.get_or_404(log_id)
+    log = db.get_or_404(FuelLog, log_id)
 
     if log.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Fuel log not found or access denied', 'code': 'not_found'}), 404
@@ -654,7 +672,7 @@ def api_list_expenses(vehicle_id):
     - sort: Sort order, 'asc' or 'desc' by date (default: desc)
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
@@ -695,7 +713,7 @@ def api_create_expense(vehicle_id):
     Optional fields: odometer, vendor, notes
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
@@ -744,7 +762,7 @@ def api_create_expense(vehicle_id):
 def api_get_expense(expense_id):
     """Get a specific expense"""
     user = get_api_user()
-    expense = Expense.query.get_or_404(expense_id)
+    expense = db.get_or_404(Expense, expense_id)
 
     if expense.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Expense not found or access denied', 'code': 'not_found'}), 404
@@ -757,7 +775,7 @@ def api_get_expense(expense_id):
 def api_update_expense(expense_id):
     """Update an expense"""
     user = get_api_user()
-    expense = Expense.query.get_or_404(expense_id)
+    expense = db.get_or_404(Expense, expense_id)
 
     if expense.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Expense not found or access denied', 'code': 'not_found'}), 404
@@ -801,7 +819,7 @@ def api_update_expense(expense_id):
 def api_delete_expense(expense_id):
     """Delete an expense"""
     user = get_api_user()
-    expense = Expense.query.get_or_404(expense_id)
+    expense = db.get_or_404(Expense, expense_id)
 
     if expense.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Expense not found or access denied', 'code': 'not_found'}), 404
@@ -845,7 +863,7 @@ def api_list_trips(vehicle_id):
     - sort: Sort order, 'asc' or 'desc' by date (default: desc)
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
@@ -883,10 +901,11 @@ def api_create_trip(vehicle_id):
     Create a trip
 
     Required fields: date, start_odometer, purpose
-    Optional fields: end_odometer, description, start_location, end_location, notes
+    Optional fields: end_odometer, start_fuel_level, end_fuel_level, description,
+    start_location, end_location, notes
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
@@ -918,12 +937,23 @@ def api_create_trip(vehicle_id):
     except ValueError:
         return jsonify({'error': 'Odometer values must be numeric', 'code': 'validation_error'}), 400
 
+    try:
+        start_fuel_level = parse_fuel_level(data.get('start_fuel_level'))
+        end_fuel_level = parse_fuel_level(data.get('end_fuel_level'))
+    except (ValueError, TypeError):
+        return jsonify({
+            'error': 'Fuel levels must be a percentage between 0 and 100',
+            'code': 'validation_error'
+        }), 400
+
     trip = Trip(
         vehicle_id=vehicle_id,
         user_id=user.id,
         date=date,
         start_odometer=start_odometer,
         end_odometer=end_odometer,
+        start_fuel_level=start_fuel_level,
+        end_fuel_level=end_fuel_level,
         purpose=data['purpose'],
         description=data.get('description'),
         start_location=data.get('start_location'),
@@ -942,7 +972,7 @@ def api_create_trip(vehicle_id):
 def api_get_trip(trip_id):
     """Get a specific trip"""
     user = get_api_user()
-    trip = Trip.query.get_or_404(trip_id)
+    trip = db.get_or_404(Trip, trip_id)
 
     if trip.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Trip not found or access denied', 'code': 'not_found'}), 404
@@ -955,7 +985,7 @@ def api_get_trip(trip_id):
 def api_update_trip(trip_id):
     """Update a trip"""
     user = get_api_user()
-    trip = Trip.query.get_or_404(trip_id)
+    trip = db.get_or_404(Trip, trip_id)
 
     if trip.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Trip not found or access denied', 'code': 'not_found'}), 404
@@ -990,6 +1020,18 @@ def api_update_trip(trip_id):
     except ValueError:
         return jsonify({'error': 'Odometer values must be numeric', 'code': 'validation_error'}), 400
 
+    try:
+        if 'start_fuel_level' in data:
+            trip.start_fuel_level = parse_fuel_level(data['start_fuel_level'])
+        if 'end_fuel_level' in data:
+            trip.end_fuel_level = parse_fuel_level(data['end_fuel_level'])
+    except (ValueError, TypeError):
+        db.session.rollback()
+        return jsonify({
+            'error': 'Fuel levels must be a percentage between 0 and 100',
+            'code': 'validation_error'
+        }), 400
+
     if 'description' in data:
         trip.description = data['description']
     if 'start_location' in data:
@@ -1008,7 +1050,7 @@ def api_update_trip(trip_id):
 def api_delete_trip(trip_id):
     """Delete a trip"""
     user = get_api_user()
-    trip = Trip.query.get_or_404(trip_id)
+    trip = db.get_or_404(Trip, trip_id)
 
     if trip.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Trip not found or access denied', 'code': 'not_found'}), 404
@@ -1036,7 +1078,7 @@ def api_list_charging_sessions(vehicle_id):
     - sort: Sort order, 'asc' or 'desc' by date (default: desc)
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
@@ -1078,7 +1120,7 @@ def api_create_charging_session(vehicle_id):
     cost_per_kwh, total_cost, charger_type, location, network, notes
     """
     user = get_api_user()
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Vehicle not found or access denied', 'code': 'not_found'}), 404
@@ -1145,7 +1187,7 @@ def api_create_charging_session(vehicle_id):
 def api_get_charging_session(session_id):
     """Get a specific charging session"""
     user = get_api_user()
-    charge = ChargingSession.query.get_or_404(session_id)
+    charge = db.get_or_404(ChargingSession, session_id)
 
     if charge.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Charging session not found or access denied', 'code': 'not_found'}), 404
@@ -1158,7 +1200,7 @@ def api_get_charging_session(session_id):
 def api_update_charging_session(session_id):
     """Update a charging session"""
     user = get_api_user()
-    charge = ChargingSession.query.get_or_404(session_id)
+    charge = db.get_or_404(ChargingSession, session_id)
 
     if charge.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Charging session not found or access denied', 'code': 'not_found'}), 404
@@ -1216,7 +1258,7 @@ def api_update_charging_session(session_id):
 def api_delete_charging_session(session_id):
     """Delete a charging session"""
     user = get_api_user()
-    charge = ChargingSession.query.get_or_404(session_id)
+    charge = db.get_or_404(ChargingSession, session_id)
 
     if charge.vehicle not in user.get_all_vehicles():
         return jsonify({'error': 'Charging session not found or access denied', 'code': 'not_found'}), 404
@@ -1329,7 +1371,7 @@ def refresh_vehicle_dvla(vehicle_id):
     """
     from app.services.dvla import DVLAService
 
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in current_user.get_all_vehicles():
         return jsonify({'success': False, 'error': 'Access denied'}), 403
@@ -1349,7 +1391,7 @@ def refresh_vehicle_dvla(vehicle_id):
         vehicle.tax_status = result.get('tax_status')
         vehicle.tax_due = result.get('tax_due_date')
         vehicle.dvla_colour = result.get('colour')
-        vehicle.dvla_last_updated = datetime.utcnow()
+        vehicle.dvla_last_updated = utcnow()
 
         # Optionally update make if empty
         if not vehicle.make and result.get('make'):
@@ -1427,7 +1469,7 @@ def refresh_vehicle_tessie(vehicle_id):
     """
     from app.services.tessie import TessieService
 
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     if vehicle not in current_user.get_all_vehicles():
         return jsonify({'success': False, 'error': 'Access denied'}), 403
@@ -1447,7 +1489,7 @@ def refresh_vehicle_tessie(vehicle_id):
         vehicle.tessie_last_odometer = result['odometer_km']
         vehicle.tessie_battery_level = result.get('battery_level')
         vehicle.tessie_battery_range = result.get('battery_range_km')
-        vehicle.tessie_last_updated = datetime.utcnow()
+        vehicle.tessie_last_updated = utcnow()
 
         db.session.commit()
 
@@ -1472,7 +1514,7 @@ def import_tessie_charges(vehicle_id):
     """
     from app.models import ChargingSession
 
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check access
     if vehicle not in current_user.get_all_vehicles():
@@ -1567,7 +1609,7 @@ def export_csv():
                 vehicle.make, vehicle.model, vehicle.year,
                 vehicle.registration, vehicle.vin, vehicle.fuel_type,
                 vehicle.tank_capacity,
-                vehicle.get_effective_odometer_unit(),
+                vehicle.get_reading_unit(),
                 vehicle.is_active, vehicle.notes,
                 vehicle.created_at.isoformat() if vehicle.created_at else ''
             ])
@@ -1589,16 +1631,21 @@ def export_csv():
         writer = csv.writer(fuel_csv)
         writer.writerow([
             'id', 'vehicle_id', 'vehicle_name', 'date', 'odometer', 'odometer_unit',
-            'volume', 'price_per_unit', 'total_cost', 'is_full_tank',
-            'is_missed', 'station', 'notes', 'created_at'
+            'volume', 'price_per_unit', 'total_cost', 'sales_tax', 'fuel_type',
+            'fuel_distance', 'is_full_tank', 'is_missed', 'station', 'notes',
+            'created_at'
         ])
         for vehicle in current_user.get_all_vehicles():
-            odometer_unit = vehicle.get_effective_odometer_unit()
+            # Each row states the unit its own vehicle meters in, so a
+            # tractor's engine hours are never filed under a distance
+            # heading alongside the cars (#324).
+            odometer_unit = vehicle.get_reading_unit()
             for log in vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all():
                 writer.writerow([
                     log.id, vehicle.id, vehicle.name, log.date.isoformat(),
                     log.odometer, odometer_unit,
-                    log.volume, log.price_per_unit, log.total_cost,
+                    log.volume, log.price_per_unit, log.total_cost, log.sales_tax,
+                    log.fuel_type, log.fuel_distance,
                     log.is_full_tank, log.is_missed, log.station, log.notes,
                     log.created_at.isoformat() if log.created_at else ''
                 ])
@@ -1612,7 +1659,7 @@ def export_csv():
             'description', 'cost', 'odometer', 'odometer_unit', 'vendor', 'notes', 'created_at'
         ])
         for vehicle in current_user.get_all_vehicles():
-            odometer_unit = vehicle.get_effective_odometer_unit()
+            odometer_unit = vehicle.get_reading_unit()
             for expense in vehicle.expenses.order_by(Expense.date.desc()).all():
                 writer.writerow([
                     expense.id, vehicle.id, vehicle.name, expense.date.isoformat(),
@@ -1718,16 +1765,18 @@ def export_csv():
         writer = csv.writer(trips_csv)
         writer.writerow([
             'id', 'vehicle_id', 'vehicle_name', 'date', 'start_odometer', 'end_odometer',
-            'distance', 'distance_unit', 'purpose', 'description', 'start_location', 'end_location',
+            'distance', 'distance_unit', 'start_fuel_level', 'end_fuel_level',
+            'purpose', 'description', 'start_location', 'end_location',
             'notes', 'created_at'
         ])
         for vehicle in current_user.get_all_vehicles():
-            odometer_unit = vehicle.get_effective_odometer_unit()
+            odometer_unit = vehicle.get_reading_unit()
             for trip in vehicle.trips.order_by(Trip.date.desc()).all():
                 writer.writerow([
                     trip.id, vehicle.id, vehicle.name,
                     trip.date.isoformat() if trip.date else '',
                     trip.start_odometer, trip.end_odometer, trip.distance, odometer_unit,
+                    trip.start_fuel_level, trip.end_fuel_level,
                     trip.purpose, trip.description,
                     trip.start_location, trip.end_location,
                     trip.notes,
@@ -1836,7 +1885,7 @@ def export_json():
     """
     export_data = {
         'export_info': {
-            'exported_at': datetime.utcnow().isoformat(),
+            'exported_at': utcnow().isoformat(),
             'username': current_user.username,
             'app_version': APP_VERSION
         },
@@ -1904,6 +1953,9 @@ def export_json():
                 'volume': log.volume,
                 'price_per_unit': log.price_per_unit,
                 'total_cost': log.total_cost,
+                'sales_tax': log.sales_tax,
+                'fuel_type': log.fuel_type,
+                'fuel_distance': log.fuel_distance,
                 'is_full_tank': log.is_full_tank,
                 'is_missed': log.is_missed,
                 'station': log.station,
@@ -2010,6 +2062,8 @@ def export_json():
                 'start_odometer': trip.start_odometer,
                 'end_odometer': trip.end_odometer,
                 'distance': trip.distance,
+                'start_fuel_level': trip.start_fuel_level,
+                'end_fuel_level': trip.end_fuel_level,
                 'purpose': trip.purpose,
                 'description': trip.description,
                 'start_location': trip.start_location,
@@ -2069,6 +2123,8 @@ def export_json():
             'longitude': station.longitude,
             'notes': station.notes,
             'is_favorite': station.is_favorite,
+            'price_source': station.price_source,
+            'external_id': station.external_id,
             'times_used': station.times_used,
             'last_used': station.last_used.isoformat() if station.last_used else None,
             'created_at': station.created_at.isoformat() if station.created_at else None
@@ -2111,7 +2167,7 @@ def export_full_backup():
     # Build export data (similar to export_json but with attachment info)
     export_data = {
         'export_info': {
-            'exported_at': datetime.utcnow().isoformat(),
+            'exported_at': utcnow().isoformat(),
             'username': current_user.username,
             'app_version': APP_VERSION,
             'backup_type': 'full'
@@ -2201,6 +2257,9 @@ def export_full_backup():
                 'volume': log.volume,
                 'price_per_unit': log.price_per_unit,
                 'total_cost': log.total_cost,
+                'sales_tax': log.sales_tax,
+                'fuel_type': log.fuel_type,
+                'fuel_distance': log.fuel_distance,
                 'is_full_tank': log.is_full_tank,
                 'is_missed': log.is_missed,
                 'station': log.station,
@@ -2335,6 +2394,8 @@ def export_full_backup():
                 'start_odometer': trip.start_odometer,
                 'end_odometer': trip.end_odometer,
                 'distance': trip.distance,
+                'start_fuel_level': trip.start_fuel_level,
+                'end_fuel_level': trip.end_fuel_level,
                 'purpose': trip.purpose,
                 'description': trip.description,
                 'start_location': trip.start_location,
@@ -2394,6 +2455,8 @@ def export_full_backup():
             'longitude': station.longitude,
             'notes': station.notes,
             'is_favorite': station.is_favorite,
+            'price_source': station.price_source,
+            'external_id': station.external_id,
             'times_used': station.times_used,
             'last_used': station.last_used.isoformat() if station.last_used else None,
             'created_at': station.created_at.isoformat() if station.created_at else None
@@ -2416,7 +2479,7 @@ def export_full_backup():
     upload_folder = current_app.config['UPLOAD_FOLDER']
     manifest = {
         'version': APP_VERSION,
-        'created_at': datetime.utcnow().isoformat(),
+        'created_at': utcnow().isoformat(),
         'username': current_user.username,
         'files': []
     }
@@ -2526,13 +2589,13 @@ def _parse_hammond_date(row, key):
     Falls back to today's date if parsing fails."""
     val = _safe_get(row, key)
     if not val:
-        return datetime.utcnow().date()
+        return utcnow().date()
     try:
         # Hammond may store dates as "2022-01-15T00:00:00Z" or "2022-01-15"
         return datetime.fromisoformat(str(val).replace('Z', '+00:00')).date()
     except (ValueError, TypeError) as e:
         logger.warning("Hammond: could not parse date %s=%r: %s", key, val, e)
-        return datetime.utcnow().date()
+        return utcnow().date()
 
 
 HAMMOND_FUEL_TYPES = {
@@ -2898,12 +2961,12 @@ def import_clarkson():
                     # Parse date
                     date_str = clean_sql_string(values[6])
                     try:
-                        date = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').date() if date_str else datetime.utcnow().date()
+                        date = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').date() if date_str else utcnow().date()
                     except ValueError:
                         try:
                             date = datetime.strptime(date_str, '%Y-%m-%d').date()
                         except ValueError:
-                            date = datetime.utcnow().date()
+                            date = utcnow().date()
 
                     station = clean_sql_string(values[11]) if len(values) > 11 else None
 
@@ -3047,7 +3110,7 @@ def import_fuelly():
                             continue
 
                 if not date:
-                    date = datetime.utcnow().date()
+                    date = utcnow().date()
 
                 # Parse numeric values - Fuelly uses US units (gallons, miles)
                 odometer_str = row.get('Odometer', '').strip().replace(',', '')
@@ -3120,6 +3183,7 @@ def get_import_fields(data_type):
             {'name': 'volume', 'label': 'Volume', 'required': False, 'type': 'float'},
             {'name': 'price_per_unit', 'label': 'Price per Unit', 'required': False, 'type': 'float'},
             {'name': 'total_cost', 'label': 'Total Cost', 'required': False, 'type': 'float'},
+            {'name': 'sales_tax', 'label': 'Sales Tax', 'required': False, 'type': 'float'},
             {'name': 'is_full_tank', 'label': 'Full Tank', 'required': False, 'type': 'bool'},
             {'name': 'is_missed', 'label': 'Missed Fill-up', 'required': False, 'type': 'bool'},
             {'name': 'station', 'label': 'Station', 'required': False, 'type': 'str'},
@@ -3138,6 +3202,8 @@ def get_import_fields(data_type):
             {'name': 'date', 'label': 'Date', 'required': True, 'type': 'date'},
             {'name': 'start_odometer', 'label': 'Start Odometer', 'required': True, 'type': 'float'},
             {'name': 'end_odometer', 'label': 'End Odometer', 'required': True, 'type': 'float'},
+            {'name': 'start_fuel_level', 'label': 'Start Fuel Level %', 'required': False, 'type': 'float'},
+            {'name': 'end_fuel_level', 'label': 'End Fuel Level %', 'required': False, 'type': 'float'},
             {'name': 'purpose', 'label': 'Purpose', 'required': True, 'type': 'str'},
             {'name': 'description', 'label': 'Description', 'required': False, 'type': 'str'},
             {'name': 'start_location', 'label': 'Start Location', 'required': False, 'type': 'str'},
@@ -3170,6 +3236,7 @@ _COLUMN_ALIASES = {
     'volume': ['volume', 'litres', 'liters', 'gallons', 'gal', 'fuel', 'qty', 'quantity'],
     'price_per_unit': ['price per unit', 'unit price', 'price/l', 'price/gal', 'price', 'rate'],
     'total_cost': ['total cost', 'total', 'cost', 'price paid', 'total price'],
+    'sales_tax': ['sales tax', 'sales taxes', 'tax', 'taxes', 'vat', 'gst', 'hst', 'pst', 'qst'],
     'is_full_tank': ['full tank', 'full', 'complete', 'full fill'],
     'is_missed': ['missed', 'missed fill', 'skipped'],
     'station': ['station', 'gas station', 'fuel station'],
@@ -3181,6 +3248,8 @@ _COLUMN_ALIASES = {
     'start_odometer': ['start odometer', 'start odo', 'start miles', 'start km', 'odometer start'],
     'end_odometer': ['end odometer', 'end odo', 'end miles', 'end km', 'odometer end'],
     'purpose': ['purpose', 'trip purpose', 'reason', 'trip type'],
+    'start_fuel_level': ['start fuel level', 'start fuel', 'fuel start', 'start tank', 'start fuel %'],
+    'end_fuel_level': ['end fuel level', 'end fuel', 'fuel end', 'end tank', 'end fuel %'],
     'start_location': ['start location', 'from', 'origin', 'departure'],
     'end_location': ['end location', 'to', 'destination', 'arrival'],
     'start_time': ['start time', 'time start', 'begin time'],
@@ -3351,6 +3420,7 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
             volume=parse_float_value(mapped_row.get('volume')),
             price_per_unit=parse_float_value(mapped_row.get('price_per_unit')),
             total_cost=parse_float_value(mapped_row.get('total_cost')),
+            sales_tax=parse_float_value(mapped_row.get('sales_tax')),
             is_full_tank=parse_bool_value(mapped_row.get('is_full_tank')) if mapped_row.get('is_full_tank') else True,
             is_missed=parse_bool_value(mapped_row.get('is_missed')),
             station=mapped_row.get('station', '').strip() or None,
@@ -3391,6 +3461,8 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
             raise ValueError('Missing or invalid start odometer')
         if end_odo is None:
             raise ValueError('Missing or invalid end odometer')
+        start_fuel = parse_fuel_level(parse_float_value(mapped_row.get('start_fuel_level')))
+        end_fuel = parse_fuel_level(parse_float_value(mapped_row.get('end_fuel_level')))
         purpose = mapped_row.get('purpose', '').strip().lower()
         valid_purposes = [p[0] for p in TRIP_PURPOSES]
         if purpose not in valid_purposes:
@@ -3401,6 +3473,8 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
             date=date_val,
             start_odometer=start_odo,
             end_odometer=end_odo,
+            start_fuel_level=start_fuel,
+            end_fuel_level=end_fuel,
             purpose=purpose,
             description=mapped_row.get('description', '').strip() or None,
             start_location=mapped_row.get('start_location', '').strip() or None,
@@ -3466,7 +3540,7 @@ def csv_import_preview():
         flash(_('Invalid data type selected.'), 'error')
         return redirect(url_for('api.csv_import_upload'))
 
-    vehicle = Vehicle.query.get(vehicle_id)
+    vehicle = db.session.get(Vehicle, vehicle_id)
     if not vehicle:
         flash(_('Vehicle not found.'), 'error')
         return redirect(url_for('api.csv_import_upload'))
@@ -3541,7 +3615,7 @@ def csv_import_execute():
         flash(_('Invalid data type.'), 'error')
         return redirect(url_for('auth.settings') + '#integrations')
 
-    vehicle = Vehicle.query.get(vehicle_id)
+    vehicle = db.session.get(Vehicle, vehicle_id)
     if not vehicle:
         flash(_('Vehicle not found.'), 'error')
         return redirect(url_for('auth.settings') + '#integrations')
@@ -3600,5 +3674,103 @@ def csv_import_execute():
         flash(_('Import failed: %(error)s') % {'error': str(e)}, 'error')
     finally:
         _cleanup_temp_file(temp_file)
+
+    return redirect(url_for('auth.settings') + '#integrations')
+
+
+# =============================================================================
+# May Backup Restore (JSON export or full ZIP backup)
+# =============================================================================
+
+BACKUP_RESTORE_SESSION_KEY = 'backup_restore_temp_file'
+
+
+def _save_backup_upload(file):
+    """Save an uploaded backup to a temp file and return its path."""
+    suffix = '.zip' if (file.filename or '').lower().endswith('.zip') else '.json'
+    tmp_dir = current_app.instance_path if os.path.isdir(current_app.instance_path) else None
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False, dir=tmp_dir) as tmp:
+        file.save(tmp.name)
+        return tmp.name
+
+
+@bp.route('/import/backup')
+@login_required
+def backup_restore_upload():
+    """Backup restore - step 1: upload form."""
+    return render_template('import/backup_upload.html')
+
+
+@bp.route('/import/backup/preview', methods=['POST'])
+@login_required
+def backup_restore_preview():
+    """Backup restore - step 2: show what would be added before anything is written."""
+    if 'file' not in request.files or not request.files['file'].filename:
+        flash(_('No backup file uploaded.'), 'error')
+        return redirect(url_for('api.backup_restore_upload'))
+
+    # Drop any backup left over from an abandoned restore
+    _cleanup_temp_file(session.pop(BACKUP_RESTORE_SESSION_KEY, None))
+
+    tmp_path = _save_backup_upload(request.files['file'])
+
+    try:
+        data, zip_path = read_backup(tmp_path)
+        summary = restore_backup(
+            data, current_user,
+            zip_path=zip_path,
+            upload_folder=current_app.config['UPLOAD_FOLDER'],
+            dry_run=True
+        )
+    except BackupError as e:
+        _cleanup_temp_file(tmp_path)
+        flash(str(e), 'error')
+        return redirect(url_for('api.backup_restore_upload'))
+    except Exception as e:
+        _cleanup_temp_file(tmp_path)
+        logger.error("Backup restore preview failed: %s\n%s", e, traceback.format_exc())
+        flash(_('Could not read that backup: %(error)s') % {'error': e}, 'error')
+        return redirect(url_for('api.backup_restore_upload'))
+
+    session[BACKUP_RESTORE_SESSION_KEY] = tmp_path
+
+    return render_template('import/backup_preview.html',
+                           summary=summary,
+                           section_labels=SECTION_LABELS,
+                           backup_info=describe_backup(data),
+                           is_full_backup=zip_path is not None)
+
+
+@bp.route('/import/backup/execute', methods=['POST'])
+@login_required
+def backup_restore_execute():
+    """Backup restore - step 3: merge the backup into the current account."""
+    tmp_path = session.pop(BACKUP_RESTORE_SESSION_KEY, None)
+
+    if not tmp_path or not os.path.exists(tmp_path):
+        flash(_('The uploaded backup has expired. Please upload it again.'), 'error')
+        return redirect(url_for('api.backup_restore_upload'))
+
+    try:
+        data, zip_path = read_backup(tmp_path)
+        summary = restore_backup(
+            data, current_user,
+            zip_path=zip_path,
+            upload_folder=current_app.config['UPLOAD_FOLDER'],
+            dry_run=False
+        )
+        logger.info("Backup restore finished for user %s: %s added, %s already present",
+                    current_user.id, summary['total_added'], summary['total_skipped'])
+        flash(_('Backup restored: %(added)s records added, %(skipped)s already present and left alone.') % {
+            'added': summary['total_added'], 'skipped': summary['total_skipped']}, 'success')
+    except BackupError as e:
+        flash(str(e), 'error')
+        return redirect(url_for('api.backup_restore_upload'))
+    except Exception as e:
+        db.session.rollback()
+        logger.error("Backup restore failed: %s\n%s", e, traceback.format_exc())
+        flash(_('Restore failed: %(error)s') % {'error': e}, 'error')
+    finally:
+        _cleanup_temp_file(tmp_path)
 
     return redirect(url_for('auth.settings') + '#integrations')

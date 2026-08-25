@@ -186,11 +186,11 @@ msgstr "Kilometerstand (km/mi)"
 msgid "Hours"
 msgstr "Timer"
 
-#: app/models.py:1022
+#: app/models.py:1116 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "Kilometer (km)"
 
-#: app/models.py:1023
+#: app/models.py:1117 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "Miles (mi)"
 
@@ -4145,9 +4145,50 @@ msgstr "Enhet"
 msgid "Select unit..."
 msgstr "Velg enhet..."
 
+#: app/templates/auth/settings.html:138
 #: app/templates/vehicles/part_form.html:58
 msgid "Liters (L)"
 msgstr "Liter (L)"
+
+#: app/templates/auth/settings.html:118
+msgid "DD/MM/YYYY"
+msgstr "DD/MM/ÅÅÅÅ"
+
+#: app/templates/auth/settings.html:119
+msgid "MM/DD/YYYY"
+msgstr "MM/DD/ÅÅÅÅ"
+
+#: app/templates/auth/settings.html:120
+msgid "YYYY-MM-DD"
+msgstr "ÅÅÅÅ-MM-DD"
+
+#: app/templates/auth/settings.html:121
+msgid "DD.MM.YYYY"
+msgstr "DD.MM.ÅÅÅÅ"
+
+#: app/templates/auth/settings.html:139
+msgid "UK Gallons (gal)"
+msgstr "Britiske gallon (gal)"
+
+#: app/templates/auth/settings.html:140
+msgid "US Gallons (gal)"
+msgstr "Amerikanske gallon (gal)"
+
+#: app/templates/auth/settings.html:149
+msgid "MPG (UK)"
+msgstr "MPG (UK)"
+
+#: app/templates/auth/settings.html:150
+msgid "MPG (US)"
+msgstr "MPG (US)"
+
+#: app/templates/auth/settings.html:148
+msgid "L/100km"
+msgstr "l/100 km"
+
+#: app/templates/auth/settings.html:151
+msgid "km/L"
+msgstr "km/l"
 
 #: app/templates/vehicles/part_form.html:59
 msgid "Milliliters (ml)"
@@ -4537,6 +4578,26 @@ msgstr ""
 #: app/templates/vehicles/view.html:1043
 msgid "No fuel prices recorded yet."
 msgstr "Ingen drivstoffpriser registrert ennå."
+
+#: app/models.py:388 app/templates/maintenance/form.html:115
+msgid "Engine hours"
+msgstr "Motortimer"
+
+#: app/templates/maintenance/form.html:81
+msgid "Every (hours)"
+msgstr "Hver (timer)"
+
+#: app/templates/maintenance/form.html:84
+msgid "e.g., 250"
+msgstr "f.eks. 250"
+
+#: app/templates/vehicles/view.html:162
+msgid "Total Hours"
+msgstr "Totalt antall timer"
+
+#: app/templates/maintenance/form.html:86
+msgid "This vehicle is metered in engine hours, so its service interval is counted in hours."
+msgstr "Dette kjøretøyet måles i motortimer, så serviceintervallet telles i timer."
 
 #~ msgid "Quarterly (3 months)"
 #~ msgstr "Kvartalsvis (hver 3. måned)"

@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from app import db
-from app.utils import parse_decimal
+from app.utils import parse_decimal, parse_fuel_level, shared_reading_unit
 from flask import jsonify
 from app.models import Vehicle, Trip, TripTemplate, TRIP_PURPOSES
 
@@ -33,7 +33,9 @@ def index():
     if year_filter:
         query = query.filter(db.extract('year', Trip.date) == year_filter)
 
-    trips = query.order_by(Trip.date.desc()).all()
+    # Same-day trips have no time component, so fall back to the odometer
+    # reading to keep them in driving order (most recent first)
+    trips = query.order_by(Trip.date.desc(), Trip.start_odometer.desc()).all()
 
     # Get available years for filter
     years = db.session.query(db.extract('year', Trip.date)).filter(
@@ -45,7 +47,14 @@ def index():
     total_distance = sum(trip.distance for trip in trips)
     business_distance = sum(trip.distance for trip in trips if trip.purpose == 'business')
 
+    # Totals over vehicles that meter differently would silently add engine
+    # hours to miles, so only label the sum when they agree (#324).
+    total_distance_unit = shared_reading_unit(
+        [trip.vehicle for trip in trips], current_user.distance_unit
+    ) if trips else current_user.distance_unit
+
     return render_template('trips/index.html',
+                           total_distance_unit=total_distance_unit,
                            trips=trips,
                            vehicles=vehicles,
                            purposes=TRIP_PURPOSES,
@@ -69,7 +78,7 @@ def new():
 
     if request.method == 'POST':
         vehicle_id = int(request.form.get('vehicle_id'))
-        vehicle = Vehicle.query.get_or_404(vehicle_id)
+        vehicle = db.get_or_404(Vehicle, vehicle_id)
 
         if vehicle not in vehicles:
             flash(_('Access denied'), 'error')
@@ -78,12 +87,21 @@ def new():
         date_str = request.form.get('date')
         date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.now().date()
 
+        try:
+            start_fuel_level = parse_fuel_level(request.form.get('start_fuel_level'))
+            end_fuel_level = parse_fuel_level(request.form.get('end_fuel_level'))
+        except (ValueError, TypeError):
+            flash(_('Fuel levels must be a percentage between 0 and 100.'), 'error')
+            return redirect(url_for('trips.new', vehicle_id=vehicle_id))
+
         trip = Trip(
             vehicle_id=vehicle_id,
             user_id=current_user.id,
             date=date,
             start_odometer=parse_decimal(request.form.get('start_odometer')),
             end_odometer=parse_decimal(request.form.get('end_odometer')) if request.form.get('end_odometer') else None,
+            start_fuel_level=start_fuel_level,
+            end_fuel_level=end_fuel_level,
             purpose=request.form.get('purpose'),
             description=request.form.get('description'),
             start_location=request.form.get('start_location'),
@@ -103,14 +121,14 @@ def new():
     # Pre-fill from template if requested
     preload_template_id = request.args.get('template_id', type=int)
     if preload_template_id:
-        tmpl = TripTemplate.query.get(preload_template_id)
+        tmpl = db.session.get(TripTemplate, preload_template_id)
         if tmpl and tmpl.user_id == current_user.id and tmpl.vehicle_id:
             selected_vehicle_id = tmpl.vehicle_id
 
     # Get last odometer for selected vehicle
     last_odometer = 0
     if selected_vehicle_id:
-        vehicle = Vehicle.query.get(selected_vehicle_id)
+        vehicle = db.session.get(Vehicle, selected_vehicle_id)
         if vehicle:
             last_odometer = vehicle.get_last_odometer()
     elif len(vehicles) == 1:
@@ -132,7 +150,7 @@ def new():
 @login_required
 def edit(trip_id):
     """Edit an existing trip"""
-    trip = Trip.query.get_or_404(trip_id)
+    trip = db.get_or_404(Trip, trip_id)
     vehicles = current_user.get_all_vehicles()
 
     if trip.vehicle not in vehicles:
@@ -140,10 +158,19 @@ def edit(trip_id):
         return redirect(url_for('trips.index'))
 
     if request.method == 'POST':
+        try:
+            start_fuel_level = parse_fuel_level(request.form.get('start_fuel_level'))
+            end_fuel_level = parse_fuel_level(request.form.get('end_fuel_level'))
+        except (ValueError, TypeError):
+            flash(_('Fuel levels must be a percentage between 0 and 100.'), 'error')
+            return redirect(url_for('trips.edit', trip_id=trip.id))
+
         date_str = request.form.get('date')
         trip.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else trip.date
         trip.start_odometer = parse_decimal(request.form.get('start_odometer'))
         trip.end_odometer = parse_decimal(request.form.get('end_odometer')) if request.form.get('end_odometer') else None
+        trip.start_fuel_level = start_fuel_level
+        trip.end_fuel_level = end_fuel_level
         trip.purpose = request.form.get('purpose')
         trip.description = request.form.get('description')
         trip.start_location = request.form.get('start_location')
@@ -167,7 +194,7 @@ def edit(trip_id):
 @login_required
 def delete(trip_id):
     """Delete a trip"""
-    trip = Trip.query.get_or_404(trip_id)
+    trip = db.get_or_404(Trip, trip_id)
     vehicles = current_user.get_all_vehicles()
 
     if trip.vehicle not in vehicles:
@@ -202,7 +229,7 @@ def templates_new():
         vehicle_id = request.form.get('vehicle_id')
         if vehicle_id:
             vehicle_id = int(vehicle_id)
-            vehicle = Vehicle.query.get_or_404(vehicle_id)
+            vehicle = db.get_or_404(Vehicle, vehicle_id)
             if vehicle not in vehicles:
                 flash(_('Access denied'), 'error')
                 return redirect(url_for('trips.templates_index'))
@@ -234,7 +261,7 @@ def templates_new():
 @login_required
 def templates_edit(template_id):
     """Edit a trip template"""
-    template = TripTemplate.query.get_or_404(template_id)
+    template = db.get_or_404(TripTemplate, template_id)
     if template.user_id != current_user.id:
         flash(_('Access denied'), 'error')
         return redirect(url_for('trips.templates_index'))
@@ -245,7 +272,7 @@ def templates_edit(template_id):
         vehicle_id = request.form.get('vehicle_id')
         if vehicle_id:
             vehicle_id = int(vehicle_id)
-            vehicle = Vehicle.query.get_or_404(vehicle_id)
+            vehicle = db.get_or_404(Vehicle, vehicle_id)
             if vehicle not in vehicles:
                 flash(_('Access denied'), 'error')
                 return redirect(url_for('trips.templates_index'))
@@ -274,7 +301,7 @@ def templates_edit(template_id):
 @login_required
 def templates_delete(template_id):
     """Delete a trip template"""
-    template = TripTemplate.query.get_or_404(template_id)
+    template = db.get_or_404(TripTemplate, template_id)
     if template.user_id != current_user.id:
         flash(_('Access denied'), 'error')
         return redirect(url_for('trips.templates_index'))
@@ -289,7 +316,7 @@ def templates_delete(template_id):
 @login_required
 def templates_data(template_id):
     """Return template data as JSON for pre-filling the trip form"""
-    template = TripTemplate.query.get_or_404(template_id)
+    template = db.get_or_404(TripTemplate, template_id)
     if template.user_id != current_user.id:
         return jsonify({'error': 'Access denied'}), 403
     return jsonify(template.to_dict())
@@ -334,7 +361,14 @@ def report():
         years.append(year)
         years.sort(reverse=True)
 
+    # Totals over vehicles that meter differently would silently add engine
+    # hours to miles, so only label the sum when they agree (#324).
+    total_distance_unit = shared_reading_unit(
+        [trip.vehicle for trip in trips], current_user.distance_unit
+    ) if trips else current_user.distance_unit
+
     return render_template('trips/report.html',
+                           total_distance_unit=total_distance_unit,
                            trips=trips,
                            summary=summary,
                            total_distance=total_distance,

@@ -2,6 +2,11 @@
 {% block title %}{% if trip %}{{ _('Edit Trip') }}{% else %}{{ _('Log Trip') }}{% endif %}{% endblock %}
 
 {% block content %}
+{% set selected_id = (trip.vehicle_id if trip else selected_vehicle_id) %}
+{% set preselected = vehicles | selectattr('id', 'equalto', selected_id if selected_id else -1) | list %}
+{% set form_vehicle = preselected[0] if preselected else (vehicles[0] if vehicles else None) %}
+{% set form_hours = form_vehicle is not none and form_vehicle.tracks_hours() %}
+{% set form_unit = form_vehicle.get_reading_unit() if form_vehicle else current_user.distance_unit %}
 <div class="max-w-2xl mx-auto">
     <div class="mb-6">
         <a href="{{ url_for('trips.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">&larr; {{ _('Back to trips') }}</a>
@@ -37,15 +42,18 @@
                         <option value="{{ vehicle.id }}"
                                 {% if (trip and trip.vehicle_id == vehicle.id) or (selected_vehicle_id == vehicle.id) %}selected{% endif %}
                                 data-last-odometer="{{ vehicle.get_last_odometer(current_user.distance_unit) }}"
+                                data-odometer-unit="{{ vehicle.get_reading_unit() }}"
+                                data-hours-metered="{{ 'true' if vehicle.tracks_hours() else 'false' }}"
                                 data-default-purpose="{{ vehicle.default_trip_purpose or 'business' }}"
                                 data-uses-tessie="{{ 'true' if vehicle.uses_tessie_odometer() else 'false' }}"
+                                data-tank-capacity="{{ vehicle.tank_capacity or '' }}"
                                 data-tessie-odometer="{% if vehicle.tessie_last_odometer %}{% if current_user.distance_unit == 'mi' %}{{ (vehicle.tessie_last_odometer * 0.621371)|round|int }}{% else %}{{ vehicle.tessie_last_odometer|round|int }}{% endif %}{% endif %}">
                             {{ vehicle.name }}
                         </option>
                         {% endfor %}
                     </select>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {{ _('Last odometer') }}: <span id="last-odometer">{{ last_odometer }}</span> {{ current_user.distance_unit }}
+                        <span id="last-reading-label">{% if form_hours %}{{ _('Last engine hours') }}{% else %}{{ _('Last odometer') }}{% endif %}</span>: <span id="last-odometer">{{ last_odometer }}</span> <span class="reading-unit">{{ form_unit }}</span>
                         <span id="tessie-odometer-badge" class="hidden ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                             <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -73,7 +81,7 @@
                 </div>
 
                 <div>
-                    <label for="start_odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Start Odometer') }} ({{ current_user.distance_unit }}) *</label>
+                    <label for="start_odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300"><span id="start-reading-label">{% if form_hours %}{{ _('Start Hours') }}{% else %}{{ _('Start Odometer') }}{% endif %}</span> (<span class="reading-unit">{{ form_unit }}</span>) *</label>
                     <input type="number" name="start_odometer" id="start_odometer" required step="0.1"
                            value="{{ trip.start_odometer if trip else '' }}"
                            onchange="calculateDistance()"
@@ -81,12 +89,29 @@
                 </div>
 
                 <div>
-                    <label for="end_odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('End Odometer') }} ({{ current_user.distance_unit }})</label>
+                    <label for="end_odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300"><span id="end-reading-label">{% if form_hours %}{{ _('End Hours') }}{% else %}{{ _('End Odometer') }}{% endif %}</span> (<span class="reading-unit">{{ form_unit }}</span>)</label>
                     <input type="number" name="end_odometer" id="end_odometer" step="0.1"
                            value="{{ trip.end_odometer if trip else '' }}"
                            onchange="calculateDistance()"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Distance') }}: <span id="trip-distance">0</span> {{ current_user.distance_unit }}</p>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><span id="trip-span-label">{{ form_vehicle.get_span_label() if form_vehicle else _('Distance') }}</span>: <span id="trip-distance">0</span> <span class="reading-unit">{{ form_unit }}</span></p>
+                </div>
+
+                <div>
+                    <label for="start_fuel_level" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Start Fuel Level') }} (%)</label>
+                    <input type="number" name="start_fuel_level" id="start_fuel_level" min="0" max="100" step="1"
+                           value="{{ trip.start_fuel_level if trip and trip.start_fuel_level is not none else '' }}"
+                           onchange="calculateFuelUsed()"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+
+                <div>
+                    <label for="end_fuel_level" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('End Fuel Level') }} (%)</label>
+                    <input type="number" name="end_fuel_level" id="end_fuel_level" min="0" max="100" step="1"
+                           value="{{ trip.end_fuel_level if trip and trip.end_fuel_level is not none else '' }}"
+                           onchange="calculateFuelUsed()"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400" id="fuel-used-hint">{{ _('Fuel used') }}: <span id="trip-fuel-used">&mdash;</span></p>
                 </div>
 
                 <div>
@@ -154,6 +179,15 @@ function loadTemplate(templateId) {
         });
 }
 
+const T_LAST_ODOMETER = {{ _('Last odometer')|tojson }};
+const T_LAST_HOURS = {{ _('Last engine hours')|tojson }};
+const T_START_ODOMETER = {{ _('Start Odometer')|tojson }};
+const T_START_HOURS = {{ _('Start Hours')|tojson }};
+const T_END_ODOMETER = {{ _('End Odometer')|tojson }};
+const T_END_HOURS = {{ _('End Hours')|tojson }};
+const T_DISTANCE = {{ _('Distance')|tojson }};
+const T_HOURS = {{ _('Hours')|tojson }};
+
 function updateVehicleOdometer(vehicleId) {
     const select = document.getElementById('vehicle_id');
     const selectedOption = select.options[select.selectedIndex];
@@ -165,6 +199,26 @@ function updateVehicleOdometer(vehicleId) {
 
     // Update last odometer display
     document.getElementById('last-odometer').textContent = lastOdometer || 0;
+
+    // A trip on hours-metered plant runs between engine-hour readings, so
+    // both the unit and the wording follow the vehicle (#324).
+    const hoursMetered = selectedOption.getAttribute('data-hours-metered') === 'true';
+    const readingUnit = selectedOption.getAttribute('data-odometer-unit');
+    if (readingUnit) {
+        document.querySelectorAll('.reading-unit').forEach(function(el) {
+            el.textContent = readingUnit;
+        });
+    }
+    const readingLabels = {
+        'last-reading-label': hoursMetered ? T_LAST_HOURS : T_LAST_ODOMETER,
+        'start-reading-label': hoursMetered ? T_START_HOURS : T_START_ODOMETER,
+        'end-reading-label': hoursMetered ? T_END_HOURS : T_END_ODOMETER,
+        'trip-span-label': hoursMetered ? T_HOURS : T_DISTANCE
+    };
+    Object.keys(readingLabels).forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = readingLabels[id];
+    });
 
     // Show/hide Tessie badge
     if (usesTessie && tessieOdometer) {
@@ -178,6 +232,9 @@ function updateVehicleOdometer(vehicleId) {
     if (!startOdometer.value) {
         startOdometer.value = lastOdometer || '';
     }
+
+    // The estimate depends on the selected vehicle's tank capacity (#273)
+    calculateFuelUsed();
 }
 
 function calculateDistance() {
@@ -185,6 +242,25 @@ function calculateDistance() {
     const end = parseDecimal(document.getElementById('end_odometer').value) || 0;
     const distance = end - start;
     document.getElementById('trip-distance').textContent = distance > 0 ? distance.toFixed(1) : '0';
+}
+
+// Approximate fuel burnt from the gauge readings and the tank capacity (#273)
+function calculateFuelUsed() {
+    const output = document.getElementById('trip-fuel-used');
+    if (!output) return;
+    const select = document.getElementById('vehicle_id');
+    const option = select.options[select.selectedIndex];
+    const capacity = option ? parseFloat(option.getAttribute('data-tank-capacity')) : NaN;
+    const startValue = document.getElementById('start_fuel_level').value;
+    const endValue = document.getElementById('end_fuel_level').value;
+
+    if (startValue === '' || endValue === '' || !capacity || isNaN(capacity)) {
+        output.textContent = '—';
+        return;
+    }
+
+    const used = ((parseDecimal(startValue) || 0) - (parseDecimal(endValue) || 0)) / 100 * capacity;
+    output.textContent = used >= 0 ? used.toFixed(1) + ' {{ current_user.volume_unit }}' : '—';
 }
 
 // Pre-select the vehicle's default trip type on new trips (#272)
@@ -200,6 +276,7 @@ function applyDefaultPurpose() {
 
 document.addEventListener('DOMContentLoaded', function() {
     calculateDistance();
+    calculateFuelUsed();
     const vehicleSelect = document.getElementById('vehicle_id');
     updateVehicleOdometer(vehicleSelect.value);
     {% if not trip %}

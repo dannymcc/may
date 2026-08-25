@@ -27,6 +27,7 @@ from app.models import (
 from datetime import datetime, timedelta, date
 from functools import wraps
 import hashlib
+from app.utils import utcnow
 
 bp = Blueprint('calendar', __name__, url_prefix='/api/calendar')
 
@@ -84,7 +85,7 @@ def create_vevent(uid, summary, description, dtstart, dtend=None, all_day=True, 
     lines = [
         'BEGIN:VEVENT',
         f'UID:{uid}',
-        f'DTSTAMP:{format_datetime(datetime.utcnow())}',
+        f'DTSTAMP:{format_datetime(utcnow())}',
         f'SUMMARY:{escape_ical(summary)}',
     ]
 
@@ -156,7 +157,7 @@ def calendar_feed(user):
             summary = f"🔧 {schedule.name} - {vehicle_name}"
             description = f"Maintenance due for {vehicle_name}"
             if schedule.next_due_odometer:
-                unit = vehicle.get_effective_odometer_unit() if vehicle else 'km'
+                unit = vehicle.get_reading_unit() if vehicle else 'km'
                 description += f"\\nDue at: {schedule.next_due_odometer:.0f} {unit}"
             if schedule.notes:
                 description += f"\\nNotes: {schedule.notes}"

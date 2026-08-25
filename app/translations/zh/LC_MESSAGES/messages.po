@@ -186,11 +186,11 @@ msgstr "里程 (公里/英里)"
 msgid "Hours"
 msgstr "小时"
 
-#: app/models.py:1022
+#: app/models.py:1116 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "公里 (km)"
 
-#: app/models.py:1023
+#: app/models.py:1117 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "英里 (mi)"
 
@@ -4059,9 +4059,50 @@ msgstr "单位"
 msgid "Select unit..."
 msgstr "选择单位……"
 
+#: app/templates/auth/settings.html:138
 #: app/templates/vehicles/part_form.html:58
 msgid "Liters (L)"
 msgstr "升 (L)"
+
+#: app/templates/auth/settings.html:118
+msgid "DD/MM/YYYY"
+msgstr "日/月/年"
+
+#: app/templates/auth/settings.html:119
+msgid "MM/DD/YYYY"
+msgstr "月/日/年"
+
+#: app/templates/auth/settings.html:120
+msgid "YYYY-MM-DD"
+msgstr "年-月-日"
+
+#: app/templates/auth/settings.html:121
+msgid "DD.MM.YYYY"
+msgstr "日.月.年"
+
+#: app/templates/auth/settings.html:139
+msgid "UK Gallons (gal)"
+msgstr "英制加仑 (gal)"
+
+#: app/templates/auth/settings.html:140
+msgid "US Gallons (gal)"
+msgstr "美制加仑 (gal)"
+
+#: app/templates/auth/settings.html:149
+msgid "MPG (UK)"
+msgstr "MPG（英制）"
+
+#: app/templates/auth/settings.html:150
+msgid "MPG (US)"
+msgstr "MPG（美制）"
+
+#: app/templates/auth/settings.html:148
+msgid "L/100km"
+msgstr "L/100km"
+
+#: app/templates/auth/settings.html:151
+msgid "km/L"
+msgstr "km/L"
 
 #: app/templates/vehicles/part_form.html:59
 msgid "Milliliters (ml)"
@@ -4435,6 +4476,26 @@ msgstr "数据不足，无法显示消耗趋势。请添加更多满箱加油记
 #: app/templates/vehicles/view.html:1043
 msgid "No fuel prices recorded yet."
 msgstr "尚未记录任何燃油价格。"
+
+#: app/models.py:388 app/templates/maintenance/form.html:115
+msgid "Engine hours"
+msgstr "发动机小时"
+
+#: app/templates/maintenance/form.html:81
+msgid "Every (hours)"
+msgstr "每 (小时)"
+
+#: app/templates/maintenance/form.html:84
+msgid "e.g., 250"
+msgstr "例如：250"
+
+#: app/templates/vehicles/view.html:162
+msgid "Total Hours"
+msgstr "总运行小时"
+
+#: app/templates/maintenance/form.html:86
+msgid "This vehicle is metered in engine hours, so its service interval is counted in hours."
+msgstr "此车辆以发动机小时计量，因此保养间隔按小时计算。"
 
 #~ msgid "Quarterly (3 months)"
 #~ msgstr "每季度（每3个月）"

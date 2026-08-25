@@ -43,7 +43,7 @@ def new():
 
     if request.method == 'POST':
         vehicle_id = request.form.get('vehicle_id')
-        vehicle = Vehicle.query.get(vehicle_id)
+        vehicle = db.session.get(Vehicle, vehicle_id)
 
         if not vehicle or vehicle not in vehicles:
             flash(_('Invalid vehicle'), 'error')
@@ -57,6 +57,7 @@ def new():
             description=request.form.get('description'),
             interval_km=int(request.form.get('interval_km')) if request.form.get('interval_km') else None,
             interval_miles=int(request.form.get('interval_miles')) if request.form.get('interval_miles') else None,
+            interval_hours=int(request.form.get('interval_hours')) if request.form.get('interval_hours') else None,
             interval_months=int(request.form.get('interval_months')) if request.form.get('interval_months') else None,
             estimated_cost=parse_decimal(request.form.get('estimated_cost')) if request.form.get('estimated_cost') else None,
             auto_remind=request.form.get('auto_remind') == 'on',
@@ -99,7 +100,7 @@ def new():
 @login_required
 def edit(schedule_id):
     """Edit a maintenance schedule"""
-    schedule = MaintenanceSchedule.query.get_or_404(schedule_id)
+    schedule = db.get_or_404(MaintenanceSchedule, schedule_id)
     vehicles = current_user.get_all_vehicles()
 
     if schedule.vehicle not in vehicles:
@@ -112,6 +113,7 @@ def edit(schedule_id):
         schedule.description = request.form.get('description')
         schedule.interval_km = int(request.form.get('interval_km')) if request.form.get('interval_km') else None
         schedule.interval_miles = int(request.form.get('interval_miles')) if request.form.get('interval_miles') else None
+        schedule.interval_hours = int(request.form.get('interval_hours')) if request.form.get('interval_hours') else None
         schedule.interval_months = int(request.form.get('interval_months')) if request.form.get('interval_months') else None
         schedule.estimated_cost = parse_decimal(request.form.get('estimated_cost')) if request.form.get('estimated_cost') else None
         schedule.auto_remind = request.form.get('auto_remind') == 'on'
@@ -141,7 +143,7 @@ def edit(schedule_id):
 @login_required
 def complete(schedule_id):
     """Mark maintenance as completed and optionally create expense"""
-    schedule = MaintenanceSchedule.query.get_or_404(schedule_id)
+    schedule = db.get_or_404(MaintenanceSchedule, schedule_id)
     vehicles = current_user.get_all_vehicles()
 
     if schedule.vehicle not in vehicles:
@@ -193,7 +195,7 @@ def complete(schedule_id):
 @login_required
 def delete(schedule_id):
     """Delete a maintenance schedule"""
-    schedule = MaintenanceSchedule.query.get_or_404(schedule_id)
+    schedule = db.get_or_404(MaintenanceSchedule, schedule_id)
     vehicles = current_user.get_all_vehicles()
 
     if schedule.vehicle not in vehicles:

@@ -33,7 +33,7 @@ def new():
 
     if request.method == 'POST':
         vehicle_id = int(request.form.get('vehicle_id'))
-        vehicle = Vehicle.query.get_or_404(vehicle_id)
+        vehicle = db.get_or_404(Vehicle, vehicle_id)
 
         # Check access
         if vehicle not in vehicles:
@@ -70,7 +70,7 @@ def new():
 @bp.route('/<int:allowance_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit(allowance_id):
-    allowance = MileageAllowance.query.get_or_404(allowance_id)
+    allowance = db.get_or_404(MileageAllowance, allowance_id)
     vehicles = current_user.get_all_vehicles()
 
     # Check access
@@ -102,7 +102,7 @@ def edit(allowance_id):
 @bp.route('/<int:allowance_id>/delete', methods=['POST'])
 @login_required
 def delete(allowance_id):
-    allowance = MileageAllowance.query.get_or_404(allowance_id)
+    allowance = db.get_or_404(MileageAllowance, allowance_id)
     vehicles = current_user.get_all_vehicles()
 
     # Check access

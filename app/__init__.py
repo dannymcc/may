@@ -25,6 +25,7 @@ LANGUAGES = {
     'de': 'Deutsch',
     'es': 'Español',
     'fr': 'Français',
+    'hu': 'Magyar',
     'it': 'Italiano',
     'nl': 'Nederlands',
     'pt': 'Português',
@@ -156,7 +157,7 @@ def _scalar_default_sql(column):
     """Render a SQLAlchemy column's Python-side default as a SQL literal.
 
     Returns None when no scalar default is set, when the default is callable
-    (e.g. ``datetime.utcnow``), or when the value is a type we cannot safely
+    (e.g. ``utcnow``), or when the value is a type we cannot safely
     embed in DDL. Callable defaults are intentionally skipped: ``ALTER TABLE``
     fills existing rows once at column-creation time, so the captured value
     would be misleading anyway.
@@ -258,6 +259,27 @@ def _run_schema_migrations(app):
                         f'Could not create {kind.lower()} {index_name}: {e}'
                     )
 
+            # Multi-column indexes declared in __table_args__ are not covered
+            # by the per-column pass above.
+            existing_cols = {col['name'] for col in inspector.get_columns(table.name)}
+            for index in table.indexes:
+                if index.name in existing_indexes:
+                    continue
+                index_cols = [c.name for c in index.columns]
+                if len(index_cols) < 2 or not existing_cols.issuperset(index_cols):
+                    continue
+                kind = 'UNIQUE INDEX' if index.unique else 'INDEX'
+                try:
+                    conn.execute(text(
+                        f'CREATE {kind} {index.name} ON {table.name} '
+                        f'({", ".join(index_cols)})'
+                    ))
+                    app.logger.info(f'Created {kind.lower()} {index.name}')
+                except Exception as e:
+                    app.logger.warning(
+                        f'Could not create {kind.lower()} {index.name}: {e}'
+                    )
+
 
 def get_locale():
     """Select the best language for the user"""
@@ -305,7 +327,7 @@ def create_app(config_class=Config):
 
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
 
     # Make languages and branding available in templates
     @app.context_processor
@@ -340,8 +362,8 @@ def create_app(config_class=Config):
 
     @app.template_filter('fuel_type_label')
     def fuel_type_label_filter(value):
-        from app.models import FUEL_TYPES
-        return dict(FUEL_TYPES).get(value) or (value or '').replace('_', ' ').title()
+        from app.models import fuel_type_label
+        return fuel_type_label(value)
 
     @app.template_filter('spec_label')
     def spec_label_filter(spec):
@@ -407,7 +429,7 @@ def create_app(config_class=Config):
         fmt = formats.get(style, formats['default'])
         return value.strftime(fmt)
 
-    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, notes, allowance, search
+    from app.routes import main, auth, vehicles, fuel, expenses, api, reminders, maintenance, documents, stations, recurring, homeassistant, calendar, trips, charging, notes, allowance, search, tires
     app.register_blueprint(main.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(vehicles.bp)
@@ -426,6 +448,12 @@ def create_app(config_class=Config):
     app.register_blueprint(notes.bp)
     app.register_blueprint(allowance.bp)
     app.register_blueprint(search.bp)
+    app.register_blueprint(tires.bp)
+
+    # Per-user permissions (#285) — refuse writes the account's role does not
+    # cover, and expose can_write() to templates.
+    from app.permissions import register_permission_hooks
+    register_permission_hooks(app)
 
     # Health check endpoint for container orchestration
     @app.route('/health')

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Restore Backup') }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('auth.settings') }}#integrations" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; Back to settings</a>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">{{ _('Restore a May Backup') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Restore a JSON export or a full backup ZIP produced by May.') }}</p>
+    </div>
+
+    <div class="bg-blue-50 dark:bg-gray-800 border border-blue-200 dark:border-gray-700 rounded-lg p-4 mb-6">
+        <p class="text-sm text-blue-800 dark:text-blue-200">
+            {{ _('The backup is merged into your account. Nothing is deleted or overwritten, and records that are already here are skipped rather than duplicated. You will see a summary of what will be added before anything is written.') }}
+        </p>
+        <p class="mt-2 text-sm text-blue-800 dark:text-blue-200">
+            {{ _('Documents, attachments and vehicle images can only be restored from a full backup ZIP, because a JSON export does not contain the files.') }}
+        </p>
+    </div>
+
+    <form method="POST" action="{{ url_for('api.backup_restore_preview') }}" enctype="multipart/form-data" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <label for="file" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Backup File') }} *</label>
+            <input type="file" name="file" id="file" accept=".json,.zip" required
+                   class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 dark:file:bg-gray-600 file:text-gray-700 dark:file:text-gray-200 hover:file:bg-gray-200 dark:hover:file:bg-gray-500">
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ _('Accepts may_backup_*.json and may_full_backup_*.zip files.') }}</p>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit"
+                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                {{ _('Next: Preview') }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

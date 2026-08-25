@@ -2,7 +2,9 @@ import re
 import pytest
 from datetime import date
 from app import db
-from app.models import FuelLog, FuelStation, FuelPriceHistory, Vehicle
+from app.models import (
+    FuelLog, FuelStation, FuelPriceHistory, Vehicle, resolve_price_fuel_type,
+)
 
 
 class TestFuelIndex:
@@ -152,6 +154,108 @@ class TestFuelNew:
         assert resp.status_code in (200, 302)
 
 
+class TestFuelSalesTax:
+    """Sales tax paid on fuel, for businesses reclaiming it (#225)."""
+
+    def test_create_records_sales_tax(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/fuel/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-04-01',
+            'odometer': '16000',
+            'volume': '50.0',
+            'price_per_unit': '1.60',
+            'total_cost': '80.0',
+            'sales_tax': '10.40',
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id, odometer=16000.0).first()
+        assert log is not None
+        assert log.sales_tax == 10.40
+        # Tax is part of the total, not added on top of it
+        assert log.total_cost == 80.0
+
+    def test_blank_sales_tax_is_none(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/fuel/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-04-02',
+            'odometer': '16100',
+            'volume': '40.0',
+            'price_per_unit': '1.50',
+            'sales_tax': '',
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id, odometer=16100.0).first()
+        assert log is not None
+        assert log.sales_tax is None
+
+    def test_negative_sales_tax_rejected(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/fuel/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-04-03',
+            'odometer': '16200',
+            'volume': '40.0',
+            'price_per_unit': '1.50',
+            'sales_tax': '-5',
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        assert FuelLog.query.filter_by(
+            vehicle_id=sample_vehicle.id, odometer=16200.0).first() is None
+
+    def test_edit_sets_and_clears_sales_tax(self, auth_client, sample_fuel_log):
+        form = {
+            'date': '2024-01-15',
+            'odometer': '10500',
+            'volume': '42.0',
+            'price_per_unit': '1.55',
+            'total_cost': '65.1',
+            'sales_tax': '8.46',
+            'is_full_tank': 'on',
+        }
+        resp = auth_client.post(f'/fuel/{sample_fuel_log.id}/edit', data=form,
+                                follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(sample_fuel_log)
+        assert sample_fuel_log.sales_tax == 8.46
+
+        form['sales_tax'] = ''
+        resp = auth_client.post(f'/fuel/{sample_fuel_log.id}/edit', data=form,
+                                follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(sample_fuel_log)
+        assert sample_fuel_log.sales_tax is None
+
+    def test_index_totals_sales_tax_by_year(self, auth_client, app, sample_vehicle, test_user):
+        for day, year, tax in ((1, 2023, 5.0), (2, 2024, 4.25), (3, 2024, 3.75)):
+            db.session.add(FuelLog(
+                vehicle_id=sample_vehicle.id,
+                user_id=test_user.id,
+                date=date(year, 5, day),
+                odometer=20000 + day,
+                volume=40.0,
+                price_per_unit=1.5,
+                total_cost=60.0,
+                sales_tax=tax,
+            ))
+        db.session.commit()
+
+        resp = auth_client.get('/fuel/')
+        assert resp.status_code == 200
+        body = resp.data.decode()
+        assert 'Sales Tax Paid' in body
+        # 2024 is the sum of both 2024 logs, and the newest year comes first
+        assert '8.00' in body
+        assert '5.00' in body
+        assert body.index('2024') < body.index('2023')
+
+    def test_index_hides_summary_without_sales_tax(self, auth_client, sample_fuel_log):
+        resp = auth_client.get('/fuel/')
+        assert resp.status_code == 200
+        assert 'Sales Tax Paid' not in resp.data.decode()
+
+
 class TestFuelEdit:
     def test_edit_requires_auth(self, client, sample_fuel_log):
         resp = client.get(f'/fuel/{sample_fuel_log.id}/edit', follow_redirects=False)
@@ -187,7 +291,7 @@ class TestFuelDelete:
         log_id = sample_fuel_log.id
         resp = auth_client.post(f'/fuel/{log_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert FuelLog.query.get(log_id) is None
+        assert db.session.get(FuelLog, log_id) is None
 
     def test_delete_returns_to_fuel_log(self, auth_client, sample_fuel_log):
         """#298 — deleting from the fuel log stays on the fuel log."""
@@ -196,7 +300,7 @@ class TestFuelDelete:
                                 data={'next': '/fuel/'}, follow_redirects=False)
         assert resp.status_code == 302
         assert resp.headers['Location'].endswith('/fuel/')
-        assert FuelLog.query.get(log_id) is None
+        assert db.session.get(FuelLog, log_id) is None
 
     def test_delete_without_next_returns_to_vehicle(self, auth_client, sample_fuel_log):
         """Deleting from the vehicle page still returns there."""
@@ -205,7 +309,7 @@ class TestFuelDelete:
         resp = auth_client.post(f'/fuel/{log_id}/delete', follow_redirects=False)
         assert resp.status_code == 302
         assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
-        assert FuelLog.query.get(log_id) is None
+        assert db.session.get(FuelLog, log_id) is None
 
     def test_delete_ignores_offsite_next(self, auth_client, sample_fuel_log):
         """An off-site next falls back to the vehicle page (open redirect guard)."""
@@ -217,6 +321,39 @@ class TestFuelDelete:
         assert resp.status_code == 302
         assert 'evil.example' not in resp.headers['Location']
         assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+
+    def test_delete_return_to_vehicle(self, auth_client, sample_fuel_log):
+        """#312 — delete takes the same return_to token as new and edit."""
+        log_id = sample_fuel_log.id
+        vehicle_id = sample_fuel_log.vehicle_id
+        resp = auth_client.post(f'/fuel/{log_id}/delete',
+                                data={'return_to': 'vehicle'},
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+        assert db.session.get(FuelLog, log_id) is None
+
+    def test_delete_return_to_vehicle_in_query(self, auth_client, sample_fuel_log):
+        """return_to is read from the query string too, as on the other deletes."""
+        log_id = sample_fuel_log.id
+        vehicle_id = sample_fuel_log.vehicle_id
+        resp = auth_client.post(f'/fuel/{log_id}/delete?return_to=vehicle',
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+        assert db.session.get(FuelLog, log_id) is None
+
+    def test_delete_ignores_unknown_return_to(self, auth_client, sample_fuel_log):
+        """Only the known token is honoured; anything else falls through to next."""
+        log_id = sample_fuel_log.id
+        resp = auth_client.post(f'/fuel/{log_id}/delete',
+                                data={'return_to': 'http://evil.example/',
+                                      'next': '/fuel/'},
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert 'evil.example' not in resp.headers['Location']
+        assert resp.headers['Location'].endswith('/fuel/')
+        assert db.session.get(FuelLog, log_id) is None
 
 
 class TestPartialFillConsumption:
@@ -465,7 +602,7 @@ class TestPriceHistorySync:
             'total_cost': str(log.total_cost),
             'is_full_tank': 'on',
         }, follow_redirects=True)
-        assert FuelPriceHistory.query.get(history_id) is None
+        assert db.session.get(FuelPriceHistory, history_id) is None
 
     def test_stale_price_not_shown_after_edit(self, auth_client, fuel_log_with_price_history):
         """The bad-entry scenario from issue #113: edit fixes the price, history reflects it."""
@@ -828,3 +965,542 @@ class TestFuelStationSync:
         assert '"fuel_type": "diesel"' in html
         # ...and the chart groups by fuel type instead of one flat series.
         assert 'byType' in html
+
+
+@pytest.fixture
+def hybrid_vehicle(app, test_user):
+    vehicle = Vehicle(
+        owner_id=test_user.id,
+        name='Hybrid Car',
+        vehicle_type='car',
+        fuel_type='hybrid',
+        odometer_unit='km',
+    )
+    db.session.add(vehicle)
+    db.session.commit()
+    return vehicle
+
+
+class TestPriceHistoryFuelType:
+    """Issue #268: hybrid is a propulsion type, not a fuel, so it must never
+    become its own series in the station price charts."""
+
+    def test_resolve_price_fuel_type(self):
+        assert resolve_price_fuel_type(None, 'hybrid') == 'petrol'
+        assert resolve_price_fuel_type(None, 'plugin_hybrid') == 'petrol'
+        assert resolve_price_fuel_type(None, 'diesel') == 'diesel'
+        assert resolve_price_fuel_type('diesel', 'hybrid') == 'diesel'
+        # An explicitly logged 'hybrid' is still mapped to a real fuel.
+        assert resolve_price_fuel_type('hybrid', 'hybrid') == 'petrol'
+        # No fuel type anywhere falls back to petrol, as before.
+        assert resolve_price_fuel_type(None, None) == 'petrol'
+
+    def test_hybrid_fill_up_records_petrol(
+            self, auth_client, hybrid_vehicle, sample_station):
+        auth_client.post('/fuel/new', data={
+            'vehicle_id': str(hybrid_vehicle.id),
+            'date': '2024-04-01',
+            'odometer': '20000',
+            'volume': '35',
+            'price_per_unit': '1.55',
+            'total_cost': '54.25',
+            'station_id': str(sample_station.id),
+            'station': sample_station.name,
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        history = FuelPriceHistory.query.filter_by(
+            station_id=sample_station.id, price_per_unit=1.55).first()
+        assert history is not None
+        assert history.fuel_type == 'petrol'
+
+    def test_hybrid_quick_log_records_petrol(
+            self, auth_client, hybrid_vehicle, sample_station):
+        auth_client.post('/fuel/quick', data={
+            'vehicle_id': str(hybrid_vehicle.id),
+            'odometer': '21000',
+            'volume': '30',
+            'price_per_unit': '1.58',
+            'station_id': str(sample_station.id),
+            'station': sample_station.name,
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        history = FuelPriceHistory.query.filter_by(
+            station_id=sample_station.id, price_per_unit=1.58).first()
+        assert history is not None
+        assert history.fuel_type == 'petrol'
+
+    def test_explicit_fuel_type_wins_for_hybrid(
+            self, auth_client, hybrid_vehicle, sample_station):
+        """A diesel hybrid owner picks diesel on the form and it sticks."""
+        auth_client.post('/fuel/new', data={
+            'vehicle_id': str(hybrid_vehicle.id),
+            'date': '2024-04-02',
+            'odometer': '22000',
+            'volume': '40',
+            'price_per_unit': '1.72',
+            'total_cost': '68.80',
+            'fuel_type': 'diesel',
+            'station_id': str(sample_station.id),
+            'station': sample_station.name,
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        history = FuelPriceHistory.query.filter_by(
+            station_id=sample_station.id, price_per_unit=1.72).first()
+        assert history is not None
+        assert history.fuel_type == 'diesel'
+
+    def test_edit_updates_price_history_fuel_type(
+            self, auth_client, hybrid_vehicle, sample_station):
+        auth_client.post('/fuel/new', data={
+            'vehicle_id': str(hybrid_vehicle.id),
+            'date': '2024-04-03',
+            'odometer': '23000',
+            'volume': '38',
+            'price_per_unit': '1.60',
+            'total_cost': '60.80',
+            'station_id': str(sample_station.id),
+            'station': sample_station.name,
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        log = FuelLog.query.filter_by(vehicle_id=hybrid_vehicle.id).order_by(
+            FuelLog.id.desc()).first()
+        history = FuelPriceHistory.query.filter_by(fuel_log_id=log.id).first()
+        assert history.fuel_type == 'petrol'
+
+        auth_client.post(f'/fuel/{log.id}/edit', data={
+            'vehicle_id': str(hybrid_vehicle.id),
+            'date': '2024-04-03',
+            'odometer': '23000',
+            'volume': '38',
+            'price_per_unit': '1.60',
+            'total_cost': '60.80',
+            'fuel_type': 'diesel',
+            'station_id': str(sample_station.id),
+            'station': sample_station.name,
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        db.session.refresh(history)
+        assert history.fuel_type == 'diesel'
+
+
+class TestFuelRedirects:
+    """Saving a fuel log returns to the fuel log list unless the user came
+    from a vehicle page (#283). Deletion keeps the `next` behaviour of #298."""
+
+    def _payload(self, vehicle, **overrides):
+        data = {
+            'vehicle_id': str(vehicle.id),
+            'date': '2024-05-01',
+            'odometer': '16000',
+            'volume': '40.0',
+            'price_per_unit': '1.50',
+            'total_cost': '60.0',
+            'is_full_tank': 'on',
+        }
+        data.update(overrides)
+        return data
+
+    def test_create_redirects_to_fuel_log(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/fuel/new', data=self._payload(sample_vehicle),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/fuel/')
+
+    def test_create_returns_to_vehicle_when_requested(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/fuel/new',
+                                data=self._payload(sample_vehicle, return_to='vehicle'),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{sample_vehicle.id}')
+
+    def test_edit_redirects_to_fuel_log(self, auth_client, sample_fuel_log):
+        resp = auth_client.post(f'/fuel/{sample_fuel_log.id}/edit',
+                                data=self._payload(sample_fuel_log.vehicle),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/fuel/')
+
+    def test_edit_returns_to_vehicle_when_requested(self, auth_client, sample_fuel_log):
+        vehicle_id = sample_fuel_log.vehicle_id
+        resp = auth_client.post(f'/fuel/{sample_fuel_log.id}/edit',
+                                data=self._payload(sample_fuel_log.vehicle,
+                                                   return_to='vehicle'),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+
+    def test_form_from_vehicle_page_includes_hidden_field(self, auth_client, sample_vehicle):
+        resp = auth_client.get(f'/fuel/new?vehicle_id={sample_vehicle.id}&return_to=vehicle')
+        assert resp.status_code == 200
+        assert b'name="return_to" value="vehicle"' in resp.data
+
+    def test_form_from_fuel_page_omits_hidden_field(self, auth_client, sample_vehicle):
+        resp = auth_client.get('/fuel/new')
+        assert resp.status_code == 200
+        assert b'name="return_to"' not in resp.data
+
+
+@pytest.fixture
+def adblue_vehicle(app, test_user):
+    """A diesel that tracks AdBlue as its secondary fluid (#319)."""
+    vehicle = Vehicle(
+        owner_id=test_user.id,
+        name='Diesel Van',
+        vehicle_type='car',
+        fuel_type='diesel',
+        secondary_fuel_type='adblue',
+        odometer_unit='km',
+    )
+    db.session.add(vehicle)
+    db.session.commit()
+    return vehicle
+
+
+class TestSecondaryFuelConsumption:
+    """Issue #319: AdBlue is an auxiliary fluid, not propulsion, so its
+    refills must never move a diesel's consumption figures."""
+
+    @staticmethod
+    def _log(vehicle, test_user, odometer, volume, fuel_type,
+             is_full_tank=True, is_missed=False):
+        log = FuelLog(
+            vehicle_id=vehicle.id, user_id=test_user.id,
+            date=date(2024, 1, 1), odometer=odometer, volume=volume,
+            fuel_type=fuel_type, is_full_tank=is_full_tank, is_missed=is_missed,
+        )
+        db.session.add(log)
+        return log
+
+    def test_effective_fuel_type_falls_back_to_vehicle(
+            self, app, test_user, adblue_vehicle):
+        legacy = self._log(adblue_vehicle, test_user, 10000, 50, None)
+        adblue = self._log(adblue_vehicle, test_user, 10100, 10, 'adblue')
+        db.session.commit()
+        assert legacy.effective_fuel_type == 'diesel'
+        assert adblue.effective_fuel_type == 'adblue'
+
+    def test_effective_fuel_type_maps_propulsion_to_fuel(
+            self, app, test_user, hybrid_vehicle):
+        log = self._log(hybrid_vehicle, test_user, 20000, 35, None)
+        db.session.commit()
+        assert log.effective_fuel_type == 'petrol'
+
+    def test_adblue_refill_excluded_from_diesel_consumption(
+            self, app, test_user, adblue_vehicle):
+        self._log(adblue_vehicle, test_user, 10000, 50, 'diesel')
+        self._log(adblue_vehicle, test_user, 10300, 10, 'adblue', is_full_tank=False)
+        second_diesel = self._log(adblue_vehicle, test_user, 10500, 45, 'diesel')
+        db.session.commit()
+        # 45 L over 500 km — the 10 L of AdBlue is no part of it.
+        assert abs(second_diesel.get_consumption() - 9.0) < 0.01
+
+    def test_adblue_full_tank_does_not_anchor_diesel(
+            self, app, test_user, adblue_vehicle):
+        """An AdBlue tank filled to the brim is not a diesel fill-up, so it
+        must not become the previous full tank a diesel figure spans from."""
+        self._log(adblue_vehicle, test_user, 10000, 50, 'diesel')
+        self._log(adblue_vehicle, test_user, 10300, 10, 'adblue')
+        second_diesel = self._log(adblue_vehicle, test_user, 10500, 45, 'diesel')
+        db.session.commit()
+        assert abs(second_diesel.get_consumption() - 9.0) < 0.01
+
+    def test_legacy_untyped_diesel_logs_still_pair_up(
+            self, app, test_user, adblue_vehicle):
+        """Rows logged before the fuel type selector existed carry no type of
+        their own and are read as the vehicle's primary fuel."""
+        self._log(adblue_vehicle, test_user, 10000, 50, None)
+        self._log(adblue_vehicle, test_user, 10300, 10, 'adblue', is_full_tank=False)
+        second_diesel = self._log(adblue_vehicle, test_user, 10500, 45, None)
+        db.session.commit()
+        assert abs(second_diesel.get_consumption() - 9.0) < 0.01
+
+    def test_missed_adblue_refill_does_not_void_diesel_figure(
+            self, app, test_user, adblue_vehicle):
+        self._log(adblue_vehicle, test_user, 10000, 50, 'diesel')
+        self._log(adblue_vehicle, test_user, 10300, 10, 'adblue',
+                  is_full_tank=False, is_missed=True)
+        second_diesel = self._log(adblue_vehicle, test_user, 10500, 45, 'diesel')
+        db.session.commit()
+        assert abs(second_diesel.get_consumption() - 9.0) < 0.01
+
+    def test_adblue_consumption_is_its_own_series(
+            self, app, test_user, adblue_vehicle):
+        self._log(adblue_vehicle, test_user, 10000, 50, 'diesel')
+        self._log(adblue_vehicle, test_user, 10100, 10, 'adblue')
+        self._log(adblue_vehicle, test_user, 10500, 45, 'diesel')
+        second_adblue = self._log(adblue_vehicle, test_user, 10600, 5, 'adblue')
+        db.session.commit()
+        # 5 L of AdBlue over the 500 km since the last AdBlue fill.
+        assert abs(second_adblue.get_consumption() - 1.0) < 0.01
+
+    def test_average_consumption_is_per_fuel_type(
+            self, app, test_user, adblue_vehicle):
+        self._log(adblue_vehicle, test_user, 10000, 50, 'diesel')
+        self._log(adblue_vehicle, test_user, 10100, 10, 'adblue')
+        self._log(adblue_vehicle, test_user, 10500, 45, 'diesel')
+        self._log(adblue_vehicle, test_user, 10600, 5, 'adblue')
+        db.session.commit()
+        assert abs(adblue_vehicle.get_average_consumption() - 9.0) < 0.01
+        assert abs(adblue_vehicle.get_average_consumption(fuel_type='adblue') - 1.0) < 0.01
+
+    def test_unavailable_reason_is_per_fuel_type(
+            self, app, test_user, adblue_vehicle):
+        self._log(adblue_vehicle, test_user, 10000, 50, 'diesel')
+        self._log(adblue_vehicle, test_user, 10100, 10, 'adblue')
+        self._log(adblue_vehicle, test_user, 10500, 45, 'diesel')
+        db.session.commit()
+        assert adblue_vehicle.get_consumption_unavailable_reason() is None
+        assert adblue_vehicle.get_consumption_unavailable_reason(
+            fuel_type='adblue') == 'insufficient_full_tanks'
+
+    def test_fuel_log_to_dict_reports_effective_fuel_type(
+            self, app, test_user, adblue_vehicle):
+        legacy = self._log(adblue_vehicle, test_user, 10000, 50, None)
+        db.session.commit()
+        assert legacy.to_dict()['fuel_type'] == 'diesel'
+
+    def test_fuel_index_shows_fuel_type(
+            self, auth_client, test_user, adblue_vehicle):
+        self._log(adblue_vehicle, test_user, 10000, 50, 'diesel')
+        self._log(adblue_vehicle, test_user, 10100, 10, 'adblue')
+        db.session.commit()
+        resp = auth_client.get('/fuel/')
+        assert resp.status_code == 200
+        html = resp.get_data(as_text=True)
+        assert 'Diesel' in html
+        assert 'AdBlue/DEF' in html
+
+    def test_vehicle_page_charts_each_fuel_type_separately(
+            self, auth_client, test_user, adblue_vehicle):
+        resp = auth_client.get(f'/vehicles/{adblue_vehicle.id}')
+        assert resp.status_code == 200
+        html = resp.get_data(as_text=True)
+        # The trend chart builds one dataset per fuel type rather than one
+        # flat consumption series.
+        assert 'typeLabels' in html
+
+class TestDualFuelConsumption:
+    """#221 — petrol and LPG are averaged separately, on attributed distance."""
+
+    @pytest.fixture
+    def bifuel_vehicle(self, app, test_user):
+        vehicle = Vehicle(owner_id=test_user.id, name='LPG Car', vehicle_type='car',
+                          make='Dacia', model='Duster', fuel_type='petrol',
+                          secondary_fuel_type='lpg', odometer_unit='km')
+        db.session.add(vehicle)
+        db.session.commit()
+        return vehicle
+
+    def _log(self, user, vehicle, odometer, volume, fuel_type,
+             fuel_distance=None, is_full_tank=True):
+        log = FuelLog(vehicle_id=vehicle.id, user_id=user.id, date=date(2024, 1, 1),
+                      odometer=odometer, volume=volume, fuel_type=fuel_type,
+                      fuel_distance=fuel_distance, is_full_tank=is_full_tank)
+        db.session.add(log)
+        db.session.commit()
+        return log
+
+    def _attributed_history(self, user, vehicle):
+        """Two fill-ups of each fuel, with the distance split by the driver."""
+        return {
+            'lpg': [self._log(user, vehicle, 10000, 40, 'lpg'),
+                    self._log(user, vehicle, 10600, 60, 'lpg', fuel_distance=500)],
+            'petrol': [self._log(user, vehicle, 10200, 30, 'petrol'),
+                       self._log(user, vehicle, 10800, 20, 'petrol', fuel_distance=200)],
+        }
+
+    def test_logged_fuel_types_lists_primary_first(self, bifuel_vehicle, test_user):
+        self._attributed_history(test_user, bifuel_vehicle)
+        assert bifuel_vehicle.get_propulsion_fuel_types() == ['petrol', 'lpg']
+        assert bifuel_vehicle.runs_on_two_fuels() is True
+
+    def test_single_fuel_vehicle_is_not_treated_as_dual(self, sample_vehicle, test_user):
+        """Logging only one fuel leaves the odometer-based average alone."""
+        self._log(test_user, sample_vehicle, 10000, 40, None)
+        self._log(test_user, sample_vehicle, 10500, 40, None)
+        assert sample_vehicle.runs_on_two_fuels() is False
+        avg = sample_vehicle.get_average_consumption()
+        assert abs(avg - 8.0) < 0.01
+
+    def test_declared_bifuel_with_one_fuel_logged_keeps_odometer_maths(
+            self, bifuel_vehicle, test_user):
+        """Declaring LPG but only ever filling with petrol changes nothing:
+        there is no second fuel in the history to disentangle."""
+        self._log(test_user, bifuel_vehicle, 10000, 40, 'petrol')
+        self._log(test_user, bifuel_vehicle, 10500, 40, 'petrol')
+
+        assert bifuel_vehicle.runs_on_two_fuels() is False
+        assert abs(bifuel_vehicle.get_average_consumption() - 8.0) < 0.01
+
+    def test_hybrid_untyped_and_petrol_logs_are_one_fuel(self, app, test_user):
+        """A plain hybrid is not bi-fuel. Its older fill-ups predate the fuel
+        type selector and carry no type, its newer ones say 'petrol'; that is
+        one fuel, and the hybrid must keep its ordinary average (#268)."""
+        vehicle = Vehicle(owner_id=test_user.id, name='Hybrid', vehicle_type='car',
+                          make='Toyota', model='Yaris', fuel_type='hybrid',
+                          odometer_unit='km')
+        db.session.add(vehicle)
+        db.session.commit()
+        self._log(test_user, vehicle, 10000, 40, None)
+        self._log(test_user, vehicle, 10500, 40, 'petrol')
+
+        assert vehicle.get_propulsion_fuel_types() == ['petrol']
+        assert vehicle.runs_on_two_fuels() is False
+        assert abs(vehicle.get_average_consumption() - 8.0) < 0.01
+
+    def test_adblue_is_not_a_second_propulsion_fuel(self, adblue_vehicle, test_user):
+        """AdBlue is an auxiliary fluid (#319): a diesel that tracks it is not
+        bi-fuel and must never be asked to attribute distance to it."""
+        self._log(test_user, adblue_vehicle, 10000, 50, 'diesel')
+        self._log(test_user, adblue_vehicle, 10500, 30, 'adblue', is_full_tank=False)
+        self._log(test_user, adblue_vehicle, 11000, 40, 'diesel')
+
+        assert adblue_vehicle.declares_second_fuel() is False
+        assert adblue_vehicle.runs_on_two_fuels() is False
+        assert abs(adblue_vehicle.get_average_consumption() - 4.0) < 0.01
+
+    def test_fuels_are_not_blended_into_one_average(self, bifuel_vehicle, test_user):
+        """The reported defect: petrol litres and LPG litres over one odometer
+        span produced a single meaningless figure."""
+        self._attributed_history(test_user, bifuel_vehicle)
+
+        petrol = bifuel_vehicle.get_average_consumption(fuel_type='petrol')
+        lpg = bifuel_vehicle.get_average_consumption(fuel_type='lpg')
+        # 20 L over 200 km, and 60 L over 500 km — each on its own fuel.
+        assert abs(petrol - 10.0) < 0.01
+        assert abs(lpg - 12.0) < 0.01
+        assert bifuel_vehicle.get_consumption_unavailable_reason('lpg') is None
+
+    def test_default_fuel_is_the_vehicle_primary(self, bifuel_vehicle, test_user):
+        self._attributed_history(test_user, bifuel_vehicle)
+        assert bifuel_vehicle.get_average_consumption() == \
+            bifuel_vehicle.get_average_consumption(fuel_type='petrol')
+
+    def test_by_fuel_breakdown_covers_every_logged_fuel(self, bifuel_vehicle, test_user):
+        self._attributed_history(test_user, bifuel_vehicle)
+        breakdown = bifuel_vehicle.get_average_consumption_by_fuel()
+        assert [entry['fuel_type'] for entry in breakdown] == ['petrol', 'lpg']
+        assert all(entry['reason'] is None for entry in breakdown)
+
+    def test_by_fuel_breakdown_without_logs_keeps_one_entry(self, bifuel_vehicle):
+        """No fill-ups yet still yields the usual single empty state."""
+        breakdown = bifuel_vehicle.get_average_consumption_by_fuel()
+        assert len(breakdown) == 1
+        assert breakdown[0]['value'] is None
+        assert breakdown[0]['reason'] == 'insufficient_full_tanks'
+
+    def test_unattributed_distance_is_reported_not_guessed(
+            self, bifuel_vehicle, test_user):
+        """Without a distance per fuel we say so rather than inventing one."""
+        self._log(test_user, bifuel_vehicle, 10000, 40, 'lpg')
+        self._log(test_user, bifuel_vehicle, 10200, 30, 'petrol')
+        self._log(test_user, bifuel_vehicle, 10600, 60, 'lpg')
+
+        assert bifuel_vehicle.get_average_consumption(fuel_type='lpg') is None
+        assert bifuel_vehicle.get_consumption_unavailable_reason('lpg') == \
+            'needs_distance_attribution'
+
+    def test_single_fuel_stretch_keeps_its_odometer_figure(self, bifuel_vehicle, test_user):
+        """A car converted to LPG keeps the ordinary maths over the stretch it
+        ran on petrol alone: no LPG fill-up falls in that span, so the
+        odometer distance is unambiguous and nothing needs attributing."""
+        self._log(test_user, bifuel_vehicle, 10000, 40, 'petrol')
+        self._log(test_user, bifuel_vehicle, 10500, 40, 'petrol')
+        # The conversion, and the first LPG fill-ups, come later.
+        self._log(test_user, bifuel_vehicle, 11000, 45, 'lpg')
+        self._log(test_user, bifuel_vehicle, 11400, 50, 'lpg', fuel_distance=400)
+
+        assert bifuel_vehicle.runs_on_two_fuels() is True
+        # 40 L over the 500 km between the two petrol fills, untouched.
+        assert abs(bifuel_vehicle.get_average_consumption(fuel_type='petrol') - 8.0) < 0.01
+        assert bifuel_vehicle.get_consumption_unavailable_reason('petrol') is None
+
+    def test_per_fill_up_figure_follows_its_own_fuel(self, bifuel_vehicle, test_user):
+        logs = self._attributed_history(test_user, bifuel_vehicle)
+        # 60 L over the 500 km the driver ran on LPG, ignoring the petrol
+        # fill-up that sits between the two LPG odometer readings.
+        assert abs(logs['lpg'][1].get_consumption() - 12.0) < 0.01
+        assert abs(logs['petrol'][1].get_consumption() - 10.0) < 0.01
+
+    def test_per_fill_up_figure_needs_attribution(self, bifuel_vehicle, test_user):
+        self._log(test_user, bifuel_vehicle, 10000, 40, 'lpg')
+        self._log(test_user, bifuel_vehicle, 10200, 30, 'petrol')
+        latest = self._log(test_user, bifuel_vehicle, 10600, 60, 'lpg')
+        assert latest.get_consumption() is None
+
+    def test_new_log_stores_attributed_distance(self, auth_client, bifuel_vehicle):
+        auth_client.post('/fuel/new', data={
+            'vehicle_id': str(bifuel_vehicle.id),
+            'date': '2024-03-01',
+            'odometer': '20000',
+            'volume': '45.0',
+            'price_per_unit': '0.80',
+            'total_cost': '36.0',
+            'fuel_type': 'lpg',
+            'fuel_distance': '420',
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        log = FuelLog.query.filter_by(vehicle_id=bifuel_vehicle.id).one()
+        assert log.fuel_type == 'lpg'
+        assert log.fuel_distance == 420
+
+    def test_bad_attributed_distance_is_rejected_not_crashed(self, auth_client,
+                                                             bifuel_vehicle):
+        """A negative distance must come back as a flashed error. There is no
+        fuel/new.html to render, so the failure path has to redirect."""
+        resp = auth_client.post('/fuel/new', data={
+            'vehicle_id': str(bifuel_vehicle.id),
+            'date': '2024-03-01',
+            'odometer': '20000',
+            'volume': '45.0',
+            'price_per_unit': '0.80',
+            'total_cost': '36.0',
+            'fuel_type': 'lpg',
+            'fuel_distance': '-5',
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        assert resp.status_code == 200
+        assert FuelLog.query.filter_by(vehicle_id=bifuel_vehicle.id).count() == 0
+
+    def test_edit_updates_attributed_distance(self, auth_client, bifuel_vehicle, test_user):
+        log = self._log(test_user, bifuel_vehicle, 20000, 45, 'lpg', fuel_distance=420)
+        auth_client.post(f'/fuel/{log.id}/edit', data={
+            'vehicle_id': str(bifuel_vehicle.id),
+            'date': '2024-03-01',
+            'odometer': '20000',
+            'volume': '45.0',
+            'fuel_type': 'lpg',
+            'fuel_distance': '380',
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+
+        db.session.refresh(log)
+        assert log.fuel_distance == 380
+
+    def test_vehicle_page_shows_a_figure_per_fuel(
+            self, auth_client, bifuel_vehicle, test_user):
+        self._attributed_history(test_user, bifuel_vehicle)
+        resp = auth_client.get(f'/vehicles/{bifuel_vehicle.id}')
+        html = resp.get_data(as_text=True)
+        assert resp.status_code == 200
+        assert 'LPG' in html
+        assert 'Petrol/Gasoline' in html
+
+    def test_vehicle_page_asks_for_attribution(
+            self, auth_client, bifuel_vehicle, test_user):
+        self._log(test_user, bifuel_vehicle, 10000, 40, 'lpg')
+        self._log(test_user, bifuel_vehicle, 10200, 30, 'petrol')
+        self._log(test_user, bifuel_vehicle, 10600, 60, 'lpg')
+
+        resp = auth_client.get(f'/vehicles/{bifuel_vehicle.id}')
+        html = resp.get_data(as_text=True)
+        # Says why the figure has gone, not merely what to do about it.
+        assert 'Consumption can' in html
+        assert 'distance run on each fuel' in html

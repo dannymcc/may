@@ -41,7 +41,7 @@ def new():
         vehicle_id = request.form.get('vehicle_id', type=int)
 
         # Verify user has access to vehicle
-        vehicle = Vehicle.query.get(vehicle_id)
+        vehicle = db.session.get(Vehicle, vehicle_id)
         if not vehicle or vehicle not in vehicles:
             flash(_('Invalid vehicle.'), 'error')
             return redirect(url_for('recurring.new'))

@@ -11,22 +11,48 @@
     <a href="{{ url_for('vehicles.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; {{ _('Back to vehicles') }}</a>
 </div>
 
+{# Main image first, then the rest of the gallery (#147) #}
+{% set carousel = [] %}
+{% if vehicle.image_filename %}{% set _unused = carousel.append(vehicle.image_filename) %}{% endif %}
+{% for photo in photos %}{% if photo.filename != vehicle.image_filename %}{% set _unused = carousel.append(photo.filename) %}{% endif %}{% endfor %}
+
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-8">
     <div class="md:flex">
-        {% if vehicle.image_filename %}
-        <div class="md:w-1/3">
-            <img src="{{ url_for('api.uploaded_file', filename=vehicle.image_filename) }}"
+        {% if carousel %}
+        <div class="md:w-1/3 relative" id="vehicle-carousel" data-count="{{ carousel|length }}">
+            {% for filename in carousel %}
+            <img src="{{ url_for('api.uploaded_file', filename=filename) }}"
                  alt="{{ vehicle.name }}"
-                 class="w-full h-48 md:h-full object-cover">
+                 data-carousel-index="{{ loop.index0 }}"
+                 class="vehicle-carousel-image w-full h-48 md:h-full object-cover{% if not loop.first %} hidden{% endif %}">
+            {% endfor %}
+            {% if carousel|length > 1 %}
+            <button type="button" onclick="stepVehicleCarousel(-1)"
+                    aria-label="{{ _('Previous photo') }}"
+                    class="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/60">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <button type="button" onclick="stepVehicleCarousel(1)"
+                    aria-label="{{ _('Next photo') }}"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/60">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+            <span id="vehicle-carousel-counter"
+                  class="absolute bottom-2 right-2 px-2 py-0.5 rounded text-xs bg-black/40 text-white">1 / {{ carousel|length }}</span>
+            {% endif %}
         </div>
         {% endif %}
-        <div class="p-6 {% if vehicle.image_filename %}md:w-2/3{% endif %}">
-            <div class="flex items-start justify-between">
+        <div class="p-6 {% if carousel %}md:w-2/3{% endif %}">
+            <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ vehicle.name }}</h1>
                     <p class="text-gray-500 dark:text-gray-400">{{ vehicle.make or '' }} {{ vehicle.model or '' }} {% if vehicle.year %}({{ vehicle.year }}){% endif %}</p>
                 </div>
-                <div class="flex space-x-2">
+                <div class="flex flex-wrap gap-2">
                     <a href="{{ url_for('vehicles.report', vehicle_id=vehicle.id) }}"
                        class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-700"
                        title="{{ _('Download PDF Report') }}">
@@ -43,14 +69,18 @@
                         </svg>
                         {{ _('PDF + Receipts') }}
                     </a>
+                    {% if can_write('vehicles') %}
                     <a href="{{ url_for('vehicles.edit', vehicle_id=vehicle.id) }}"
                        class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-700">
                         {{ _('Edit') }}
                     </a>
+                    {% endif %}
+                    {% if can_write('vehicles') %}
                     <a href="{{ url_for('vehicles.share', vehicle_id=vehicle.id) }}"
                        class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-700">
                         {{ _('Share') }}
                     </a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -69,12 +99,31 @@
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Last Odometer') }}</dt>
-                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ "%.0f"|format(vehicle.get_last_odometer(vehicle.get_effective_odometer_unit())) }} {{ vehicle.get_effective_odometer_unit() }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ "%.0f"|format(vehicle.get_last_odometer(vehicle.get_effective_odometer_unit())) }} {{ vehicle.get_reading_unit() }}</dd>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+{% if carousel|length > 1 %}
+<script>
+// Left/right arrows step through the vehicle's photos (#147). One image is
+// visible at a time; the rest stay in the page so there is nothing to fetch
+// when the user moves between them.
+(function() {
+    const images = document.querySelectorAll('#vehicle-carousel .vehicle-carousel-image');
+    const counter = document.getElementById('vehicle-carousel-counter');
+    let current = 0;
+    window.stepVehicleCarousel = function(step) {
+        images[current].classList.add('hidden');
+        current = (current + step + images.length) % images.length;
+        images[current].classList.remove('hidden');
+        if (counter) counter.textContent = (current + 1) + ' / ' + images.length;
+    };
+})();
+</script>
+{% endif %}
 
 <!-- Stats Cards -->
 <div class="grid grid-cols-2 gap-4 sm:grid-cols-5 mb-8">
@@ -110,21 +159,27 @@
     </div>
     {% endif %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Total Distance') }}</dt>
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{% if vehicle.tracks_hours() %}{{ _('Total Hours') }}{% else %}{{ _('Total Distance') }}{% endif %}</dt>
         <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.0f"|format(stats.total_distance) }}</dd>
-        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ vehicle.get_effective_odometer_unit() }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ vehicle.get_reading_unit() }}</dd>
     </div>
     {% if vehicle.uses_fuel() %}
+    {# One card per fuel: on a dual-fuel vehicle petrol and LPG each get their
+       own average, since a combined figure would be meaningless (#221). #}
+    {% for entry in stats.consumption_by_fuel %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Avg. Consumption') }}</dt>
-        {% if stats.avg_consumption %}
-        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.1f"|format(stats.avg_consumption) }}</dd>
-        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.consumption_unit }}</dd>
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {{ _('Avg. Consumption') }}{% if stats.consumption_by_fuel|length > 1 %} &middot; {{ entry.fuel_type|fuel_type_label }}{% endif %}
+        </dt>
+        {% if entry.value %}
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ "%.1f"|format(entry.value) }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ vehicle.get_consumption_unit() or current_user.consumption_unit }}</dd>
         {% else %}
-        {% set reason = vehicle.get_consumption_unavailable_reason() %}
-        {% if reason == 'missed_fill_up' %}
+        {% if entry.reason == 'missed_fill_up' %}
             {% set consumption_hint = _('A missed fill-up in the range means we can’t calculate this honestly.') %}
-        {% elif reason == 'insufficient_data' %}
+        {% elif entry.reason == 'needs_distance_attribution' %}
+            {% set consumption_hint = _('Consumption can’t be worked out until the distance run on each fuel is recorded — the odometer can’t tell petrol from LPG. Add it to your fill-ups.') %}
+        {% elif entry.reason == 'insufficient_data' %}
             {% set consumption_hint = _('Not enough distance or fuel data yet to calculate this.') %}
         {% else %}
             {% set consumption_hint = _('Needs at least two full-tank fill-ups.') %}
@@ -133,16 +188,17 @@
         <dd class="text-xs text-gray-400 dark:text-gray-500">{{ consumption_hint }}</dd>
         {% endif %}
     </div>
+    {% endfor %}
     {% endif %}
     {% if vehicle.uses_charging() %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Avg. Charging') }}</dt>
         <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{% if stats.avg_charging_consumption %}{{ "%.1f"|format(stats.avg_charging_consumption) }}{% else %}-{% endif %}</dd>
-        <dd class="text-sm text-gray-500 dark:text-gray-400">kWh / 100 {{ vehicle.get_effective_odometer_unit() }}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">kWh / 100 {{ vehicle.get_reading_unit() }}</dd>
     </div>
     {% endif %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Cost per') }} {{ vehicle.get_effective_odometer_unit() }}</dt>
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Cost per') }} {{ vehicle.get_reading_unit() }}</dt>
         <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{% if stats.cost_per_distance %}{{ stats.cost_per_distance|money }}{% else %}-{% endif %}</dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.currency }}</dd>
     </div>
@@ -168,7 +224,8 @@
 <!-- Quick Actions -->
 <div class="flex flex-wrap gap-3 mb-8">
     {% if vehicle.uses_fuel() and not vehicle.uses_tessie_odometer() %}
-    <a href="{{ url_for('fuel.new', vehicle_id=vehicle.id) }}"
+    {% if can_write('fuel') %}
+    <a href="{{ url_for('fuel.new', vehicle_id=vehicle.id, return_to='vehicle') }}"
        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600">
         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -176,7 +233,9 @@
         {{ _('Add Fuel Log') }}
     </a>
     {% endif %}
+    {% endif %}
     {% if vehicle.uses_charging() %}
+    {% if can_write('charging') %}
     <a href="{{ url_for('charging.new', vehicle_id=vehicle.id) }}"
        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600">
         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -185,6 +244,8 @@
         {{ _('Add Charging') }}
     </a>
     {% endif %}
+    {% endif %}
+    {% if can_write('trips') %}
     <a href="{{ url_for('trips.new', vehicle_id=vehicle.id) }}"
        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600">
         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -192,13 +253,17 @@
         </svg>
         {{ _('Log Trip') }}
     </a>
-    <a href="{{ url_for('expenses.new', vehicle_id=vehicle.id) }}"
+    {% endif %}
+    {% if can_write('expenses') %}
+    <a href="{{ url_for('expenses.new', vehicle_id=vehicle.id, return_to='vehicle') }}"
        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600">
         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
         {{ _('Add Expense') }}
     </a>
+    {% endif %}
+    {% if can_write('reminders') %}
     <a href="{{ url_for('reminders.new', vehicle_id=vehicle.id) }}"
        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-500 hover:bg-purple-600">
         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -206,6 +271,7 @@
         </svg>
         {{ _('Add Reminder') }}
     </a>
+    {% endif %}
     <a href="{{ url_for('vehicles.parts', vehicle_id=vehicle.id) }}"
        class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -222,10 +288,71 @@
     </a>
 </div>
 
+<!-- Photos (#147) -->
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8" id="photos">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Photos') }}</h2>
+        {% if can_edit %}
+        {% if can_write('vehicles') %}
+        <form method="POST" action="{{ url_for('vehicles.add_photos', vehicle_id=vehicle.id) }}"
+              enctype="multipart/form-data" class="flex items-center gap-2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="file" name="photo" accept="image/*" multiple
+                   class="text-sm text-gray-500 dark:text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:bg-gray-100 dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-300">
+            <button type="submit"
+                    class="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+                {{ _('Upload') }}
+            </button>
+        </form>
+        {% endif %}
+        {% endif %}
+    </div>
+    {% if photos %}
+    <div class="p-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for photo in photos %}
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <a href="{{ url_for('api.uploaded_file', filename=photo.filename) }}" target="_blank" rel="noopener">
+                <img src="{{ url_for('api.uploaded_file', filename=photo.filename) }}"
+                     alt="{{ photo.original_filename }}"
+                     class="w-full h-32 object-cover hover:opacity-90">
+            </a>
+            <div class="px-2 py-2 flex items-center justify-between gap-2">
+                {% if vehicle.image_filename == photo.filename %}
+                <span class="text-xs px-1.5 py-0.5 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">{{ _('Main') }}</span>
+                {% elif can_edit %}
+                {% if can_write('vehicles') %}
+                <form method="POST" action="{{ url_for('vehicles.set_primary_photo', vehicle_id=vehicle.id, attachment_id=photo.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="text-xs text-primary-600 hover:text-primary-500">{{ _('Set as main') }}</button>
+                </form>
+                {% endif %}
+                {% else %}
+                <span></span>
+                {% endif %}
+                {% if can_edit %}
+                {% if can_write('vehicles') %}
+                <form method="POST" action="{{ url_for('vehicles.delete_photo', vehicle_id=vehicle.id, attachment_id=photo.id) }}"
+                      onsubmit="return confirm('{{ _('Delete this photo?') }}');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="text-xs text-red-600 hover:text-red-500">{{ _('Delete') }}</button>
+                </form>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="px-6 py-8 text-center">
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('No photos yet.') }}</p>
+    </div>
+    {% endif %}
+</div>
+
 <!-- DVLA Status Section (UK Vehicles) -->
 {% if vehicle.registration and dvla_configured %}
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8" id="dvla-section">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center">
             <svg class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
@@ -323,7 +450,7 @@
 <!-- Tessie Status Section (Tesla Vehicles) -->
 {% if vehicle.tessie_enabled and vehicle.tessie_vin and tessie_configured %}
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8" id="tessie-section">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center">
             <svg class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -333,7 +460,7 @@
                 {{ _('Live') }}
             </span>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
             <button onclick="importTessieCharges({{ vehicle.id }})" id="tessie-import-btn"
                     class="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -437,7 +564,7 @@
 {% if annual_mileage_stats %}
 {% set ms = annual_mileage_stats %}
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center">
             <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -462,7 +589,9 @@
                 {{ _('Over pace') }}
             </span>
             {% endif %}
+            {% if can_write('vehicles') %}
             <a href="{{ url_for('vehicles.edit', vehicle_id=vehicle.id) }}" class="text-sm text-primary-600 hover:text-primary-500">{{ _('Edit') }}</a>
+            {% endif %}
         </div>
     </div>
 
@@ -470,7 +599,7 @@
         <!-- Progress bars -->
         <div class="mb-4">
             <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                <span>{{ _('Distance') }}: {{ "{:,}".format(ms.driven) }} / {{ "{:,}".format(ms.limit|int) }} {{ vehicle.get_effective_odometer_unit() }}</span>
+                <span>{{ vehicle.get_span_label() }}: {{ "{:,}".format(ms.driven) }} / {{ "{:,}".format(ms.limit|int) }} {{ vehicle.get_reading_unit() }}</span>
                 <span>{{ ms.progress_pct }}%</span>
             </div>
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative overflow-hidden">
@@ -491,7 +620,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
             <div class="text-center">
                 <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ "{:,}".format(ms.remaining) }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ vehicle.get_effective_odometer_unit() }} {{ _('remaining') }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ vehicle.get_reading_unit() }} {{ _('remaining') }}</p>
             </div>
             <div class="text-center">
                 <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ ms.days_remaining }}</p>
@@ -513,7 +642,7 @@
 <!-- Reminders Section -->
 {% if reminders %}
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center">
             <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -527,12 +656,14 @@
         <li class="px-6 py-4 hover:bg-gray-50 dark:bg-gray-700">
             <div class="flex items-center justify-between gap-4">
                 <div class="flex items-center space-x-3 min-w-0 flex-1">
+                    {% if can_write('reminders') %}
                     <form method="POST" action="{{ url_for('reminders.complete', reminder_id=reminder.id) }}?return_to=vehicle" class="flex-shrink-0">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 hover:bg-green-50 flex items-center justify-center transition-colors"
                                 title="{{ _('Mark as completed') }}">
                         </button>
                     </form>
+                    {% endif %}
                     <div class="min-w-0">
                         <div class="flex items-center gap-2 min-w-0">
                             <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ reminder.title }}</p>
@@ -567,12 +698,14 @@
                             {% endif %}
                         </p>
                     </div>
+                    {% if can_write('reminders') %}
                     <a href="{{ url_for('reminders.edit', reminder_id=reminder.id) }}"
                        class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-400" title="Edit">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                         </svg>
                     </a>
+                    {% endif %}
                 </div>
             </div>
         </li>
@@ -623,7 +756,7 @@
 {% if maintenance_schedules %}
 <!-- Upcoming Maintenance -->
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center">
             <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -652,7 +785,7 @@
                         <span>{{ schedule.next_due_date|format_date }}</span>
                         {% endif %}
                         {% if schedule.next_due_odometer %}
-                        <span>{{ schedule.next_due_odometer|int }} {{ vehicle.get_effective_odometer_unit() }}</span>
+                        <span>{{ schedule.next_due_odometer|int }} {{ vehicle.get_reading_unit() }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -676,7 +809,7 @@
 
 <!-- Parts & Consumables -->
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8" id="parts-section">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
             <button onclick="toggleParts()" class="flex items-center gap-2 text-left" title="{{ _('Toggle section') }}">
                 <svg id="parts-chevron" class="h-4 w-4 text-gray-400 transition-transform duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -732,6 +865,7 @@
     {% else %}
     <div class="px-6 py-8 text-center">
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ _('No parts added yet.') }}</p>
+        {% if can_write('vehicles') %}
         <a href="{{ url_for('vehicles.new_part', vehicle_id=vehicle.id) }}"
            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
             <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -739,6 +873,7 @@
             </svg>
             {{ _('Add Part') }}
         </a>
+        {% endif %}
     </div>
     {% endif %}
     </div><!-- end parts-body -->
@@ -790,10 +925,25 @@
 </div>
 {% endif %}
 
+{% if expenses_by_category %}
+<!-- Expenses by Category for this vehicle (#287) -->
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+    <button type="button" onclick="toggleChart('expenses')" class="w-full flex items-center justify-between text-left">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Expenses by Category') }}</h2>
+        <svg id="expenses-chart-chevron" class="h-5 w-5 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+    <div id="expenses-chart-body" class="mt-4" style="position: relative; height: 250px;">
+        <canvas id="expensesChart"></canvas>
+    </div>
+</div>
+{% endif %}
+
 <!-- Recent Activity -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Fuel Logs') }}</h2>
             <span class="text-sm text-gray-500 dark:text-gray-400">{{ stats.fuel_logs_count }} total</span>
         </div>
@@ -805,7 +955,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-900 dark:text-white">{{ log.date|format_date }}</p>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                            {{ "%.0f"|format(log.odometer) }} {{ vehicle.get_effective_odometer_unit() }} &middot;
+                            {{ "%.0f"|format(log.odometer) }} {{ vehicle.get_reading_unit() }} &middot;
                             {{ "%.1f"|format(log.volume or 0) }} {{ current_user.volume_unit }}
                             {% if log.price_per_unit %}&middot; {{ "%.3f"|format(log.price_per_unit) }}/{{ current_user.volume_unit }}{% endif %}
                             {% if log.is_full_tank %}<span class="text-green-600">{{ _('(Full)') }}</span>{% endif %}
@@ -816,23 +966,28 @@
                             <p class="text-sm font-medium text-gray-900 dark:text-white">{{ (log.total_cost or 0)|money }} {{ current_user.currency }}</p>
                             {% set consumption = log.get_consumption(current_user.consumption_unit, current_user.volume_unit) %}
                             {% if consumption %}
-                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ "%.1f"|format(consumption) }} {{ current_user.consumption_unit }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ "%.1f"|format(consumption) }} {{ vehicle.get_consumption_unit() or current_user.consumption_unit }}</p>
                             {% endif %}
                         </div>
                         <div class="flex items-center gap-1">
-                            <a href="{{ url_for('fuel.edit', log_id=log.id) }}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600" title="Edit">
+                            {% if can_write('fuel') %}
+                            <a href="{{ url_for('fuel.edit', log_id=log.id, return_to='vehicle') }}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600" title="Edit">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
                             </a>
+                            {% endif %}
+                            {% if can_write('fuel') %}
                             <form method="POST" action="{{ url_for('fuel.delete', log_id=log.id) }}" class="inline" onsubmit="return confirm('{{ _('Delete this fuel log?') }}');">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="return_to" value="vehicle">
                                 <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600" title="Delete">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
                                 </button>
                             </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -845,7 +1000,7 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Expenses') }}</h2>
             <span class="text-sm text-gray-500 dark:text-gray-400">{{ stats.expenses_count }} total</span>
         </div>
@@ -864,12 +1019,15 @@
                     <div class="flex items-center gap-3 ml-4">
                         <p class="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ expense.cost|money }} {{ current_user.currency }}</p>
                         <div class="flex items-center gap-1">
-                            <a href="{{ url_for('expenses.edit', expense_id=expense.id) }}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600" title="Edit">
+                            {% if can_write('expenses') %}
+                            <a href="{{ url_for('expenses.edit', expense_id=expense.id, return_to='vehicle') }}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600" title="Edit">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
                             </a>
-                            <form method="POST" action="{{ url_for('expenses.delete', expense_id=expense.id) }}" class="inline" onsubmit="return confirm('{{ _('Delete this expense?') }}');">
+                            {% endif %}
+                            {% if can_write('expenses') %}
+                            <form method="POST" action="{{ url_for('expenses.delete', expense_id=expense.id, return_to='vehicle') }}" class="inline" onsubmit="return confirm('{{ _('Delete this expense?') }}');">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600" title="Delete">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -877,6 +1035,7 @@
                                     </svg>
                                 </button>
                             </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -908,6 +1067,7 @@
                     {% endif %}
                 </div>
                 {% if vehicle.is_active %}
+                {% if can_write('vehicles') %}
                 <form method="POST" action="{{ url_for('vehicles.archive', vehicle_id=vehicle.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit"
@@ -915,7 +1075,9 @@
                         {{ _('Archive Vehicle') }}
                     </button>
                 </form>
+                {% endif %}
                 {% else %}
+                {% if can_write('vehicles') %}
                 <form method="POST" action="{{ url_for('vehicles.unarchive', vehicle_id=vehicle.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit"
@@ -923,6 +1085,7 @@
                         {{ _('Restore Vehicle') }}
                     </button>
                 </form>
+                {% endif %}
                 {% endif %}
             </div>
         </div>
@@ -933,6 +1096,7 @@
                     <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ _('Delete this vehicle') }}</h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('Once you delete a vehicle, there is no going back. This will also delete all associated fuel logs and expenses.') }}</p>
                 </div>
+                {% if can_write('vehicles') %}
                 <form method="POST" action="{{ url_for('vehicles.delete', vehicle_id=vehicle.id) }}"
                       onsubmit="return confirm('{{ _('Are you sure you want to delete this vehicle? This action cannot be undone.') }}');">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -941,6 +1105,7 @@
                         {{ _('Delete Vehicle') }}
                     </button>
                 </form>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -985,25 +1150,63 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!consumptionEl) return;
             if (data.consumption && data.consumption.length > 0) {
                 const ctx = consumptionEl.getContext('2d');
+
+                // A diesel that also tracks AdBlue logs two quite different
+                // fluids, so plot one line per fuel type rather than mixing
+                // them into a single misleading series (#319). Each point
+                // keeps its own slot on the x-axis, so two fills on one date
+                // are still two points.
+                const dates = data.consumption.map(d => d.date);
+                const typeLabels = {};
+                data.consumption.forEach(d => {
+                    typeLabels[d.fuel_type || 'unknown'] = d.fuel_type_label || d.fuel_type || 'unknown';
+                });
+
+                const typeColours = {
+                    petrol: 'rgb(14, 165, 233)',
+                    diesel: 'rgb(234, 88, 12)',
+                    electric: 'rgb(16, 185, 129)',
+                    hybrid: 'rgb(250, 204, 21)',
+                    plugin_hybrid: 'rgb(132, 204, 22)',
+                    lpg: 'rgb(168, 85, 247)',
+                    cng: 'rgb(236, 72, 153)',
+                    hydrogen: 'rgb(6, 182, 212)',
+                    e85: 'rgb(217, 70, 239)',
+                    other: 'rgb(100, 116, 139)'
+                };
+                const fallbackColours = ['rgb(59, 130, 246)', 'rgb(239, 68, 68)', 'rgb(34, 197, 94)', 'rgb(245, 158, 11)', 'rgb(139, 92, 246)'];
+                const fuelTypes = Object.keys(typeLabels);
+                const unit = {{ (vehicle.get_consumption_unit() or current_user.consumption_unit)|tojson }};
+                const datasets = fuelTypes.map((ft, i) => {
+                    const colour = typeColours[ft] || fallbackColours[i % fallbackColours.length];
+                    // A single series keeps the filled look it has always had;
+                    // several would obscure each other, so they stay as lines.
+                    const single = fuelTypes.length === 1;
+                    return {
+                        label: typeLabels[ft] + ' (' + unit + ')',
+                        data: data.consumption.map(d => (d.fuel_type || 'unknown') === ft ? d.consumption : null),
+                        borderColor: colour,
+                        backgroundColor: single ? colour.replace('rgb(', 'rgba(').replace(')', ', 0.1)') : colour,
+                        tension: 0.3,
+                        fill: single,
+                        spanGaps: true
+                    };
+                });
+
                 chartInstances['consumption'] = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: data.consumption.map(d => d.date),
-                        datasets: [{
-                            label: {{ (_('Consumption') + ' (' + current_user.consumption_unit + ')')|tojson }},
-                            data: data.consumption.map(d => d.consumption),
-                            borderColor: 'rgb(14, 165, 233)',
-                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        }]
+                        labels: dates,
+                        datasets: datasets
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                display: false
+                                // Only worth showing the key once more than
+                                // one fuel type is being charted.
+                                display: datasets.length > 1
                             }
                         },
                         scales: {
@@ -1011,7 +1214,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 beginAtZero: false,
                                 title: {
                                     display: true,
-                                    text: {{ current_user.consumption_unit|tojson }}
+                                    text: {{ (vehicle.get_consumption_unit() or current_user.consumption_unit)|tojson }}
                                 }
                             }
                         }
@@ -1059,6 +1262,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 showChartFallback(priceEl, {{ _('No fuel prices recorded yet.')|tojson }});
             }
         });
+});
+
+// Expenses by category for this vehicle (#287). Rendered from server-side
+// data so labels are translated, and kept out of the stats fetch above so
+// vehicles without a consumption chart (EVs) still get it.
+document.addEventListener('DOMContentLoaded', function() {
+    const expensesEl = document.getElementById('expensesChart');
+    if (!expensesEl) return;
+    restoreChartState('expenses');
+    const categoryData = {{ expenses_by_category | tojson }};
+    const labels = Object.keys(categoryData);
+    chartInstances['expenses'] = new Chart(expensesEl.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: labels.map(l => categoryData[l]),
+                backgroundColor: [
+                    'rgba(239, 68, 68, 0.8)', 'rgba(245, 158, 11, 0.8)',
+                    'rgba(34, 197, 94, 0.8)', 'rgba(14, 165, 233, 0.8)',
+                    'rgba(168, 85, 247, 0.8)', 'rgba(236, 72, 153, 0.8)',
+                    'rgba(20, 184, 166, 0.8)', 'rgba(249, 115, 22, 0.8)',
+                    'rgba(99, 102, 241, 0.8)', 'rgba(107, 114, 128, 0.8)',
+                    'rgba(132, 204, 22, 0.8)'
+                ],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { beginAtZero: true }
+            }
+        }
+    });
 });
 
 function refreshDvlaStatus(vehicleId) {

@@ -7,6 +7,7 @@
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Documents') }}</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Vehicle documents, insurance, MOT certificates') }}</p>
     </div>
+    {% if can_write('documents') %}
     <a href="{{ url_for('documents.new') }}"
        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -14,6 +15,7 @@
         </svg>
         {{ _('Upload Document') }}
     </a>
+    {% endif %}
 </div>
 
 <!-- Filter by vehicle -->
@@ -100,6 +102,7 @@
     <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ _('No documents') }}</h3>
     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Store your vehicle documents, insurance policies, and MOT certificates.') }}</p>
     <div class="mt-6">
+        {% if can_write('documents') %}
         <a href="{{ url_for('documents.new') }}"
            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,6 +110,7 @@
             </svg>
             {{ _('Upload Document') }}
         </a>
+        {% endif %}
     </div>
 </div>
 {% endif %}

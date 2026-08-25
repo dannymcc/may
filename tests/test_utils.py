@@ -1,7 +1,7 @@
 """Tests for app/utils.py — locale-tolerant helpers (#237, #238)."""
 import pytest
 
-from app.utils import parse_decimal, first_day_of_week
+from app.utils import parse_decimal, parse_fuel_level, first_day_of_week
 
 
 class TestParseDecimal:
@@ -74,6 +74,36 @@ class TestParseDecimal:
     def test_bool_rejected(self):
         with pytest.raises(ValueError):
             parse_decimal(True)
+
+
+class TestParseFuelLevel:
+    """Fuel gauge readings entered as a percentage of a full tank (#273)."""
+
+    def test_plain_percentage(self):
+        assert parse_fuel_level('75') == 75.0
+
+    def test_comma_decimal(self):
+        assert parse_fuel_level('62,5') == 62.5
+
+    def test_blank_is_absent(self):
+        assert parse_fuel_level('') is None
+        assert parse_fuel_level(None) is None
+
+    def test_bounds_are_inclusive(self):
+        assert parse_fuel_level(0) == 0.0
+        assert parse_fuel_level(100) == 100.0
+
+    def test_above_full_rejected(self):
+        with pytest.raises(ValueError):
+            parse_fuel_level('101')
+
+    def test_negative_rejected(self):
+        with pytest.raises(ValueError):
+            parse_fuel_level('-1')
+
+    def test_non_numeric_rejected(self):
+        with pytest.raises(ValueError):
+            parse_fuel_level('half full')
 
 
 class TestFirstDayOfWeek:

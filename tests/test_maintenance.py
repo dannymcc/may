@@ -97,7 +97,7 @@ class TestMaintenanceDelete:
         schedule_id = sample_schedule.id
         resp = auth_client.post(f'/maintenance/{schedule_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert MaintenanceSchedule.query.get(schedule_id) is None
+        assert db.session.get(MaintenanceSchedule, schedule_id) is None
 
 
 class TestMaintenanceComplete:

@@ -36,6 +36,68 @@ class TestTripIndex:
         assert resp.status_code == 200
         assert b'Client meeting' in resp.data
 
+    def test_index_orders_same_day_trips_by_odometer(self, auth_client, test_user, sample_vehicle):
+        """Trips logged on the same date should be listed by odometer
+        (most recently driven first), not by insertion order (#325)."""
+        earlier = Trip(
+            vehicle_id=sample_vehicle.id,
+            user_id=test_user.id,
+            date=date(2024, 2, 1),
+            start_odometer=10000.0,
+            end_odometer=10050.0,
+            purpose='business',
+            description='Morning trip',
+        )
+        db.session.add(earlier)
+        db.session.commit()
+
+        later = Trip(
+            vehicle_id=sample_vehicle.id,
+            user_id=test_user.id,
+            date=date(2024, 2, 1),
+            start_odometer=10050.0,
+            end_odometer=10120.0,
+            purpose='business',
+            description='Afternoon trip',
+        )
+        db.session.add(later)
+        db.session.commit()
+
+        resp = auth_client.get('/trips/')
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        # The trip with the higher (later) odometer reading should be
+        # listed before the earlier same-day trip.
+        assert html.index('Afternoon trip') < html.index('Morning trip')
+
+    def test_index_still_orders_by_date_first(self, auth_client, test_user, sample_vehicle):
+        """The odometer tie-break must not displace the date ordering (#325)."""
+        older = Trip(
+            vehicle_id=sample_vehicle.id,
+            user_id=test_user.id,
+            date=date(2024, 2, 1),
+            start_odometer=20000.0,
+            end_odometer=20100.0,
+            purpose='business',
+            description='Older high-odometer trip',
+        )
+        newer = Trip(
+            vehicle_id=sample_vehicle.id,
+            user_id=test_user.id,
+            date=date(2024, 3, 1),
+            start_odometer=10000.0,
+            end_odometer=10100.0,
+            purpose='business',
+            description='Newer low-odometer trip',
+        )
+        db.session.add_all([older, newer])
+        db.session.commit()
+
+        resp = auth_client.get('/trips/')
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert html.index('Newer low-odometer trip') < html.index('Older high-odometer trip')
+
 
 class TestTripNew:
     def test_new_requires_auth(self, client):
@@ -127,7 +189,7 @@ class TestTripDelete:
         trip_id = sample_trip.id
         resp = auth_client.post(f'/trips/{trip_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert Trip.query.get(trip_id) is None
+        assert db.session.get(Trip, trip_id) is None
 
 
 @pytest.fixture
@@ -266,7 +328,7 @@ class TestTripTemplatesDelete:
         tmpl_id = sample_template.id
         resp = auth_client.post(f'/trips/templates/{tmpl_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert TripTemplate.query.get(tmpl_id) is None
+        assert db.session.get(TripTemplate, tmpl_id) is None
 
     def test_cannot_delete_other_users_template(self, client, app, sample_template):
         from app.models import User
@@ -276,7 +338,7 @@ class TestTripTemplatesDelete:
         db.session.commit()
         client.post('/auth/login', data={'username': 'other3', 'password': 'Pass123!'}, follow_redirects=True)
         resp = client.post(f'/trips/templates/{sample_template.id}/delete', follow_redirects=True)
-        assert TripTemplate.query.get(sample_template.id) is not None
+        assert db.session.get(TripTemplate, sample_template.id) is not None
 
 
 class TestTripTemplatesData:
@@ -342,3 +404,134 @@ class TestTripReport:
     def test_report_with_trips(self, auth_client, sample_trip):
         resp = auth_client.get('/trips/report')
         assert resp.status_code == 200
+
+
+class TestTripFuelLevel:
+    """Fuel gauge readings on trips (#273)."""
+
+    def test_fuel_used_from_levels_and_tank_capacity(self, app, sample_trip, sample_vehicle):
+        sample_vehicle.tank_capacity = 50.0
+        sample_trip.start_fuel_level = 80.0
+        sample_trip.end_fuel_level = 60.0
+        db.session.commit()
+        assert sample_trip.fuel_used == pytest.approx(10.0)
+
+    def test_fuel_used_none_without_tank_capacity(self, app, sample_trip, sample_vehicle):
+        sample_vehicle.tank_capacity = None
+        sample_trip.start_fuel_level = 80.0
+        sample_trip.end_fuel_level = 60.0
+        db.session.commit()
+        assert sample_trip.fuel_used is None
+
+    def test_fuel_used_none_without_readings(self, app, sample_trip, sample_vehicle):
+        sample_vehicle.tank_capacity = 50.0
+        sample_trip.start_fuel_level = 80.0
+        sample_trip.end_fuel_level = None
+        db.session.commit()
+        assert sample_trip.fuel_used is None
+
+    def test_fuel_used_none_when_refuelled_mid_trip(self, app, sample_trip, sample_vehicle):
+        """Ending fuller than it started means a fill-up, so the figure is meaningless."""
+        sample_vehicle.tank_capacity = 50.0
+        sample_trip.start_fuel_level = 30.0
+        sample_trip.end_fuel_level = 90.0
+        db.session.commit()
+        assert sample_trip.fuel_used is None
+
+    def test_create_trip_with_fuel_levels(self, auth_client, sample_vehicle, test_user):
+        resp = auth_client.post('/trips/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-03-01',
+            'start_odometer': '12000',
+            'end_odometer': '12200',
+            'start_fuel_level': '75',
+            'end_fuel_level': '50',
+            'purpose': 'business',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        trip = Trip.query.filter_by(start_odometer=12000.0).first()
+        assert trip is not None
+        assert trip.start_fuel_level == 75.0
+        assert trip.end_fuel_level == 50.0
+
+    def test_create_trip_without_fuel_levels(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/trips/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-03-02',
+            'start_odometer': '13000',
+            'end_odometer': '13100',
+            'start_fuel_level': '',
+            'end_fuel_level': '',
+            'purpose': 'personal',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        trip = Trip.query.filter_by(start_odometer=13000.0).first()
+        assert trip is not None
+        assert trip.start_fuel_level is None
+        assert trip.end_fuel_level is None
+
+    def test_create_trip_rejects_out_of_range_level(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/trips/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-03-03',
+            'start_odometer': '14000',
+            'end_odometer': '14100',
+            'start_fuel_level': '150',
+            'purpose': 'business',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        assert Trip.query.filter_by(start_odometer=14000.0).first() is None
+
+    def test_edit_trip_fuel_levels(self, auth_client, sample_trip):
+        resp = auth_client.post(f'/trips/{sample_trip.id}/edit', data={
+            'date': '2024-02-01',
+            'start_odometer': '10000',
+            'end_odometer': '10150',
+            'start_fuel_level': '90',
+            'end_fuel_level': '70.5',
+            'purpose': 'business',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(sample_trip)
+        assert sample_trip.start_fuel_level == 90.0
+        assert sample_trip.end_fuel_level == 70.5
+
+    def test_edit_trip_rejects_out_of_range_level(self, auth_client, sample_trip):
+        resp = auth_client.post(f'/trips/{sample_trip.id}/edit', data={
+            'date': '2024-02-01',
+            'start_odometer': '10000',
+            'end_odometer': '10150',
+            'start_fuel_level': '-5',
+            'purpose': 'business',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(sample_trip)
+        assert sample_trip.start_fuel_level is None
+
+    def test_index_shows_fuel_used(self, auth_client, sample_trip, sample_vehicle):
+        sample_vehicle.tank_capacity = 60.0
+        sample_trip.start_fuel_level = 100.0
+        sample_trip.end_fuel_level = 75.0
+        db.session.commit()
+        resp = auth_client.get('/trips/')
+        assert resp.status_code == 200
+        assert b'15.0' in resp.data
+
+    def test_index_shows_levels_without_tank_capacity(self, auth_client, sample_trip, sample_vehicle):
+        sample_vehicle.tank_capacity = None
+        sample_trip.start_fuel_level = 80.0
+        sample_trip.end_fuel_level = 55.0
+        db.session.commit()
+        resp = auth_client.get('/trips/')
+        assert resp.status_code == 200
+        assert b'80% ' in resp.data
+
+    def test_to_dict_includes_fuel_fields(self, app, sample_trip, sample_vehicle):
+        sample_vehicle.tank_capacity = 40.0
+        sample_trip.start_fuel_level = 50.0
+        sample_trip.end_fuel_level = 25.0
+        db.session.commit()
+        data = sample_trip.to_dict()
+        assert data['start_fuel_level'] == 50.0
+        assert data['end_fuel_level'] == 25.0
+        assert data['fuel_used'] == pytest.approx(10.0)

@@ -12,6 +12,7 @@ API Documentation: https://developer.tessie.com/
 import requests
 from datetime import datetime
 from app.models import AppSettings
+from app.utils import utcfromtimestamp, utcnow
 
 
 class TessieService:
@@ -96,7 +97,7 @@ class TessieService:
             'car_version': vehicle_state.get('car_version'),
             'latitude': drive_state.get('latitude'),
             'longitude': drive_state.get('longitude'),
-            'timestamp': datetime.utcnow()
+            'timestamp': utcnow()
         }
 
     @classmethod
@@ -248,7 +249,7 @@ class TessieService:
             if ts is None:
                 return None
             if isinstance(ts, int):
-                return datetime.utcfromtimestamp(ts)
+                return utcfromtimestamp(ts)
             if isinstance(ts, str):
                 return datetime.fromisoformat(ts.replace('Z', '+00:00'))
             return None

@@ -1,6 +1,7 @@
 """Shared utility helpers for May."""
 
 import re
+from datetime import datetime, timezone
 
 
 def parse_decimal(value, default=None):
@@ -79,6 +80,21 @@ def parse_decimal(value, default=None):
     return float(s)
 
 
+def parse_fuel_level(value, default=None):
+    """Parse a fuel gauge reading as a percentage of a full tank (#273).
+
+    Accepts the same locale variations as :func:`parse_decimal`. Empty / missing
+    input returns ``default``. Anything outside 0-100 raises ``ValueError``, so
+    callers can report it alongside their other validation failures.
+    """
+    level = parse_decimal(value, default)
+    if level is None:
+        return default
+    if level < 0 or level > 100:
+        raise ValueError(f"Fuel level {level!r} is outside 0-100")
+    return level
+
+
 # Locales whose calendars conventionally start the week on Sunday. Everything
 # else (the ISO 8601 default used across most of Europe) starts on Monday.
 _SUNDAY_FIRST_LOCALES = {'en', 'ja', 'ko', 'zh', 'pt'}
@@ -105,3 +121,42 @@ def first_day_of_week(locale):
         return 1
     base = tag.split('-', 1)[0]
     return 0 if base in _SUNDAY_FIRST_LOCALES else 1
+
+
+def utcnow():
+    """The current UTC time as a *naive* :class:`~datetime.datetime`.
+
+    A drop-in replacement for ``datetime.utcnow()``, which Python 3.12
+    deprecates. The obvious substitute, ``datetime.now(timezone.utc)``, is
+    timezone-aware, and every ``db.DateTime`` column in this application holds
+    naive UTC: storing an aware value would leave new rows carrying an offset
+    that older rows do not, and comparing the two raises ``TypeError``. So the
+    offset is computed and then dropped, leaving the same value ``utcnow()``
+    produced.
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def utcfromtimestamp(timestamp):
+    """A POSIX ``timestamp`` as a *naive* UTC datetime.
+
+    The counterpart to :func:`utcnow` for the equally deprecated
+    ``datetime.utcfromtimestamp()``; see that function for why the result is
+    naive.
+    """
+    return datetime.fromtimestamp(timestamp, timezone.utc).replace(tzinfo=None)
+
+
+def shared_reading_unit(vehicles, distance_unit):
+    """The unit a total across ``vehicles`` can honestly carry (#324).
+
+    A total over vehicles that all meter the same way is fine: distance
+    vehicles sum in ``distance_unit`` — the account preference their figures
+    were converted into — and hours vehicles in engine hours. Mix the two and
+    the sum is meaningless, so this returns ``None`` and the caller says so
+    rather than stamping a distance unit on it.
+    """
+    metering = {vehicle.tracks_hours() for vehicle in vehicles if vehicle is not None}
+    if len(metering) != 1:
+        return None
+    return 'h' if metering.pop() else distance_unit

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}{% if tire_set %}{{ _('Edit Tire Set') }}{% else %}{{ _('Add Tire Set') }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('tires.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; {{ _('Back to tires') }}</a>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">{% if tire_set %}{{ _('Edit Tire Set') }}{% else %}{{ _('Add Tire Set') }}{% endif %}</h1>
+    </div>
+
+    <form method="POST" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label for="vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Vehicle') }} *</label>
+                    {% if tire_set %}
+                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ tire_set.vehicle.name }}</p>
+                    {% else %}
+                    <select name="vehicle_id" id="vehicle_id" required
+                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                        {% for vehicle in vehicles %}
+                        <option value="{{ vehicle.id }}"
+                                data-odometer-unit="{{ vehicle.get_reading_unit() }}"
+                                data-hours-metered="{{ 'true' if vehicle.tracks_hours() else 'false' }}"
+                                {% if selected_vehicle_id == vehicle.id %}selected{% endif %}>
+                            {{ vehicle.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Name') }} *</label>
+                    <input type="text" name="name" id="name" required maxlength="100"
+                           value="{{ tire_set.name if tire_set else '' }}"
+                           placeholder="{{ _('e.g., Michelin Alpin 6') }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+
+                <div>
+                    <label for="tire_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Type') }}</label>
+                    <select name="tire_type" id="tire_type"
+                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                        {% for value, label in tire_types %}
+                        <option value="{{ value }}" {% if tire_set and tire_set.tire_type == value %}selected{% elif not tire_set and value == 'all_season' %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="size" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Size') }}</label>
+                    <input type="text" name="size" id="size" maxlength="50"
+                           value="{{ tire_set.size if tire_set and tire_set.size else '' }}"
+                           placeholder="{{ _('e.g., 205/55 R16 91H') }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+
+                <div>
+                    <label for="cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Cost') }} ({{ current_user.currency }})</label>
+                    <input type="number" name="cost" id="cost" step="0.01"
+                           value="{{ tire_set.cost if tire_set and tire_set.cost is not none else '' }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+
+                <div>
+                    <label for="purchase_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Purchase date') }}</label>
+                    <input type="text" name="purchase_date" id="purchase_date" data-datepicker
+                           value="{{ tire_set.purchase_date.strftime('%Y-%m-%d') if tire_set and tire_set.purchase_date else '' }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                </div>
+
+                <div>
+                    <label for="purchase_odometer" id="purchase-odometer-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300"><span id="purchase-reading-word">{% if tire_set and tire_set.vehicle.tracks_hours() %}{{ _('Engine hours when bought') }}{% else %}{{ _('Odometer when bought') }}{% endif %}</span> (<span id="purchase-reading-unit">{{ tire_set.vehicle.get_reading_unit() if tire_set else current_user.distance_unit }}</span>)</label>
+                    <input type="number" name="purchase_odometer" id="purchase_odometer" step="0.1"
+                           value="{{ tire_set.purchase_odometer if tire_set and tire_set.purchase_odometer is not none else '' }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('Optional. Kept for reference; the distance covered comes from when the set is on the vehicle.') }}</p>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Notes') }}</label>
+                    <textarea name="notes" id="notes" rows="3"
+                              class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">{{ tire_set.notes if tire_set and tire_set.notes else '' }}</textarea>
+                </div>
+
+                {% if tire_set %}
+                <div class="sm:col-span-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="is_retired" {% if tire_set.is_retired %}checked{% endif %}
+                               class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                        <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ _('Retired (worn out or sold)') }}</span>
+                    </label>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <a href="{{ url_for('tires.index') }}"
+               class="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                {{ _('Cancel') }}
+            </a>
+            <button type="submit"
+                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                {% if tire_set %}{{ _('Save Changes') }}{% else %}{{ _('Add Tire Set') }}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const T_BOUGHT_ODOMETER = {{ _('Odometer when bought')|tojson }};
+    const T_BOUGHT_HOURS = {{ _('Engine hours when bought')|tojson }};
+    (function() {
+        const vehicleSelect = document.getElementById('vehicle_id');
+        const odometerLabel = document.getElementById('purchase-odometer-label');
+        if (!vehicleSelect || !odometerLabel) return;
+
+        function updateOdometerUnit() {
+            const selected = vehicleSelect.options[vehicleSelect.selectedIndex];
+            if (!selected) return;
+            // A set fitted to hours-metered plant was bought at an hour
+            // reading, not a mileage (#324). Word and unit each live in
+            // their own span, so neither overwrites the other.
+            const word = document.getElementById('purchase-reading-word');
+            if (word) {
+                word.textContent = selected.dataset.hoursMetered === 'true'
+                    ? T_BOUGHT_HOURS : T_BOUGHT_ODOMETER;
+            }
+            const unitEl = document.getElementById('purchase-reading-unit');
+            if (unitEl && selected.dataset.odometerUnit) {
+                unitEl.textContent = selected.dataset.odometerUnit;
+            }
+        }
+
+        vehicleSelect.addEventListener('change', updateOdometerUnit);
+        updateOdometerUnit();
+    })();
+</script>
+{% endblock %}

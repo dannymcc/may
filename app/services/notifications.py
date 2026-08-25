@@ -6,6 +6,7 @@ from email.mime.multipart import MIMEMultipart
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 from app.models import AppSettings
+from app.utils import utcnow
 
 
 class NotificationService:
@@ -174,7 +175,7 @@ class NotificationService:
             'title': title,
             'message': message,
             'user_email': user.email,
-            'timestamp': __import__('datetime').datetime.utcnow().isoformat(),
+            'timestamp': utcnow().isoformat(),
         }
         if reminder:
             payload.update({

@@ -33,11 +33,11 @@
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-5">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Total Distance') }}</dt>
-        <dd class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{ "%.1f"|format(total_distance) }} <span class="text-lg font-normal text-gray-500 dark:text-gray-400">{{ current_user.distance_unit }}</span></dd>
+        <dd class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{ "%.1f"|format(total_distance) }} <span class="text-lg font-normal text-gray-500 dark:text-gray-400">{% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('mixed units') }}</span>{% endif %}</span></dd>
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-5 border-2 border-green-200 dark:border-green-800">
         <dt class="text-sm font-medium text-green-600 dark:text-green-400">{{ _('Business Distance') }}</dt>
-        <dd class="mt-1 text-3xl font-semibold text-green-600 dark:text-green-400">{{ "%.1f"|format(business_distance) }} <span class="text-lg font-normal text-green-500 dark:text-green-500">{{ current_user.distance_unit }}</span></dd>
+        <dd class="mt-1 text-3xl font-semibold text-green-600 dark:text-green-400">{{ "%.1f"|format(business_distance) }} <span class="text-lg font-normal text-green-500 dark:text-green-500">{% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('mixed units') }}</span>{% endif %}</span></dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ _('Tax deductible') }}</dd>
     </div>
 </div>
@@ -65,7 +65,7 @@
                     <span class="text-sm text-gray-500 dark:text-gray-400">{{ data.count }} {{ _('trips') }}</span>
                 </div>
                 <div class="mt-2">
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ "%.1f"|format(data.distance) }} {{ current_user.distance_unit }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ "%.1f"|format(data.distance) }} {% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('mixed units') }}</span>{% endif %}</p>
                     {% if total_distance > 0 %}
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ "%.1f"|format(data.distance / total_distance * 100) }}% {{ _('of total') }}</p>
                     {% endif %}
@@ -117,14 +117,14 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">{{ trip.description or '-' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">{{ "%.1f"|format(trip.distance) }} {{ current_user.distance_unit }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">{{ "%.1f"|format(trip.distance) }} {{ trip.vehicle.get_reading_unit() }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot class="bg-gray-50 dark:bg-gray-700">
                 <tr>
                     <td colspan="4" class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{{ _('Total') }}</td>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white text-right">{{ "%.1f"|format(total_distance) }} {{ current_user.distance_unit }}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white text-right">{{ "%.1f"|format(total_distance) }} {% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('mixed units') }}</span>{% endif %}</td>
                 </tr>
             </tfoot>
         </table>

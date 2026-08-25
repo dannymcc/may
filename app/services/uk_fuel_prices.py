@@ -22,6 +22,10 @@ import requests
 
 from app import db
 from app.models import AppSettings, FuelPriceHistory, FuelStation
+from app.utils import utcnow
+
+#: Value stored in FuelStation.price_source for forecourts from this scheme.
+PRICE_SOURCE = 'uk_fuel_prices'
 
 # Setting keys
 SETTING_ENABLED = 'uk_fuel_prices_enabled'
@@ -231,10 +235,22 @@ class UKFuelPriceService:
     def match_forecourt(cls, station, forecourts):
         """Find the forecourt matching a saved station, or None.
 
-        Matching is by postcode first. Where a postcode covers more than one
-        forecourt, the nearest one within MATCH_RADIUS_KM wins, falling back
-        to a brand match and finally to the first candidate.
+        A station already linked to a scheme site_id is matched on that id
+        alone: identity beats guesswork, and a link that has dropped out of
+        the feed should read as unmatched rather than silently resolve to a
+        different forecourt.
+
+        Otherwise matching is by postcode. Where a postcode covers more than
+        one forecourt, the nearest one within MATCH_RADIUS_KM wins, falling
+        back to a brand match and finally to the first candidate.
         """
+        if station.price_source == PRICE_SOURCE and station.external_id:
+            for forecourt in forecourts:
+                site_id = forecourt.get('site_id')
+                if site_id is not None and str(site_id) == station.external_id:
+                    return forecourt
+            return None
+
         postcode_key = cls.normalise_postcode(station.postcode)
         if not postcode_key:
             return None
@@ -329,8 +345,13 @@ class UKFuelPriceService:
             'errors': [],
         }
 
-        # Stations without a postcode can't be matched to a forecourt.
-        matchable = [s for s in stations if cls.normalise_postcode(s.postcode)]
+        # Stations without a postcode can't be matched to a forecourt unless
+        # a previous run already linked them to a scheme site_id.
+        matchable = [
+            s for s in stations
+            if cls.normalise_postcode(s.postcode)
+            or (s.price_source == PRICE_SOURCE and s.external_id)
+        ]
         stats['skipped'] = len(stations) - len(matchable)
         if not matchable:
             return stats
@@ -347,10 +368,13 @@ class UKFuelPriceService:
                 stats['unmatched'] += 1
                 continue
             stats['matched'] += 1
+            # Remember which forecourt this was, so later runs go straight
+            # to it instead of re-running the postcode heuristics.
+            station.link_price_source(PRICE_SOURCE, forecourt.get('site_id'))
             stats['prices'] += cls.record_prices(station, forecourt)
 
         db.session.commit()
-        AppSettings.set(SETTING_LAST_RUN, datetime.utcnow().isoformat())
+        AppSettings.set(SETTING_LAST_RUN, utcnow().isoformat())
 
         return stats
 
@@ -369,7 +393,7 @@ class UKFuelPriceService:
                 previous = datetime.fromisoformat(last_run)
             except ValueError:
                 previous = None
-            if previous and datetime.utcnow() - previous < timedelta(hours=min_interval_hours):
+            if previous and utcnow() - previous < timedelta(hours=min_interval_hours):
                 return None
 
         return cls.refresh_prices()

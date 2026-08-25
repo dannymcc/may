@@ -186,11 +186,11 @@ msgstr "走行距離 (km/mi)"
 msgid "Hours"
 msgstr "時間"
 
-#: app/models.py:1022
+#: app/models.py:1116 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "キロメートル (km)"
 
-#: app/models.py:1023
+#: app/models.py:1117 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "マイル (mi)"
 
@@ -4068,9 +4068,50 @@ msgstr "単位"
 msgid "Select unit..."
 msgstr "単位を選択..."
 
+#: app/templates/auth/settings.html:138
 #: app/templates/vehicles/part_form.html:58
 msgid "Liters (L)"
 msgstr "リットル (L)"
+
+#: app/templates/auth/settings.html:118
+msgid "DD/MM/YYYY"
+msgstr "日/月/年"
+
+#: app/templates/auth/settings.html:119
+msgid "MM/DD/YYYY"
+msgstr "月/日/年"
+
+#: app/templates/auth/settings.html:120
+msgid "YYYY-MM-DD"
+msgstr "年-月-日"
+
+#: app/templates/auth/settings.html:121
+msgid "DD.MM.YYYY"
+msgstr "日.月.年"
+
+#: app/templates/auth/settings.html:139
+msgid "UK Gallons (gal)"
+msgstr "英ガロン (gal)"
+
+#: app/templates/auth/settings.html:140
+msgid "US Gallons (gal)"
+msgstr "米ガロン (gal)"
+
+#: app/templates/auth/settings.html:149
+msgid "MPG (UK)"
+msgstr "MPG（英）"
+
+#: app/templates/auth/settings.html:150
+msgid "MPG (US)"
+msgstr "MPG（米）"
+
+#: app/templates/auth/settings.html:148
+msgid "L/100km"
+msgstr "L/100km"
+
+#: app/templates/auth/settings.html:151
+msgid "km/L"
+msgstr "km/L"
 
 #: app/templates/vehicles/part_form.html:59
 msgid "Milliliters (ml)"
@@ -4444,6 +4485,26 @@ msgstr "消費トレンドを表示するデータが不足しています。満
 #: app/templates/vehicles/view.html:1043
 msgid "No fuel prices recorded yet."
 msgstr "まだ燃料価格が記録されていません。"
+
+#: app/models.py:388 app/templates/maintenance/form.html:115
+msgid "Engine hours"
+msgstr "エンジンアワー"
+
+#: app/templates/maintenance/form.html:81
+msgid "Every (hours)"
+msgstr "毎 (時間)"
+
+#: app/templates/maintenance/form.html:84
+msgid "e.g., 250"
+msgstr "例: 250"
+
+#: app/templates/vehicles/view.html:162
+msgid "Total Hours"
+msgstr "総稼働時間"
+
+#: app/templates/maintenance/form.html:86
+msgid "This vehicle is metered in engine hours, so its service interval is counted in hours."
+msgstr "この車両はエンジンアワーで計測するため、点検間隔は時間で数えます。"
 
 #~ msgid "Quarterly (3 months)"
 #~ msgstr "四半期ごと（3ヶ月ごと）"

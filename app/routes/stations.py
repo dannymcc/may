@@ -62,7 +62,7 @@ def new():
 @login_required
 def edit(station_id):
     """Edit a fuel station"""
-    station = FuelStation.query.get_or_404(station_id)
+    station = db.get_or_404(FuelStation, station_id)
 
     if request.method == 'POST':
         station.name = request.form.get('name')
@@ -93,7 +93,7 @@ def edit(station_id):
 @login_required
 def toggle_favorite(station_id):
     """Toggle favorite status"""
-    station = FuelStation.query.get_or_404(station_id)
+    station = db.get_or_404(FuelStation, station_id)
 
     station.is_favorite = not station.is_favorite
     db.session.commit()
@@ -105,7 +105,7 @@ def toggle_favorite(station_id):
 @login_required
 def delete(station_id):
     """Delete a fuel station"""
-    station = FuelStation.query.get_or_404(station_id)
+    station = db.get_or_404(FuelStation, station_id)
 
     name = station.name
     db.session.delete(station)
@@ -137,7 +137,7 @@ def api_list():
 @login_required
 def price_history(station_id):
     """View price history for a station"""
-    station = FuelStation.query.get_or_404(station_id)
+    station = db.get_or_404(FuelStation, station_id)
 
     # Get price history ordered by date
     price_records = FuelPriceHistory.query.filter_by(station_id=station_id).order_by(
@@ -203,7 +203,7 @@ def refresh_uk_prices():
 @login_required
 def refresh_station_uk_prices(station_id):
     """Pull live UK forecourt prices for a single station"""
-    station = FuelStation.query.get_or_404(station_id)
+    station = db.get_or_404(FuelStation, station_id)
 
     if not UKFuelPriceService.is_enabled():
         flash(_('UK fuel prices are not enabled. An admin can turn them on in Settings.'), 'error')
@@ -223,7 +223,7 @@ def delete_price(price_id):
     Lets users clean up stale or orphan rows in the Cheapest Fuel table
     (e.g. entries left behind by test logs or pre-cleanup-logic versions).
     """
-    price = FuelPriceHistory.query.get_or_404(price_id)
+    price = db.get_or_404(FuelPriceHistory, price_id)
 
     if price.user_id != current_user.id:
         flash(_('You can only delete your own price entries'), 'error')

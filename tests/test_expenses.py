@@ -158,7 +158,7 @@ class TestExpenseDelete:
         # Use correct URL
         resp = auth_client.post(f'/expenses/{expense_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert Expense.query.get(expense_id) is None
+        assert db.session.get(Expense, expense_id) is None
 
 
 class TestExpenseAttachments:
@@ -251,7 +251,7 @@ class TestExpenseAttachments:
             f'/expenses/{sample_expense.id}/attachments/{first_id}/delete',
             follow_redirects=True)
         assert resp.status_code == 200
-        assert Attachment.query.get(first_id) is None
+        assert db.session.get(Attachment, first_id) is None
         assert sample_expense.attachments.count() == 1
 
 
@@ -289,6 +289,23 @@ class TestExpenseCategories:
         assert resp.status_code == 200
         assert b'12345' in resp.data
 
+    def test_maintenance_odometer_updates_last_odometer(self, auth_client, sample_vehicle):
+        # #286 — the odometer logged with a maintenance expense should show up
+        # as the vehicle's latest reading.
+        resp = auth_client.post('/expenses/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-03-05',
+            'category': 'maintenance',
+            'description': 'Oil change',
+            'cost': '75.00',
+            'odometer': '23450',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+
+        resp = auth_client.get(f'/api/vehicles/{sample_vehicle.id}/last-odometer')
+        assert resp.status_code == 200
+        assert resp.get_json()['odometer'] == 23450
+
     def test_expense_list_shows_expandable_details(self, auth_client, test_user, sample_vehicle):
         expense = Expense(
             vehicle_id=sample_vehicle.id,
@@ -306,3 +323,75 @@ class TestExpenseCategories:
         assert resp.status_code == 200
         assert b'AutoShop Ltd' in resp.data
         assert b'Front brakes replaced' in resp.data
+
+
+class TestExpenseRedirects:
+    """Saving an expense returns to the expenses list unless the user came
+    from a vehicle page (#283)."""
+
+    def _payload(self, vehicle, **overrides):
+        data = {
+            'vehicle_id': str(vehicle.id),
+            'date': '2024-04-01',
+            'category': 'maintenance',
+            'description': 'Redirect test',
+            'cost': '25.00',
+        }
+        data.update(overrides)
+        return data
+
+    def test_create_redirects_to_expenses(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/expenses/new', data=self._payload(sample_vehicle),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/expenses/')
+
+    def test_create_returns_to_vehicle_when_requested(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/expenses/new',
+                                data=self._payload(sample_vehicle, return_to='vehicle'),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{sample_vehicle.id}')
+
+    def test_edit_redirects_to_expenses(self, auth_client, sample_expense):
+        resp = auth_client.post(f'/expenses/{sample_expense.id}/edit',
+                                data=self._payload(sample_expense.vehicle),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/expenses/')
+
+    def test_edit_returns_to_vehicle_when_requested(self, auth_client, sample_expense):
+        vehicle_id = sample_expense.vehicle_id
+        resp = auth_client.post(f'/expenses/{sample_expense.id}/edit',
+                                data=self._payload(sample_expense.vehicle, return_to='vehicle'),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+
+    def test_delete_redirects_to_expenses(self, auth_client, sample_expense):
+        resp = auth_client.post(f'/expenses/{sample_expense.id}/delete',
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/expenses/')
+
+    def test_delete_returns_to_vehicle_when_requested(self, auth_client, sample_expense):
+        vehicle_id = sample_expense.vehicle_id
+        resp = auth_client.post(f'/expenses/{sample_expense.id}/delete?return_to=vehicle',
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+
+    def test_vehicle_page_expense_links_carry_return_to(self, auth_client, sample_expense):
+        resp = auth_client.get(f'/vehicles/{sample_expense.vehicle_id}')
+        assert resp.status_code == 200
+        assert b'return_to=vehicle' in resp.data
+
+    def test_form_from_vehicle_page_includes_hidden_field(self, auth_client, sample_vehicle):
+        resp = auth_client.get(f'/expenses/new?vehicle_id={sample_vehicle.id}&return_to=vehicle')
+        assert resp.status_code == 200
+        assert b'name="return_to" value="vehicle"' in resp.data
+
+    def test_form_from_expenses_page_omits_hidden_field(self, auth_client, sample_vehicle):
+        resp = auth_client.get('/expenses/new')
+        assert resp.status_code == 200
+        assert b'name="return_to"' not in resp.data

@@ -2,6 +2,9 @@
 {% block title %}{% if note %}{{ _('Edit Note') }}{% else %}{{ _('Add Note') }}{% endif %}{% endblock %}
 
 {% block content %}
+{% set selected_id = (note.vehicle_id if note else selected_vehicle_id) %}
+{% set preselected = vehicles | selectattr('id', 'equalto', selected_id if selected_id else -1) | list %}
+{% set form_vehicle = preselected[0] if preselected else (vehicles[0] if vehicles else None) %}
 <div class="max-w-2xl mx-auto">
     <div class="mb-6">
         <a href="{{ url_for('notes.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; {{ _('Back to notes') }}</a>
@@ -18,7 +21,8 @@
                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         {% for vehicle in vehicles %}
                         <option value="{{ vehicle.id }}"
-                                data-odometer-unit="{{ vehicle.get_effective_odometer_unit() }}"
+                                data-odometer-unit="{{ vehicle.get_reading_unit() }}"
+                                data-reading-label="{{ vehicle.get_reading_label() }}"
                                 {% if (note and note.vehicle_id == vehicle.id) or (selected_vehicle_id == vehicle.id) %}selected{% endif %}>
                             {{ vehicle.name }}
                         </option>
@@ -34,7 +38,7 @@
                 </div>
 
                 <div>
-                    <label for="odometer" id="odometer-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Odometer') }} ({{ current_user.distance_unit }})</label>
+                    <label for="odometer" id="odometer-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ form_vehicle.get_reading_label() if form_vehicle else _('Odometer') }} ({{ form_vehicle.get_reading_unit() if form_vehicle else current_user.distance_unit }})</label>
                     <input type="number" name="odometer" id="odometer" step="0.1"
                            value="{{ note.odometer if note and note.odometer is not none else '' }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
@@ -56,6 +60,11 @@
                 </div>
             </div>
         </div>
+
+        <!-- Hidden field for return redirect -->
+        {% if request.args.get('return_to') == 'vehicle' or (request.referrer and '/vehicles/' in request.referrer) %}
+        <input type="hidden" name="return_to" value="vehicle">
+        {% endif %}
 
         <div class="flex justify-end space-x-3">
             <a href="{{ url_for('notes.index') }}"
@@ -80,7 +89,11 @@
         function updateOdometerUnit() {
             const selected = vehicleSelect.options[vehicleSelect.selectedIndex];
             const unit = selected ? selected.dataset.odometerUnit : '{{ current_user.distance_unit }}';
-            if (unit) {
+            // An hours-metered vehicle has no odometer to read (#324).
+            const readingLabel = selected ? selected.dataset.readingLabel : '';
+            if (readingLabel && unit) {
+                odometerLabel.textContent = readingLabel + ' (' + unit + ')';
+            } else if (unit) {
                 odometerLabel.textContent = odometerLabel.textContent.replace(/\([^)]*\)/, '(' + unit + ')');
             }
         }

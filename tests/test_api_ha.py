@@ -262,7 +262,7 @@ class TestHaAddFuel:
         data = resp.get_json()
         assert data['success'] is True
         assert 'id' in data
-        log = FuelLog.query.get(data['id'])
+        log = _db_ext.session.get(FuelLog, data['id'])
         assert log is not None
         assert log.user_id == ha_vehicle.owner_id
 

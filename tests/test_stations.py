@@ -106,7 +106,7 @@ class TestStationDelete:
         station_id = sample_station.id
         resp = auth_client.post(f'/stations/{station_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert FuelStation.query.get(station_id) is None
+        assert db.session.get(FuelStation, station_id) is None
 
     def test_delete_station_with_price_history(self, auth_client, test_user, sample_station):
         # #256 — deleting a station with price rows must cascade rather than
@@ -125,7 +125,7 @@ class TestStationDelete:
         station_id = sample_station.id
         resp = auth_client.post(f'/stations/{station_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert FuelStation.query.get(station_id) is None
+        assert db.session.get(FuelStation, station_id) is None
         assert FuelPriceHistory.query.filter_by(station_id=station_id).count() == 0
 
 
@@ -192,7 +192,7 @@ class TestStationDeletePrice:
         price_id = price.id
         resp = auth_client.post(f'/stations/prices/{price_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert FuelPriceHistory.query.get(price_id) is None
+        assert db.session.get(FuelPriceHistory, price_id) is None
 
     def test_delete_price_other_user_blocked(self, auth_client, sample_station):
         from app.models import User
@@ -212,4 +212,4 @@ class TestStationDeletePrice:
         price_id = price.id
         resp = auth_client.post(f'/stations/prices/{price_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert FuelPriceHistory.query.get(price_id) is not None
+        assert db.session.get(FuelPriceHistory, price_id) is not None

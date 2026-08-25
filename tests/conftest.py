@@ -1,5 +1,14 @@
+import os
+
 import pytest
 from datetime import date
+
+# config.py generates and tries to persist a key at import time when SECRET_KEY
+# is unset, warning if the file cannot be written. Under test the key is
+# irrelevant (TestConfig sets its own), so pin one before app is imported.
+# setdefault, not assignment: tests that build a child environment from scratch
+# still control what the child sees.
+os.environ.setdefault('SECRET_KEY', 'test-secret')
 
 from app import create_app, db as _db_ext
 from app.models import User, Vehicle, FuelLog, Expense, Trip, ChargingSession
@@ -19,7 +28,6 @@ class TestConfig:
 @pytest.fixture(scope='function')
 def app():
     """Create a Flask application configured for testing."""
-    import os
     os.makedirs('/tmp/may_test_uploads', exist_ok=True)
 
     flask_app = create_app(TestConfig)

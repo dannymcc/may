@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from flask_babel import lazy_gettext as _l
 from app import db
+from app.utils import utcnow
 
 # Currency symbols for display in UI
 CURRENCY_SYMBOLS = {
@@ -33,6 +34,45 @@ def get_currency_symbol(currency_code):
     return CURRENCY_SYMBOLS.get(code, currency_code)
 
 
+# User roles (#285). Roles sit below the admin flag: an administrator always
+# has full access, and every other account carries one of these roles.
+#
+#   editor      - the historic behaviour: full control of the data for every
+#                 vehicle the account can see. This is the default.
+#   contributor - may record fuel fill-ups and charging sessions, and nothing
+#                 else. Intended for drivers.
+#   viewer      - may read everything the account can see, but change nothing.
+ROLE_EDITOR = 'editor'
+ROLE_CONTRIBUTOR = 'contributor'
+ROLE_VIEWER = 'viewer'
+
+USER_ROLES = [
+    (ROLE_EDITOR, _l('Editor')),
+    (ROLE_CONTRIBUTOR, _l('Contributor')),
+    (ROLE_VIEWER, _l('Viewer')),
+]
+
+USER_ROLE_DESCRIPTIONS = {
+    ROLE_EDITOR: _l('Full access to the vehicles and data this account can see.'),
+    ROLE_CONTRIBUTOR: _l('Can record fuel fill-ups and charging sessions. Everything else is read-only.'),
+    ROLE_VIEWER: _l('Read-only. Can see the data but cannot change anything.'),
+}
+
+# The areas of the application a role may write to. Every write route belongs
+# to exactly one of these scopes; see app/permissions.py for the mapping.
+WRITE_SCOPES = (
+    'vehicles', 'fuel', 'charging', 'expenses', 'maintenance', 'trips',
+    'reminders', 'documents', 'notes', 'stations', 'recurring', 'allowance',
+    'tires', 'import',
+)
+
+ROLE_WRITE_SCOPES = {
+    ROLE_EDITOR: set(WRITE_SCOPES),
+    ROLE_CONTRIBUTOR: {'fuel', 'charging'},
+    ROLE_VIEWER: set(),
+}
+
+
 # Association table for vehicle sharing
 vehicle_users = db.Table('vehicle_users',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
@@ -48,7 +88,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    role = db.Column(db.String(20), default=ROLE_EDITOR)  # editor, contributor, viewer (#285)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # User preferences
     language = db.Column(db.String(10), default='en')  # en, de, fr, es, etc.
@@ -82,7 +123,18 @@ class User(UserMixin, db.Model):
 
     # Menu preferences
     start_page = db.Column(db.String(50), default='dashboard')  # dashboard, vehicles, fuel, expenses, etc.
-    default_vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=True)
+    # users and vehicles reference each other on purpose: a vehicle has an
+    # owner, and a user may pin one of their vehicles as the default. The cycle
+    # leaves SQLAlchemy unable to order the two tables for CREATE or DROP, so
+    # this half -- the nullable one -- is marked use_alter: the constraint is
+    # emitted separately, after both tables exist. SQLite has no ALTER TABLE for
+    # constraints, so its DDL is unchanged and the foreign key stays inline;
+    # only PostgreSQL sees a separate ADD CONSTRAINT.
+    default_vehicle_id = db.Column(
+        db.Integer,
+        db.ForeignKey('vehicles.id', use_alter=True, name='fk_users_default_vehicle_id'),
+        nullable=True
+    )
     show_menu_vehicles = db.Column(db.Boolean, default=True)
     show_menu_fuel = db.Column(db.Boolean, default=True)
     show_menu_expenses = db.Column(db.Boolean, default=True)
@@ -95,6 +147,7 @@ class User(UserMixin, db.Model):
     show_menu_charging = db.Column(db.Boolean, default=True)
     show_menu_notes = db.Column(db.Boolean, default=True)  # issue #204
     show_menu_allowance = db.Column(db.Boolean, default=True)  # issue #208
+    show_menu_tires = db.Column(db.Boolean, default=True)  # issue #293
     show_quick_entry = db.Column(db.Boolean, default=False)  # Show quick entry button in navbar
 
     # Relationships
@@ -110,6 +163,41 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def effective_role(self):
+        """The role in force for this account (#285).
+
+        Administrators always have full access whatever is stored against
+        them, and an account with no role set (every account predating the
+        feature) is treated as an editor so behaviour is unchanged.
+        """
+        if self.is_admin:
+            return 'admin'
+        return self.role if self.role in ROLE_WRITE_SCOPES else ROLE_EDITOR
+
+    @property
+    def role_label(self):
+        """Translated label for the account's role, for display."""
+        if self.is_admin:
+            return _l('Administrator')
+        return dict(USER_ROLES).get(self.effective_role, self.effective_role)
+
+    def can_write(self, scope):
+        """Whether this account may add, change or delete data in ``scope``."""
+        if self.is_admin:
+            return True
+        return scope in ROLE_WRITE_SCOPES.get(self.effective_role, set())
+
+    @property
+    def has_full_write_access(self):
+        """Whether this account may write everywhere (admin or editor)."""
+        return self.is_admin or self.effective_role == ROLE_EDITOR
+
+    @property
+    def is_read_only(self):
+        """Whether this account may not write anywhere at all."""
+        return not self.is_admin and not ROLE_WRITE_SCOPES.get(self.effective_role)
 
     def get_all_vehicles(self):
         """Get all vehicles user has access to (owned + explicitly shared + instance-shared), sorted by make/model"""
@@ -127,7 +215,7 @@ class User(UserMixin, db.Model):
     def generate_reset_token(self):
         """Generate a password reset token valid for 1 hour"""
         self.password_reset_token = secrets.token_urlsafe(48)
-        self.password_reset_expires = datetime.utcnow() + timedelta(hours=1)
+        self.password_reset_expires = utcnow() + timedelta(hours=1)
         return self.password_reset_token
 
     def clear_reset_token(self):
@@ -141,14 +229,14 @@ class User(UserMixin, db.Model):
         if not token:
             return None
         user = User.query.filter_by(password_reset_token=token).first()
-        if user and user.password_reset_expires and user.password_reset_expires > datetime.utcnow():
+        if user and user.password_reset_expires and user.password_reset_expires > utcnow():
             return user
         return None
 
     def generate_api_key(self):
         """Generate a new API key for this user"""
         self.api_key = f"may_{secrets.token_hex(32)}"
-        self.api_key_created_at = datetime.utcnow()
+        self.api_key_created_at = utcnow()
         return self.api_key
 
     def revoke_api_key(self):
@@ -195,7 +283,7 @@ class Vehicle(db.Model):
 
     # Status
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # Image
     image_filename = db.Column(db.String(255))
@@ -243,17 +331,83 @@ class Vehicle(db.Model):
     charging_sessions = db.relationship('ChargingSession', backref='vehicle', lazy='dynamic',
                                         cascade='all, delete-orphan')
 
+    def tracks_hours(self):
+        """True when this vehicle's readings are engine hours, not distance (#323).
+
+        ``tracking_unit`` is the authority for how every ``odometer`` value
+        belonging to this vehicle is interpreted: a tractor logged at 50 is
+        at 50 engine hours, not 50 miles. Hours never convert by a distance
+        factor, so ``odometer_unit`` is meaningless for such a vehicle.
+        """
+        return self.tracking_unit == 'hours'
+
+    def has_odometer_readings(self):
+        """True when anything has already been logged against this odometer (#323).
+
+        Used to refuse a ``tracking_unit`` change that would silently
+        reinterpret existing readings — 50 miles becoming 50 hours.
+        """
+        if self.fuel_logs.first() is not None:
+            return True
+        if self.trips.filter(Trip.end_odometer.isnot(None)).first() is not None:
+            return True
+        if self.charging_sessions.filter(ChargingSession.odometer.isnot(None)).first() is not None:
+            return True
+        return self.expenses.filter(Expense.odometer.isnot(None)).first() is not None
+
     def get_effective_odometer_unit(self):
         """Return the odometer unit for this vehicle.
 
         Uses the vehicle's own odometer_unit if set, otherwise falls back to
-        the owner's distance_unit preference.
+        the owner's distance_unit preference. Only meaningful for a vehicle
+        tracked by distance; see :meth:`tracks_hours`.
         """
         if self.odometer_unit:
             return self.odometer_unit
         if self.owner:
             return self.owner.distance_unit
         return 'km'
+
+    def get_reading_unit(self):
+        """The unit to print beside one of this vehicle's readings (#282).
+
+        'h' for a vehicle metered in engine hours, otherwise its effective
+        odometer unit. This is a display label: never pass it to
+        :func:`_distance_in` or any other conversion, which want
+        :meth:`get_effective_odometer_unit`.
+        """
+        if self.tracks_hours():
+            return 'h'
+        return self.get_effective_odometer_unit()
+
+    def get_reading_label(self):
+        """What this vehicle's readings are called (#282).
+
+        A machine metered in hours has no odometer to read, so calling the
+        field "Odometer" on its forms is what the reporter of #282 ran into.
+        """
+        if self.tracks_hours():
+            return _l('Engine hours')
+        return _l('Odometer')
+
+    def get_span_label(self):
+        """What the gap between two of this vehicle's readings is called (#282)."""
+        if self.tracks_hours():
+            return _l('Hours')
+        return _l('Distance')
+
+    def get_consumption_unit(self):
+        """The unit to print beside :meth:`get_average_consumption` (#282).
+
+        An hours-tracked vehicle is averaged in litres per engine hour
+        whatever the account's preferred consumption unit says, because mpg,
+        km/L and L/100km are each named for a distance it never records.
+        Returns None for any other vehicle, so callers fall back to the
+        account preference they already hold.
+        """
+        if self.tracks_hours():
+            return 'L / h'
+        return None
 
     def get_total_fuel_cost(self):
         return sum(log.total_cost for log in self.fuel_logs.all() if log.total_cost)
@@ -311,7 +465,17 @@ class Vehicle(db.Model):
             distance_unit: If provided ('km' or 'mi'), converts the result
                 to this unit. Otherwise returns the raw value in the
                 vehicle's effective odometer unit.
+
+        For an hours-tracked vehicle the readings are engine hours, so the
+        span is returned as logged and ``distance_unit`` is ignored — there
+        is no km/mi conversion to apply to an hour (#323).
         """
+        if self.tracks_hours():
+            logs = self.fuel_logs.order_by(FuelLog.odometer).all()
+            if len(logs) < 2:
+                return 0
+            return logs[-1].odometer - logs[0].odometer
+
         # If Tessie is enabled, use the odometer reading directly (always stored in km)
         if self.uses_tessie_odometer() and self.tessie_last_odometer:
             odometer = self.tessie_last_odometer
@@ -328,7 +492,75 @@ class Vehicle(db.Model):
             return _distance_in(raw_distance, self.get_effective_odometer_unit(), distance_unit)
         return raw_distance
 
-    def _valid_consumption_segments(self):
+    def get_primary_fuel_type(self):
+        """The fuel this vehicle burns by default, propulsion resolved (#221)."""
+        return resolve_price_fuel_type(None, self.fuel_type)
+
+    def get_propulsion_fuel_types(self):
+        """Distinct fuels the fill-ups say this vehicle actually burns (#221).
+
+        A log without its own fuel type counts as the vehicle's primary fuel,
+        and propulsion labels are resolved to the fuel they burn, so a
+        hybrid's untyped rows and its explicit petrol rows are one fuel, not
+        two (#268). Auxiliary fluids are left out: AdBlue propels nothing
+        (#319). Ordered primary fuel first so bi-fuel vehicles read naturally.
+        """
+        types = {_propulsion_fuel_type(log.fuel_type or self.fuel_type)
+                 for log in self.fuel_logs.all()}
+        types.discard(None)
+        primary = self.get_primary_fuel_type()
+        return sorted(types, key=lambda ft: (ft != primary, ft))
+
+    def declares_second_fuel(self):
+        """True when the owner has declared a second fuel this vehicle burns.
+
+        Distinct from :meth:`runs_on_two_fuels`, which also wants fill-ups of
+        both to exist: the fuel form has to offer the distance field before
+        the first such fill-up, or the attribution could never be entered.
+        """
+        secondary = _propulsion_fuel_type(self.secondary_fuel_type)
+        return bool(secondary) and secondary != self.get_primary_fuel_type()
+
+    def runs_on_two_fuels(self):
+        """True when this vehicle burns two different fuels (#221).
+
+        An LPG conversion is the usual case: the owner declares a
+        ``secondary_fuel_type`` and fills up on both. That declaration is
+        what makes the odometer ambiguous — only the owner knows the car can
+        run on either — so it, not the mix of fuel types happening to appear
+        in the logs, is the gate. A plain hybrid whose older fill-ups predate
+        the fuel type selector must not be mistaken for a bi-fuel car (#268).
+
+        Both halves have to hold. Until fill-ups of both fuels exist there is
+        nothing to disentangle, so a declared bi-fuel car that has only ever
+        logged petrol keeps the ordinary odometer maths.
+        """
+        return self.declares_second_fuel() and len(self.get_propulsion_fuel_types()) > 1
+
+    def _other_fuel_odometers(self, fuel_type=None):
+        """Odometer readings of fill-ups of this vehicle's *other* fuel (#221).
+
+        A span containing one of these covers ground run on both fuels, so
+        its odometer difference says nothing about either and the driver's
+        own attribution is needed. A span with none of them is unambiguous:
+        a car converted to LPG last year keeps the ordinary odometer maths
+        over the years it ran on petrol alone.
+
+        Empty unless the vehicle actually runs on two fuels.
+        """
+        if not self.runs_on_two_fuels():
+            return []
+        target = fuel_type or self.get_primary_fuel_type()
+        return [log.odometer for log in self.fuel_logs.all()
+                if _propulsion_fuel_type(log.fuel_type or self.fuel_type) not in (None, target)]
+
+    @staticmethod
+    def _span_runs_on_both_fuels(other_odometers, start_odometer, end_odometer):
+        """True when a fill-up of the other fuel falls inside this span (#221)."""
+        return any(start_odometer < odometer <= end_odometer
+                   for odometer in other_odometers)
+
+    def _valid_consumption_segments(self, fuel_type=None):
         """Collect (distance, fuel) spans usable for the consumption average.
 
         Each span runs between consecutive full-tank fill-ups, counting every
@@ -338,18 +570,37 @@ class Vehicle(db.Model):
         usable, so one missed fill-up doesn't invalidate the whole history
         (issue #251).
 
+        Only logs of one fuel type are considered, defaulting to the
+        vehicle's own. A diesel that also tracks AdBlue keeps the two
+        apart: AdBlue is an auxiliary fluid, not propulsion, so pouring it
+        in must never move the diesel figure (issue #319).
+
+        Where a span covers ground run on both fuels the odometer cannot say
+        which miles went on which, so its distance is the one the driver
+        attributed to this fuel, and a span missing that attribution is
+        dropped rather than guessed at (issue #221).
+
         Returns ``None`` when there are fewer than two full-tank anchors,
         otherwise a (possibly empty) list of ``(distance, fuel)`` tuples.
+        The span is expressed in the vehicle's own ``tracking_unit`` — km or
+        miles for a distance-tracked vehicle, engine hours for one tracked by
+        hours (#323) — and is never converted here.
         """
-        full_logs = self.fuel_logs.filter_by(is_full_tank=True).order_by(FuelLog.odometer).all()
+        same_fuel = FuelLog.effective_fuel_type_filter(
+            fuel_type or resolve_price_fuel_type(None, self.fuel_type), self.fuel_type)
+        full_logs = self.fuel_logs.filter(
+            FuelLog.is_full_tank == True, same_fuel
+        ).order_by(FuelLog.odometer).all()
         if len(full_logs) < 2:
             return None
 
         range_logs = self.fuel_logs.filter(
             FuelLog.odometer > full_logs[0].odometer,
             FuelLog.odometer <= full_logs[-1].odometer,
+            same_fuel,
         ).order_by(FuelLog.odometer).all()
 
+        other_fuel_odometers = self._other_fuel_odometers(fuel_type)
         segments = []
         for start, end in zip(full_logs, full_logs[1:]):
             span_logs = [log for log in range_logs
@@ -357,20 +608,35 @@ class Vehicle(db.Model):
             if any(log.is_missed for log in span_logs):
                 continue
             fuel = sum(log.volume for log in span_logs if log.volume)
-            distance = end.odometer - start.odometer
+            if self._span_runs_on_both_fuels(other_fuel_odometers,
+                                             start.odometer, end.odometer):
+                distances = [log.fuel_distance for log in span_logs]
+                if any(distance is None for distance in distances):
+                    continue
+                distance = sum(distances)
+            else:
+                distance = end.odometer - start.odometer
             if distance > 0 and fuel > 0:
                 segments.append((distance, fuel))
         return segments
 
-    def get_average_consumption(self, consumption_unit=None, volume_unit='L'):
+    def get_average_consumption(self, consumption_unit=None, volume_unit='L', fuel_type=None):
         """Calculate average fuel consumption across full-tank fill-up spans.
 
         Spans contaminated by a missed fill-up are excluded rather than
         poisoning the whole figure (issue #251); the average covers every
-        remaining span, partial fills included (issue #169). Returns None
-        when no honest span exists.
+        remaining span, partial fills included (issue #169). Each fuel type
+        is averaged on its own, the vehicle's primary fuel by default
+        (issue #319). Returns None when no honest span exists.
+
+        An hours-tracked vehicle is averaged in litres per engine hour and
+        ``consumption_unit`` is ignored: mpg, km/L and L/100km are all named
+        for a distance this vehicle never records (issue #323).
+
+        On a bi-fuel vehicle the figure covers one fuel at a time and needs
+        the distance the driver attributed to that fuel (issue #221).
         """
-        segments = self._valid_consumption_segments()
+        segments = self._valid_consumption_segments(fuel_type)
         if not segments:
             return None
 
@@ -378,6 +644,8 @@ class Vehicle(db.Model):
         total_fuel = sum(fuel for _, fuel in segments)
 
         if total_distance > 0 and total_fuel > 0:
+            if self.tracks_hours():
+                return _to_litres(total_fuel, volume_unit) / total_distance
             odometer_unit = self.get_effective_odometer_unit()
             if consumption_unit == 'mpg':
                 miles = _distance_in(total_distance, odometer_unit, 'mi')
@@ -394,7 +662,7 @@ class Vehicle(db.Model):
             return (litres / km) * 100  # L/100km
         return None
 
-    def get_consumption_unavailable_reason(self):
+    def get_consumption_unavailable_reason(self, fuel_type=None):
         """Explain why :meth:`get_average_consumption` returns ``None``.
 
         Returns a stable reason code (translated for display in the template)
@@ -404,22 +672,52 @@ class Vehicle(db.Model):
 
         - ``'insufficient_full_tanks'`` — fewer than two full-tank fill-ups
         - ``'missed_fill_up'`` — every span is invalidated by a missed fill-up
+        - ``'needs_distance_attribution'`` — bi-fuel vehicle whose fill-ups
+          don't say how far the car ran on this fuel (issue #221)
         - ``'insufficient_data'`` — not enough distance/volume to calculate
         """
-        segments = self._valid_consumption_segments()
+        segments = self._valid_consumption_segments(fuel_type)
         if segments is None:
             return 'insufficient_full_tanks'
         if segments:
             return None
 
-        full_logs = self.fuel_logs.filter_by(is_full_tank=True).order_by(FuelLog.odometer).all()
+        same_fuel = FuelLog.effective_fuel_type_filter(
+            fuel_type or resolve_price_fuel_type(None, self.fuel_type), self.fuel_type)
+        full_logs = self.fuel_logs.filter(
+            FuelLog.is_full_tank == True, same_fuel
+        ).order_by(FuelLog.odometer).all()
         range_logs = self.fuel_logs.filter(
             FuelLog.odometer > full_logs[0].odometer,
             FuelLog.odometer <= full_logs[-1].odometer,
+            same_fuel,
         ).all()
         if any(log.is_missed for log in range_logs):
             return 'missed_fill_up'
+        other_fuel_odometers = self._other_fuel_odometers(fuel_type)
+        if (self._span_runs_on_both_fuels(other_fuel_odometers, full_logs[0].odometer,
+                                          full_logs[-1].odometer)
+                and any(log.fuel_distance is None for log in range_logs)):
+            return 'needs_distance_attribution'
         return 'insufficient_data'
+
+    def get_average_consumption_by_fuel(self, consumption_unit=None, volume_unit='L'):
+        """Average consumption per fuel for a bi-fuel vehicle (#221).
+
+        Returns one entry per fuel type logged, each with the figure (or
+        ``None``) and the reason it is missing, so the UI can show both
+        fuels side by side instead of one meaningless combined number.
+        A vehicle with no fill-ups yet still gets a single entry for its
+        primary fuel, so the UI keeps its usual empty state.
+        """
+        return [
+            {
+                'fuel_type': fuel_type,
+                'value': self.get_average_consumption(consumption_unit, volume_unit, fuel_type),
+                'reason': self.get_consumption_unavailable_reason(fuel_type),
+            }
+            for fuel_type in self.get_propulsion_fuel_types() or [self.get_primary_fuel_type()]
+        ]
 
     def uses_tessie_odometer(self):
         """Check if this vehicle uses Tessie for odometer tracking"""
@@ -432,7 +730,9 @@ class Vehicle(db.Model):
         """Get the most recent odometer reading.
 
         If Tessie is enabled for this vehicle, returns the Tessie odometer.
-        Otherwise, returns the highest from fuel logs, trips, or charging sessions.
+        Otherwise, returns the highest from fuel logs, trips, charging sessions
+        or expenses. Expenses count because a maintenance entry such as an oil
+        change records the odometer at the time of the work (#286).
 
         Args:
             distance_unit: If provided ('km' or 'mi'), converts Tessie odometer to
@@ -457,7 +757,18 @@ class Vehicle(db.Model):
             ChargingSession.odometer.desc()).first()
         charge_odo = last_charge.odometer if last_charge else 0
 
-        return max(fuel_odo, trip_odo, charge_odo)
+        last_expense = self.expenses.filter(Expense.odometer.isnot(None)).order_by(
+            Expense.odometer.desc()).first()
+        expense_odo = last_expense.odometer if last_expense else 0
+
+        return max(fuel_odo, trip_odo, charge_odo, expense_odo)
+
+    def get_fitted_tire_set(self):
+        """The tire set currently on this vehicle, or None (#293)."""
+        for tire_set in self.tire_sets.all():
+            if tire_set.is_fitted:
+                return tire_set
+        return None
 
     def get_total_charging_cost(self):
         """Get total cost of all charging sessions"""
@@ -475,6 +786,11 @@ class Vehicle(db.Model):
         the vehicle's odometer unit). Mirrors the fill-to-fill approach used
         for fuel: needs at least two anchor sessions with odometers, and sums
         every charge in between.
+
+        Charging is rare on hours-tracked machinery but not impossible —
+        electric plant exists — so the same rule applies as for fuel: an
+        hours-tracked vehicle gets kWh per 100 engine hours and
+        ``distance_unit`` is ignored (issue #323).
         """
         sessions = (self.charging_sessions
                     .filter(ChargingSession.odometer.isnot(None))
@@ -489,6 +805,8 @@ class Vehicle(db.Model):
         total_kwh = sum(s.kwh_added for s in sessions if s.kwh_added) or 0
         if total_kwh <= 0:
             return None
+        if self.tracks_hours():
+            return (total_kwh / raw_distance) * 100
         target = distance_unit or self.get_effective_odometer_unit()
         distance = _distance_in(raw_distance, self.get_effective_odometer_unit(), target)
         return (total_kwh / distance) * 100 if distance > 0 else None
@@ -505,7 +823,14 @@ class Vehicle(db.Model):
         return sum(trip.distance for trip in self.trips.all()) or 0
 
     def get_cost_per_distance(self):
-        """Calculate total cost of ownership per distance unit"""
+        """Calculate total cost of ownership per unit on the vehicle's odometer.
+
+        That unit is whatever ``tracking_unit`` says it is: cost per km or
+        per mile for a distance-tracked vehicle, cost per engine hour for an
+        hours-tracked one (issue #323). The arithmetic is the same either
+        way because :meth:`get_total_distance` returns the span as logged,
+        without a km/mi conversion, for an hours-tracked vehicle.
+        """
         total_cost = self.get_total_fuel_cost() + self.get_total_expense_cost() + self.get_total_charging_cost()
         total_distance = self.get_total_distance()
         if total_distance > 0:
@@ -643,6 +968,7 @@ FUEL_CO2_KG_PER_LITRE = {
     'plugin_hybrid': 2.31,
     'electric': 0.0,
     'hydrogen': 0.0,
+    'adblue': 0.0,  # a diesel exhaust additive, not a fuel being burned (#319)
 }
 
 
@@ -687,25 +1013,56 @@ class FuelLog(db.Model):
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.Date, nullable=False, default=utcnow)
     odometer = db.Column(db.Float, nullable=False)  # stored in km
     volume = db.Column(db.Float)  # stored in liters
     price_per_unit = db.Column(db.Float)  # price per the user's volume unit, as entered
     discount_per_unit = db.Column(db.Float)  # optional loyalty discount per liter (issue #209)
     total_cost = db.Column(db.Float)
+    sales_tax = db.Column(db.Float)  # sales tax paid, included in total_cost (issue #225)
 
     fuel_type = db.Column(db.String(20), nullable=True)  # overrides vehicle primary; set when vehicle has secondary fuel type
+    # Distance run on this fuel since the previous fill-up of the same fuel,
+    # in the vehicle's odometer unit. Only bi-fuel vehicles need it (#221).
+    fuel_distance = db.Column(db.Float, nullable=True)
     is_full_tank = db.Column(db.Boolean, default=True)
     is_missed = db.Column(db.Boolean, default=False)  # missed fill-up flag
 
     station = db.Column(db.String(100))
     notes = db.Column(db.Text)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # Relationships
     attachments = db.relationship('Attachment', backref='fuel_log', lazy='dynamic',
                                   cascade='all, delete-orphan')
+
+    @property
+    def effective_fuel_type(self):
+        """The fuel this fill-up actually put in the vehicle (issue #319).
+
+        Logs written before the per-log selector existed carry no fuel type
+        of their own, so they inherit the vehicle's. Propulsion types are
+        mapped to the fuel they burn, which keeps a hybrid's untyped rows in
+        the same series as ones explicitly logged as petrol (issue #268).
+        """
+        return resolve_price_fuel_type(
+            self.fuel_type, self.vehicle.fuel_type if self.vehicle else None)
+
+    @classmethod
+    def effective_fuel_type_filter(cls, fuel_type, vehicle_fuel_type):
+        """Filter criterion matching logs whose effective fuel type is ``fuel_type``.
+
+        Mirrors :attr:`effective_fuel_type` in SQL: a stored propulsion type
+        counts as the fuel it burns, and a NULL fuel type counts as the
+        vehicle's own.
+        """
+        stored = {fuel_type} | {propulsion for propulsion, fuel in PROPULSION_TO_FUEL.items()
+                                if fuel == fuel_type}
+        criterion = cls.fuel_type.in_(stored)
+        if resolve_price_fuel_type(None, vehicle_fuel_type) == fuel_type:
+            criterion = db.or_(criterion, cls.fuel_type.is_(None))
+        return criterion
 
     def get_consumption(self, consumption_unit=None, volume_unit='L'):
         """Calculate consumption for this fill-up.
@@ -717,31 +1074,60 @@ class FuelLog(db.Model):
         (issue #169). If any of the intervening logs is flagged ``is_missed``,
         the figure is unknowable and we return None.
 
+        Only logs of the same effective fuel type count, so an AdBlue refill
+        never lands in a diesel figure and vice versa (issue #319).
+
         Partial fills return None: the litres added in a top-up tell you
         nothing about consumption over the preceding distance, and surfacing
         a number there is misleading (issue #194).
+
+        The owning vehicle's ``tracking_unit`` decides what the span between
+        two readings means. For an hours-tracked vehicle it is engine hours,
+        so the figure is litres per hour and ``consumption_unit`` is ignored
+        (issue #323).
+
+        Where the span covers ground run on both of a bi-fuel vehicle's
+        fuels, the distance is the one the driver attributed to this fuel
+        rather than the odometer difference — the odometer cannot say which
+        miles were run on LPG and which on petrol (issue #221).
         """
         if not self.volume or not self.is_full_tank:
             return None
+
+        same_fuel = FuelLog.effective_fuel_type_filter(
+            self.effective_fuel_type,
+            self.vehicle.fuel_type if self.vehicle else None)
 
         prev_full = FuelLog.query.filter(
             FuelLog.vehicle_id == self.vehicle_id,
             FuelLog.odometer < self.odometer,
             FuelLog.is_full_tank == True,
+            same_fuel,
         ).order_by(FuelLog.odometer.desc()).first()
         if not prev_full:
             return None
-        distance = self.odometer - prev_full.odometer
         between = FuelLog.query.filter(
             FuelLog.vehicle_id == self.vehicle_id,
             FuelLog.odometer > prev_full.odometer,
             FuelLog.odometer <= self.odometer,
+            same_fuel,
         ).all()
         if any(log.is_missed for log in between):
             return None
+        other_fuel_odometers = (self.vehicle._other_fuel_odometers(self.effective_fuel_type)
+                                if self.vehicle else [])
+        if Vehicle._span_runs_on_both_fuels(other_fuel_odometers,
+                                            prev_full.odometer, self.odometer):
+            if any(log.fuel_distance is None for log in between):
+                return None
+            distance = sum(log.fuel_distance for log in between)
+        else:
+            distance = self.odometer - prev_full.odometer
         volume_native = sum(log.volume for log in between if log.volume)
 
         if distance > 0 and volume_native > 0:
+            if self.vehicle and self.vehicle.tracks_hours():
+                return _to_litres(volume_native, volume_unit) / distance
             odometer_unit = self.vehicle.get_effective_odometer_unit()
             if consumption_unit == 'mpg':
                 miles = _distance_in(distance, odometer_unit, 'mi')
@@ -770,6 +1156,9 @@ class FuelLog(db.Model):
             'price_per_unit': self.price_per_unit,
             'discount_per_unit': self.discount_per_unit,
             'total_cost': self.total_cost,
+            'sales_tax': self.sales_tax,
+            'fuel_type': self.effective_fuel_type,
+            'fuel_distance': self.fuel_distance,
             'is_full_tank': self.is_full_tank,
             'is_missed': self.is_missed,
             'station': self.station,
@@ -786,7 +1175,7 @@ class Expense(db.Model):
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.Date, nullable=False, default=utcnow)
     category = db.Column(db.String(50), nullable=False)  # maintenance, insurance, repairs, tax, parking, tolls, other
     description = db.Column(db.String(200), nullable=False)
     cost = db.Column(db.Float, nullable=False)
@@ -795,7 +1184,7 @@ class Expense(db.Model):
     vendor = db.Column(db.String(100))
     notes = db.Column(db.Text)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # Relationships
     attachments = db.relationship('Attachment', backref='expense', lazy='dynamic',
@@ -831,7 +1220,7 @@ class Attachment(db.Model):
     expense_id = db.Column(db.Integer, db.ForeignKey('expenses.id'))
 
     description = db.Column(db.String(200))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
 
 class VehicleSpec(db.Model):
@@ -844,7 +1233,7 @@ class VehicleSpec(db.Model):
     spec_type = db.Column(db.String(50), nullable=False)  # predefined or custom type
     label = db.Column(db.String(100), nullable=False)  # display label
     value = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
 
 class Reminder(db.Model):
@@ -877,8 +1266,8 @@ class Reminder(db.Model):
     completed_at = db.Column(db.DateTime)
 
     # Tracking
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
+    updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
 
     def is_overdue(self):
         """Check if reminder is past due date"""
@@ -897,6 +1286,11 @@ class Reminder(db.Model):
         """Calculate days until due date"""
         from datetime import date
         return (self.due_date - date.today()).days
+
+    def expense_category(self):
+        """The expense category to pre-select when logging an expense for
+        this reminder (#296). Unmapped types fall back to 'other'."""
+        return REMINDER_EXPENSE_CATEGORIES.get(self.reminder_type, 'other')
 
     def to_dict(self):
         """Serialize reminder to dictionary"""
@@ -922,7 +1316,7 @@ class AppSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(50), unique=True, nullable=False, index=True)
     value = db.Column(db.Text)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
 
     @staticmethod
     def get(key, default=None):
@@ -1034,8 +1428,57 @@ FUEL_TYPES = [
     ('cng', _l('CNG')),
     ('hydrogen', _l('Hydrogen')),
     ('e85', _l('E85/Flex Fuel')),
+    # AdBlue propels nothing — it is an auxiliary fluid a diesel tracks
+    # alongside its fuel, so it belongs here only as a secondary type (#319).
+    ('adblue', _l('AdBlue/DEF')),
     ('other', _l('Other'))
 ]
+
+# Some vehicle "fuel types" describe how the vehicle is propelled rather than
+# what goes in the tank. Station price history is charted per fuel type, so a
+# hybrid fill-up has to be recorded against the fuel it actually burns (#268).
+# Diesel hybrids are the rarer case, so petrol is the default; owners of one
+# can pick diesel per fill-up with the fuel type selector on the fuel form.
+PROPULSION_TO_FUEL = {
+    'hybrid': 'petrol',
+    'plugin_hybrid': 'petrol',
+}
+
+
+def resolve_price_fuel_type(log_fuel_type, vehicle_fuel_type):
+    """Return the fuel type to record on a station price history row.
+
+    The fuel type chosen on the log wins; otherwise the vehicle's own fuel
+    type is used. Either way a propulsion type is mapped to the fuel it
+    burns so the station price charts only ever show real fuels.
+    """
+    fuel_type = log_fuel_type or vehicle_fuel_type
+    return PROPULSION_TO_FUEL.get(fuel_type, fuel_type) or 'petrol'
+
+
+# Fluids a vehicle carries alongside its fuel without burning them for
+# propulsion. They are logged and costed, but they never earn a consumption
+# figure of their own (#319) and never split a bi-fuel vehicle's distance
+# (#221): an AdBlue top-up says nothing about how far the car ran on diesel.
+AUXILIARY_FLUID_TYPES = {'adblue'}
+
+
+def _propulsion_fuel_type(fuel_type):
+    """The fuel a stored type actually burns, or None if it burns nothing.
+
+    Propulsion labels resolve to the fuel behind them, so 'hybrid' and
+    'petrol' are one fuel rather than two (#268), and auxiliary fluids
+    resolve to None (#319).
+    """
+    if not fuel_type or fuel_type in AUXILIARY_FLUID_TYPES:
+        return None
+    return resolve_price_fuel_type(fuel_type, fuel_type)
+
+
+def fuel_type_label(fuel_type):
+    """Display label for a stored fuel type slug, translated where known."""
+    return dict(FUEL_TYPES).get(fuel_type) or (fuel_type or '').replace('_', ' ').title()
+
 
 # Reminder types
 REMINDER_TYPES = [
@@ -1049,6 +1492,18 @@ REMINDER_TYPES = [
     ('oil_change', _l('Oil Change')),
     ('custom', _l('Custom'))
 ]
+
+# Which expense category to pre-select when an expense is logged against a
+# reminder (#296). Types with no obvious equivalent fall back to 'other'.
+REMINDER_EXPENSE_CATEGORIES = {
+    'mot': 'inspection',
+    'service': 'maintenance',
+    'insurance': 'insurance',
+    'tax': 'tax',
+    'registration': 'registration',
+    'tire_change': 'maintenance',
+    'oil_change': 'maintenance',
+}
 
 # Recurrence options. The legacy values (quarterly, biannual) remain accepted on
 # read so saved reminders keep working; new reminders use a unit + interval pair
@@ -1115,9 +1570,28 @@ DOCUMENT_TYPES = [
     ('other', _l('Other')),
 ]
 
+# Tire set types (#293)
+TIRE_TYPES = [
+    ('summer', _l('Summer')),
+    ('winter', _l('Winter')),
+    ('all_season', _l('All Season')),
+    ('other', _l('Other')),
+]
+
+
+# How many engine hours ahead of a service still counts as "due soon" for a
+# vehicle metered in hours (issue #282). Distance-tracked vehicles use 500,
+# in whichever of km or miles their odometer reads.
+MAINTENANCE_DUE_SOON_HOURS = 25
+
 
 class MaintenanceSchedule(db.Model):
-    """Predefined maintenance schedules with mileage/time intervals"""
+    """Predefined maintenance schedules with reading/time intervals.
+
+    The reading-based interval is stated in the owning vehicle's own unit:
+    kilometres or miles for a vehicle tracked by distance, engine hours for
+    one tracked by hours (issue #282).
+    """
     __tablename__ = 'maintenance_schedules'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1131,6 +1605,7 @@ class MaintenanceSchedule(db.Model):
     # Interval settings (either or both)
     interval_miles = db.Column(db.Integer)  # e.g., every 5000 miles
     interval_km = db.Column(db.Integer)  # e.g., every 8000 km
+    interval_hours = db.Column(db.Integer)  # e.g., every 250 engine hours (#282)
     interval_months = db.Column(db.Integer)  # e.g., every 12 months
 
     # Last performed
@@ -1150,8 +1625,8 @@ class MaintenanceSchedule(db.Model):
     remind_miles_before = db.Column(db.Integer, default=500)
 
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
+    updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
 
     # Relationships
     vehicle = db.relationship('Vehicle', backref=db.backref('maintenance_schedules', lazy='dynamic', cascade='all, delete-orphan'))
@@ -1166,6 +1641,14 @@ class MaintenanceSchedule(db.Model):
             self.next_due_date = self.last_performed_date + relativedelta(months=self.interval_months)
 
         if self.last_performed_odometer:
+            if self.tracks_hours():
+                # This vehicle's readings are engine hours, so the only
+                # interval that means anything is one stated in hours, and no
+                # distance factor may touch it (issue #282).
+                if self.interval_hours:
+                    self.next_due_odometer = (
+                        self.last_performed_odometer + self.interval_hours)
+                return
             # last_performed_odometer is stored in the vehicle's effective
             # odometer unit (the same unit next_due_odometer is displayed and
             # compared in). Convert the interval into that same unit before
@@ -1178,20 +1661,49 @@ class MaintenanceSchedule(db.Model):
                 interval = _distance_in(self.interval_miles, 'mi', unit)
                 self.next_due_odometer = self.last_performed_odometer + interval
 
-    def _effective_odometer_unit(self):
-        """Resolve the odometer unit for this schedule's vehicle.
+    def _resolve_vehicle(self):
+        """The vehicle this schedule belongs to, or None.
 
         Uses the loaded ``vehicle`` relationship when available, otherwise
         looks it up by ``vehicle_id`` (calculate_next_due runs on new
         schedules before they are flushed, so the relationship may be unset).
-        Defaults to 'km' when no vehicle can be resolved.
         """
-        vehicle = self.vehicle
-        if vehicle is None and self.vehicle_id:
-            vehicle = Vehicle.query.get(self.vehicle_id)
+        if self.vehicle is not None:
+            return self.vehicle
+        if self.vehicle_id:
+            return db.session.get(Vehicle, self.vehicle_id)
+        return None
+
+    def tracks_hours(self):
+        """True when this schedule's vehicle is metered in engine hours (#282)."""
+        vehicle = self._resolve_vehicle()
+        return vehicle is not None and vehicle.tracks_hours()
+
+    def _effective_odometer_unit(self):
+        """Resolve the odometer unit for this schedule's vehicle.
+
+        Defaults to 'km' when no vehicle can be resolved. Only meaningful for
+        a vehicle tracked by distance; see :meth:`tracks_hours`.
+        """
+        vehicle = self._resolve_vehicle()
         if vehicle:
             return vehicle.get_effective_odometer_unit()
         return 'km'
+
+    def get_interval(self):
+        """The reading-based interval, in the vehicle's own unit (#282).
+
+        Returns an ``(amount, unit)`` pair — ``(250, 'h')`` for an
+        hours-tracked machine — or None when no reading-based interval is
+        set. Time-based intervals are reported separately.
+        """
+        if self.tracks_hours():
+            return (self.interval_hours, 'h') if self.interval_hours else None
+        if self.interval_km:
+            return (self.interval_km, 'km')
+        if self.interval_miles:
+            return (self.interval_miles, 'mi')
+        return None
 
     def is_due(self, current_odometer=None):
         """Check if maintenance is due"""
@@ -1208,8 +1720,15 @@ class MaintenanceSchedule(db.Model):
 
         return False
 
-    def is_due_soon(self, current_odometer=None, days=14, distance=500):
-        """Check if maintenance is due soon"""
+    def is_due_soon(self, current_odometer=None, days=14, distance=None):
+        """Check if maintenance is due soon.
+
+        ``distance`` is how far ahead of the next-due reading still counts as
+        soon, in the vehicle's own unit. Left unset it is 500 km or miles for
+        a distance-tracked vehicle and 25 engine hours for an hours-tracked
+        one — 500 hours would put a tractor's every service permanently in
+        the amber (issue #282).
+        """
         from datetime import date, timedelta
 
         # Check date-based
@@ -1219,6 +1738,8 @@ class MaintenanceSchedule(db.Model):
 
         # Check odometer-based
         if self.next_due_odometer and current_odometer:
+            if distance is None:
+                distance = MAINTENANCE_DUE_SOON_HOURS if self.tracks_hours() else 500
             if current_odometer >= (self.next_due_odometer - distance):
                 return True
 
@@ -1253,7 +1774,7 @@ class RecurringExpense(db.Model):
     notify_before_days = db.Column(db.Integer, default=3)
 
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # Relationships
     vehicle = db.relationship('Vehicle', backref=db.backref('recurring_expenses', lazy='dynamic', cascade='all, delete-orphan'))
@@ -1297,9 +1818,28 @@ class RecurringExpense(db.Model):
         return today <= self.next_due <= today + timedelta(days=days)
 
 
+#: Price sources a station can be linked to. The key is stored in
+#: ``FuelStation.price_source``; the value is a human-readable label.
+PRICE_SOURCES = {
+    'uk_fuel_prices': 'UK Fuel Price Scheme',
+    'tankerkoenig': 'Tankerkönig',
+}
+
+
 class FuelStation(db.Model):
     """Favorite fuel stations"""
     __tablename__ = 'fuel_stations'
+
+    # A station may be linked to at most one forecourt per price source, and
+    # a forecourt to at most one of a user's stations. NULLs compare as
+    # distinct in SQLite, so unlinked stations are unaffected.
+    __table_args__ = (
+        db.Index(
+            'ix_fuel_stations_source_external_id',
+            'user_id', 'price_source', 'external_id',
+            unique=True,
+        ),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -1322,7 +1862,15 @@ class FuelStation(db.Model):
     times_used = db.Column(db.Integer, default=0)
     last_used = db.Column(db.DateTime)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    # Live price provider this station stands for, if any. ``price_source``
+    # is a key from PRICE_SOURCES and ``external_id`` the provider's own id
+    # for the forecourt (a UK scheme site_id, a Tankerkönig station uuid,
+    # ...). Recording identity as stations are matched avoids having to
+    # re-derive it later from addresses and postcodes.
+    price_source = db.Column(db.String(30))
+    external_id = db.Column(db.String(64))
 
     # Relationships
     user = db.relationship('User', backref=db.backref('fuel_stations', lazy='dynamic'))
@@ -1330,7 +1878,49 @@ class FuelStation(db.Model):
     def increment_usage(self):
         """Increment usage counter when station is used"""
         self.times_used = (self.times_used or 0) + 1
-        self.last_used = datetime.utcnow()
+        self.last_used = utcnow()
+
+    @property
+    def price_source_label(self):
+        """Human-readable name of the linked price source, or None"""
+        if not self.price_source:
+            return None
+        return PRICE_SOURCES.get(self.price_source, self.price_source)
+
+    @classmethod
+    def find_by_external_id(cls, user_id, price_source, external_id):
+        """Return the user's station linked to a provider forecourt, or None"""
+        if not price_source or not external_id:
+            return None
+        return cls.query.filter_by(
+            user_id=user_id,
+            price_source=price_source,
+            external_id=str(external_id),
+        ).first()
+
+    def link_price_source(self, price_source, external_id):
+        """Link this station to a provider forecourt if that is unambiguous.
+
+        Does nothing when the station is already linked or when another of
+        the user's stations holds the same identity, so the unique index can
+        never be tripped by a heuristic match.
+
+        Returns:
+            bool: True if the link was recorded
+        """
+        if not price_source or not external_id:
+            return False
+        if self.price_source or self.external_id:
+            return False
+
+        external_id = str(external_id)
+        clash = self.find_by_external_id(self.user_id, price_source, external_id)
+        if clash is not None and clash is not self:
+            return False
+
+        self.price_source = price_source
+        self.external_id = external_id
+        return True
 
 
 class Document(db.Model):
@@ -1360,8 +1950,8 @@ class Document(db.Model):
     remind_before_expiry = db.Column(db.Boolean, default=True)
     remind_days = db.Column(db.Integer, default=30)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
+    updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
 
     # Relationships
     vehicle = db.relationship('Vehicle', backref=db.backref('documents', lazy='dynamic', cascade='all, delete-orphan'))
@@ -1390,9 +1980,14 @@ class Trip(db.Model):
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.Date, nullable=False, default=utcnow)
     start_odometer = db.Column(db.Float, nullable=False)
     end_odometer = db.Column(db.Float, nullable=True)
+
+    # Fuel gauge readings as a percentage of a full tank (0-100), so fuel used
+    # can be approximated against the vehicle's tank capacity (#273)
+    start_fuel_level = db.Column(db.Float, nullable=True)
+    end_fuel_level = db.Column(db.Float, nullable=True)
 
     purpose = db.Column(db.String(20), nullable=False)  # business, personal, commute, etc.
     description = db.Column(db.String(200))
@@ -1400,7 +1995,7 @@ class Trip(db.Model):
     end_location = db.Column(db.String(200))
 
     notes = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # Relationships
     user = db.relationship('User', backref=db.backref('trips', lazy='dynamic'))
@@ -1412,6 +2007,24 @@ class Trip(db.Model):
             return 0
         return self.end_odometer - self.start_odometer
 
+    @property
+    def fuel_used(self):
+        """Approximate fuel burnt on the trip from the gauge readings.
+
+        Returned in the same unit as the vehicle's tank capacity. ``None`` when
+        either reading or the tank capacity is missing, or when the tank ended
+        fuller than it started (a fill-up mid-trip makes the figure meaningless).
+        """
+        if self.start_fuel_level is None or self.end_fuel_level is None:
+            return None
+        capacity = self.vehicle.tank_capacity if self.vehicle else None
+        if not capacity:
+            return None
+        used = (self.start_fuel_level - self.end_fuel_level) / 100 * capacity
+        if used < 0:
+            return None
+        return used
+
     def to_dict(self):
         """Serialize trip to dictionary for API"""
         return {
@@ -1421,6 +2034,9 @@ class Trip(db.Model):
             'start_odometer': self.start_odometer,
             'end_odometer': self.end_odometer,
             'distance': self.distance,
+            'start_fuel_level': self.start_fuel_level,
+            'end_fuel_level': self.end_fuel_level,
+            'fuel_used': self.fuel_used,
             'purpose': self.purpose,
             'description': self.description,
             'start_location': self.start_location,
@@ -1445,7 +2061,7 @@ class TripTemplate(db.Model):
     description = db.Column(db.String(200))
     notes = db.Column(db.Text)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     user = db.relationship('User', backref=db.backref('trip_templates', lazy='dynamic'))
 
@@ -1470,7 +2086,7 @@ class ChargingSession(db.Model):
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.Date, nullable=False, default=utcnow)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
     odometer = db.Column(db.Float)
@@ -1487,7 +2103,7 @@ class ChargingSession(db.Model):
     network = db.Column(db.String(100))  # ChargePoint, Electrify America, etc.
 
     notes = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # Tessie integration - track imported charges
     tessie_charge_id = db.Column(db.String(50), unique=True, nullable=True)
@@ -1557,8 +2173,8 @@ class VehiclePart(db.Model):
     supplier_url = db.Column(db.String(500))  # Link to purchase
     notes = db.Column(db.Text)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
+    updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
 
     # Relationships
     vehicle = db.relationship('Vehicle', backref=db.backref('parts', lazy='dynamic', cascade='all, delete-orphan'))
@@ -1593,11 +2209,11 @@ class FuelPriceHistory(db.Model):
     # legacy rows and manually recorded station prices have no owning log.
     fuel_log_id = db.Column(db.Integer, db.ForeignKey('fuel_logs.id'), nullable=True)
 
-    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.Date, nullable=False, default=utcnow)
     fuel_type = db.Column(db.String(20), nullable=False)  # petrol, diesel, premium, etc.
     price_per_unit = db.Column(db.Float, nullable=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # Relationships
     # Cascade so deleting a station removes its price rows rather than
@@ -1624,12 +2240,12 @@ class Note(db.Model):
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.Date, nullable=False, default=utcnow)
     title = db.Column(db.String(200))
     content = db.Column(db.Text, nullable=False)
     odometer = db.Column(db.Float)  # optional, stored in vehicle odometer unit
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # Relationships — backref is `note_entries` to avoid clashing with Vehicle.notes column
     vehicle = db.relationship('Vehicle', backref=db.backref('note_entries', lazy='dynamic', cascade='all, delete-orphan'))
@@ -1659,13 +2275,13 @@ class MileageAllowance(db.Model):
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.Date, nullable=False, default=utcnow)
     description = db.Column(db.String(200))
     distance = db.Column(db.Float)  # optional, stored in vehicle odometer unit
     rate_per_unit = db.Column(db.Float)  # optional reimbursement rate per distance unit
     amount = db.Column(db.Float, nullable=False)  # total amount received
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     # Relationships
     vehicle = db.relationship('Vehicle', backref=db.backref('mileage_allowances', lazy='dynamic', cascade='all, delete-orphan'))
@@ -1681,4 +2297,144 @@ class MileageAllowance(db.Model):
             'rate_per_unit': self.rate_per_unit,
             'amount': self.amount,
             'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class TireSet(db.Model):
+    """A set of tires owned for a vehicle (issue #293).
+
+    Seasonal sets come on and off a vehicle repeatedly, so the distance a set
+    has covered is the sum of the distances of every period it spent fitted —
+    see :class:`TireFitment`. Odometer values are stored in the vehicle's
+    odometer unit, as they are everywhere else.
+    """
+    __tablename__ = 'tire_sets'
+
+    id = db.Column(db.Integer, primary_key=True)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    name = db.Column(db.String(100), nullable=False)  # "Michelin Alpin 6"
+    tire_type = db.Column(db.String(20), nullable=False, default='all_season')
+    size = db.Column(db.String(50))  # "205/55 R16 91H"
+
+    purchase_date = db.Column(db.Date)
+    purchase_odometer = db.Column(db.Float)  # vehicle odometer when the set was bought
+    cost = db.Column(db.Float)
+
+    notes = db.Column(db.Text)
+    is_retired = db.Column(db.Boolean, default=False)  # worn out, sold, scrapped
+
+    created_at = db.Column(db.DateTime, default=utcnow)
+    updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
+
+    # Relationships
+    vehicle = db.relationship('Vehicle', backref=db.backref('tire_sets', lazy='dynamic', cascade='all, delete-orphan'))
+    user = db.relationship('User', backref=db.backref('tire_sets', lazy='dynamic'))
+
+    @property
+    def type_label(self):
+        return dict(TIRE_TYPES).get(self.tire_type, self.tire_type)
+
+    @property
+    def current_fitment(self):
+        """The open fitment period — fitted and not yet taken off — if any."""
+        return self.fitments.filter(
+            TireFitment.removed_odometer.is_(None)
+        ).order_by(TireFitment.fitted_date.desc(), TireFitment.id.desc()).first()
+
+    @property
+    def is_fitted(self):
+        return self.current_fitment is not None
+
+    def get_distance(self, current_odometer=None):
+        """Total distance covered on this set, in the vehicle's odometer unit.
+
+        A closed period contributes its removed minus fitted reading; an open
+        period is measured against the vehicle's latest odometer reading.
+        Periods that would count backwards (a reading entered out of order)
+        contribute nothing rather than a negative distance.
+        """
+        total = 0.0
+        for fitment in self.fitments.all():
+            if fitment.fitted_odometer is None:
+                continue
+            end = fitment.removed_odometer
+            if end is None:
+                if current_odometer is None:
+                    current_odometer = self.vehicle.get_last_odometer() if self.vehicle else 0
+                end = current_odometer
+            total += max(0.0, (end or 0) - fitment.fitted_odometer)
+        return total
+
+    def to_dict(self):
+        """Serialize the tire set to a dictionary"""
+        return {
+            'id': self.id,
+            'vehicle_id': self.vehicle_id,
+            'name': self.name,
+            'tire_type': self.tire_type,
+            'size': self.size,
+            'purchase_date': self.purchase_date.isoformat() if self.purchase_date else None,
+            'purchase_odometer': self.purchase_odometer,
+            'cost': self.cost,
+            'notes': self.notes,
+            'is_retired': self.is_retired,
+            'is_fitted': self.is_fitted,
+            'distance': self.get_distance(),
+            'fitments': [f.to_dict() for f in self.fitments.all()],
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class TireFitment(db.Model):
+    """One period a tire set spent fitted to its vehicle (issue #293).
+
+    A period with no removal reading is the set currently on the vehicle.
+    """
+    __tablename__ = 'tire_fitments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    tire_set_id = db.Column(db.Integer, db.ForeignKey('tire_sets.id'), nullable=False)
+
+    fitted_date = db.Column(db.Date, nullable=False, default=utcnow)
+    fitted_odometer = db.Column(db.Float, nullable=False)
+    removed_date = db.Column(db.Date)
+    removed_odometer = db.Column(db.Float)
+
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    # Relationships
+    tire_set = db.relationship(
+        'TireSet',
+        backref=db.backref(
+            'fitments',
+            lazy='dynamic',
+            cascade='all, delete-orphan',
+            order_by='TireFitment.fitted_date.desc(), TireFitment.id.desc()',
+        ),
+    )
+
+    def get_distance(self, current_odometer=None):
+        """Distance covered during this period, in the vehicle's odometer unit."""
+        if self.fitted_odometer is None:
+            return 0.0
+        end = self.removed_odometer
+        if end is None:
+            if current_odometer is None:
+                vehicle = self.tire_set.vehicle if self.tire_set else None
+                current_odometer = vehicle.get_last_odometer() if vehicle else 0
+            end = current_odometer
+        return max(0.0, (end or 0) - self.fitted_odometer)
+
+    def to_dict(self):
+        """Serialize the fitment period to a dictionary"""
+        return {
+            'id': self.id,
+            'tire_set_id': self.tire_set_id,
+            'fitted_date': self.fitted_date.isoformat() if self.fitted_date else None,
+            'fitted_odometer': self.fitted_odometer,
+            'removed_date': self.removed_date.isoformat() if self.removed_date else None,
+            'removed_odometer': self.removed_odometer,
+            'distance': self.get_distance(),
         }

@@ -8,6 +8,7 @@ from app import db
 from app.models import AppSettings, FuelPriceHistory, FuelStation
 from app.services import uk_fuel_prices as ukfp
 from app.services.uk_fuel_prices import (
+    PRICE_SOURCE,
     SETTING_ENABLED,
     SETTING_FEEDS,
     SETTING_LAST_RUN,
@@ -237,6 +238,80 @@ class TestMatching:
         ]})
         match = UKFuelPriceService.match_forecourt(station, forecourts)
         assert match['site_id'] == 'near'
+
+
+class TestLinkedMatching:
+    """Stations linked to a scheme site_id match on identity alone (#155)."""
+
+    def test_linked_station_matches_its_site_id(self, app, uk_station):
+        uk_station.price_source = PRICE_SOURCE
+        uk_station.external_id = 'B2'
+        db.session.commit()
+
+        forecourts = UKFuelPriceService.parse_feed(FEED_PAYLOAD)
+        match = UKFuelPriceService.match_forecourt(uk_station, forecourts)
+        # 'B2' wins even though the station's postcode points at 'A1'.
+        assert match['site_id'] == 'B2'
+
+    def test_linked_station_matches_without_a_postcode(self, app, uk_station):
+        uk_station.postcode = None
+        uk_station.price_source = PRICE_SOURCE
+        uk_station.external_id = 'A1'
+        db.session.commit()
+
+        forecourts = UKFuelPriceService.parse_feed(FEED_PAYLOAD)
+        match = UKFuelPriceService.match_forecourt(uk_station, forecourts)
+        assert match['site_id'] == 'A1'
+
+    def test_link_that_left_the_feed_is_unmatched(self, app, uk_station):
+        uk_station.price_source = PRICE_SOURCE
+        uk_station.external_id = 'GONE'
+        db.session.commit()
+
+        forecourts = UKFuelPriceService.parse_feed(FEED_PAYLOAD)
+        assert UKFuelPriceService.match_forecourt(uk_station, forecourts) is None
+
+    def test_link_to_another_source_is_ignored(self, app, uk_station):
+        uk_station.price_source = 'tankerkoenig'
+        uk_station.external_id = 'B2'
+        db.session.commit()
+
+        forecourts = UKFuelPriceService.parse_feed(FEED_PAYLOAD)
+        match = UKFuelPriceService.match_forecourt(uk_station, forecourts)
+        assert match['site_id'] == 'A1'
+
+    def test_refresh_records_the_link(self, app, enabled_single_feed, fake_feed,
+                                      uk_station):
+        UKFuelPriceService.refresh_prices()
+        db.session.refresh(uk_station)
+        assert uk_station.price_source == PRICE_SOURCE
+        assert uk_station.external_id == 'A1'
+
+    def test_refresh_uses_the_link_on_later_runs(self, app, enabled_single_feed,
+                                                 fake_feed, uk_station):
+        UKFuelPriceService.refresh_prices()
+
+        # The postcode now points nowhere, but the recorded site_id still does.
+        uk_station.postcode = 'ZZ99 9ZZ'
+        db.session.commit()
+
+        stats = UKFuelPriceService.refresh_prices()
+        assert stats['matched'] == 1
+        assert stats['skipped'] == 0
+
+    def test_refresh_does_not_link_two_stations_to_one_forecourt(
+            self, app, enabled_single_feed, fake_feed, test_user, uk_station):
+        twin = FuelStation(user_id=test_user.id, name='Shell Westminster (dup)',
+                           postcode='SW1A 1AA')
+        db.session.add(twin)
+        db.session.commit()
+
+        stats = UKFuelPriceService.refresh_prices()
+        assert stats['matched'] == 2
+
+        linked = FuelStation.query.filter_by(
+            price_source=PRICE_SOURCE, external_id='A1').all()
+        assert len(linked) == 1
 
 
 class TestRefreshPrices:

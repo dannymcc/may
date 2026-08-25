@@ -186,11 +186,11 @@ msgstr "Kilometre (km/mi)"
 msgid "Hours"
 msgstr "Saat"
 
-#: app/models.py:1022
+#: app/models.py:1116 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "Kilometre (km)"
 
-#: app/models.py:1023
+#: app/models.py:1117 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "Mil (mi)"
 
@@ -4169,9 +4169,50 @@ msgstr "Birim"
 msgid "Select unit..."
 msgstr "Birim seçin..."
 
+#: app/templates/auth/settings.html:138
 #: app/templates/vehicles/part_form.html:58
 msgid "Liters (L)"
 msgstr "Litre (L)"
+
+#: app/templates/auth/settings.html:118
+msgid "DD/MM/YYYY"
+msgstr "GG/AA/YYYY"
+
+#: app/templates/auth/settings.html:119
+msgid "MM/DD/YYYY"
+msgstr "AA/GG/YYYY"
+
+#: app/templates/auth/settings.html:120
+msgid "YYYY-MM-DD"
+msgstr "YYYY-AA-GG"
+
+#: app/templates/auth/settings.html:121
+msgid "DD.MM.YYYY"
+msgstr "GG.AA.YYYY"
+
+#: app/templates/auth/settings.html:139
+msgid "UK Gallons (gal)"
+msgstr "İngiliz galonu (gal)"
+
+#: app/templates/auth/settings.html:140
+msgid "US Gallons (gal)"
+msgstr "ABD galonu (gal)"
+
+#: app/templates/auth/settings.html:149
+msgid "MPG (UK)"
+msgstr "MPG (İngiliz)"
+
+#: app/templates/auth/settings.html:150
+msgid "MPG (US)"
+msgstr "MPG (ABD)"
+
+#: app/templates/auth/settings.html:148
+msgid "L/100km"
+msgstr "L/100 km"
+
+#: app/templates/auth/settings.html:151
+msgid "km/L"
+msgstr "km/L"
 
 #: app/templates/vehicles/part_form.html:59
 msgid "Milliliters (ml)"
@@ -4557,3 +4598,24 @@ msgstr ""
 #: app/templates/vehicles/view.html:1043
 msgid "No fuel prices recorded yet."
 msgstr "Henüz kaydedilmiş yakıt fiyatı yok."
+
+#: app/models.py:388 app/templates/maintenance/form.html:115
+msgid "Engine hours"
+msgstr "Motor saati"
+
+#: app/templates/maintenance/form.html:81
+msgid "Every (hours)"
+msgstr "Her (saat)"
+
+#: app/templates/maintenance/form.html:84
+msgid "e.g., 250"
+msgstr "ör. 250"
+
+#: app/templates/vehicles/view.html:162
+msgid "Total Hours"
+msgstr "Toplam Saat"
+
+#: app/templates/maintenance/form.html:86
+msgid "This vehicle is metered in engine hours, so its service interval is counted in hours."
+msgstr "Bu araç motor saati ile ölçülür, bu nedenle servis aralığı saat cinsinden sayılır."
+

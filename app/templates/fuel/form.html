@@ -2,6 +2,9 @@
 {% block title %}{% if log %}{{ _('Edit Fuel Log') }}{% else %}{{ _('Add Fuel Log') }}{% endif %}{% endblock %}
 
 {% block content %}
+{% set selected_id = (log.vehicle_id if log else selected_vehicle_id) %}
+{% set preselected = vehicles | selectattr('id', 'equalto', selected_id if selected_id else -1) | list %}
+{% set form_vehicle = preselected[0] if preselected else (vehicles[0] if vehicles else None) %}
 <div class="max-w-2xl mx-auto">
     <div class="mb-6">
         <a href="{{ url_for('fuel.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; {{ _('Back to fuel logs') }}</a>
@@ -21,16 +24,19 @@
                         <option value="{{ vehicle.id }}"
                                 {% if (log and log.vehicle_id == vehicle.id) or (selected_vehicle_id == vehicle.id) %}selected{% endif %}
                                 data-last-odometer="{{ vehicle.get_last_odometer(vehicle.get_effective_odometer_unit()) }}"
-                                data-odometer-unit="{{ vehicle.get_effective_odometer_unit() }}"
+                                data-odometer-unit="{{ vehicle.get_reading_unit() }}"
+                                data-reading-label="{{ vehicle.get_reading_label() }}"
+                                data-hours-metered="{{ 'true' if vehicle.tracks_hours() else 'false' }}"
                                 data-uses-tessie="{{ 'true' if vehicle.uses_tessie_odometer() else 'false' }}"
                                 data-tessie-odometer="{% if vehicle.tessie_last_odometer %}{% if vehicle.get_effective_odometer_unit() == 'mi' %}{{ (vehicle.tessie_last_odometer * 0.621371)|round|int }}{% else %}{{ vehicle.tessie_last_odometer|round|int }}{% endif %}{% endif %}"
                                 data-primary-fuel="{{ vehicle.fuel_type }}"
-                                data-secondary-fuel="{{ vehicle.secondary_fuel_type or '' }}">
+                                data-secondary-fuel="{{ vehicle.secondary_fuel_type or '' }}"
+                                data-bi-fuel="{{ 'true' if vehicle.declares_second_fuel() else 'false' }}">
                             {{ vehicle.name }}
                         </option>
                         {% endfor %}
                     </select>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Last odometer') }}: <span id="last-odometer">-</span> <span id="odometer-unit-display">{{ current_user.distance_unit }}</span></p>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><span id="last-reading-label">{% if form_vehicle and form_vehicle.tracks_hours() %}{{ _('Last engine hours') }}{% else %}{{ _('Last odometer') }}{% endif %}</span>: <span id="last-odometer">-</span> <span id="odometer-unit-display">{{ form_vehicle.get_reading_unit() if form_vehicle else current_user.distance_unit }}</span></p>
                 </div>
 
                 <div>
@@ -42,7 +48,7 @@
 
                 <div>
                     <label for="odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {{ _('Odometer') }} (<span id="odometer-unit-label">{{ current_user.distance_unit }}</span>) *
+                        <span id="odometer-reading-label">{{ form_vehicle.get_reading_label() if form_vehicle else _('Odometer') }}</span> (<span id="odometer-unit-label">{{ form_vehicle.get_reading_unit() if form_vehicle else current_user.distance_unit }}</span>) *
                         <span id="tessie-odometer-badge" class="hidden ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                             <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -93,6 +99,15 @@
                 </div>
 
                 <div>
+                    <label for="sales_tax" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Sales Tax') }} ({{ current_user.currency }})</label>
+                    <input type="number" name="sales_tax" id="sales_tax" step="0.01" min="0"
+                           value="{{ log.sales_tax if log and log.sales_tax is not none else '' }}"
+                           placeholder="0.00"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('Optional. Sales tax shown on the receipt, already included in the total cost. Add the amounts together where more than one tax applies.') }}</p>
+                </div>
+
+                <div>
                     <label for="station_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Station') }}</label>
                     {% if stations %}
                     <select name="station_id" id="station_id" onchange="updateStationName(this)"
@@ -122,6 +137,16 @@
                     <select name="fuel_type" id="fuel_type"
                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     </select>
+                </div>
+
+                <div id="fuel-distance-field" class="hidden">
+                    <label for="fuel_distance" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {{ _('Distance on this fuel') }} (<span id="fuel-distance-unit">{{ current_user.distance_unit }}</span>)
+                    </label>
+                    <input type="number" name="fuel_distance" id="fuel_distance" step="0.1" min="0"
+                           value="{{ log.fuel_distance if log and log.fuel_distance is not none else '' }}"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('Distance run on this fuel since your last fill-up of it. The odometer can’t tell the fuels apart, so consumption for a dual-fuel vehicle needs this.') }}</p>
                 </div>
 
                 <div class="sm:col-span-2 flex flex-wrap gap-6">
@@ -166,6 +191,11 @@
             </div>
         </div>
 
+        <!-- Hidden field for return redirect -->
+        {% if request.args.get('return_to') == 'vehicle' or (request.referrer and '/vehicles/' in request.referrer) %}
+        <input type="hidden" name="return_to" value="vehicle">
+        {% endif %}
+
         <div class="flex justify-end space-x-3">
             <a href="{{ url_for('fuel.index') }}"
                class="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
@@ -180,6 +210,8 @@
 </div>
 
 <script>
+const T_LAST_ODOMETER = {{ _('Last odometer')|tojson }};
+const T_LAST_HOURS = {{ _('Last engine hours')|tojson }};
 let pricePerUnitWasDerived = false;
 
 function updateVehicleOdometer(vehicleId) {
@@ -200,6 +232,15 @@ function updateVehicleOdometer(vehicleId) {
     const unitLabel = document.getElementById('odometer-unit-label');
     if (unitDisplay) unitDisplay.textContent = odometerUnit;
     if (unitLabel) unitLabel.textContent = odometerUnit;
+
+    // An hours-metered vehicle is asked for engine hours, not an odometer
+    // reading (#324). Distance vehicles keep exactly the wording they had.
+    const readingLabel = selectedOption.getAttribute('data-reading-label');
+    const hoursMetered = selectedOption.getAttribute('data-hours-metered') === 'true';
+    const readingLabelEl = document.getElementById('odometer-reading-label');
+    const lastReadingEl = document.getElementById('last-reading-label');
+    if (readingLabel && readingLabelEl) readingLabelEl.textContent = readingLabel;
+    if (lastReadingEl) lastReadingEl.textContent = hoursMetered ? T_LAST_HOURS : T_LAST_ODOMETER;
 
     if (usesTessie && tessieOdometer) {
         // Show Tessie badge and make field read-only
@@ -224,13 +265,38 @@ function updateVehicleOdometer(vehicleId) {
 function updateFuelTypeSelector(selectedOption) {
     const fuelTypeField = document.getElementById('fuel-type-field');
     const fuelTypeSelect = document.getElementById('fuel_type');
+    // Dual-fuel vehicles need the distance run on each fuel (#221)
+    const fuelDistanceField = document.getElementById('fuel-distance-field');
+    const fuelDistanceUnit = document.getElementById('fuel-distance-unit');
     const primaryFuel = selectedOption.getAttribute('data-primary-fuel') || '';
     const secondaryFuel = selectedOption.getAttribute('data-secondary-fuel') || '';
     const fuelLabels = {{ dict(fuel_types)|tojson }};
+    // A hybrid isn't a fuel, so offer the fuels one can actually burn (#268).
+    // Petrol comes first as the common case; diesel hybrid owners pick diesel
+    // and the station price charts then show the right series.
+    const propulsionFuels = {
+        'hybrid': ['petrol', 'diesel'],
+        'plugin_hybrid': ['petrol', 'diesel']
+    };
+
+    let choices = [];
+
+    // Only a vehicle that burns two fuels needs the distance split out. An
+    // AdBlue tank doesn't count — it propels nothing (#319) — so the server
+    // decides and says so on the option.
+    const biFuel = selectedOption.getAttribute('data-bi-fuel') === 'true';
+    fuelDistanceField.classList.toggle('hidden', !biFuel);
+    fuelDistanceUnit.textContent = selectedOption.getAttribute('data-odometer-unit') || '';
 
     if (secondaryFuel) {
-        fuelTypeSelect.innerHTML = '';
-        [primaryFuel, secondaryFuel].forEach(function(value) {
+        choices = [primaryFuel, secondaryFuel];
+    } else if (propulsionFuels[primaryFuel]) {
+        choices = propulsionFuels[primaryFuel];
+    }
+
+    fuelTypeSelect.innerHTML = '';
+    if (choices.length) {
+        choices.forEach(function(value) {
             const opt = document.createElement('option');
             opt.value = value;
             opt.textContent = fuelLabels[value] || value;
@@ -242,7 +308,6 @@ function updateFuelTypeSelector(selectedOption) {
         fuelTypeField.classList.remove('hidden');
     } else {
         fuelTypeField.classList.add('hidden');
-        fuelTypeSelect.innerHTML = '';
     }
 }
 

@@ -99,7 +99,7 @@
                 <div class="ml-5 w-0 flex-1">
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Total Distance') }}</dt>
-                        <dd class="text-lg font-semibold text-gray-900 dark:text-white">{{ "%.0f"|format(total_distance) }} {{ current_user.distance_unit }}</dd>
+                        <dd class="text-lg font-semibold text-gray-900 dark:text-white">{{ "%.0f"|format(total_distance) }} {% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('mixed units') }}</span>{% endif %}</dd>
                     </dl>
                 </div>
             </div>
@@ -116,7 +116,7 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Cost per') }} {{ current_user.distance_unit }}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Cost per') }} {% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('unit') }}</span>{% endif %}</dt>
                         <dd class="text-lg font-semibold text-primary-600 dark:text-primary-400">
                             {% if cost_per_distance %}{{ cost_per_distance|money }} {{ current_user.currency }}{% else %}-{% endif %}
                         </dd>
@@ -239,7 +239,9 @@
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mt-8">
     <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ _('Your Vehicles') }}</h2>
+        {% if can_write('vehicles') %}
         <a href="{{ url_for('vehicles.new') }}" class="text-sm text-primary-600 hover:text-primary-500">+ {{ _('Add') }}</a>
+        {% endif %}
     </div>
     {% if vehicles %}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -274,7 +276,9 @@
         {% endfor %}
     </div>
     {% else %}
-    <p class="text-sm text-gray-500 dark:text-gray-400">{{ _('No vehicles yet.') }} <a href="{{ url_for('vehicles.new') }}" class="text-primary-600 hover:text-primary-500">{{ _('Add your first vehicle') }}</a></p>
+{% if can_write('vehicles') %}
+<a href="{{ url_for('vehicles.new') }}" class="text-primary-600 hover:text-primary-500">{{ _('Add your first vehicle') }}</a>
+{% endif %}</p>
     {% endif %}
 </div>
 

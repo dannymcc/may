@@ -186,11 +186,11 @@ msgstr "Chilometraggio (km/mi)"
 msgid "Hours"
 msgstr "Ore"
 
-#: app/models.py:1022
+#: app/models.py:1116 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "Chilometri (km)"
 
-#: app/models.py:1023
+#: app/models.py:1117 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "Miglia (mi)"
 
@@ -4174,9 +4174,50 @@ msgstr "Unità"
 msgid "Select unit..."
 msgstr "Seleziona unità..."
 
+#: app/templates/auth/settings.html:138
 #: app/templates/vehicles/part_form.html:58
 msgid "Liters (L)"
 msgstr "Litri (L)"
+
+#: app/templates/auth/settings.html:118
+msgid "DD/MM/YYYY"
+msgstr "GG/MM/AAAA"
+
+#: app/templates/auth/settings.html:119
+msgid "MM/DD/YYYY"
+msgstr "MM/GG/AAAA"
+
+#: app/templates/auth/settings.html:120
+msgid "YYYY-MM-DD"
+msgstr "AAAA-MM-GG"
+
+#: app/templates/auth/settings.html:121
+msgid "DD.MM.YYYY"
+msgstr "GG.MM.AAAA"
+
+#: app/templates/auth/settings.html:139
+msgid "UK Gallons (gal)"
+msgstr "Galloni britannici (gal)"
+
+#: app/templates/auth/settings.html:140
+msgid "US Gallons (gal)"
+msgstr "Galloni statunitensi (gal)"
+
+#: app/templates/auth/settings.html:149
+msgid "MPG (UK)"
+msgstr "MPG (UK)"
+
+#: app/templates/auth/settings.html:150
+msgid "MPG (US)"
+msgstr "MPG (US)"
+
+#: app/templates/auth/settings.html:148
+msgid "L/100km"
+msgstr "L/100 km"
+
+#: app/templates/auth/settings.html:151
+msgid "km/L"
+msgstr "km/L"
 
 #: app/templates/vehicles/part_form.html:59
 msgid "Milliliters (ml)"
@@ -4568,6 +4609,26 @@ msgstr ""
 #: app/templates/vehicles/view.html:1043
 msgid "No fuel prices recorded yet."
 msgstr "Nessun prezzo del carburante ancora registrato."
+
+#: app/models.py:388 app/templates/maintenance/form.html:115
+msgid "Engine hours"
+msgstr "Ore motore"
+
+#: app/templates/maintenance/form.html:81
+msgid "Every (hours)"
+msgstr "Ogni (ore)"
+
+#: app/templates/maintenance/form.html:84
+msgid "e.g., 250"
+msgstr "es., 250"
+
+#: app/templates/vehicles/view.html:162
+msgid "Total Hours"
+msgstr "Ore Totali"
+
+#: app/templates/maintenance/form.html:86
+msgid "This vehicle is metered in engine hours, so its service interval is counted in hours."
+msgstr "Questo veicolo è misurato in ore motore, quindi il suo intervallo di servizio è contato in ore."
 
 #~ msgid "Make"
 #~ msgstr "Marca"

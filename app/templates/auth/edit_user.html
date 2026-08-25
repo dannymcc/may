@@ -35,6 +35,23 @@
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
+
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Role') }}</label>
+                    <select name="role" id="role"
+                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                        {% for value, label in roles %}
+                        <option value="{{ value }}"{% if value == user.effective_role %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <ul class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                        {% for value, label in roles %}
+                        <li><span class="font-medium">{{ label }}</span> — {{ role_descriptions[value] }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ _('Administrators always have full access, whatever role is set.') }}</p>
+                </div>
+
                 {% if user.id != current_user.id %}
                 <div class="flex items-center">
                     <input type="checkbox" name="is_admin" id="is_admin" {% if user.is_admin %}checked{% endif %}

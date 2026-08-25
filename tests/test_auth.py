@@ -378,7 +378,7 @@ class TestToggleAdminRoute:
         assert response.status_code == 200
         assert b'Admin status updated' in response.data
         with app.app_context():
-            user = User.query.get(test_user.id)
+            user = db.session.get(User, test_user.id)
             assert user.is_admin is True
 
     def test_toggle_admin_on_self_no_change(self, admin_client, admin_user, app):
@@ -389,7 +389,7 @@ class TestToggleAdminRoute:
         )
         assert response.status_code == 200
         with app.app_context():
-            user = User.query.get(admin_user.id)
+            user = db.session.get(User, admin_user.id)
             assert user.is_admin == original_status
 
     def test_toggle_admin_non_admin_forbidden(self, auth_client, test_user):
@@ -411,7 +411,7 @@ class TestDeleteUserRoute:
         assert response.status_code == 200
         assert b'deleted' in response.data
         with app.app_context():
-            assert User.query.get(user_id) is None
+            assert db.session.get(User, user_id) is None
 
     def test_delete_self_prevented(self, admin_client, admin_user, app):
         user_id = admin_user.id
@@ -421,7 +421,7 @@ class TestDeleteUserRoute:
         )
         assert response.status_code == 200
         with app.app_context():
-            assert User.query.get(user_id) is not None
+            assert db.session.get(User, user_id) is not None
 
     def test_delete_user_non_admin_forbidden(self, auth_client, test_user):
         response = auth_client.post(

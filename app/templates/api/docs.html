@@ -50,6 +50,9 @@
 <pre class="text-green-700 dark:text-green-400 text-sm"><code>curl -X GET "{{ request.host_url }}api/v1/vehicles" \
   -H "Authorization: Bearer may_your_api_key_here"</code></pre>
                 </div>
+
+                <h3 class="font-medium text-gray-900 dark:text-white mt-6 mb-2">Roles</h3>
+                <p class="text-gray-600 dark:text-gray-400">A key carries the role of the account that created it. A Contributor key may create, update and delete fuel logs and charging sessions only; a Viewer key may read but not write. Refused writes return <code>403</code> with the code <code>permission_denied</code>.</p>
             </div>
         </div>
     </section>
@@ -93,6 +96,7 @@
       "registration": "ABC 123",
       "vin": "...",
       "fuel_type": "petrol",
+      "secondary_fuel_type": null,
       "tank_capacity": 50.0,
       "is_active": true,
       "created_at": "2024-01-15T10:30:00",
@@ -108,6 +112,17 @@
   "count": 1
 }</code></pre>
                     </div>
+                    <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                        A vehicle whose odometer is metered in engine hours rather than distance
+                        reports <code>total_distance</code> in hours and
+                        <code>average_consumption</code> in litres per hour. The tracking unit is
+                        set on the vehicle page and is not currently exposed or settable over the
+                        API; vehicles created here are tracked by distance.
+                        On a vehicle with a <code>secondary_fuel_type</code> that it actually burns,
+                        such as a petrol car converted to LPG, <code>average_consumption</code>
+                        covers the primary fuel only — each fuel is averaged on its own, and the
+                        per-fuel figures are shown on the vehicle page.
+                    </p>
                 </div>
             </div>
 
@@ -150,7 +165,7 @@
                                 <tr class="border-b"><td class="py-2 pr-4"><code>year</code></td><td class="py-2 pr-4">integer</td><td class="py-2 pr-4">No</td><td class="py-2">Model year</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>registration</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">License plate number</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>vin</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Vehicle Identification Number</td></tr>
-                                <tr class="border-b"><td class="py-2 pr-4"><code>fuel_type</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">petrol, diesel, electric, hybrid, lpg, cng</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>fuel_type</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">petrol, diesel, electric, hybrid, plugin_hybrid, lpg, cng, hydrogen, e85, other</td></tr>
                                 <tr><td class="py-2 pr-4"><code>tank_capacity</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Fuel tank capacity in liters</td></tr>
                             </tbody>
                         </table>
@@ -244,6 +259,9 @@
       "volume": 45.5,
       "price_per_unit": 1.45,
       "total_cost": 65.98,
+      "sales_tax": 8.58,
+      "fuel_type": "petrol",
+      "fuel_distance": null,
       "is_full_tank": true,
       "is_missed": false,
       "station": "Shell",
@@ -258,6 +276,7 @@
   "offset": 0
 }</code></pre>
                     </div>
+                    <p class="text-gray-600 dark:text-gray-400 mt-4"><code>fuel_type</code> is the fuel the fill-up actually put in; logs recorded without one report the vehicle's own fuel type. <code>fuel_distance</code> is the distance run on that fuel since the previous fill-up of it, in the vehicle's own unit, and is only needed on a vehicle that burns two fuels — the odometer cannot say which of the two propelled which part of the distance. Both can be set when creating or updating a fill-up.</p>
                 </div>
             </div>
 
@@ -287,6 +306,9 @@
                                 <tr class="border-b"><td class="py-2 pr-4"><code>volume</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Fuel volume in liters</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>price_per_unit</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Price per liter</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>total_cost</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Total cost (auto-calculated if not provided)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>sales_tax</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Sales tax included in the total cost</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>fuel_type</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Fuel this fill-up put in; defaults to the vehicle's own fuel type</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>fuel_distance</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Distance run on this fuel since the previous fill-up of it, in the vehicle's unit (dual-fuel vehicles only)</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>is_full_tank</code></td><td class="py-2 pr-4">boolean</td><td class="py-2 pr-4">No</td><td class="py-2">Was tank filled completely? (default: true)</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>is_missed</code></td><td class="py-2 pr-4">boolean</td><td class="py-2 pr-4">No</td><td class="py-2">Mark as missed fill-up (default: false)</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>station</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Gas station name</td></tr>
@@ -491,6 +513,8 @@
                                 <tr class="border-b"><td class="py-2 pr-4"><code>start_odometer</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">Yes</td><td class="py-2">Odometer at the start of the trip</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>purpose</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">Yes</td><td class="py-2">See purposes below</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>end_odometer</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Odometer at the end of the trip</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>start_fuel_level</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Fuel gauge at the start, as a percentage of a full tank (0-100)</td></tr>
+                                <tr class="border-b"><td class="py-2 pr-4"><code>end_fuel_level</code></td><td class="py-2 pr-4">number</td><td class="py-2 pr-4">No</td><td class="py-2">Fuel gauge at the end, as a percentage of a full tank (0-100)</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>description</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Description of the trip</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>start_location</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Where the trip started</td></tr>
                                 <tr class="border-b"><td class="py-2 pr-4"><code>end_location</code></td><td class="py-2 pr-4">string</td><td class="py-2 pr-4">No</td><td class="py-2">Where the trip ended</td></tr>
@@ -664,7 +688,7 @@
                             <tr class="border-b"><td class="py-2 pr-4">201</td><td class="py-2 pr-4">-</td><td class="py-2">Created successfully</td></tr>
                             <tr class="border-b"><td class="py-2 pr-4">400</td><td class="py-2 pr-4"><code>invalid_request</code>, <code>validation_error</code></td><td class="py-2">Bad request or validation failed</td></tr>
                             <tr class="border-b"><td class="py-2 pr-4">401</td><td class="py-2 pr-4"><code>missing_api_key</code>, <code>invalid_api_key</code></td><td class="py-2">Authentication required or failed</td></tr>
-                            <tr class="border-b"><td class="py-2 pr-4">403</td><td class="py-2 pr-4"><code>forbidden</code></td><td class="py-2">Permission denied</td></tr>
+                            <tr class="border-b"><td class="py-2 pr-4">403</td><td class="py-2 pr-4"><code>forbidden</code>, <code>permission_denied</code></td><td class="py-2">Permission denied. <code>permission_denied</code> means the account's role does not allow this change</td></tr>
                             <tr><td class="py-2 pr-4">404</td><td class="py-2 pr-4"><code>not_found</code></td><td class="py-2">Resource not found</td></tr>
                         </tbody>
                     </table>

@@ -94,7 +94,7 @@ class TestAllowanceDelete:
         allowance_id = sample_allowance.id
         resp = auth_client.post(f'/allowance/{allowance_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert MileageAllowance.query.get(allowance_id) is None
+        assert db.session.get(MileageAllowance, allowance_id) is None
 
 
 class TestAllowanceOffsetsCost:

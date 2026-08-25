@@ -1,6 +1,6 @@
 import pytest
 from app import db
-from app.models import Reminder
+from app.models import Expense, Reminder, User, Vehicle
 from datetime import date
 
 
@@ -95,7 +95,7 @@ class TestReminderDelete:
         reminder_id = sample_reminder.id
         resp = auth_client.post(f'/reminders/{reminder_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert Reminder.query.get(reminder_id) is None
+        assert db.session.get(Reminder, reminder_id) is None
 
 
 class TestReminderComplete:
@@ -216,3 +216,153 @@ class TestReminderRecurrenceDuplicates:
             Reminder.is_completed == False,
         ).all()
         assert len(next_occurrences) == 1
+
+
+class TestLogExpenseForReminder:
+    """#296 — record what a reminder cost, and complete it in one step.
+
+    The reminder deliberately stores no amount: the reporter's registration
+    fee varies, so the cost is typed on the expense form at payment time.
+    """
+
+    def _expense_form(self, vehicle, reminder=None, **overrides):
+        data = {
+            'vehicle_id': str(vehicle.id),
+            'date': '2026-03-01',
+            'category': 'registration',
+            'description': 'Registration',
+            'cost': '210.50',
+        }
+        if reminder is not None:
+            data['reminder_id'] = str(reminder.id)
+        data.update(overrides)
+        return data
+
+    def test_open_reminder_offers_the_action(self, auth_client, sample_reminder):
+        resp = auth_client.get('/reminders/')
+        assert resp.status_code == 200
+        assert f'/expenses/new?reminder_id={sample_reminder.id}'.encode() in resp.data
+
+    def test_completed_reminder_does_not_offer_the_action(self, auth_client, sample_reminder):
+        sample_reminder.is_completed = True
+        db.session.commit()
+
+        resp = auth_client.get('/reminders/?completed=true')
+        assert resp.status_code == 200
+        assert f'/expenses/new?reminder_id={sample_reminder.id}'.encode() not in resp.data
+
+    def test_form_is_prefilled_from_the_reminder(self, auth_client, sample_reminder):
+        resp = auth_client.get(f'/expenses/new?reminder_id={sample_reminder.id}')
+        assert resp.status_code == 200
+        body = resp.data.decode()
+        assert f'name="reminder_id" id="reminder_id" value="{sample_reminder.id}"' in body
+        # Description from the title, category mapped from the reminder type
+        assert 'value="MOT Due"' in body
+        assert '<option value="inspection" selected>' in body
+
+    def test_unknown_reminder_is_ignored_on_the_form(self, auth_client, sample_vehicle):
+        resp = auth_client.get('/expenses/new?reminder_id=9999')
+        assert resp.status_code == 200
+        assert 'name="reminder_id"' not in resp.data.decode()
+
+    def test_saving_the_expense_completes_the_reminder(self, auth_client, sample_vehicle,
+                                                       sample_reminder, test_user):
+        resp = auth_client.post('/expenses/new',
+                                data=self._expense_form(sample_vehicle, sample_reminder),
+                                follow_redirects=True)
+        assert resp.status_code == 200
+
+        expense = Expense.query.filter_by(description='Registration').first()
+        assert expense is not None
+        assert expense.cost == 210.50
+
+        db.session.refresh(sample_reminder)
+        assert sample_reminder.is_completed is True
+
+    def test_recurring_reminder_rolls_forward(self, auth_client, sample_vehicle, test_user):
+        reminder = Reminder(
+            vehicle_id=sample_vehicle.id, user_id=test_user.id,
+            title='Registration', reminder_type='registration',
+            due_date=date(2026, 3, 1),
+            recurrence='monthly', recurrence_interval=6,
+        )
+        db.session.add(reminder)
+        db.session.commit()
+
+        auth_client.post('/expenses/new',
+                         data=self._expense_form(sample_vehicle, reminder),
+                         follow_redirects=True)
+
+        db.session.refresh(reminder)
+        assert reminder.is_completed is True
+
+        next_occurrences = Reminder.query.filter(
+            Reminder.title == 'Registration',
+            Reminder.is_completed == False,
+        ).all()
+        assert len(next_occurrences) == 1
+        assert next_occurrences[0].due_date == date(2026, 9, 1)
+        assert next_occurrences[0].recurrence_interval == 6
+
+    def test_expense_saves_without_a_reminder(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/expenses/new',
+                                data=self._expense_form(sample_vehicle),
+                                follow_redirects=True)
+        assert resp.status_code == 200
+        assert Expense.query.filter_by(description='Registration').first() is not None
+
+    def test_reminder_on_another_vehicle_is_ignored(self, auth_client, sample_vehicle,
+                                                    sample_reminder, test_user):
+        other = Vehicle(owner_id=test_user.id, name='Second Car', vehicle_type='car')
+        db.session.add(other)
+        db.session.commit()
+
+        auth_client.post('/expenses/new',
+                         data=self._expense_form(other, sample_reminder),
+                         follow_redirects=True)
+
+        db.session.refresh(sample_reminder)
+        assert sample_reminder.is_completed is False
+
+    def test_reminder_the_user_cannot_see_is_ignored(self, auth_client, sample_vehicle):
+        stranger = User(username='stranger', email='stranger@example.com')
+        stranger.set_password('StrangerPass123!')
+        db.session.add(stranger)
+        db.session.commit()
+
+        their_vehicle = Vehicle(owner_id=stranger.id, name='Their Car', vehicle_type='car')
+        db.session.add(their_vehicle)
+        db.session.commit()
+
+        their_reminder = Reminder(
+            vehicle_id=their_vehicle.id, user_id=stranger.id,
+            title='Their MOT', reminder_type='mot',
+            due_date=date(2026, 3, 1), recurrence='none',
+        )
+        db.session.add(their_reminder)
+        db.session.commit()
+
+        auth_client.post('/expenses/new',
+                         data=self._expense_form(sample_vehicle, their_reminder),
+                         follow_redirects=True)
+
+        db.session.refresh(their_reminder)
+        assert their_reminder.is_completed is False
+
+    def test_already_completed_reminder_is_not_rolled_again(self, auth_client, sample_vehicle,
+                                                            test_user):
+        reminder = Reminder(
+            vehicle_id=sample_vehicle.id, user_id=test_user.id,
+            title='Registration', reminder_type='registration',
+            due_date=date(2026, 3, 1),
+            recurrence='monthly', recurrence_interval=6,
+            is_completed=True,
+        )
+        db.session.add(reminder)
+        db.session.commit()
+
+        auth_client.post('/expenses/new',
+                         data=self._expense_form(sample_vehicle, reminder),
+                         follow_redirects=True)
+
+        assert Reminder.query.filter_by(title='Registration', is_completed=False).count() == 0

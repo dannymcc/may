@@ -186,11 +186,11 @@ msgstr "주행거리 (km/mi)"
 msgid "Hours"
 msgstr "시간"
 
-#: app/models.py:1022
+#: app/models.py:1116 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "킬로미터 (km)"
 
-#: app/models.py:1023
+#: app/models.py:1117 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "마일 (mi)"
 
@@ -4073,9 +4073,50 @@ msgstr "단위"
 msgid "Select unit..."
 msgstr "단위 선택..."
 
+#: app/templates/auth/settings.html:138
 #: app/templates/vehicles/part_form.html:58
 msgid "Liters (L)"
 msgstr "리터 (L)"
+
+#: app/templates/auth/settings.html:118
+msgid "DD/MM/YYYY"
+msgstr "일/월/년"
+
+#: app/templates/auth/settings.html:119
+msgid "MM/DD/YYYY"
+msgstr "월/일/년"
+
+#: app/templates/auth/settings.html:120
+msgid "YYYY-MM-DD"
+msgstr "년-월-일"
+
+#: app/templates/auth/settings.html:121
+msgid "DD.MM.YYYY"
+msgstr "일.월.년"
+
+#: app/templates/auth/settings.html:139
+msgid "UK Gallons (gal)"
+msgstr "영국 갤런 (gal)"
+
+#: app/templates/auth/settings.html:140
+msgid "US Gallons (gal)"
+msgstr "미국 갤런 (gal)"
+
+#: app/templates/auth/settings.html:149
+msgid "MPG (UK)"
+msgstr "MPG(영국)"
+
+#: app/templates/auth/settings.html:150
+msgid "MPG (US)"
+msgstr "MPG(미국)"
+
+#: app/templates/auth/settings.html:148
+msgid "L/100km"
+msgstr "L/100km"
+
+#: app/templates/auth/settings.html:151
+msgid "km/L"
+msgstr "km/L"
 
 #: app/templates/vehicles/part_form.html:59
 msgid "Milliliters (ml)"
@@ -4449,6 +4490,26 @@ msgstr "소비 추이를 표시할 데이터가 충분하지 않습니다. 완�
 #: app/templates/vehicles/view.html:1043
 msgid "No fuel prices recorded yet."
 msgstr "아직 기록된 연료 가격이 없습니다."
+
+#: app/models.py:388 app/templates/maintenance/form.html:115
+msgid "Engine hours"
+msgstr "엔진 가동 시간"
+
+#: app/templates/maintenance/form.html:81
+msgid "Every (hours)"
+msgstr "주기 (시간)"
+
+#: app/templates/maintenance/form.html:84
+msgid "e.g., 250"
+msgstr "예: 250"
+
+#: app/templates/vehicles/view.html:162
+msgid "Total Hours"
+msgstr "총 가동 시간"
+
+#: app/templates/maintenance/form.html:86
+msgid "This vehicle is metered in engine hours, so its service interval is counted in hours."
+msgstr "이 차량은 엔진 가동 시간으로 계측하므로 정비 주기를 시간 단위로 계산합니다."
 
 #~ msgid "Quarterly (3 months)"
 #~ msgstr "분기별 (3개월마다)"

@@ -243,14 +243,14 @@
             <div class="stat-unit">{{ user.currency }}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Total Distance</div>
+            <div class="stat-label">{% if vehicle.tracks_hours() %}Total Hours{% else %}Total Distance{% endif %}</div>
             <div class="stat-value">{{ "%.0f"|format(stats.total_distance) }}</div>
-            <div class="stat-unit">{{ user.distance_unit }}</div>
+            <div class="stat-unit">{{ vehicle.get_reading_unit() }}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Avg. Consumption</div>
             <div class="stat-value">{% if stats.avg_consumption %}{{ "%.1f"|format(stats.avg_consumption) }}{% else %}-{% endif %}</div>
-            <div class="stat-unit">{{ user.consumption_unit }}</div>
+            <div class="stat-unit">{{ vehicle.get_consumption_unit() or user.consumption_unit }}</div>
         </div>
     </div>
 
@@ -344,6 +344,7 @@
 
     <!-- Fuel Logs -->
     {% if fuel_logs %}
+    {% set sales_tax_total = fuel_logs | map(attribute='sales_tax') | select | sum %}
     <div class="page-break"></div>
     <h2>Fuel Logs ({{ stats.fuel_logs_count }} records)</h2>
     <table>
@@ -353,20 +354,30 @@
             <th class="text-right">Volume</th>
             <th class="text-right">Price/Unit</th>
             <th class="text-right">Total Cost</th>
+            {% if sales_tax_total %}<th class="text-right">Sales Tax</th>{% endif %}
             <th class="text-center">Full</th>
             <th>Station</th>
         </tr>
         {% for log in fuel_logs %}
         <tr>
             <td>{{ log.date|format_date }}</td>
-            <td class="text-right">{{ "%.0f"|format(log.odometer) }} {{ user.distance_unit }}</td>
+            <td class="text-right">{{ "%.0f"|format(log.odometer) }} {{ vehicle.get_reading_unit() }}</td>
             <td class="text-right">{% if log.volume %}{{ "%.2f"|format(log.volume) }} {{ user.volume_unit }}{% else %}-{% endif %}</td>
             <td class="text-right">{% if log.price_per_unit %}{{ "%.3f"|format(log.price_per_unit) }}{% else %}-{% endif %}</td>
             <td class="text-right">{% if log.total_cost %}{{ log.total_cost|money }} {{ user.currency }}{% else %}-{% endif %}</td>
+            {% if sales_tax_total %}<td class="text-right">{% if log.sales_tax %}{{ log.sales_tax|money }} {{ user.currency }}{% else %}-{% endif %}</td>{% endif %}
             <td class="text-center">{% if log.is_full_tank %}Yes{% else %}No{% endif %}</td>
             <td>{{ log.station or '-' }}</td>
         </tr>
         {% endfor %}
+        {% if sales_tax_total %}
+        <tr>
+            <td colspan="4"></td>
+            <td class="text-right"><strong>Sales tax total</strong></td>
+            <td class="text-right"><strong>{{ sales_tax_total|money }} {{ user.currency }}</strong></td>
+            <td colspan="2"></td>
+        </tr>
+        {% endif %}
     </table>
     {% endif %}
 

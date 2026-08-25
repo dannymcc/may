@@ -56,6 +56,14 @@ def _seed_legacy_db(path):
           is_active BOOLEAN DEFAULT 1,
           created_at DATETIME
         );
+        CREATE TABLE fuel_stations (
+          id INTEGER PRIMARY KEY,
+          user_id INTEGER NOT NULL,
+          name VARCHAR(100) NOT NULL,
+          brand VARCHAR(50),
+          postcode VARCHAR(20),
+          created_at DATETIME
+        );
         """
     )
     conn.commit()
@@ -89,6 +97,31 @@ def test_legacy_db_recovers_missing_user_columns(tmp_path):
         assert u.start_page == 'dashboard'  # string default applied
         assert u.show_quick_entry is False
         assert u.default_vehicle_id is None
+
+
+def test_legacy_db_gains_multi_column_indexes(tmp_path):
+    """Issue #155: the station price-source columns come with a composite
+    unique index, which the per-column recovery pass cannot create."""
+    import os
+    os.makedirs('/tmp/may_test_uploads', exist_ok=True)
+
+    db_path = tmp_path / 'legacy_stations.db'
+    _seed_legacy_db(str(db_path))
+
+    app = create_app(_TempDBConfig(str(db_path)))
+    with app.app_context():
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        cols = {c['name'] for c in inspector.get_columns('fuel_stations')}
+        assert {'price_source', 'external_id'} <= cols
+
+        indexes = {i['name']: i for i in inspector.get_indexes('fuel_stations')}
+        index = indexes.get('ix_fuel_stations_source_external_id')
+        assert index is not None
+        assert index['unique']
+
+        db.session.remove()
+        db.engine.dispose()
 
 
 def test_run_schema_migrations_is_idempotent(tmp_path):
@@ -165,9 +198,10 @@ def test_fresh_db_stamps_head_and_replay_survives(tmp_path):
             rev = conn.execute(
                 text('SELECT version_num FROM alembic_version')
             ).scalar()
-        heads = [s.strip() for s in open('migrations/versions/d4e5f6a7b8c0_add_number_format_prefs_to_users.py')
-                 if s.startswith("revision = ")]
-        head = heads[0].split("'")[1]
+        # Resolve the head from Alembic rather than a filename, so adding a
+        # migration does not break this test.
+        from alembic.script import ScriptDirectory
+        head = ScriptDirectory('migrations').get_current_head()
         assert rev == head, f'fresh db stamped {rev}, expected head {head}'
 
         # Simulate the pre-fix broken state and prove the replay now survives.

@@ -1,6 +1,8 @@
 import pytest
+from datetime import date
+
 from app import db
-from app.models import Vehicle
+from app.models import Attachment, ChargingSession, Vehicle
 
 
 class TestDashboard:
@@ -113,3 +115,101 @@ class TestTimeline:
         resp = auth_client.get(f'/timeline/{other_vehicle.id}', follow_redirects=True)
         assert resp.status_code == 200
         # Should redirect to dashboard since user doesn't have access
+
+    def test_timeline_shows_fuel_log_notes(self, auth_client, sample_fuel_log, sample_vehicle):
+        """Notes recorded against an entry are visible on the timeline (#284)."""
+        sample_fuel_log.notes = 'Filled up before the long drive'
+        db.session.commit()
+
+        resp = auth_client.get(f'/timeline/{sample_vehicle.id}')
+        assert resp.status_code == 200
+        assert b'Filled up before the long drive' in resp.data
+
+    def test_timeline_shows_expense_notes(self, auth_client, sample_expense, sample_vehicle):
+        sample_expense.notes = 'Independent garage, kept the receipt'
+        db.session.commit()
+
+        resp = auth_client.get(f'/timeline/{sample_vehicle.id}')
+        assert resp.status_code == 200
+        assert b'Independent garage, kept the receipt' in resp.data
+
+    def test_timeline_shows_charging_notes(self, auth_client, test_user, sample_vehicle):
+        session = ChargingSession(
+            vehicle_id=sample_vehicle.id,
+            user_id=test_user.id,
+            date=date(2024, 2, 1),
+            kwh_added=30.0,
+            total_cost=12.0,
+            notes='Rapid charger was half price',
+        )
+        db.session.add(session)
+        db.session.commit()
+
+        resp = auth_client.get(f'/timeline/{sample_vehicle.id}')
+        assert resp.status_code == 200
+        assert b'Rapid charger was half price' in resp.data
+
+    def test_timeline_escapes_notes(self, auth_client, sample_expense, sample_vehicle):
+        """Notes are user input, so they must be escaped rather than rendered."""
+        sample_expense.notes = '<script>alert(1)</script>'
+        db.session.commit()
+
+        resp = auth_client.get(f'/timeline/{sample_vehicle.id}')
+        assert resp.status_code == 200
+        assert b'<script>alert(1)</script>' not in resp.data
+        assert b'&lt;script&gt;alert(1)&lt;/script&gt;' in resp.data
+
+    def test_timeline_shows_expense_attachment_link(self, auth_client, sample_expense, sample_vehicle):
+        attachment = Attachment(
+            filename='abc123_receipt.pdf',
+            original_filename='receipt.pdf',
+            expense_id=sample_expense.id,
+            vehicle_id=sample_vehicle.id,
+        )
+        db.session.add(attachment)
+        db.session.commit()
+
+        resp = auth_client.get(f'/timeline/{sample_vehicle.id}')
+        assert resp.status_code == 200
+        assert b'receipt.pdf' in resp.data
+        assert b'/api/uploads/abc123_receipt.pdf' in resp.data
+
+    def test_timeline_shows_fuel_log_attachment_link(self, auth_client, sample_fuel_log, sample_vehicle):
+        attachment = Attachment(
+            filename='def456_fuel.jpg',
+            original_filename='fuel-receipt.jpg',
+            fuel_log_id=sample_fuel_log.id,
+            vehicle_id=sample_vehicle.id,
+        )
+        db.session.add(attachment)
+        db.session.commit()
+
+        resp = auth_client.get(f'/timeline/{sample_vehicle.id}')
+        assert resp.status_code == 200
+        assert b'fuel-receipt.jpg' in resp.data
+        assert b'/api/uploads/def456_fuel.jpg' in resp.data
+
+    def test_timeline_attachments_not_shared_between_vehicles(self, auth_client, test_user,
+                                                              sample_expense, sample_vehicle):
+        """An attachment on another vehicle's expense must not leak onto this timeline."""
+        other_vehicle = Vehicle(
+            owner_id=test_user.id,
+            name='Second Car',
+            vehicle_type='car',
+            fuel_type='petrol',
+        )
+        db.session.add(other_vehicle)
+        db.session.commit()
+
+        attachment = Attachment(
+            filename='xyz789_other.pdf',
+            original_filename='other-receipt.pdf',
+            expense_id=sample_expense.id,
+            vehicle_id=sample_vehicle.id,
+        )
+        db.session.add(attachment)
+        db.session.commit()
+
+        resp = auth_client.get(f'/timeline/{other_vehicle.id}')
+        assert resp.status_code == 200
+        assert b'other-receipt.pdf' not in resp.data

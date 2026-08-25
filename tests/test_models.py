@@ -3,6 +3,7 @@ import pytest
 from datetime import date, timedelta, datetime
 
 from app import db
+from app.utils import utcnow
 from app.models import (
     User, Vehicle, FuelLog, Expense, Reminder, MaintenanceSchedule,
     RecurringExpense, FuelStation, FuelPriceHistory, Trip, ChargingSession,
@@ -74,7 +75,7 @@ class TestUserResetToken:
         test_user.generate_reset_token()
         assert test_user.password_reset_expires is not None
         # Should expire about 1 hour from now
-        diff = test_user.password_reset_expires - datetime.utcnow()
+        diff = test_user.password_reset_expires - utcnow()
         assert timedelta(minutes=55) < diff < timedelta(minutes=65)
 
     def test_get_by_reset_token_valid(self, app, test_user):
@@ -90,7 +91,7 @@ class TestUserResetToken:
     def test_get_by_reset_token_expired(self, app, test_user):
         test_user.generate_reset_token()
         # Move expiry to the past
-        test_user.password_reset_expires = datetime.utcnow() - timedelta(hours=2)
+        test_user.password_reset_expires = utcnow() - timedelta(hours=2)
         db.session.commit()
         found = User.get_by_reset_token(test_user.password_reset_token)
         assert found is None
@@ -192,6 +193,62 @@ class TestVehicleOdometerUnit:
         assert abs(v.get_total_distance('km') - 1000) < 0.01
         # Asked in miles — converted
         assert abs(v.get_total_distance('mi') - 621.371) < 0.05
+
+
+class TestLastOdometerSources:
+    """#286 — an odometer recorded against a maintenance expense counts too."""
+
+    def _fuel_log(self, test_user, vehicle, odometer, day=1):
+        return FuelLog(vehicle_id=vehicle.id, user_id=test_user.id,
+                       date=date(2026, 1, day), odometer=odometer,
+                       volume=40, is_full_tank=True)
+
+    def _expense(self, test_user, vehicle, odometer, day=1):
+        return Expense(vehicle_id=vehicle.id, user_id=test_user.id,
+                       date=date(2026, 1, day), category='maintenance',
+                       description='Oil change', cost=80, odometer=odometer)
+
+    def test_expense_odometer_becomes_last_odometer(self, app, test_user, sample_vehicle):
+        db.session.add_all([
+            self._fuel_log(test_user, sample_vehicle, 10000),
+            self._expense(test_user, sample_vehicle, 12500, day=20),
+        ])
+        db.session.commit()
+        assert sample_vehicle.get_last_odometer() == 12500
+
+    def test_expense_without_odometer_is_ignored(self, app, test_user, sample_vehicle):
+        db.session.add_all([
+            self._fuel_log(test_user, sample_vehicle, 10000),
+            self._expense(test_user, sample_vehicle, None, day=20),
+        ])
+        db.session.commit()
+        assert sample_vehicle.get_last_odometer() == 10000
+
+    def test_only_expenses_without_odometer_gives_zero(self, app, test_user, sample_vehicle):
+        db.session.add(self._expense(test_user, sample_vehicle, None))
+        db.session.commit()
+        assert sample_vehicle.get_last_odometer() == 0
+
+    def test_higher_fuel_log_still_wins(self, app, test_user, sample_vehicle):
+        db.session.add_all([
+            self._fuel_log(test_user, sample_vehicle, 13000, day=25),
+            self._expense(test_user, sample_vehicle, 12500, day=20),
+        ])
+        db.session.commit()
+        assert sample_vehicle.get_last_odometer() == 13000
+
+    def test_tessie_vehicle_ignores_expenses(self, app, test_user, monkeypatch):
+        from app.services.tessie import TessieService
+        monkeypatch.setattr(TessieService, 'is_configured', staticmethod(lambda: True))
+        v = Vehicle(owner_id=test_user.id, name='Tesla', vehicle_type='car',
+                    fuel_type='electric', odometer_unit='km',
+                    tessie_enabled=True, tessie_vin='5YJ3TEST',
+                    tessie_last_odometer=10000)
+        db.session.add(v)
+        db.session.commit()
+        db.session.add(self._expense(test_user, v, 99000, day=20))
+        db.session.commit()
+        assert v.get_last_odometer() == 10000
 
 
 class TestTessieOdometerUnit:

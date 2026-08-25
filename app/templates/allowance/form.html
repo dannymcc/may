@@ -2,6 +2,9 @@
 {% block title %}{% if allowance %}{{ _('Edit Allowance') }}{% else %}{{ _('Add Allowance') }}{% endif %}{% endblock %}
 
 {% block content %}
+{% set selected_id = (allowance.vehicle_id if allowance else selected_vehicle_id) %}
+{% set preselected = vehicles | selectattr('id', 'equalto', selected_id if selected_id else -1) | list %}
+{% set form_vehicle = preselected[0] if preselected else (vehicles[0] if vehicles else None) %}
 <div class="max-w-2xl mx-auto">
     <div class="mb-6">
         <a href="{{ url_for('allowance.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; {{ _('Back to mileage allowance') }}</a>
@@ -18,7 +21,8 @@
                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         {% for vehicle in vehicles %}
                         <option value="{{ vehicle.id }}"
-                                data-odometer-unit="{{ vehicle.get_effective_odometer_unit() }}"
+                                data-odometer-unit="{{ vehicle.get_reading_unit() }}"
+                                data-span-label="{{ vehicle.get_span_label() }}"
                                 {% if (allowance and allowance.vehicle_id == vehicle.id) or (selected_vehicle_id == vehicle.id) %}selected{% endif %}>
                             {{ vehicle.name }}
                         </option>
@@ -41,7 +45,7 @@
                 </div>
 
                 <div>
-                    <label for="distance" id="distance-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Distance') }} ({{ current_user.distance_unit }})</label>
+                    <label for="distance" id="distance-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ form_vehicle.get_span_label() if form_vehicle else _('Distance') }} ({{ form_vehicle.get_reading_unit() if form_vehicle else current_user.distance_unit }})</label>
                     <input type="number" name="distance" id="distance" step="0.1"
                            value="{{ allowance.distance if allowance and allowance.distance is not none else '' }}"
                            onchange="calculateAmount()"
@@ -98,7 +102,12 @@
         function updateOdometerUnit() {
             const selected = vehicleSelect.options[vehicleSelect.selectedIndex];
             const unit = selected ? selected.dataset.odometerUnit : '{{ current_user.distance_unit }}';
-            if (unit) {
+            // An hours-metered vehicle accumulates engine hours, not
+            // distance, so the word follows the vehicle too (#324).
+            const spanLabel = selected ? selected.dataset.spanLabel : '';
+            if (spanLabel && unit) {
+                distanceLabel.textContent = spanLabel + ' (' + unit + ')';
+            } else if (unit) {
                 distanceLabel.textContent = distanceLabel.textContent.replace(/\([^)]*\)/, '(' + unit + ')');
             }
         }

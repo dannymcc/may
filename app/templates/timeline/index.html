@@ -65,7 +65,19 @@
                                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ event.description }}</p>
                                 {% endif %}
                                 {% if event.odometer %}
-                                <p class="text-xs text-gray-400 dark:text-gray-500">{{ "%.0f"|format(event.odometer) }} {{ current_user.distance_unit }}</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500">{{ "%.0f"|format(event.odometer) }} {{ vehicle.get_reading_unit() }}</p>
+                                {% endif %}
+                                {% if event.notes %}
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap">{{ event.notes }}</p>
+                                {% endif %}
+                                {% if event.attachments %}
+                                <ul class="mt-1 space-y-0.5">
+                                    {% for attachment in event.attachments %}
+                                    <li class="text-sm">
+                                        <a href="{{ url_for('api.uploaded_file', filename=attachment.filename) }}" target="_blank" rel="noopener" class="text-primary-600 hover:text-primary-500">{{ attachment.original_filename }}</a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
                                 {% endif %}
                             </div>
                             <div class="whitespace-nowrap text-right">

@@ -186,11 +186,11 @@ msgstr "Kilometrit (km/mi)"
 msgid "Hours"
 msgstr "Tunnit"
 
-#: app/models.py:1022
+#: app/models.py:1116 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "Kilometrit (km)"
 
-#: app/models.py:1023
+#: app/models.py:1117 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "Mailit (mi)"
 
@@ -4150,9 +4150,50 @@ msgstr "Yksikkö"
 msgid "Select unit..."
 msgstr "Valitse yksikkö..."
 
+#: app/templates/auth/settings.html:138
 #: app/templates/vehicles/part_form.html:58
 msgid "Liters (L)"
 msgstr "Litraa (L)"
+
+#: app/templates/auth/settings.html:118
+msgid "DD/MM/YYYY"
+msgstr "PP/KK/VVVV"
+
+#: app/templates/auth/settings.html:119
+msgid "MM/DD/YYYY"
+msgstr "KK/PP/VVVV"
+
+#: app/templates/auth/settings.html:120
+msgid "YYYY-MM-DD"
+msgstr "VVVV-KK-PP"
+
+#: app/templates/auth/settings.html:121
+msgid "DD.MM.YYYY"
+msgstr "PP.KK.VVVV"
+
+#: app/templates/auth/settings.html:139
+msgid "UK Gallons (gal)"
+msgstr "Brittiläiset gallonat (gal)"
+
+#: app/templates/auth/settings.html:140
+msgid "US Gallons (gal)"
+msgstr "Amerikkalaiset gallonat (gal)"
+
+#: app/templates/auth/settings.html:149
+msgid "MPG (UK)"
+msgstr "MPG (UK)"
+
+#: app/templates/auth/settings.html:150
+msgid "MPG (US)"
+msgstr "MPG (US)"
+
+#: app/templates/auth/settings.html:148
+msgid "L/100km"
+msgstr "l/100 km"
+
+#: app/templates/auth/settings.html:151
+msgid "km/L"
+msgstr "km/l"
 
 #: app/templates/vehicles/part_form.html:59
 msgid "Milliliters (ml)"
@@ -4541,6 +4582,26 @@ msgstr ""
 #: app/templates/vehicles/view.html:1043
 msgid "No fuel prices recorded yet."
 msgstr "Polttoaineen hintoja ei ole vielä kirjattu."
+
+#: app/models.py:388 app/templates/maintenance/form.html:115
+msgid "Engine hours"
+msgstr "Moottorin käyttötunnit"
+
+#: app/templates/maintenance/form.html:81
+msgid "Every (hours)"
+msgstr "Joka (tuntia)"
+
+#: app/templates/maintenance/form.html:84
+msgid "e.g., 250"
+msgstr "esim. 250"
+
+#: app/templates/vehicles/view.html:162
+msgid "Total Hours"
+msgstr "Kokonaistunnit"
+
+#: app/templates/maintenance/form.html:86
+msgid "This vehicle is metered in engine hours, so its service interval is counted in hours."
+msgstr "Tämän ajoneuvon mittarina ovat moottorin käyttötunnit, joten huoltoväli lasketaan tunteina."
 
 #~ msgid "Quarterly (3 months)"
 #~ msgstr "Neljännesvuosittain (joka 3. kuukausi)"

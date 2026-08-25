@@ -2,6 +2,9 @@
 {% block title %}{% if expense %}{{ _('Edit Expense') }}{% else %}{{ _('Add Expense') }}{% endif %}{% endblock %}
 
 {% block content %}
+{% set selected_id = (expense.vehicle_id if expense else selected_vehicle_id) %}
+{% set preselected = vehicles | selectattr('id', 'equalto', selected_id if selected_id else -1) | list %}
+{% set form_vehicle = preselected[0] if preselected else (vehicles[0] if vehicles else None) %}
 <div class="max-w-2xl mx-auto">
     <div class="mb-6">
         <a href="{{ url_for('expenses.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; {{ _('Back to expenses') }}</a>
@@ -10,6 +13,16 @@
 
     <form method="POST" enctype="multipart/form-data" class="space-y-6">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if reminder %}
+        <!-- Logging this expense against a reminder (#296) -->
+        <input type="hidden" name="reminder_id" id="reminder_id" value="{{ reminder.id }}" data-vehicle-id="{{ reminder.vehicle_id }}">
+        <div id="reminder-notice" class="rounded-md bg-primary-50 dark:bg-gray-700 p-4 text-sm text-gray-700 dark:text-gray-200">
+            {{ _('Saving this expense will also complete the reminder "%(title)s".', title=reminder.title) }}
+            {% if reminder.recurrence != 'none' %}
+            {{ _('Its next occurrence will be scheduled.') }}
+            {% endif %}
+        </div>
+        {% endif %}
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div class="sm:col-span-2">
@@ -18,7 +31,8 @@
                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         {% for vehicle in vehicles %}
                         <option value="{{ vehicle.id }}"
-                                data-odometer-unit="{{ vehicle.get_effective_odometer_unit() }}"
+                                data-odometer-unit="{{ vehicle.get_reading_unit() }}"
+                                data-reading-label="{{ vehicle.get_reading_label() }}"
                                 {% if (expense and expense.vehicle_id == vehicle.id) or (selected_vehicle_id == vehicle.id) %}selected{% endif %}>
                             {{ vehicle.name }}
                         </option>
@@ -38,7 +52,7 @@
                     <select name="category" id="category" required
                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         {% for value, label in categories %}
-                        <option value="{{ value }}" {% if expense and expense.category == value %}selected{% endif %}>{{ label }}</option>
+                        <option value="{{ value }}" {% if (expense and expense.category == value) or (not expense and reminder and reminder.expense_category() == value) %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -46,7 +60,7 @@
                 <div class="sm:col-span-2">
                     <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Description') }} *</label>
                     <input type="text" name="description" id="description" required
-                           value="{{ expense.description if expense else '' }}"
+                           value="{% if expense %}{{ expense.description }}{% elif reminder %}{{ reminder.title }}{% endif %}"
                            placeholder="{{ _('e.g., Oil change, Annual service') }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
@@ -59,7 +73,7 @@
                 </div>
 
                 <div>
-                    <label for="odometer" id="odometer-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Odometer') }} ({{ current_user.distance_unit }})</label>
+                    <label for="odometer" id="odometer-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ form_vehicle.get_reading_label() if form_vehicle else _('Odometer') }} ({{ form_vehicle.get_reading_unit() if form_vehicle else current_user.distance_unit }})</label>
                     <input type="number" name="odometer" id="odometer" step="0.1"
                            value="{{ expense.odometer if expense and expense.odometer is not none else '' }}"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
@@ -121,6 +135,11 @@
             </div>
         </div>
 
+        <!-- Hidden field for return redirect -->
+        {% if request.args.get('return_to') == 'vehicle' or (request.referrer and '/vehicles/' in request.referrer) %}
+        <input type="hidden" name="return_to" value="vehicle">
+        {% endif %}
+
         <div class="flex justify-end space-x-3">
             <a href="{{ url_for('expenses.index') }}"
                class="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
@@ -149,7 +168,12 @@
         function updateOdometerUnit() {
             const selected = vehicleSelect.options[vehicleSelect.selectedIndex];
             const unit = selected ? selected.dataset.odometerUnit : '{{ current_user.distance_unit }}';
-            if (unit) {
+            // An hours-metered vehicle has no odometer to read, so the word
+            // changes with the unit rather than just the bracket (#324).
+            const readingLabel = selected ? selected.dataset.readingLabel : '';
+            if (readingLabel && unit) {
+                odometerLabel.textContent = readingLabel + ' (' + unit + ')';
+            } else if (unit) {
                 odometerLabel.textContent = odometerLabel.textContent.replace(/\([^)]*\)/, '(' + unit + ')');
             }
         }
@@ -174,6 +198,21 @@
             }
             vehicleSelect.addEventListener('change', filterSchedules);
             filterSchedules();
+        }
+
+        // Drop the reminder link if the expense is moved to another vehicle (#296)
+        const reminderInput = document.getElementById('reminder_id');
+        if (reminderInput) {
+            const reminderNotice = document.getElementById('reminder-notice');
+            function syncReminderLink() {
+                const match = vehicleSelect.value === reminderInput.dataset.vehicleId;
+                reminderInput.disabled = !match;
+                if (reminderNotice) {
+                    reminderNotice.style.display = match ? '' : 'none';
+                }
+            }
+            vehicleSelect.addEventListener('change', syncReminderLink);
+            syncReminderLink();
         }
     })();
 </script>

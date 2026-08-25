@@ -131,4 +131,4 @@ class TestDocumentDelete:
         doc_id = sample_document.id
         resp = auth_client.post(f'/documents/{doc_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert Document.query.get(doc_id) is None
+        assert db.session.get(Document, doc_id) is None

@@ -111,4 +111,66 @@ class TestNotesDelete:
         note_id = sample_note.id
         resp = auth_client.post(f'/notes/{note_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert Note.query.get(note_id) is None
+        assert db.session.get(Note, note_id) is None
+
+
+class TestNoteRedirects:
+    """Saving a note returns to the notes list unless the user came from a
+    vehicle page (#283)."""
+
+    def _payload(self, vehicle, **overrides):
+        data = {
+            'vehicle_id': str(vehicle.id),
+            'date': '2024-05-02',
+            'title': 'Redirect test',
+            'content': 'Checking where we land.',
+        }
+        data.update(overrides)
+        return data
+
+    def test_create_redirects_to_notes(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/notes/new', data=self._payload(sample_vehicle),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/notes/')
+
+    def test_create_returns_to_vehicle_when_requested(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/notes/new',
+                                data=self._payload(sample_vehicle, return_to='vehicle'),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{sample_vehicle.id}')
+
+    def test_edit_redirects_to_notes(self, auth_client, sample_note):
+        resp = auth_client.post(f'/notes/{sample_note.id}/edit',
+                                data=self._payload(sample_note.vehicle),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/notes/')
+
+    def test_edit_returns_to_vehicle_when_requested(self, auth_client, sample_note):
+        vehicle_id = sample_note.vehicle_id
+        resp = auth_client.post(f'/notes/{sample_note.id}/edit',
+                                data=self._payload(sample_note.vehicle,
+                                                   return_to='vehicle'),
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+
+    def test_delete_redirects_to_notes(self, auth_client, sample_note):
+        resp = auth_client.post(f'/notes/{sample_note.id}/delete',
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/notes/')
+
+    def test_delete_returns_to_vehicle_when_requested(self, auth_client, sample_note):
+        vehicle_id = sample_note.vehicle_id
+        resp = auth_client.post(f'/notes/{sample_note.id}/delete?return_to=vehicle',
+                                follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith(f'/vehicles/{vehicle_id}')
+
+    def test_form_from_notes_page_omits_hidden_field(self, auth_client, sample_vehicle):
+        resp = auth_client.get('/notes/new')
+        assert resp.status_code == 200
+        assert b'name="return_to"' not in resp.data

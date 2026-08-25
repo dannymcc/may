@@ -45,6 +45,7 @@
     <ul class="divide-y divide-gray-200 dark:divide-gray-700">
         {% for expense in results.expenses %}
         <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            {% if can_write('expenses') %}
             <a href="{{ url_for('expenses.edit', expense_id=expense.id) }}" class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ expense.description }}</p>
@@ -52,6 +53,7 @@
                 </div>
                 <span class="text-sm font-medium text-gray-900 dark:text-white">{{ expense.cost|money }} {{ current_user.currency }}</span>
             </a>
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
@@ -66,6 +68,7 @@
     <ul class="divide-y divide-gray-200 dark:divide-gray-700">
         {% for log in results.fuel_logs %}
         <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            {% if can_write('fuel') %}
             <a href="{{ url_for('fuel.edit', log_id=log.id) }}" class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ log.station or _('Fuel Log') }}</p>
@@ -73,6 +76,7 @@
                 </div>
                 <span class="text-sm font-medium text-gray-900 dark:text-white">{% if log.total_cost is not none %}{{ log.total_cost|money }} {{ current_user.currency }}{% else %}-{% endif %}</span>
             </a>
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
@@ -108,10 +112,12 @@
     <ul class="divide-y divide-gray-200 dark:divide-gray-700">
         {% for note in results.notes %}
         <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            {% if can_write('notes') %}
             <a href="{{ url_for('notes.edit', note_id=note.id) }}" class="block">
                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ note.title or note.content[:60] }}</p>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ note.vehicle.name }} &middot; {{ note.date|format_date }}</p>
             </a>
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
@@ -126,12 +132,14 @@
     <ul class="divide-y divide-gray-200 dark:divide-gray-700">
         {% for trip in results.trips %}
         <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            {% if can_write('trips') %}
             <a href="{{ url_for('trips.edit', trip_id=trip.id) }}" class="block">
                 <p class="text-sm font-medium text-gray-900 dark:text-white">
                     {% if trip.start_location or trip.end_location %}{{ trip.start_location or '?' }} &rarr; {{ trip.end_location or '?' }}{% else %}{{ trip.description or _('Trip') }}{% endif %}
                 </p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ trip.vehicle.name }} &middot; {{ trip.date|format_date }}{% if trip.distance %} &middot; {{ "%.1f"|format(trip.distance) }} {{ current_user.distance_unit }}{% endif %}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ trip.vehicle.name }} &middot; {{ trip.date|format_date }}{% if trip.distance %} &middot; {{ "%.1f"|format(trip.distance) }} {{ trip.vehicle.get_reading_unit() }}{% endif %}</p>
             </a>
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
@@ -146,6 +154,7 @@
     <ul class="divide-y divide-gray-200 dark:divide-gray-700">
         {% for session in results.charging %}
         <li class="px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+            {% if can_write('charging') %}
             <a href="{{ url_for('charging.edit', session_id=session.id) }}" class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ session.location or _('Charging Session') }}</p>
@@ -153,6 +162,7 @@
                 </div>
                 <span class="text-sm font-medium text-gray-900 dark:text-white">{% if session.total_cost is not none %}{{ session.total_cost|money }} {{ current_user.currency }}{% else %}-{% endif %}</span>
             </a>
+            {% endif %}
         </li>
         {% endfor %}
     </ul>

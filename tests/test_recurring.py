@@ -100,7 +100,7 @@ class TestRecurringDelete:
         recurring_id = sample_recurring.id
         resp = auth_client.post(f'/recurring/{recurring_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
-        assert RecurringExpense.query.get(recurring_id) is None
+        assert db.session.get(RecurringExpense, recurring_id) is None
 
 
 class TestRecurringGenerate:

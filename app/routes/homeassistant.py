@@ -106,7 +106,10 @@ def vehicles(user):
             'registration': v.registration,
             'fuel_type': v.fuel_type,
             'current_odometer': latest_log.odometer if latest_log else 0,
-            'unit_distance': user.distance_unit,
+            # current_odometer is the raw stored reading, so for an
+            # hours-metered vehicle it is engine hours and the account's
+            # distance preference does not describe it (#324).
+            'unit_distance': v.get_reading_unit(),
             'unit_volume': user.volume_unit,
             'currency': user.currency
         }
@@ -137,7 +140,7 @@ def vehicle_detail(vehicle_id, user):
         'registration': vehicle.registration,
         'fuel_type': vehicle.fuel_type,
         'current_odometer': latest_log.odometer if latest_log else 0,
-        'unit_distance': user.distance_unit,
+        'unit_distance': vehicle.get_reading_unit(),
         'unit_volume': user.volume_unit,
         'currency': user.currency
     })
@@ -221,7 +224,7 @@ def vehicle_stats(vehicle_id, user):
         'last_fill_volume': last_fill.volume if last_fill else None,
         'last_fill_cost': last_fill.total_cost if last_fill else None,
         'current_odometer': latest_log.odometer if latest_log else 0,
-        'distance_unit': user.distance_unit,
+        'distance_unit': vehicle.get_reading_unit(),
         'volume_unit': user.volume_unit,
         'currency': user.currency,
         'currency_symbol': vehicle.currency_symbol
