@@ -2,6 +2,7 @@
 import pytest
 from app.models import User, AppSettings
 from app import db
+from config import DISPLAY_VERSION
 
 
 # ---------------------------------------------------------------------------
@@ -720,3 +721,53 @@ class TestEditUserRoute:
     def test_get_edit_user_unauthenticated_redirects(self, client, test_user):
         response = client.get(f'/auth/users/{test_user.id}/edit')
         assert response.status_code == 302
+
+
+# ---------------------------------------------------------------------------
+# About page version refresh (issue #348)
+# ---------------------------------------------------------------------------
+
+class TestAboutPageVersionRefresh:
+    """Issue #348: clicking "Check Now" should refresh the displayed Current Version,
+    not just report update status, without requiring a manual page reload."""
+
+    def test_settings_page_has_targetable_current_version_element(self, auth_client):
+        response = auth_client.get('/auth/settings')
+        assert response.status_code == 200
+        html = response.data.decode('utf-8')
+        # The "Current Version" value needs an id so JS can update it in place.
+        assert 'id="current-version-value"' in html
+
+    def test_check_for_updates_script_refreshes_current_version_display(self, auth_client):
+        response = auth_client.get('/auth/settings')
+        assert response.status_code == 200
+        html = response.data.decode('utf-8')
+        idx = html.index('function checkForUpdates()')
+        script = html[idx:idx + 2000]
+        # The check-updates JSON response already includes current_version;
+        # the handler must use it to refresh the on-page "Current Version" display.
+        assert 'current-version-value' in script
+        assert 'data.current_version' in script
+
+    def test_check_updates_response_carries_display_version(self, auth_client, monkeypatch):
+        """The page renders DISPLAY_VERSION, so the JSON must offer it too, or a dev
+        build's "0.41.4-dev+abc1234" would be overwritten with a bare "0.41.4"."""
+        class FakeResponse:
+            status_code = 200
+
+            @staticmethod
+            def json():
+                return {
+                    'tag_name': 'v99.0.0',
+                    'html_url': 'https://example.invalid/release',
+                    'body': '',
+                    'published_at': '2026-01-01T00:00:00Z',
+                }
+
+        monkeypatch.setattr('app.routes.auth.requests.get', lambda *a, **kw: FakeResponse())
+
+        response = auth_client.get('/auth/check-updates')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['success'] is True
+        assert data['display_version'] == DISPLAY_VERSION
