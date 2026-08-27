@@ -4,6 +4,7 @@ from flask_babel import gettext as _
 from app import db
 from app.utils import parse_decimal
 from app.models import RecurringExpense, Vehicle, EXPENSE_CATEGORIES
+from app.routes.expenses import _known_vendors
 from app.services.recurring_processor import generate_expense_for_period
 from datetime import date
 
@@ -60,6 +61,7 @@ def new():
             category=request.form['category'],
             frequency=request.form['frequency'],
             amount=parse_decimal(request.form['amount']) if request.form.get('amount') else None,
+            vendor=request.form.get('vendor'),
             start_date=start_date,
             next_due=next_due,
             description=request.form.get('description'),
@@ -76,6 +78,7 @@ def new():
     return render_template('recurring/form.html',
                          vehicles=vehicles,
                          categories=EXPENSE_CATEGORIES,
+                         known_vendors=_known_vendors([v.id for v in vehicles]),
                          selected_vehicle=request.args.get('vehicle'))
 
 
@@ -104,6 +107,7 @@ def edit(recurring_id):
         recurring.category = request.form['category']
         recurring.frequency = request.form['frequency']
         recurring.amount = parse_decimal(request.form['amount']) if request.form.get('amount') else None
+        recurring.vendor = request.form.get('vendor')
         recurring.start_date = start_date
         recurring.next_due = next_due
         recurring.description = request.form.get('description')
@@ -118,7 +122,8 @@ def edit(recurring_id):
     return render_template('recurring/form.html',
                          recurring=recurring,
                          vehicles=[recurring.vehicle],
-                         categories=EXPENSE_CATEGORIES)
+                         categories=EXPENSE_CATEGORIES,
+                         known_vendors=_known_vendors(vehicle_ids))
 
 
 @bp.route('/<int:recurring_id>/delete', methods=['POST'])

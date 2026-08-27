@@ -75,6 +75,21 @@
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('Leave blank if amount varies') }}</p>
             </div>
 
+            <div>
+                <label for="vendor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Vendor / Service Provider') }}</label>
+                <input type="text" name="vendor" id="vendor" list="vendor-suggestions"
+                       value="{{ recurring.vendor if recurring and recurring.vendor is not none else '' }}"
+                       placeholder="{{ _('e.g., Local Garage') }}"
+                       class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                {% if known_vendors %}
+                <datalist id="vendor-suggestions">
+                    {% for v in known_vendors %}
+                    <option value="{{ v }}"></option>
+                    {% endfor %}
+                </datalist>
+                {% endif %}
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Start Date') }}</label>

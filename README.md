@@ -300,6 +300,8 @@ Track regular payments:
 - Road tax
 - Subscriptions and memberships
 - Custom recurrence patterns (monthly, quarterly, yearly)
+- An optional vendor / service provider, carried on to every expense the
+  schedule creates
 - Automatic calendar integration
 
 ### Documents
