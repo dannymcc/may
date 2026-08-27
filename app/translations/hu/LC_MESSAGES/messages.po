@@ -63,7 +63,7 @@ msgstr "Motoróra"
 #: app/templates/notes/index.html:31 app/templates/tires/index.html:92
 #: app/templates/tires/index.html:107 app/templates/vehicles/view.html:484
 msgid "Odometer"
-msgstr "kilométeróra"
+msgstr "Kilométeróra"
 
 #: app/models.py:396 app/models.py:1411 app/templates/trips/form.html:189
 msgid "Hours"
@@ -242,7 +242,7 @@ msgstr "Futásteljesítmény (km/mi)"
 
 #: app/models.py:1416 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
-msgstr "Kilometer (km)"
+msgstr "Kilométer (km)"
 
 #: app/models.py:1417 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
@@ -1426,7 +1426,7 @@ msgstr "vegyes egységek"
 
 #: app/templates/dashboard.html:119 app/templates/vehicles/view.html:201
 msgid "Cost per"
-msgstr "Költség per"
+msgstr "Költség /"
 
 #: app/templates/dashboard.html:119
 msgid "unit"
@@ -2756,7 +2756,7 @@ msgid ""
 "For ntfy.sh, just enter your topic name. For self-hosted, enter the full "
 "URL."
 msgstr ""
-"Az ntfy.sh esetén egyszerűen add meg a toppic-ot. Saját üzemeltetésű szerver"
+"Az ntfy.sh esetén egyszerűen add meg a topic-ot. Saját üzemeltetésű szerver"
 " esetén add meg a teljes URL-t."
 
 #: app/templates/auth/settings.html:1413
@@ -2825,7 +2825,7 @@ msgstr "E-mail (SMTP)"
 
 #: app/templates/auth/settings.html:1519
 msgid "SMTP Host"
-msgstr "SMTP host"
+msgstr "SMTP szerver"
 
 #: app/templates/auth/settings.html:1526
 msgid "SMTP Port"
@@ -3411,11 +3411,11 @@ msgstr "Ennél a járműnél a kilométeróra-állást a Tessie automatikusan k�
 #: app/templates/fuel/form.html:76 app/templates/fuel/quick.html:66
 #: app/templates/vehicles/view.html:1234
 msgid "Price per"
-msgstr "Ár per"
+msgstr "Ár /"
 
 #: app/templates/fuel/form.html:84
 msgid "Discount per"
-msgstr "Kedvezmény per"
+msgstr "Kedvezmény /"
 
 #: app/templates/fuel/form.html:90
 msgid "Optional loyalty discount, subtracted from the price per unit."
@@ -4753,7 +4753,7 @@ msgstr "Üzemóra használata traktorokhoz, hajókhoz stb."
 
 #: app/templates/vehicles/form.html:47
 msgid "Odometer Unit"
-msgstr "Kilométer óra egység"
+msgstr "Kilométeróra egység"
 
 #: app/templates/vehicles/form.html:50
 msgid "Use account default"
@@ -5140,7 +5140,7 @@ msgstr "Rendszám"
 
 #: app/templates/vehicles/view.html:101
 msgid "Last Odometer"
-msgstr "Utolsó futásteljesítmény"
+msgstr "Kilométeróra utolsó állása"
 
 #: app/templates/vehicles/view.html:162
 msgid "Total Hours"
