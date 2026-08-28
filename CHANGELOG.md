@@ -8,6 +8,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.42.0] - 2026-08-28
+
+### Added
+
+- Recurring expenses can record a vendor. The column and the copy of it onto
+  each auto-generated expense already existed, but no field on the recurring
+  form ever populated it, so the vendor had to be filled in by hand after the
+  event. The form now carries a vendor input, with the same known-vendor
+  suggestions as the one-off expense form, and both the create and the edit
+  route read it. ([#349](https://github.com/dannymcc/may/issues/349))
+
+### Fixed
+
+- The mobile navigation no longer sits in a lighter grey block in dark mode.
+  Every item in the menu, the hamburger button that opens it and the desktop
+  "More" dropdown carried a stray `dark:bg-gray-600` beside an already-correct
+  `dark:hover:bg-gray-700`. A resting background applies at all times, so the
+  colour meant for hover was painted on permanently, against a darker nav bar.
+  The 28 stray classes are deleted — each had the right hover class beside it,
+  so nothing had to be guessed about the intended colour — and the layout tests
+  gain a nav-scoped invariant that would catch the same slip again.
+  ([#347](https://github.com/dannymcc/may/issues/347))
+- The "Check Now" button on Settings > About now refreshes the Current Version
+  it shows. The check reported update status but left the version as rendered
+  at page load, so after updating the host over SSH the page went on showing
+  the old number until the browser was reloaded. The check-updates response
+  now carries the display version, dev channel's "-dev+sha" suffix intact, and
+  the page updates in place.
+  ([#348](https://github.com/dannymcc/may/issues/348))
+- The Hungarian catalogue addresses the reader informally throughout. Hungarian
+  distinguishes formal from informal address and the shipped catalogue used
+  both: everything predating the bulk fill in #340 was informal, but a handful
+  of the strings that fill added were written formal, and the trip templates
+  strapline managed both registers in one sentence. Twenty-eight msgstrs are
+  rewritten to the informal register the catalogue had already settled on.
+  Register only — no wording otherwise changes.
+  ([#350](https://github.com/dannymcc/may/issues/350))
+- Six further Hungarian corrections, taken from #339 and applied against the
+  catalogue as it now stands: the missing accent on "Kilometres (km)", the
+  "toppic-ot" typo in the ntfy hint, "SMTP Host" translated rather than left
+  as an English loanword, the "/" convention the catalogue already used for
+  "Cost per kWh" extended to its neighbours, and one word for the instrument
+  across the Odometer family — "Last Odometer" had been the mileage covered
+  rather than the reading on the dial. #339's change of the bare msgid
+  "Registration" is deliberately not carried over: since #342 that string
+  carries the registration fee only, not the plate. Credit to burgatshow.
+  ([#352](https://github.com/dannymcc/may/issues/352))
+
+### Changed
+
+- The nine other catalogues filled by #340 (de, fr, es, it, pt, nl, pl, cs and
+  ru) were audited for the same formal/informal break as the Hungarian one and
+  found consistent, so no msgstr needed correcting. Tests now record the
+  register each catalogue settled on and fail if a future bulk fill introduces
+  the other one, checking imperative conjugation as well as address pronouns
+  for the pro-drop languages.
+  ([#351](https://github.com/dannymcc/may/issues/351))
+
 ## [0.41.4] - 2026-08-26
 
 ### Changed
