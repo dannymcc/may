@@ -17,6 +17,9 @@ import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 CHANGELOG = BASE_DIR / 'CHANGELOG.md'
 
+# The day 0.42.0 goes out on the weekly auto-release (#356).
+RELEASE_DATE = '2026-09-02'
+
 
 def _changelog_text():
     return CHANGELOG.read_text(encoding='utf-8')
@@ -34,10 +37,20 @@ def test_app_version_is_bumped_to_0_42_0():
     assert config.APP_VERSION == '0.42.0'
 
 
-def test_changelog_has_a_dated_0_42_0_section():
+def test_changelog_dates_0_42_0_to_the_release_date():
+    # The date is the day 0.42.0 ships on the weekly auto-release, not the day
+    # the section was written (#356). Asserting the exact date rather than the
+    # YYYY-MM-DD shape is deliberate: a pattern check let a wrong date through
+    # once already. If the release slips, this failing is the cue to re-date
+    # the heading before cutting.
     assert re.search(
-        r'^## \[0\.42\.0\] - \d{4}-\d{2}-\d{2}$', _changelog_text(), re.MULTILINE
-    ), "CHANGELOG.md has no dated '## [0.42.0] - YYYY-MM-DD' heading"
+        rf'^## \[0\.42\.0\] - {re.escape(RELEASE_DATE)}$',
+        _changelog_text(),
+        re.MULTILINE,
+    ), (
+        f"CHANGELOG.md's 0.42.0 heading must read "
+        f"'## [0.42.0] - {RELEASE_DATE}', the date the release ships"
+    )
 
 
 def test_0_42_0_section_sits_above_0_41_4():

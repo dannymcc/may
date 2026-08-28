@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
-## [0.42.0] - 2026-08-28
+## [0.42.0] - 2026-09-02
 
 ### Added
 
