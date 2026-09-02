@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.42.1] - 2026-09-02
+
+### Fixed
+
+- Mobile list rows no longer crush the name to a single letter. On the
+  Recurring Expenses list and the Upcoming Reminders row, the name sat in a
+  flex row beside a right-hand cluster of metadata and action buttons that
+  could not be told not to shrink, so on a phone-width screen the browser
+  shrank both sides to fit and the name's ellipsis collapsed it to the first
+  letter — "R..." for "Roadside Assistance", half a letter on a reminder
+  title. The right-hand cluster is now pinned at its natural width, and the
+  name column truncates gracefully with room rather than vanishing.
+  ([#347](https://github.com/dannymcc/may/issues/347))
+
 ## [0.42.0] - 2026-09-02
 
 ### Added

@@ -1,6 +1,6 @@
 <div class="p-4 hover:bg-gray-50 dark:bg-gray-700">
     <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-4 min-w-0">
             <!-- Complete checkbox / status -->
             {% if not reminder.is_completed %}
             {% if can_write('reminders') %}
@@ -27,7 +27,7 @@
 
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
-                    <h3 class="text-sm font-medium text-gray-900 dark:text-white {% if reminder.is_completed %}line-through text-gray-500 dark:text-gray-400{% endif %}">
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-white truncate {% if reminder.is_completed %}line-through text-gray-500 dark:text-gray-400{% endif %}">
                         {{ reminder.title }}
                     </h3>
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
@@ -56,7 +56,7 @@
             </div>
         </div>
 
-        <div class="flex items-center space-x-4">
+        <div class="flex flex-shrink-0 items-center space-x-4">
             <!-- Due date -->
             <div class="text-right">
                 <p class="text-sm {% if reminder.is_overdue() %}text-red-600 font-medium{% elif reminder.is_upcoming(7) %}text-amber-600{% else %}text-gray-900 dark:text-white{% endif %}">
