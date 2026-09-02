@@ -14,6 +14,15 @@ two structural invariants that caused it:
 
 Elements hidden at phone width (``hidden`` with a breakpoint prefix to reveal
 them, such as the desktop nav bar) are ignored — they are not on screen.
+
+Issue #347 added a third invariant, covering the navigation only:
+
+3. No element in the nav paints a dark-mode background it never asked for.
+   ``dark:bg-*`` applies at all times, so writing it where ``dark:hover:bg-*``
+   was meant leaves the colour on permanently. An element that sets a hover
+   background but no resting one wants nothing behind it until it is hovered,
+   in dark mode as much as in light, so a resting ``dark:bg-*`` on it is
+   always a mistake.
 """
 
 import re
@@ -131,6 +140,51 @@ def scan(html):
     return scanner
 
 
+class NavBackgroundScanner(HTMLParser):
+    """Collects nav elements carrying a resting dark background they never asked for.
+
+    The mobile menu lives inside ``<nav>``, so scanning the nav subtree covers
+    it on every page without needing to find the menu itself.
+    """
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self._depth = 0
+        self.offenders = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'nav':
+            self._depth += 1
+            return
+        if not self._depth:
+            return
+
+        classes = _classes(attrs)
+        resting_dark = {c for c in classes if c.startswith('dark:bg-')}
+        # A hover colour with no resting one: the element is transparent until
+        # hovered, so it must be transparent in dark mode too.
+        if not resting_dark:
+            return
+        if not any(c.startswith('hover:bg-') for c in classes):
+            return
+        if any(c.startswith('bg-') for c in classes):
+            return
+        self.offenders.append(' '.join(sorted(resting_dark)))
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+
+    def handle_endtag(self, tag):
+        if tag == 'nav' and self._depth:
+            self._depth -= 1
+
+
+def scan_nav(html):
+    scanner = NavBackgroundScanner()
+    scanner.feed(html)
+    return scanner
+
+
 @pytest.fixture
 def populated(app, test_user, sample_vehicle, sample_fuel_log, sample_expense,
               sample_trip, sample_charging_session):
@@ -231,6 +285,50 @@ def test_admin_user_table_can_scroll_sideways(admin_client):
     response = admin_client.get('/auth/users')
     assert response.status_code == 200
     assert not scan(response.get_data(as_text=True)).unscrollable_tables
+
+
+def test_nav_has_no_unasked_for_dark_background(auth_client, populated):
+    """The mobile menu must not sit behind a permanent grey block in dark mode.
+
+    Issue #347: every item in the mobile menu, and the hamburger that opens it,
+    carried a stray ``dark:bg-gray-600`` next to an already-correct
+    ``dark:hover:bg-gray-700``. In dark mode that painted each item a lighter
+    grey than the ``dark:bg-gray-800`` nav around it, at rest rather than on
+    hover, on every page of the app.
+    """
+    offenders = {}
+    for path in _pages(populated):
+        response = auth_client.get(path)
+        assert response.status_code == 200, path
+        rows = scan_nav(response.get_data(as_text=True)).offenders
+        if rows:
+            offenders[path] = rows
+    assert not offenders, f'nav elements with a resting dark background: {offenders}'
+
+
+def test_nav_scanner_spots_a_stray_dark_background():
+    """The scanner itself: only a resting dark background on a hover-only element."""
+    item = '<nav><a class="{cls}">Fuel</a></nav>'
+
+    # The #347 bug: dark:bg-* where dark:hover:bg-* was meant.
+    assert scan_nav(item.format(
+        cls='block px-4 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700'
+    )).offenders
+
+    # Fixed: the hover colour is the only background, in both modes.
+    assert not scan_nav(item.format(
+        cls='block px-4 hover:bg-gray-100 dark:hover:bg-gray-700'
+    )).offenders
+
+    # An element with a resting background in both modes is meant to have one.
+    assert not scan_nav(item.format(
+        cls='block px-4 bg-white dark:bg-gray-800 hover:bg-gray-50'
+    )).offenders
+
+    # Outside the nav this scanner says nothing.
+    assert not scan_nav(
+        '<div><a class="hover:bg-gray-100 dark:bg-gray-600">Fuel</a></div>'
+    ).offenders
 
 
 def test_scanner_spots_a_bare_table():

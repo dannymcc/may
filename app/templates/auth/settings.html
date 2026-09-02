@@ -1778,7 +1778,7 @@
                             <div>
                                 <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ _('Current Version') }}</h3>
                                 <div class="flex items-center gap-2">
-                                    <p class="text-2xl font-bold text-primary-600">v{{ app_version }}</p>
+                                    <p class="text-2xl font-bold text-primary-600" id="current-version-value">v{{ app_version }}</p>
                                     {% if release_channel and release_channel != 'stable' %}
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
                                         {{ release_channel }}
@@ -2287,6 +2287,7 @@ function checkForUpdates() {
     const upToDateEl = document.getElementById('up-to-date');
     const latestVersionEl = document.getElementById('latest-version');
     const releaseLinkEl = document.getElementById('release-link');
+    const currentVersionEl = document.getElementById('current-version-value');
 
     // Show loading state
     statusEl.textContent = {{ _("Checking...") | tojson }};
@@ -2300,6 +2301,13 @@ function checkForUpdates() {
             spinnerEl.classList.remove('animate-spin');
 
             if (data.success) {
+                // The running version may have changed since this page was rendered
+                // (e.g. the host was updated and restarted), so refresh it in place.
+                const runningVersion = data.display_version || data.current_version;
+                if (currentVersionEl && runningVersion) {
+                    currentVersionEl.textContent = 'v' + runningVersion;
+                }
+
                 if (data.update_available) {
                     statusEl.textContent = {{ _("A newer version is available") | tojson }};
                     latestVersionEl.textContent = 'v' + data.latest_version;

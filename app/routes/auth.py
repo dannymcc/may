@@ -682,6 +682,7 @@ def check_updates():
                 'success': True,
                 'latest_version': latest_version,
                 'current_version': APP_VERSION,
+                'display_version': DISPLAY_VERSION,
                 'update_available': update_available,
                 'release_url': data.get('html_url'),
                 'release_notes': data.get('body', ''),

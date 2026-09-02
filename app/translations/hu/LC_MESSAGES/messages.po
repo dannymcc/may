@@ -63,7 +63,7 @@ msgstr "Motoróra"
 #: app/templates/notes/index.html:31 app/templates/tires/index.html:92
 #: app/templates/tires/index.html:107 app/templates/vehicles/view.html:484
 msgid "Odometer"
-msgstr "kilométeróra"
+msgstr "Kilométeróra"
 
 #: app/models.py:396 app/models.py:1411 app/templates/trips/form.html:189
 msgid "Hours"
@@ -242,7 +242,7 @@ msgstr "Futásteljesítmény (km/mi)"
 
 #: app/models.py:1416 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
-msgstr "Kilometer (km)"
+msgstr "Kilométer (km)"
 
 #: app/models.py:1417 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
@@ -522,7 +522,7 @@ msgstr "Izzó"
 
 #: app/permissions.py:128
 msgid "Your account does not have permission to change this data."
-msgstr "A fiókjának nincs jogosultsága ezeknek az adatoknak a módosítására."
+msgstr "A fiókodnak nincs jogosultsága ezeknek az adatoknak a módosítására."
 
 #: app/routes/allowance.py:31 app/routes/expenses.py:155 app/routes/fuel.py:72
 #: app/routes/fuel.py:444 app/routes/notes.py:31 app/routes/reminders.py:64
@@ -696,7 +696,7 @@ msgstr "A biztonsági mentés nem olvasható: %(error)s"
 
 #: app/routes/api.py:3751
 msgid "The uploaded backup has expired. Please upload it again."
-msgstr "A feltöltött biztonsági mentés lejárt. Töltse fel újra."
+msgstr "A feltöltött biztonsági mentés lejárt. Töltsd fel újra."
 
 #: app/routes/api.py:3764
 #, python-format
@@ -720,7 +720,7 @@ msgstr "Hibás felhasználónév vagy jelszó"
 msgid ""
 "Password reset by email is not available. Please contact an administrator."
 msgstr ""
-"Az e-mailes jelszó-visszaállítás nem érhető el. Kérjük, lépj kapcsolatba egy"
+"Az e-mailes jelszó-visszaállítás nem érhető el. Kérlek, lépj kapcsolatba egy"
 " rendszergazdával!"
 
 #: app/routes/auth.py:91
@@ -732,7 +732,7 @@ msgstr ""
 
 #: app/routes/auth.py:104
 msgid "Invalid or expired reset link. Please request a new one."
-msgstr "Érvénytelen vagy lejárt visszaállítási link. Kérjük, kérj újat!"
+msgstr "Érvénytelen vagy lejárt visszaállítási link. Kérlek, kérj újat!"
 
 #: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:240
 #: app/routes/auth.py:574 app/routes/auth.py:621
@@ -1068,7 +1068,7 @@ msgstr "%(prices)s élő ár frissítve %(matched)s töltőállomásról"
 #: app/routes/stations.py:176
 msgid "No matching forecourts found. Check the station postcodes."
 msgstr ""
-"Nem található megfelelő töltőállomás. Ellenőrizze az állomások "
+"Nem található megfelelő töltőállomás. Ellenőrizd az állomások "
 "irányítószámait."
 
 #: app/routes/stations.py:182
@@ -1092,11 +1092,11 @@ msgstr "Árbejegyzés törölve"
 
 #: app/routes/tires.py:88 app/routes/tires.py:133
 msgid "Please give the tire set a name"
-msgstr "Adjon nevet a gumiszettnek"
+msgstr "Adj nevet a gumiszettnek"
 
 #: app/routes/tires.py:105 app/routes/tires.py:141
 msgid "Invalid data submitted. Please check the odometer and cost fields."
-msgstr "Érvénytelen adat. Ellenőrizze a kilométeróra és a költség mezőket."
+msgstr "Érvénytelen adat. Ellenőrizd a kilométeróra és a költség mezőket."
 
 #: app/routes/tires.py:112
 #, python-format
@@ -1113,7 +1113,8 @@ msgstr "Ez a gumiszett már a járművön van"
 
 #: app/routes/tires.py:174
 msgid "That tire set is retired. Reinstate it before fitting it again."
-msgstr "Ez a gumiszett ki van vonva. Állítsa vissza, mielőtt újra felszereli."
+msgstr ""
+"Ez a gumiszett ki van vonva. Állítsd vissza, mielőtt újra felszereled."
 
 #: app/routes/tires.py:188 app/routes/tires.py:227
 #, python-format
@@ -1425,7 +1426,7 @@ msgstr "vegyes egységek"
 
 #: app/templates/dashboard.html:119 app/templates/vehicles/view.html:201
 msgid "Cost per"
-msgstr "Költség per"
+msgstr "Költség /"
 
 #: app/templates/dashboard.html:119
 msgid "unit"
@@ -1937,7 +1938,7 @@ msgid ""
 "Your account can see the data but cannot change it. Ask an administrator if "
 "you need more access."
 msgstr ""
-"A fiókja látja az adatokat, de nem módosíthatja azokat. Kérjen több "
+"A fiókod látja az adatokat, de nem módosíthatja azokat. Kérj több "
 "jogosultságot egy rendszergazdától."
 
 #: app/templates/auth/settings.html:241
@@ -1945,8 +1946,8 @@ msgid ""
 "Your account can record fuel fill-ups and charging sessions. Ask an "
 "administrator if you need more access."
 msgstr ""
-"A fiókja tankolásokat és töltéseket rögzíthet. Kérjen több jogosultságot egy"
-" rendszergazdától."
+"A fiókod tankolásokat és töltéseket rögzíthet. Kérj több jogosultságot egy "
+"rendszergazdától."
 
 #: app/templates/auth/settings.html:252
 msgid "Member Since"
@@ -2112,7 +2113,7 @@ msgid ""
 "Restore a May backup, or import your data from other fuel tracking "
 "applications"
 msgstr ""
-"Állítson vissza egy May biztonsági mentést, vagy importálja adatait más "
+"Állíts vissza egy May biztonsági mentést, vagy importáld az adataidat más "
 "üzemanyag-nyilvántartó alkalmazásokból"
 
 #: app/templates/auth/settings.html:575
@@ -2600,13 +2601,13 @@ msgid ""
 msgstr ""
 "A brit forgalmazók a kormányzati üzemanyagár-átláthatósági program keretében"
 " közzéteszik a töltőállomási áraikat. A May irányítószám alapján párosítja a"
-" mentett állomásait ezekhez a töltőállomásokhoz, és rögzíti az árakat, így "
-"az árelőzmények és a Legolcsóbb üzemanyag kézi bevitel nélkül is naprakészek"
-" maradnak."
+" mentett állomásaidat ezekhez a töltőállomásokhoz, és rögzíti az árakat, így"
+" az árelőzmények és a Legolcsóbb üzemanyag kézi bevitel nélkül is "
+"naprakészek maradnak."
 
 #: app/templates/auth/settings.html:1278
 msgid "Before you start"
-msgstr "Mielőtt elkezdi"
+msgstr "Mielőtt elkezded"
 
 #: app/templates/auth/settings.html:1280
 msgid "No API key is needed; the feeds are open data"
@@ -2615,7 +2616,7 @@ msgstr "Nincs szükség API kulcsra; az adatforrások nyílt adatok"
 #: app/templates/auth/settings.html:1281
 msgid "Give each station a postcode so it can be matched to a forecourt"
 msgstr ""
-"Adjon meg irányítószámot minden állomáshoz, hogy párosítható legyen egy "
+"Adj meg irányítószámot minden állomáshoz, hogy párosítható legyen egy "
 "töltőállomással"
 
 #: app/templates/auth/settings.html:1282
@@ -2652,7 +2653,7 @@ msgid ""
 "One feed per line. Leave blank to use the built-in list (%(count)s "
 "retailers)."
 msgstr ""
-"Soronként egy adatforrás. Hagyja üresen a beépített lista használatához "
+"Soronként egy adatforrás. Hagyd üresen a beépített lista használatához "
 "(%(count)s forgalmazó)."
 
 #: app/templates/auth/settings.html:1309
@@ -2755,7 +2756,7 @@ msgid ""
 "For ntfy.sh, just enter your topic name. For self-hosted, enter the full "
 "URL."
 msgstr ""
-"Az ntfy.sh esetén egyszerűen add meg a toppic-ot. Saját üzemeltetésű szerver"
+"Az ntfy.sh esetén egyszerűen add meg a topic-ot. Saját üzemeltetésű szerver"
 " esetén add meg a teljes URL-t."
 
 #: app/templates/auth/settings.html:1413
@@ -2824,7 +2825,7 @@ msgstr "E-mail (SMTP)"
 
 #: app/templates/auth/settings.html:1519
 msgid "SMTP Host"
-msgstr "SMTP host"
+msgstr "SMTP szerver"
 
 #: app/templates/auth/settings.html:1526
 msgid "SMTP Port"
@@ -3328,7 +3329,7 @@ msgstr "Biztos, hogy törlöd a csatolmányt?"
 
 #: app/templates/expenses/form.html:133
 msgid "You can select more than one file"
-msgstr "Több fájlt is kiválaszthat"
+msgstr "Több fájlt is kiválaszthatsz"
 
 #: app/templates/expenses/index.html:8
 msgid "Track maintenance, repairs, insurance, and other costs"
@@ -3410,11 +3411,11 @@ msgstr "Ennél a járműnél a kilométeróra-állást a Tessie automatikusan k�
 #: app/templates/fuel/form.html:76 app/templates/fuel/quick.html:66
 #: app/templates/vehicles/view.html:1234
 msgid "Price per"
-msgstr "Ár per"
+msgstr "Ár /"
 
 #: app/templates/fuel/form.html:84
 msgid "Discount per"
-msgstr "Kedvezmény per"
+msgstr "Kedvezmény /"
 
 #: app/templates/fuel/form.html:90
 msgid "Optional loyalty discount, subtracted from the price per unit."
@@ -3430,7 +3431,7 @@ msgid ""
 "cost. Add the amounts together where more than one tax applies."
 msgstr ""
 "Nem kötelező. A nyugtán szereplő áfa, amely már benne van a végösszegben. "
-"Több adónem esetén adja össze az összegeket."
+"Több adónem esetén add össze az összegeket."
 
 #: app/templates/fuel/form.html:110 app/templates/fuel/quick.html:94
 msgid "Station"
@@ -3585,7 +3586,7 @@ msgstr "Visszaállítás előnézete"
 #: app/templates/import/backup_preview.html:10
 msgid ""
 "Nothing has been changed yet. This is what will be added to your account."
-msgstr "Még semmi nem változott. Ez kerül majd a fiókjába."
+msgstr "Még semmi nem változott. Ez kerül majd a fiókodba."
 
 #: app/templates/import/backup_preview.html:17
 msgid "Backup type"
@@ -3634,14 +3635,14 @@ msgstr "hozzáadásra kerül"
 
 #: app/templates/import/backup_preview.html:72
 msgid "already in your account — its records will be merged"
-msgstr "már a fiókjában van – a rekordjai összefésülésre kerülnek"
+msgstr "már a fiókodban van – a rekordjai összefésülésre kerülnek"
 
 #: app/templates/import/backup_preview.html:82
 msgid ""
 "Everything in this backup is already in your account. Restoring it will "
 "change nothing."
 msgstr ""
-"A mentés minden eleme már a fiókjában van. A visszaállítás nem változtat "
+"A mentés minden eleme már a fiókodban van. A visszaállítás nem változtat "
 "semmin."
 
 #: app/templates/import/backup_upload.html:8
@@ -3659,9 +3660,9 @@ msgid ""
 "and records that are already here are skipped rather than duplicated. You "
 "will see a summary of what will be added before anything is written."
 msgstr ""
-"A mentés összefésülődik a fiókjával. Semmi nem törlődik és nem íródik felül,"
+"A mentés összefésülődik a fiókoddal. Semmi nem törlődik és nem íródik felül,"
 " a már meglévő rekordok pedig duplikálás helyett kimaradnak. Mielőtt bármi "
-"rögzülne, összefoglalót lát arról, mi kerül hozzáadásra."
+"rögzülne, összefoglalót látsz arról, mi kerül hozzáadásra."
 
 #: app/templates/import/backup_upload.html:17
 msgid ""
@@ -4403,7 +4404,7 @@ msgid ""
 "Track each set of tires on and off the vehicle, and the distance it has "
 "covered"
 msgstr ""
-"Kövesse nyomon a gumiszettek fel- és leszerelését, valamint a megtett távot"
+"Kövesd nyomon a gumiszettek fel- és leszerelését, valamint a megtett távot"
 
 #: app/templates/tires/index.html:34
 msgid "Fitted"
@@ -4464,11 +4465,11 @@ msgstr "Még fent"
 
 #: app/templates/tires/index.html:142
 msgid "Delete this fitting record?"
-msgstr "Törli ezt a felszerelési bejegyzést?"
+msgstr "Törlöd ezt a felszerelési bejegyzést?"
 
 #: app/templates/tires/index.html:160
 msgid "Delete this tire set and its fitting history?"
-msgstr "Törli ezt a gumiszettet és a felszerelési előzményeit?"
+msgstr "Törlöd ezt a gumiszettet és a felszerelési előzményeit?"
 
 #: app/templates/tires/index.html:174
 msgid "No tire sets"
@@ -4477,8 +4478,8 @@ msgstr "Nincsenek gumiszettek"
 #: app/templates/tires/index.html:175
 msgid "Add a set of tires to track when it goes on and off the vehicle."
 msgstr ""
-"Adjon hozzá egy gumiszettet, hogy nyomon követhesse, mikor kerül fel és le a"
-" járműről."
+"Adj hozzá egy gumiszettet, hogy nyomon követhesd, mikor kerül fel és le a "
+"járműről."
 
 #: app/templates/trips/form.html:2 app/templates/trips/form.html:13
 msgid "Edit Trip"
@@ -4692,7 +4693,7 @@ msgstr "Utazási sablonok"
 #: app/templates/trips/templates_index.html:9
 msgid "Save common routes to quickly fill in trip details"
 msgstr ""
-"Mentse el a gyakran használt útvonalakat, hogy gyorsan kitölthesd az út "
+"Mentsd el a gyakran használt útvonalakat, hogy gyorsan kitölthesd az út "
 "adatait"
 
 #: app/templates/trips/templates_index.html:53
@@ -4752,7 +4753,7 @@ msgstr "Üzemóra használata traktorokhoz, hajókhoz stb."
 
 #: app/templates/vehicles/form.html:47
 msgid "Odometer Unit"
-msgstr "Kilométer óra egység"
+msgstr "Kilométeróra egység"
 
 #: app/templates/vehicles/form.html:50
 msgid "Use account default"
@@ -5139,7 +5140,7 @@ msgstr "Rendszám"
 
 #: app/templates/vehicles/view.html:101
 msgid "Last Odometer"
-msgstr "Utolsó futásteljesítmény"
+msgstr "Kilométeróra utolsó állása"
 
 #: app/templates/vehicles/view.html:162
 msgid "Total Hours"
@@ -5161,8 +5162,8 @@ msgid ""
 "recorded — the odometer can’t tell petrol from LPG. Add it to your fill-ups."
 msgstr ""
 "A fogyasztás nem számítható ki, amíg nincs rögzítve az egyes üzemanyagokkal "
-"megtett táv – a kilométeróra nem különbözteti meg a benzint az LPG-től. Adja"
-" meg a tankolásoknál."
+"megtett táv – a kilométeróra nem különbözteti meg a benzint az LPG-től. Add "
+"meg a tankolásoknál."
 
 #: app/templates/vehicles/view.html:183
 msgid "Not enough distance or fuel data yet to calculate this."
@@ -5214,7 +5215,7 @@ msgstr "Beállítás főképként"
 
 #: app/templates/vehicles/view.html:335
 msgid "Delete this photo?"
-msgstr "Törli ezt a fényképet?"
+msgstr "Törlöd ezt a fényképet?"
 
 #: app/templates/vehicles/view.html:347
 msgid "No photos yet."

@@ -3231,16 +3231,23 @@ def get_import_fields(data_type):
 
 # Common aliases for auto-suggesting column mappings
 _COLUMN_ALIASES = {
-    'date': ['date', 'fuelup date', 'fill date', 'trip date', 'charge date', 'session date', 'expense date'],
-    'odometer': ['odometer', 'odo', 'mileage', 'miles', 'km', 'kilometers', 'distance'],
-    'volume': ['volume', 'litres', 'liters', 'gallons', 'gal', 'fuel', 'qty', 'quantity'],
+    'date': ['date', 'fuelup date', 'fill date', 'trip date', 'charge date', 'session date', 'expense date',
+             'datum'],
+    'odometer': ['odometer', 'odo', 'mileage', 'miles', 'km', 'kilometers', 'distance',
+                 'km stand', 'kilometerstand', 'tachostand'],
+    'volume': ['volume', 'litres', 'liters', 'gallons', 'gal', 'fuel', 'qty', 'quantity',
+               'spritmenge', 'menge', 'liter', 'tankmenge'],
     'price_per_unit': ['price per unit', 'unit price', 'price/l', 'price/gal', 'price', 'rate'],
-    'total_cost': ['total cost', 'total', 'cost', 'price paid', 'total price'],
+    'total_cost': ['total cost', 'total', 'cost', 'price paid', 'total price',
+                   'kosten', 'gesamtkosten', 'betrag'],
     'sales_tax': ['sales tax', 'sales taxes', 'tax', 'taxes', 'vat', 'gst', 'hst', 'pst', 'qst'],
-    'is_full_tank': ['full tank', 'full', 'complete', 'full fill'],
+    'is_full_tank': ['full tank', 'full', 'complete', 'full fill',
+                     'tankart'],
     'is_missed': ['missed', 'missed fill', 'skipped'],
-    'station': ['station', 'gas station', 'fuel station'],
-    'notes': ['notes', 'note', 'comments', 'comment', 'remarks', 'memo'],
+    'station': ['station', 'gas station', 'fuel station',
+                'tankstelle'],
+    'notes': ['notes', 'note', 'comments', 'comment', 'remarks', 'memo',
+              'bemerkung', 'bemerkungen', 'notiz', 'notizen'],
     'category': ['category', 'type', 'expense type', 'expense category'],
     'description': ['description', 'desc', 'title', 'name', 'item', 'service'],
     'cost': ['cost', 'amount', 'total', 'price', 'expense'],
@@ -3401,6 +3408,41 @@ def _cleanup_temp_file(path):
     except OSError:
         pass
 
+def _is_duplicate(data_type, record, vehicle_id):
+    """Check whether a record with the same key fields already exists."""
+    if data_type == 'fuel_logs':
+        return db.session.query(FuelLog.id).filter_by(
+            vehicle_id=vehicle_id, date=record.date, odometer=record.odometer,
+        ).first() is not None
+    if data_type == 'expenses':
+        filters = dict(
+            vehicle_id=vehicle_id, date=record.date,
+            cost=record.cost, description=record.description,
+        )
+        # Tighten the key with optional fields when mapped, so two
+        # identical toll charges at different odometers aren't dropped.
+        if record.odometer is not None:
+            filters['odometer'] = record.odometer
+        if record.vendor is not None:
+            filters['vendor'] = record.vendor
+        return db.session.query(Expense.id).filter_by(**filters).first() is not None
+    if data_type == 'trips':
+        return db.session.query(Trip.id).filter_by(
+            vehicle_id=vehicle_id, date=record.date,
+            start_odometer=record.start_odometer,
+            end_odometer=record.end_odometer,
+        ).first() is not None
+    if data_type == 'charging_sessions':
+        return db.session.query(ChargingSession.id).filter_by(
+            vehicle_id=vehicle_id, date=record.date,
+            start_time=record.start_time, end_time=record.end_time,
+            odometer=record.odometer,
+            kwh_added=record.kwh_added,
+            total_cost=record.total_cost,
+            location=record.location, network=record.network,
+        ).first() is not None
+    return False
+
 
 def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_date_format=None):
     """Create a model instance from a mapped CSV row."""
@@ -3412,14 +3454,19 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
         odometer = parse_float_value(mapped_row.get('odometer'))
         if odometer is None:
             raise ValueError('Missing or invalid odometer')
+        volume = parse_float_value(mapped_row.get('volume'))
+        price_per_unit = parse_float_value(mapped_row.get('price_per_unit'))
+        total_cost = parse_float_value(mapped_row.get('total_cost'))
+        if price_per_unit is None and volume not in (None, 0) and total_cost is not None:
+            price_per_unit = round(total_cost / volume, 4)
         return FuelLog(
             vehicle_id=vehicle_id,
             user_id=user_id,
             date=date_val,
             odometer=odometer,
-            volume=parse_float_value(mapped_row.get('volume')),
-            price_per_unit=parse_float_value(mapped_row.get('price_per_unit')),
-            total_cost=parse_float_value(mapped_row.get('total_cost')),
+            volume=volume,
+            price_per_unit=price_per_unit,
+            total_cost=total_cost,
             sales_tax=parse_float_value(mapped_row.get('sales_tax')),
             is_full_tank=parse_bool_value(mapped_row.get('is_full_tank')) if mapped_row.get('is_full_tank') else True,
             is_missed=parse_bool_value(mapped_row.get('is_missed')),
@@ -3553,7 +3600,15 @@ def csv_import_preview():
 
     try:
         content = file.read().decode('utf-8-sig', errors='ignore')
-        reader = csv.DictReader(io.StringIO(content))
+
+        # Auto-detect delimiter (comma vs semicolon)
+        try:
+            dialect = csv.Sniffer().sniff(content[:2048], delimiters=',;\t')
+            delimiter = dialect.delimiter
+        except csv.Error:
+            delimiter = ','
+
+        reader = csv.DictReader(io.StringIO(content), delimiter=delimiter)
         csv_columns = reader.fieldnames
 
         if not csv_columns:
@@ -3579,6 +3634,7 @@ def csv_import_preview():
         tmp.write(content)
         tmp.close()
         session['csv_import_temp_file'] = tmp.name
+        session['csv_import_delimiter'] = delimiter
 
         target_fields = get_import_fields(data_type)
         suggestions = auto_suggest_mappings(csv_columns, target_fields)
@@ -3610,6 +3666,7 @@ def csv_import_execute():
     vehicle_id = request.form.get('vehicle_id', type=int)
     date_format = request.form.get('date_format', 'auto')
     temp_file = session.pop('csv_import_temp_file', None)
+    delimiter = session.pop('csv_import_delimiter', ',')
 
     if data_type not in DATA_TYPE_LABELS:
         flash(_('Invalid data type.'), 'error')
@@ -3627,7 +3684,7 @@ def csv_import_execute():
     try:
         # Read temp CSV
         with open(temp_file, 'r', encoding='utf-8-sig', errors='ignore') as f:
-            reader = csv.DictReader(f)
+            reader = csv.DictReader(f, delimiter=delimiter)
             csv_columns = reader.fieldnames or []
 
             # Build column mapping from form: mapping_0, mapping_1, etc.
@@ -3640,6 +3697,7 @@ def csv_import_execute():
             rows = list(reader)
 
         imported = 0
+        skipped = 0
         errors = []
         max_errors = 50
 
@@ -3650,6 +3708,9 @@ def csv_import_execute():
                     mapped_row[field_name] = row.get(csv_col, '')
 
                 record = create_record(data_type, mapped_row, vehicle_id, current_user.id, date_format, current_user.date_format)
+                if _is_duplicate(data_type, record, vehicle_id):
+                    skipped += 1
+                    continue
                 db.session.add(record)
                 imported += 1
             except (ValueError, KeyError) as e:
@@ -3660,6 +3721,9 @@ def csv_import_execute():
 
         label = DATA_TYPE_LABELS.get(data_type, data_type)
         flash(_('CSV import complete: %(count)s %(label)s imported.') % {'count': imported, 'label': label.lower()}, 'success')
+
+        if skipped:
+            flash(_('%(count)s duplicate(s) skipped.') % {'count': skipped}, 'info')
 
         if errors:
             error_summary = f'{len(errors)} row(s) skipped due to errors.'

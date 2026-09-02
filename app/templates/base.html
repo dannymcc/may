@@ -315,31 +315,31 @@
                                 <div id="more-dropdown" class="hidden absolute right-0 top-full mt-1 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
                                     <div class="py-1">
                                         {% if current_user.show_menu_maintenance is not defined or current_user.show_menu_maintenance %}
-                                        <a href="{{ url_for('maintenance.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Maintenance') }}</a>
+                                        <a href="{{ url_for('maintenance.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Maintenance') }}</a>
                                         {% endif %}
                                         {% if current_user.show_menu_recurring is not defined or current_user.show_menu_recurring %}
-                                        <a href="{{ url_for('recurring.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Recurring') }}</a>
+                                        <a href="{{ url_for('recurring.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Recurring') }}</a>
                                         {% endif %}
                                         {% if current_user.show_menu_documents is not defined or current_user.show_menu_documents %}
-                                        <a href="{{ url_for('documents.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Documents') }}</a>
+                                        <a href="{{ url_for('documents.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Documents') }}</a>
                                         {% endif %}
                                         {% if current_user.show_menu_stations is not defined or current_user.show_menu_stations %}
-                                        <a href="{{ url_for('stations.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Fuel Stations') }}</a>
+                                        <a href="{{ url_for('stations.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Fuel Stations') }}</a>
                                         {% endif %}
                                         {% if current_user.show_menu_charging is not defined or current_user.show_menu_charging %}
-                                        <a href="{{ url_for('charging.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('EV Charging') }}</a>
+                                        <a href="{{ url_for('charging.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('EV Charging') }}</a>
                                         {% endif %}
                                         {% if current_user.show_menu_allowance is not defined or current_user.show_menu_allowance %}
-                                        <a href="{{ url_for('allowance.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Mileage Allowance') }}</a>
+                                        <a href="{{ url_for('allowance.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Mileage Allowance') }}</a>
                                         {% endif %}
                                         {% if current_user.show_menu_tires is not defined or current_user.show_menu_tires %}
-                                        <a href="{{ url_for('tires.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Tires') }}</a>
+                                        <a href="{{ url_for('tires.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Tires') }}</a>
                                         {% endif %}
                                         {% if current_user.show_menu_notes is not defined or current_user.show_menu_notes %}
-                                        <a href="{{ url_for('notes.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Notes') }}</a>
+                                        <a href="{{ url_for('notes.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Notes') }}</a>
                                         {% endif %}
                                         {% if can_write('fuel') %}
-                                        <a href="{{ url_for('fuel.quick') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Quick Fuel Entry') }}</a>
+                                        <a href="{{ url_for('fuel.quick') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Quick Fuel Entry') }}</a>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -378,7 +378,7 @@
                         </a>
                     </div>
                     <div class="flex items-center sm:hidden">
-                        <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700 hover:text-gray-500 dark:text-gray-400">
+                        <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-500 dark:text-gray-400">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                             </svg>
@@ -388,52 +388,52 @@
             </div>
             <div class="sm:hidden hidden" id="mobile-menu">
                 <div class="space-y-1 pb-3 pt-2">
-                    <a href="{{ url_for('main.dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Dashboard') }}</a>
+                    <a href="{{ url_for('main.dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Dashboard') }}</a>
                     {% if current_user.show_menu_vehicles is not defined or current_user.show_menu_vehicles %}
-                    <a href="{{ url_for('vehicles.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Vehicles') }}</a>
+                    <a href="{{ url_for('vehicles.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Vehicles') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_fuel is not defined or current_user.show_menu_fuel %}
-                    <a href="{{ url_for('fuel.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Fuel Logs') }}</a>
+                    <a href="{{ url_for('fuel.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Fuel Logs') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_expenses is not defined or current_user.show_menu_expenses %}
-                    <a href="{{ url_for('expenses.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Expenses') }}</a>
+                    <a href="{{ url_for('expenses.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Expenses') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_reminders is not defined or current_user.show_menu_reminders %}
-                    <a href="{{ url_for('reminders.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Reminders') }}</a>
+                    <a href="{{ url_for('reminders.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Reminders') }}</a>
                     {% endif %}
-                    <a href="{{ url_for('search.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Search') }}</a>
+                    <a href="{{ url_for('search.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Search') }}</a>
                     {% if current_user.show_menu_trips is not defined or current_user.show_menu_trips %}
-                    <a href="{{ url_for('trips.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Trips') }}</a>
+                    <a href="{{ url_for('trips.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Trips') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_charging is not defined or current_user.show_menu_charging %}
-                    <a href="{{ url_for('charging.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('EV Charging') }}</a>
+                    <a href="{{ url_for('charging.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('EV Charging') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_maintenance is not defined or current_user.show_menu_maintenance %}
-                    <a href="{{ url_for('maintenance.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Maintenance') }}</a>
+                    <a href="{{ url_for('maintenance.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Maintenance') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_recurring is not defined or current_user.show_menu_recurring %}
-                    <a href="{{ url_for('recurring.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Recurring') }}</a>
+                    <a href="{{ url_for('recurring.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Recurring') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_documents is not defined or current_user.show_menu_documents %}
-                    <a href="{{ url_for('documents.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Documents') }}</a>
+                    <a href="{{ url_for('documents.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Documents') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_stations is not defined or current_user.show_menu_stations %}
-                    <a href="{{ url_for('stations.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Fuel Stations') }}</a>
+                    <a href="{{ url_for('stations.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Fuel Stations') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_allowance is not defined or current_user.show_menu_allowance %}
-                    <a href="{{ url_for('allowance.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Mileage Allowance') }}</a>
+                    <a href="{{ url_for('allowance.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Mileage Allowance') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_tires is not defined or current_user.show_menu_tires %}
-                    <a href="{{ url_for('tires.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Tires') }}</a>
+                    <a href="{{ url_for('tires.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Tires') }}</a>
                     {% endif %}
                     {% if current_user.show_menu_notes is not defined or current_user.show_menu_notes %}
-                    <a href="{{ url_for('notes.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Notes') }}</a>
+                    <a href="{{ url_for('notes.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Notes') }}</a>
                     {% endif %}
                     {% if can_write('fuel') %}
-                    <a href="{{ url_for('fuel.quick') }}" class="block px-4 py-2 text-base font-medium text-primary-600 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Quick Fuel Entry') }}</a>
+                    <a href="{{ url_for('fuel.quick') }}" class="block px-4 py-2 text-base font-medium text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Quick Fuel Entry') }}</a>
                     {% endif %}
-                    <a href="{{ url_for('auth.settings') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">{{ _('Settings') }}</a>
-                    <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 text-base font-medium text-red-500 hover:bg-gray-100 dark:bg-gray-600 dark:hover:bg-gray-700">
+                    <a href="{{ url_for('auth.settings') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{{ _('Settings') }}</a>
+                    <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 text-base font-medium text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>

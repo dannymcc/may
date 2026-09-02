@@ -1144,6 +1144,25 @@ document.addEventListener('DOMContentLoaded', function() {
         restoreChartState('consumption');
         restoreChartState('price');
     }
+
+    // #358: the trend charts plotted the raw ISO date the API returns, so the
+    // x-axis ignored Settings > Date Format. Reformat each label to the user's
+    // chosen pattern, read from the meta tag base.html already exposes.
+    const userDateFormat = (document.querySelector('meta[name="date-format"]') || {}).content || 'DD/MM/YYYY';
+    function formatChartDate(iso) {
+        if (!iso) return iso;
+        const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (!m) return iso;
+        const [, y, mo, d] = m;
+        switch (userDateFormat) {
+            case 'MM/DD/YYYY': return `${mo}/${d}/${y}`;
+            case 'YYYY-MM-DD': return `${y}-${mo}-${d}`;
+            case 'DD.MM.YYYY': return `${d}.${mo}.${y}`;
+            case 'DD/MM/YYYY':
+            default: return `${d}/${mo}/${y}`;
+        }
+    }
+
     fetch('/api/vehicles/{{ vehicle.id }}/stats')
         .then(response => response.json())
         .then(data => {
@@ -1156,7 +1175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // them into a single misleading series (#319). Each point
                 // keeps its own slot on the x-axis, so two fills on one date
                 // are still two points.
-                const dates = data.consumption.map(d => d.date);
+                const dates = data.consumption.map(d => formatChartDate(d.date));
                 const typeLabels = {};
                 data.consumption.forEach(d => {
                     typeLabels[d.fuel_type || 'unknown'] = d.fuel_type_label || d.fuel_type || 'unknown';
@@ -1229,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 chartInstances['price'] = new Chart(priceEl.getContext('2d'), {
                     type: 'line',
                     data: {
-                        labels: data.price_per_unit.map(d => d.date),
+                        labels: data.price_per_unit.map(d => formatChartDate(d.date)),
                         datasets: [{
                             label: '{{ _("Price per") }} {{ current_user.volume_unit }} ({{ current_user.currency }})',
                             data: data.price_per_unit.map(d => d.price),
@@ -1273,6 +1292,10 @@ document.addEventListener('DOMContentLoaded', function() {
     restoreChartState('expenses');
     const categoryData = {{ expenses_by_category | tojson }};
     const labels = Object.keys(categoryData);
+    // #359: the value axis (x, because this is a horizontal bar) showed bare
+    // numbers with no unit. Prefix each tick with the configured currency
+    // symbol so it reads as money.
+    const expenseCurrencySymbol = {{ (vehicle.currency_symbol or current_user.currency)|tojson }};
     chartInstances['expenses'] = new Chart(expensesEl.getContext('2d'), {
         type: 'bar',
         data: {
@@ -1298,7 +1321,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 legend: { display: false }
             },
             scales: {
-                x: { beginAtZero: true }
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return expenseCurrencySymbol + value.toLocaleString();
+                        }
+                    }
+                }
             }
         }
     });
