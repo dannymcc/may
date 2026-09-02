@@ -12,6 +12,13 @@ This file starts at 0.28.0. Notes for earlier releases are on the
 
 ### Added
 
+- The CSV importer understands Spritmonitor.de exports. It sniffs the
+  semicolon delimiter those files use, maps their columns onto fuel logs, and
+  where a row gives a total and a volume but no unit price it fills the price
+  in at `total / volume` rather than leaving it blank. Duplicate rows are
+  detected on the fields that actually identify a fill, so re-importing the
+  same export does not double up the history. Credit to LukasLJL.
+  ([#346](https://github.com/dannymcc/may/pull/346))
 - Recurring expenses can record a vendor. The column and the copy of it onto
   each auto-generated expense already existed, but no field on the recurring
   form ever populated it, so the vendor had to be filled in by hand after the
@@ -21,6 +28,16 @@ This file starts at 0.28.0. Notes for earlier releases are on the
 
 ### Fixed
 
+- The vehicle charts respect the currency and date-format settings. The
+  Expense by Category chart drew its value axis (the x axis, the bar being
+  horizontal) as bare numbers with no unit, so it was not obvious the figures
+  were money; those ticks now carry the configured currency symbol. And the
+  Fuel Consumption Trend and Fuel Price Trend charts labelled their date axis
+  straight from the API's ISO strings, ignoring Settings > Date Format; both
+  now format each label to the chosen pattern, reading it from the same source
+  the rest of the page does.
+  ([#359](https://github.com/dannymcc/may/issues/359),
+  [#358](https://github.com/dannymcc/may/issues/358))
 - The mobile navigation no longer sits in a lighter grey block in dark mode.
   Every item in the menu, the hamburger button that opens it and the desktop
   "More" dropdown carried a stray `dark:bg-gray-600` beside an already-correct
@@ -58,6 +75,10 @@ This file starts at 0.28.0. Notes for earlier releases are on the
 
 ### Changed
 
+- Minor corrections to the German catalogue: "Schnelladung" reads "DC
+  Schnelladung", and a few multi-line entries were unwrapped (gettext
+  concatenates the adjacent literals, so the msgids are unchanged). Credit to
+  solluh. ([#361](https://github.com/dannymcc/may/pull/361))
 - The nine other catalogues filled by #340 (de, fr, es, it, pt, nl, pl, cs and
   ru) were audited for the same formal/informal break as the Hungarian one and
   found consistent, so no msgstr needed correcting. Tests now record the
