@@ -3527,7 +3527,7 @@ msgstr "Beginnen Sie, Ihre Tankvorgänge zu erfassen."
 
 #: app/templates/fuel/index.html:126
 msgid "Charging History"
-msgstr "PreisveLadeverlaufrlauf"
+msgstr "Ladeverlauf"
 
 #: app/templates/fuel/index.html:127
 msgid "Sessions logged for your electric and plug-in hybrid vehicles"
