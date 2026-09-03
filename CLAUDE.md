@@ -16,67 +16,86 @@
 
 # Project Overview
 
-Willman is a self-hosted vehicle management application built with Flask. It tracks fuel consumption, expenses, maintenance, trips, EV charging, and more.
+Willman is a self-hosted vehicle management application built with Flask (a fork of `dannymcc/may`, now developed at `austincnunn/Willman`). It tracks fuel consumption, expenses, maintenance, trips, EV charging, documents, reminders, and more.
 
 ## Tech Stack
 
 - **Backend**: Flask (Python 3.12)
-- **Database**: SQLite with SQLAlchemy ORM
-- **Frontend**: Jinja2 templates with Tailwind CSS
+- **Database**: SQLite with SQLAlchemy ORM, Flask-Migrate (Alembic) for migrations
+- **Frontend**: Jinja2 templates with Tailwind CSS, htmx, Flatpickr
+- **i18n**: Flask-Babel (`app/translations/`, `babel.cfg`) — English, German, Spanish, French, and others
 - **Charts**: Chart.js
 - **PDF Generation**: WeasyPrint
 - **Production Server**: Gunicorn
+- **Tests**: pytest / pytest-cov (`tests/`, `pytest.ini`)
 
 ## Project Structure
 
 ```
-may/
 ├── app/
-│   ├── __init__.py          # App factory, blueprint registration
-│   ├── models.py             # SQLAlchemy models (User, Vehicle, FuelLog, etc.)
-│   ├── routes/               # Blueprint route handlers
-│   │   ├── main.py           # Dashboard, timeline
-│   │   ├── auth.py           # Login, register, settings
-│   │   ├── vehicles.py       # Vehicle CRUD
-│   │   ├── fuel.py           # Fuel logging
-│   │   ├── expenses.py       # Expense tracking
-│   │   ├── trips.py          # Trip logging
-│   │   ├── charging.py       # EV charging sessions
-│   │   ├── stations.py       # Fuel stations, price tracking
-│   │   └── ...
-│   ├── templates/            # Jinja2 templates
-│   └── static/               # CSS, JS, images
-├── config.py                 # App configuration, version
-├── run.py                    # App entry point
-├── Dockerfile                # Container build
-├── docker-compose.yml        # Docker deployment
-└── docker-entrypoint.sh      # Handles bind mount permissions
+│   ├── __init__.py          # App factory, blueprint registration, default admin creation
+│   ├── models.py             # SQLAlchemy models
+│   ├── security.py           # Security helpers
+│   ├── routes/                # Blueprint route handlers
+│   │   ├── main.py            # Dashboard, timeline
+│   │   ├── auth.py            # Login, register, settings
+│   │   ├── admin.py           # Admin panel
+│   │   ├── api.py             # REST API
+│   │   ├── vehicles.py        # Vehicle CRUD
+│   │   ├── fuel.py            # Fuel logging
+│   │   ├── expenses.py        # Expense tracking
+│   │   ├── recurring.py       # Recurring expenses
+│   │   ├── trips.py           # Trip logging
+│   │   ├── charging.py        # EV charging sessions
+│   │   ├── stations.py        # Fuel stations, price tracking
+│   │   ├── maintenance.py     # Maintenance schedules
+│   │   ├── reminders.py       # Reminders
+│   │   ├── calendar.py        # Calendar subscription feeds
+│   │   ├── documents.py       # Document storage
+│   │   ├── notes.py           # Vehicle notes
+│   │   ├── supplies.py        # Supplies tracking
+│   │   └── homeassistant.py   # Home Assistant integration
+│   ├── services/               # DVLA lookup, Tessie, notifications, backups, reminder processing
+│   ├── templates/              # Jinja2 templates
+│   ├── translations/           # Flask-Babel locale files
+│   └── static/                 # CSS, JS, images
+├── migrations/                # Alembic migration scripts (already committed)
+├── tests/                     # pytest suite
+├── config.py                  # App configuration, APP_VERSION
+├── run.py                     # App entry point
+├── Dockerfile                 # Container build (non-root `willman` user)
+├── docker-compose.yml         # Docker deployment
+└── docker-entrypoint.sh       # Handles bind mount permissions, runs migrations
 ```
 
 ## Key Models
 
+(`app/models.py`)
+
 - **User**: Authentication, preferences, menu visibility settings
 - **Vehicle**: Cars, motorcycles, etc. with fuel type support
 - **FuelLog**: Fuel fill-ups with consumption calculation
+- **FuelStation** / **FuelPriceHistory**: Favorite stations and price tracking
 - **Expense**: Maintenance, insurance, tax, etc.
+- **RecurringExpense**: Regular payments (insurance, tax, subscriptions)
+- **MaintenanceSchedule**: Mileage/date-based maintenance planning
 - **Trip**: Business/personal trip logging for tax purposes
 - **ChargingSession**: EV charging with kWh, SOC%, cost
+- **Reminder**: MOT/service/insurance/tax renewal reminders
+- **Document**: Per-vehicle document storage
+- **VehicleNote**: Free-form notes per vehicle
+- **VehiclePart** / **Supply**: Parts and consumable supplies tracking
+- **VehicleSpec**: Vehicle specification data
+- **Attachment**: Receipts/files attached to fuel logs and expenses
 - **AppSettings**: Key-value store for app-wide settings (branding, registration toggle)
 
 ## Database
 
-SQLite database stored at `/data/willman.db`. The project uses Flask-Migrate (Alembic) for database migrations.
+SQLite database stored at `data/willman.db` (path configurable via `DATABASE_URL`). The project uses Flask-Migrate (Alembic); the `migrations/` folder is already committed.
 
-### First-Time Setup (after pulling these changes)
+### Setup
 
 ```bash
-# Initialize migrations folder (only once)
-flask db init
-
-# Create initial migration from existing models
-flask db migrate -m "Initial migration"
-
-# Apply migrations
 flask db upgrade
 ```
 
@@ -89,18 +108,16 @@ flask db migrate -m "Description of changes"
 flask db upgrade
 ```
 
-Migrations run automatically on container startup via the entrypoint script.
+Migrations run automatically on container startup via `docker-entrypoint.sh`.
 
 ## Deployment
 
-### GitHub Actions Workflow
+### GitHub Actions Workflows
 
-The project uses GitHub Actions (`.github/workflows/docker-build.yml`) to automatically build and push Docker images:
+Two workflows in `.github/workflows/`:
 
-1. On push to `main`, `dev`, or new tags, the workflow triggers
-2. Builds a multi-platform Docker image (linux/amd64, linux/arm64)
-3. Pushes to GitHub Container Registry: `ghcr.io/dannymcc/may`
-4. Tags: `latest` for main branch, `dev` for dev branch, version tags (e.g., `v0.3.0`) for releases
+- **`docker-publish.yml`** — on push to `main`: builds a single-platform image and pushes `ghcr.io/austincnunn/willman:latest` and `:<sha>` (no test gate).
+- **`docker.yml`** — on push to `dev` or a `v*` tag: runs `pytest tests/`, then builds a multi-platform image (linux/amd64, linux/arm64) and pushes to `ghcr.io/austincnunn/willman` tagged `dev` (dev branch), semver tags, and `latest` (only when triggered by a version tag).
 
 ### Creating a Release
 
@@ -128,7 +145,7 @@ The project uses GitHub Actions (`.github/workflows/docker-build.yml`) to automa
    ### Other Changes
    - Change description"
    ```
-7. GitHub Actions automatically builds and pushes the Docker image with version tag
+7. GitHub Actions automatically builds and pushes the Docker image with the version tag
 8. Sync `dev` with `main` after release:
    ```bash
    git checkout dev
@@ -140,16 +157,16 @@ The project uses GitHub Actions (`.github/workflows/docker-build.yml`) to automa
 
 The container:
 - Exposes port **5151** (not 5000)
-- Runs as non-root user `may` via entrypoint script
+- Runs as non-root user `willman` via `docker-entrypoint.sh`
 - Handles bind mount permissions automatically
 - Health check endpoint: `/health`
 
 Example docker-compose.yml for deployment:
 ```yaml
 services:
-  may:
-    image: ghcr.io/dannymcc/may:latest
-    container_name: may
+  willman:
+    image: ghcr.io/austincnunn/willman:latest
+    container_name: willman
     restart: unless-stopped
     ports:
       - "5151:5151"
@@ -158,6 +175,8 @@ services:
     environment:
       - SECRET_KEY=your-secret-key
 ```
+
+Relevant environment variables: `SECRET_KEY`, `DATABASE_URL`, `UPLOAD_FOLDER`, `INTERNAL_API_KEY`, `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `RELEASE_CHANNEL`.
 
 ### Reverse Proxy (Caddy)
 
@@ -177,6 +196,9 @@ pip install -r requirements.txt
 
 # Run development server
 python run.py
+
+# Run tests
+pytest tests/
 ```
 
-Default login: `admin` / `admin`
+**First-time login**: username `admin`. No fixed default password — on first startup, if no users exist, a random password is generated and printed to the container/app logs (or set `ADMIN_PASSWORD` to choose one).
