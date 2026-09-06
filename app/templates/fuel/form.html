@@ -68,7 +68,7 @@
                     <label for="volume" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Volume') }} ({{ current_user.volume_unit }})</label>
                     <input type="number" name="volume" id="volume" step="0.001"
                            value="{{ log.volume if log else '' }}"
-                           onchange="calculateTotal()"
+                           onchange="calculateFuelAmounts()"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -76,7 +76,7 @@
                     <label for="price_per_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Price per') }} {{ current_user.volume_unit }} ({{ current_user.currency }})</label>
                     <input type="number" name="price_per_unit" id="price_per_unit" step="0.001"
                            value="{{ log.price_per_unit if log else '' }}"
-                           onchange="calculateTotal()"
+                           onchange="calculateFuelAmounts()"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -84,7 +84,7 @@
                     <label for="discount_per_unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Discount per') }} {{ current_user.volume_unit }} ({{ current_user.currency }})</label>
                     <input type="number" name="discount_per_unit" id="discount_per_unit" step="0.001" min="0"
                            value="{{ log.discount_per_unit if log and log.discount_per_unit is not none else '' }}"
-                           onchange="calculateTotal()"
+                           onchange="calculateFuelAmounts()"
                            placeholder="0.000"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('Optional loyalty discount, subtracted from the price per unit.') }}</p>
@@ -94,6 +94,7 @@
                     <label for="total_cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Total Cost') }} ({{ current_user.currency }})</label>
                     <input type="number" name="total_cost" id="total_cost" step="0.01"
                            value="{{ log.total_cost if log else '' }}"
+                           onchange="calculateFuelAmounts()"
                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 </div>
 
@@ -211,6 +212,8 @@
 <script>
 const T_LAST_ODOMETER = {{ _('Last odometer')|tojson }};
 const T_LAST_HOURS = {{ _('Last engine hours')|tojson }};
+let pricePerUnitWasDerived = false;
+
 function updateVehicleOdometer(vehicleId) {
     const select = document.getElementById('vehicle_id');
     const selectedOption = select.options[select.selectedIndex];
@@ -308,13 +311,32 @@ function updateFuelTypeSelector(selectedOption) {
     }
 }
 
-function calculateTotal() {
+function calculateFuelAmounts() {
     const volume = parseDecimal(document.getElementById('volume').value) || 0;
-    const pricePerUnit = parseDecimal(document.getElementById('price_per_unit').value) || 0;
+    const priceInput = document.getElementById('price_per_unit');
+    const totalInput = document.getElementById('total_cost');
     const discountPerUnit = parseDecimal(document.getElementById('discount_per_unit').value) || 0;
+
+    // Preserve an explicitly entered total cost when the unit price is derived from it.
+    // Keep the derived-state flag until the user edits the price manually.
+    if ((pricePerUnitWasDerived || !priceInput.value) && volume && totalInput.value) {
+        const totalCost = parseDecimal(totalInput.value);
+        if (totalCost !== null) {
+            const pricePerUnit = (totalCost / volume) + discountPerUnit;
+            priceInput.value = pricePerUnit.toFixed(3);
+            pricePerUnitWasDerived = true;
+            return;
+        }
+    }
+
+    let pricePerUnit = parseDecimal(priceInput.value) || 0;
+    if (pricePerUnitWasDerived && !priceInput.value) {
+        pricePerUnitWasDerived = false;
+    }
+
     if (volume && pricePerUnit) {
         const effectivePrice = Math.max(pricePerUnit - discountPerUnit, 0);
-        document.getElementById('total_cost').value = (volume * effectivePrice).toFixed(2);
+        totalInput.value = (volume * effectivePrice).toFixed(2);
     }
 }
 
@@ -329,6 +351,19 @@ function updateStationName(select) {
 // Initialize odometer and fuel type for selected vehicle
 document.addEventListener('DOMContentLoaded', function() {
     const vehicleSelect = document.getElementById('vehicle_id');
+    const priceInput = document.getElementById('price_per_unit');
+    const totalInput = document.getElementById('total_cost');
+
+    priceInput.addEventListener('change', function() {
+        pricePerUnitWasDerived = false;
+    });
+
+    totalInput.addEventListener('change', function() {
+        if (!priceInput.value || pricePerUnitWasDerived) {
+            calculateFuelAmounts();
+        }
+    });
+
     updateVehicleOdometer(vehicleSelect.value);
     const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
     updateFuelTypeSelector(selectedOption);
