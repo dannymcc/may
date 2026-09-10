@@ -37,7 +37,7 @@ def test_app_version_is_bumped_to_current_release():
     # Bumped to 0.42.1 for the mobile-row-truncation patch (#347). The 0.42.0
     # changelog assertions below stay pinned — that section is history and must
     # not be rewritten by a later release.
-    assert config.APP_VERSION == '0.42.1'
+    assert config.APP_VERSION == '0.43.0'
 
 
 def test_changelog_dates_0_42_0_to_the_release_date():

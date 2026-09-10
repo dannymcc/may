@@ -83,7 +83,7 @@ class TestCategoryRunningCosts:
         import re
         from datetime import date
         from app.models import Vehicle, FuelLog
-        private = Vehicle(owner_id=admin_user.id, name='Private', fuel_type='petrol')
+        private = Vehicle(owner_id=admin_user.id, name='Private', vehicle_type='car', fuel_type='petrol')
         db.session.add(private)
         db.session.flush()
         db.session.add(FuelLog(vehicle_id=private.id, user_id=admin_user.id,
