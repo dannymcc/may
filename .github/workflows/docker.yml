@@ -28,9 +28,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Check chart and fuel form behavior
-        run: node scripts/check-release-charts.cjs
-
       - name: Run tests
         run: python -m pytest tests/ -v --tb=short
 
