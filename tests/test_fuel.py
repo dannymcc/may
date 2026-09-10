@@ -100,6 +100,51 @@ class TestFuelNew:
         assert log.discount_per_unit is None
         assert log.total_cost == 60.0
 
+    def test_price_per_unit_is_calculated_from_total_cost(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/fuel/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-03-05',
+            'odometer': '15400',
+            'volume': '40.0',
+            'total_cost': '64.0',
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id, odometer=15400.0).first()
+        assert log is not None
+        assert log.price_per_unit == 1.6
+
+    def test_calculated_price_respects_maximum(self, auth_client, sample_vehicle, sample_station):
+        resp = auth_client.post('/fuel/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-03-05',
+            'odometer': '15401',
+            'volume': '1',
+            'total_cost': '2000',
+            'station_id': str(sample_station.id),
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        assert FuelLog.query.filter_by(
+            vehicle_id=sample_vehicle.id, odometer=15401.0
+        ).first() is None
+        assert FuelPriceHistory.query.filter_by(
+            station_id=sample_station.id
+        ).first() is None
+
+    def test_calculated_price_includes_discount(self, auth_client, sample_vehicle):
+        auth_client.post('/fuel/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'date': '2024-03-06',
+            'odometer': '15500',
+            'volume': '40.0',
+            'discount_per_unit': '0.10',
+            'total_cost': '60.0',
+            'is_full_tank': 'on',
+        }, follow_redirects=True)
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id, odometer=15500.0).first()
+        assert log is not None
+        assert log.price_per_unit == 1.6
+
     def test_new_redirects_to_vehicles_if_none(self, auth_client):
         # No vehicles exist for this user
         resp = auth_client.get('/fuel/new', follow_redirects=False)
@@ -1459,3 +1504,27 @@ class TestDualFuelConsumption:
         # Says why the figure has gone, not merely what to do about it.
         assert 'Consumption can' in html
         assert 'distance run on each fuel' in html
+
+
+class TestDerivedPriceEditing:
+    def test_edit_derives_price_and_keeps_discount(self, auth_client, sample_fuel_log):
+        response = auth_client.post(f'/fuel/{sample_fuel_log.id}/edit', data={
+            'date': '2024-03-05', 'odometer': '15400', 'volume': '40',
+            'total_cost': '60', 'discount_per_unit': '0.1',
+        })
+        assert response.status_code == 302
+        db.session.refresh(sample_fuel_log)
+        assert sample_fuel_log.price_per_unit == 1.6
+        assert sample_fuel_log.total_cost == 60
+
+    def test_edit_rejects_excessive_price_before_mutation(self, auth_client, sample_fuel_log):
+        old_volume = sample_fuel_log.volume
+        old_price = sample_fuel_log.price_per_unit
+        response = auth_client.post(f'/fuel/{sample_fuel_log.id}/edit', data={
+            'date': '2024-03-05', 'odometer': '15400', 'volume': '1',
+            'total_cost': '2000',
+        })
+        assert response.status_code == 302
+        db.session.refresh(sample_fuel_log)
+        assert sample_fuel_log.volume == old_volume
+        assert sample_fuel_log.price_per_unit == old_price

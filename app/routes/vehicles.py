@@ -208,6 +208,13 @@ def view(vehicle_id):
         for cat, total in category_rows if total
     }
 
+    if stats['total_fuel_cost']:
+        label = str(_('Fuel'))
+        expenses_by_category[label] = round(expenses_by_category.get(label, 0) + stats['total_fuel_cost'], 2)
+    if stats['total_charging_cost']:
+        label = str(_('Charging'))
+        expenses_by_category[label] = round(expenses_by_category.get(label, 0) + stats['total_charging_cost'], 2)
+
     # Get reminders for this vehicle (not completed, ordered by due date)
     reminders = vehicle.reminders.filter_by(is_completed=False).order_by(Reminder.due_date).all()
 

@@ -1283,6 +1283,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
+{% include 'partials/expense_chart.js' %}
+
 // Expenses by category for this vehicle (#287). Rendered from server-side
 // data so labels are translated, and kept out of the stats fetch above so
 // vehicles without a consumption chart (EVs) still get it.
@@ -1291,47 +1293,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!expensesEl) return;
     restoreChartState('expenses');
     const categoryData = {{ expenses_by_category | tojson }};
-    const labels = Object.keys(categoryData);
-    // #359: the value axis (x, because this is a horizontal bar) showed bare
-    // numbers with no unit. Prefix each tick with the configured currency
-    // symbol so it reads as money.
-    const expenseCurrencySymbol = {{ (vehicle.currency_symbol or current_user.currency)|tojson }};
-    chartInstances['expenses'] = new Chart(expensesEl.getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: labels.map(l => categoryData[l]),
-                backgroundColor: [
-                    'rgba(239, 68, 68, 0.8)', 'rgba(245, 158, 11, 0.8)',
-                    'rgba(34, 197, 94, 0.8)', 'rgba(14, 165, 233, 0.8)',
-                    'rgba(168, 85, 247, 0.8)', 'rgba(236, 72, 153, 0.8)',
-                    'rgba(20, 184, 166, 0.8)', 'rgba(249, 115, 22, 0.8)',
-                    'rgba(99, 102, 241, 0.8)', 'rgba(107, 114, 128, 0.8)',
-                    'rgba(132, 204, 22, 0.8)'
-                ],
-                borderRadius: 4
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return expenseCurrencySymbol + value.toLocaleString();
-                        }
-                    }
-                }
-            }
-        }
-    });
+    const expenseCurrency = {{ (current_user.currency or '')|tojson }};
+    chartInstances['expenses'] = createExpenseCategoryChart(expensesEl, categoryData, expenseCurrency);
 });
 
 function refreshDvlaStatus(vehicleId) {

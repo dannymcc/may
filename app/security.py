@@ -4,9 +4,11 @@ Security utilities for the May application.
 import re
 import ipaddress
 from urllib.parse import urlparse, urljoin
+import math
 from functools import wraps
 from flask import request, redirect, url_for, flash
 from flask_login import current_user
+from app.utils import parse_decimal
 
 # File signature (magic bytes) mappings
 FILE_SIGNATURES = {
@@ -180,8 +182,13 @@ def validate_positive_number(value, field_name, max_value=None, allow_zero=True)
         return None, None  # Empty is OK
 
     try:
-        num = float(value)
+        num = parse_decimal(value)
     except (ValueError, TypeError):
+        return None, f"{field_name} must be a valid number"
+    if num is None or not math.isfinite(num):
+        # parse_decimal returned its default/None for inputs like the
+        # literal string "None" or other absent-value markers. Treat this
+        # as an invalid number rather than silently accepting it.
         return None, f"{field_name} must be a valid number"
 
     if not allow_zero and num == 0:
