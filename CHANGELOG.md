@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.43.0] - 2026-09-10
+
+### Added
+
+- Fuel unit prices can be calculated from volume and total paid, including
+  per-unit discounts. Manual price edits remain authoritative. (#294)
+- Dashboard and vehicle category charts include fuel and charging costs. (#367)
+
+### Fixed
+
+- Both category charts share currency-code axis labels and tooltips. (#369)
+- Numeric validation accepts locale-formatted decimals, rejects malformed
+  grouping and non-finite values, and checks derived prices before persistence.
+- Correct the German Charging History translation. (#366)
+
+### Changed
+
+- Update minimum Gunicorn to 26.2.0 and Coverage to 7.16.0. (#362, #363)
+- Review all open PRs and issues as one release batch; see
+  [the review record](docs/release-review-0.43.0.md) for deferred items.
+
 ## [0.42.1] - 2026-09-02
 
 ### Fixed

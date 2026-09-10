@@ -13,15 +13,16 @@ from app import db
 
 
 class TestExpenseChartCurrency:
-    def test_expense_chart_x_axis_prefixes_currency(self, auth_client, sample_vehicle, sample_expense):
-        """#359: the expense bar chart's x ticks carry the configured currency."""
+    def test_expense_chart_uses_shared_currency_style(self, auth_client, sample_vehicle, sample_expense):
+        """#369: the vehicle chart shares dashboard axis and tooltip units."""
         resp = auth_client.get(f'/vehicles/{sample_vehicle.id}')
         assert resp.status_code == 200
         body = resp.get_data(as_text=True)
-        # The symbol is resolved server-side (£ for GBP, escaped as \u00a3 in the
-        # JS string literal by tojson) and used in a ticks callback.
-        assert r'const expenseCurrencySymbol = "\u00a3";' in body
-        assert 'expenseCurrencySymbol + value.toLocaleString()' in body
+        # Use the account currency code consistently on both dashboards.
+        assert 'const expenseCurrency = "GBP";' in body
+        assert 'text: currency' in body
+        assert "context.formattedValue + ' ' + currency" in body
+        assert 'createExpenseCategoryChart(expensesEl, categoryData, expenseCurrency)' in body
 
     def test_expense_chart_currency_is_escaped(self, app, auth_client, sample_vehicle, test_user):
         """A custom currency is free text, so it must not break out of the JS."""
@@ -32,8 +33,8 @@ class TestExpenseChartCurrency:
         resp = auth_client.get(f'/vehicles/{sample_vehicle.id}')
         assert resp.status_code == 200
         body = resp.get_data(as_text=True)
-        assert 'const expenseCurrencySymbol = %s;' % json.dumps('X"Y') in body
-        assert 'const expenseCurrencySymbol = "X"Y";' not in body
+        assert 'const expenseCurrency = %s;' % json.dumps('X"Y') in body
+        assert 'const expenseCurrency = "X"Y";' not in body
 
 
 class TestTrendChartDateFormat:
@@ -63,3 +64,32 @@ class TestTrendChartDateFormat:
         resp = auth_client.get(f'/vehicles/{sample_vehicle.id}')
         body = resp.get_data(as_text=True)
         assert '<meta name="date-format" content="DD.MM.YYYY">' in body
+
+
+class TestCategoryRunningCosts:
+    def test_both_charts_include_fuel_and_charging(self, auth_client, sample_vehicle,
+                                                 sample_fuel_log, sample_charging_session):
+        import json
+        import re
+        for url in ('/dashboard', f'/vehicles/{sample_vehicle.id}'):
+            body = auth_client.get(url).get_data(as_text=True)
+            data = json.loads(re.search(r'const categoryData = (.*);', body).group(1))
+            assert data['Fuel'] == sample_fuel_log.total_cost
+            assert data['Charging'] == sample_charging_session.total_cost
+
+    def test_private_vehicle_fuel_is_excluded(self, auth_client, sample_vehicle,
+                                            sample_fuel_log, admin_user):
+        import json
+        import re
+        from datetime import date
+        from app.models import Vehicle, FuelLog
+        private = Vehicle(owner_id=admin_user.id, name='Private', fuel_type='petrol')
+        db.session.add(private)
+        db.session.flush()
+        db.session.add(FuelLog(vehicle_id=private.id, user_id=admin_user.id,
+                               date=date.today(), odometer=100, total_cost=999))
+        db.session.commit()
+        for url in ('/dashboard', f'/vehicles/{sample_vehicle.id}'):
+            body = auth_client.get(url).get_data(as_text=True)
+            data = json.loads(re.search(r'const categoryData = (.*);', body).group(1))
+            assert data['Fuel'] == sample_fuel_log.total_cost

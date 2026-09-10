@@ -1,0 +1,27 @@
+// Behaviour checks for the shared category chart and fuel form calculations.
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+let chart;
+const chartContext = vm.createContext({Chart: function(element, config) { chart = config; }});
+vm.runInContext(fs.readFileSync('app/templates/partials/expense_chart.js', 'utf8'), chartContext);
+chartContext.createExpenseCategoryChart({getContext: () => ({})}, {Fuel: 60, Charging: 12}, 'EUR');
+assert.equal(chart.options.scales.x.title.text, 'EUR');
+assert.equal(chart.options.plugins.tooltip.callbacks.label({formattedValue: '60'}), '60 EUR');
+assert.equal(JSON.stringify(chart.data.datasets[0].data), '[60,12]');
+const form = fs.readFileSync('app/templates/fuel/form.html', 'utf8');
+const calc = form.slice(form.indexOf('function calculateFuelAmounts()'), form.indexOf('// Initialize odometer'));
+const inputs = Object.fromEntries(['volume', 'price_per_unit', 'discount_per_unit', 'total_cost'].map(k => [k, {value: ''}]));
+const context = vm.createContext({document: {getElementById: id => inputs[id]}, parseDecimal: value => value === '' ? null : Number(value)});
+vm.runInContext('let pricePerUnitWasDerived = false;\n' + calc, context);
+inputs.volume.value = '40'; inputs.total_cost.value = '60'; inputs.discount_per_unit.value = '0.1';
+context.calculateFuelAmounts();
+assert.equal(inputs.price_per_unit.value, '1.600');
+assert.equal(inputs.total_cost.value, '60');
+inputs.volume.value = '30'; context.calculateFuelAmounts();
+assert.equal(inputs.price_per_unit.value, '2.100');
+const manualHandler = form.match(/id="price_per_unit"[^>]*oninput="([^"]+)"/s)[1];
+inputs.price_per_unit.value = '1.5'; vm.runInContext(manualHandler, context); context.calculateFuelAmounts();
+assert.equal(inputs.price_per_unit.value, '1.5');
+assert.equal(inputs.total_cost.value, '42.00');
+console.log('Shared chart and fuel form behaviour checks passed.');

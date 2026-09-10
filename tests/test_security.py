@@ -325,3 +325,10 @@ class TestAdminRequired:
         assert response.status_code == 302
         location = response.headers.get('Location', '')
         assert 'login' in location.lower()
+
+
+@pytest.mark.parametrize('value', ['nan', 'NaN', 'inf', '-inf', float('nan'), float('inf')])
+def test_positive_number_rejects_nonfinite(value):
+    number, error = validate_positive_number(value, 'Cost')
+    assert number is None
+    assert error is not None

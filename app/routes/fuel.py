@@ -239,6 +239,30 @@ def edit(log_id):
         return redirect(url_for('fuel.index'))
 
     if request.method == 'POST':
+        # Validate a derived price before mutating the log or its station history.
+        derived_price = None
+        # An explicit blank still means clear the price (and its history).
+        if 'price_per_unit' not in request.form:
+            values = {}
+            for field, label, maximum in (
+                ('volume', 'Volume', 10000),
+                ('total_cost', 'Total cost', 100000),
+                ('discount_per_unit', 'Discount per unit', 1000),
+            ):
+                values[field], err = validate_positive_number(
+                    request.form.get(field), label, max_value=maximum)
+                if err:
+                    flash(err, 'error')
+                    return redirect(url_for('fuel.edit', log_id=log.id))
+            if values['volume'] and values['total_cost'] is not None:
+                derived_price, err = validate_positive_number(
+                    round(values['total_cost'] / values['volume']
+                          + (values['discount_per_unit'] or 0), 3),
+                    'Price per unit', max_value=1000)
+                if err:
+                    flash(err, 'error')
+                    return redirect(url_for('fuel.edit', log_id=log.id))
+
         # Capture old values before updating for price history sync
         old_price = log.price_per_unit
         old_date = log.date
@@ -252,7 +276,7 @@ def edit(log_id):
         log.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else log.date
         log.odometer = parse_decimal(request.form.get('odometer'))
         log.volume = parse_decimal(request.form.get('volume')) if request.form.get('volume') else None
-        log.price_per_unit = parse_decimal(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else None
+        log.price_per_unit = parse_decimal(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else derived_price
         log.discount_per_unit = parse_decimal(request.form.get('discount_per_unit')) if request.form.get('discount_per_unit') else None
         log.total_cost = parse_decimal(request.form.get('total_cost')) if request.form.get('total_cost') else None
         log.sales_tax = parse_decimal(request.form.get('sales_tax')) if request.form.get('sales_tax') else None

@@ -130,6 +130,13 @@ def dashboard():
             for cat, total in category_rows if total
         }
 
+        if total_fuel_cost:
+            label = str(gettext('Fuel'))
+            expenses_by_category[label] = round(expenses_by_category.get(label, 0) + total_fuel_cost, 2)
+        if total_charging_cost:
+            label = str(gettext('Charging'))
+            expenses_by_category[label] = round(expenses_by_category.get(label, 0) + total_charging_cost, 2)
+
     # Get cheapest stations (most recent prices)
     cheapest_stations = []
     if vehicle_ids:

@@ -1504,3 +1504,27 @@ class TestDualFuelConsumption:
         # Says why the figure has gone, not merely what to do about it.
         assert 'Consumption can' in html
         assert 'distance run on each fuel' in html
+
+
+class TestDerivedPriceEditing:
+    def test_edit_derives_price_and_keeps_discount(self, auth_client, sample_fuel_log):
+        response = auth_client.post(f'/fuel/{sample_fuel_log.id}/edit', data={
+            'date': '2024-03-05', 'odometer': '15400', 'volume': '40',
+            'total_cost': '60', 'discount_per_unit': '0.1',
+        })
+        assert response.status_code == 302
+        db.session.refresh(sample_fuel_log)
+        assert sample_fuel_log.price_per_unit == 1.6
+        assert sample_fuel_log.total_cost == 60
+
+    def test_edit_rejects_excessive_price_before_mutation(self, auth_client, sample_fuel_log):
+        old_volume = sample_fuel_log.volume
+        old_price = sample_fuel_log.price_per_unit
+        response = auth_client.post(f'/fuel/{sample_fuel_log.id}/edit', data={
+            'date': '2024-03-05', 'odometer': '15400', 'volume': '1',
+            'total_cost': '2000',
+        })
+        assert response.status_code == 302
+        db.session.refresh(sample_fuel_log)
+        assert sample_fuel_log.volume == old_volume
+        assert sample_fuel_log.price_per_unit == old_price
