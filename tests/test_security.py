@@ -155,6 +155,46 @@ class TestValidatePositiveNumber:
         assert abs(val - 10.5) < 0.001
         assert error is None
 
+    def test_comma_decimal(self):
+        val, error = validate_positive_number('9,99', 'price')
+        assert val == 9.99
+        assert error is None
+
+    def test_grouped_number(self):
+        val, error = validate_positive_number('1,234,567.89', 'price')
+        assert val == 1234567.89
+        assert error is None
+
+    def test_malformed_grouping_is_rejected(self):
+        val, error = validate_positive_number('1,2,3', 'price')
+        assert val is None
+        assert error is not None
+
+    def test_malformed_mixed_grouping_is_rejected(self):
+        # Ensure validator rejects malformed mixed separators
+        val, error = validate_positive_number('1,23.45', 'price')
+        assert val is None
+        assert error is not None
+
+    def test_validator_accepts_valid_comma_and_grouped(self):
+        # Validator should accept comma-decimal and comma-thousands formats
+        val, error = validate_positive_number('9,99', 'price')
+        assert val == 9.99
+        assert error is None
+
+        val, error = validate_positive_number('1,234,567', 'price')
+        assert val == 1234567.0
+        assert error is None
+
+        val, error = validate_positive_number('9.99', 'price')
+        assert val == 9.99
+        assert error is None
+ 
+        # Single comma is treated as decimal separator, not thousands
+        val, error = validate_positive_number('1,000', 'price')
+        assert val == 1.0
+        assert error is None
+
     def test_invalid_string(self):
         val, error = validate_positive_number('abc', 'cost')
         assert val is None

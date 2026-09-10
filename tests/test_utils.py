@@ -31,6 +31,21 @@ class TestParseDecimal:
     def test_multiple_commas_are_thousands_separators(self):
         assert parse_decimal('1,234,567') == 1234567.0
 
+    def test_malformed_comma_grouping_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_decimal('1,2,3')
+
+    def test_malformed_mixed_grouping_is_rejected(self):
+        # Mixed separators with malformed grouping should be rejected
+        with pytest.raises(ValueError):
+            parse_decimal('1,23.45')
+
+    def test_valid_comma_and_grouped_numbers(self):
+        # Single comma as decimal and grouped thousands should parse
+        assert parse_decimal('9,99') == 9.99
+        assert parse_decimal('1,000') == 1.0
+        assert parse_decimal('1,234,567') == 1234567.0
+
     def test_negative_comma_decimal(self):
         assert parse_decimal('-3,5') == -3.5
 
