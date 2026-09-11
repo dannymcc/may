@@ -471,7 +471,7 @@ class Vehicle(db.Model):
         is no km/mi conversion to apply to an hour (#323).
         """
         if self.tracks_hours():
-            logs = self.fuel_logs.order_by(FuelLog.odometer).all()
+            logs = self.fuel_logs.filter(FuelLog.recorded_odometer_filter()).order_by(FuelLog.odometer).all()
             if len(logs) < 2:
                 return 0
             return logs[-1].odometer - logs[0].odometer
@@ -484,7 +484,7 @@ class Vehicle(db.Model):
             return odometer
 
         # Otherwise calculate from fuel logs, stored in the vehicle's odometer unit
-        logs = self.fuel_logs.order_by(FuelLog.odometer).all()
+        logs = self.fuel_logs.filter(FuelLog.recorded_odometer_filter()).order_by(FuelLog.odometer).all()
         if len(logs) < 2:
             return 0
         raw_distance = logs[-1].odometer - logs[0].odometer
@@ -560,6 +560,16 @@ class Vehicle(db.Model):
         return any(start_odometer < odometer <= end_odometer
                    for odometer in other_odometers)
 
+    def _has_unknown_reading_between(self, start, end, dates=None):
+        """An undated distance within a fill span makes its consumption unknowable."""
+        if dates is not None:
+            return any(min(start.date, end.date) <= day <= max(start.date, end.date) for day in dates)
+        return self.fuel_logs.filter(
+            ~FuelLog.recorded_odometer_filter(),
+            FuelLog.date >= min(start.date, end.date),
+            FuelLog.date <= max(start.date, end.date),
+        ).first() is not None
+
     def _valid_consumption_segments(self, fuel_type=None):
         """Collect (distance, fuel) spans usable for the consumption average.
 
@@ -589,7 +599,7 @@ class Vehicle(db.Model):
         same_fuel = FuelLog.effective_fuel_type_filter(
             fuel_type or resolve_price_fuel_type(None, self.fuel_type), self.fuel_type)
         full_logs = self.fuel_logs.filter(
-            FuelLog.is_full_tank == True, same_fuel
+            FuelLog.is_full_tank == True, same_fuel, FuelLog.recorded_odometer_filter()
         ).order_by(FuelLog.odometer).all()
         if len(full_logs) < 2:
             return None
@@ -601,8 +611,12 @@ class Vehicle(db.Model):
         ).order_by(FuelLog.odometer).all()
 
         other_fuel_odometers = self._other_fuel_odometers(fuel_type)
+        unknown_dates = [day for (day,) in self.fuel_logs.with_entities(FuelLog.date).filter(
+            ~FuelLog.recorded_odometer_filter()).all()]
         segments = []
         for start, end in zip(full_logs, full_logs[1:]):
+            if self._has_unknown_reading_between(start, end, unknown_dates):
+                continue
             span_logs = [log for log in range_logs
                          if start.odometer < log.odometer <= end.odometer]
             if any(log.is_missed for log in span_logs):
@@ -685,7 +699,7 @@ class Vehicle(db.Model):
         same_fuel = FuelLog.effective_fuel_type_filter(
             fuel_type or resolve_price_fuel_type(None, self.fuel_type), self.fuel_type)
         full_logs = self.fuel_logs.filter(
-            FuelLog.is_full_tank == True, same_fuel
+            FuelLog.is_full_tank == True, same_fuel, FuelLog.recorded_odometer_filter()
         ).order_by(FuelLog.odometer).all()
         range_logs = self.fuel_logs.filter(
             FuelLog.odometer > full_logs[0].odometer,
@@ -1014,7 +1028,9 @@ class FuelLog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     date = db.Column(db.Date, nullable=False, default=utcnow)
-    odometer = db.Column(db.Float, nullable=False)  # stored in km
+    odometer = db.Column(db.Float, nullable=False)  # stored in the vehicle reading unit
+    # Existing zero readings are ambiguous; explicit new readings, including zero, are confirmed.
+    odometer_confirmed = db.Column(db.Boolean, nullable=False, default=True, server_default=db.false(), info={'legacy_default': False})
     volume = db.Column(db.Float)  # stored in liters
     price_per_unit = db.Column(db.Float)  # price per the user's volume unit, as entered
     discount_per_unit = db.Column(db.Float)  # optional loyalty discount per liter (issue #209)
@@ -1064,6 +1080,15 @@ class FuelLog(db.Model):
             criterion = db.or_(criterion, cls.fuel_type.is_(None))
         return criterion
 
+    @property
+    def has_recorded_odometer(self):
+        """Whether this reading is usable, preserving explicit zero readings."""
+        return self.odometer is not None and (self.odometer > 0 or self.odometer_confirmed)
+
+    @classmethod
+    def recorded_odometer_filter(cls):
+        return db.or_(cls.odometer > 0, cls.odometer_confirmed.is_(True))
+
     def get_consumption(self, consumption_unit=None, volume_unit='L'):
         """Calculate consumption for this fill-up.
 
@@ -1091,7 +1116,7 @@ class FuelLog(db.Model):
         rather than the odometer difference — the odometer cannot say which
         miles were run on LPG and which on petrol (issue #221).
         """
-        if not self.volume or not self.is_full_tank:
+        if not self.volume or not self.is_full_tank or not self.has_recorded_odometer:
             return None
 
         same_fuel = FuelLog.effective_fuel_type_filter(
@@ -1101,10 +1126,11 @@ class FuelLog(db.Model):
         prev_full = FuelLog.query.filter(
             FuelLog.vehicle_id == self.vehicle_id,
             FuelLog.odometer < self.odometer,
+            FuelLog.recorded_odometer_filter(),
             FuelLog.is_full_tank == True,
             same_fuel,
         ).order_by(FuelLog.odometer.desc()).first()
-        if not prev_full:
+        if not prev_full or self.vehicle._has_unknown_reading_between(prev_full, self):
             return None
         between = FuelLog.query.filter(
             FuelLog.vehicle_id == self.vehicle_id,
@@ -1152,6 +1178,7 @@ class FuelLog(db.Model):
             'vehicle_id': self.vehicle_id,
             'date': self.date.isoformat() if self.date else None,
             'odometer': self.odometer,
+            'odometer_confirmed': self.odometer_confirmed,
             'volume': self.volume,
             'price_per_unit': self.price_per_unit,
             'discount_per_unit': self.discount_per_unit,
@@ -1744,6 +1771,31 @@ class MaintenanceSchedule(db.Model):
                 return True
 
         return False
+
+
+class MaintenanceEvent(db.Model):
+    """An immutable service snapshot, retained when its schedule is edited or deleted."""
+    __tablename__ = 'maintenance_events'
+    id = db.Column(db.Integer, primary_key=True)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    schedule_id = db.Column(db.Integer, db.ForeignKey('maintenance_schedules.id', ondelete='SET NULL'))
+    name = db.Column(db.String(100), nullable=False)
+    maintenance_type = db.Column(db.String(50), nullable=False)
+    performed_date = db.Column(db.Date)
+    odometer = db.Column(db.Float)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=utcnow)
+    vehicle = db.relationship('Vehicle', backref=db.backref('maintenance_events', lazy='dynamic', cascade='all, delete-orphan'))
+    schedule = db.relationship('MaintenanceSchedule', backref=db.backref('events', lazy='dynamic'))
+
+    def to_dict(self):
+        return {
+            'name': self.name, 'maintenance_type': self.maintenance_type,
+            'performed_date': self.performed_date.isoformat() if self.performed_date else None,
+            'odometer': self.odometer, 'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
 
 
 class RecurringExpense(db.Model):
@@ -2397,6 +2449,8 @@ class TireFitment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tire_set_id = db.Column(db.Integer, db.ForeignKey('tire_sets.id'), nullable=False)
 
+    axle = db.Column(db.String(5), nullable=False, default='all', server_default='all')
+
     fitted_date = db.Column(db.Date, nullable=False, default=utcnow)
     fitted_odometer = db.Column(db.Float, nullable=False)
     removed_date = db.Column(db.Date)
@@ -2415,6 +2469,10 @@ class TireFitment(db.Model):
         ),
     )
 
+    @property
+    def axle_label(self):
+        return {'all': _l('All axles'), 'front': _l('Front axle'), 'rear': _l('Rear axle')}.get(self.axle, self.axle)
+
     def get_distance(self, current_odometer=None):
         """Distance covered during this period, in the vehicle's odometer unit."""
         if self.fitted_odometer is None:
@@ -2432,6 +2490,7 @@ class TireFitment(db.Model):
         return {
             'id': self.id,
             'tire_set_id': self.tire_set_id,
+            'axle': self.axle,
             'fitted_date': self.fitted_date.isoformat() if self.fitted_date else None,
             'fitted_odometer': self.fitted_odometer,
             'removed_date': self.removed_date.isoformat() if self.removed_date else None,

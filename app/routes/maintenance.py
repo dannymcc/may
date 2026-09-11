@@ -1,14 +1,63 @@
 from datetime import datetime, date
+from types import SimpleNamespace
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from app import db
 from app.utils import parse_decimal
 from app.models import (
-    Vehicle, MaintenanceSchedule, Expense, MAINTENANCE_TYPES, EXPENSE_CATEGORIES
+    Vehicle, MaintenanceSchedule, MaintenanceEvent, Expense, MAINTENANCE_TYPES, EXPENSE_CATEGORIES
 )
 
 bp = Blueprint('maintenance', __name__, url_prefix='/maintenance')
+
+
+def _record_completion(schedule):
+    """Preserve a known last-performed snapshot without duplicating a repeated save."""
+    if schedule.last_performed_date is None and schedule.last_performed_odometer is None:
+        return
+    db.session.flush()
+    existing = schedule.events.filter_by(
+        performed_date=schedule.last_performed_date,
+        odometer=schedule.last_performed_odometer,
+    ).first()
+    if existing is None:
+        db.session.add(MaintenanceEvent(
+            vehicle_id=schedule.vehicle_id, user_id=current_user.id,
+            schedule_id=schedule.id, name=schedule.name,
+            maintenance_type=schedule.maintenance_type,
+            performed_date=schedule.last_performed_date,
+            odometer=schedule.last_performed_odometer,
+            notes=schedule.description,
+        ))
+
+
+@bp.route('/history')
+@login_required
+def history():
+    vehicles = current_user.get_all_vehicles()
+    vehicle_id = request.args.get('vehicle_id', type=int)
+    ids = [v.id for v in vehicles]
+    if vehicle_id is not None:
+        if vehicle_id not in ids:
+            from flask import abort
+            abort(403)
+        ids = [vehicle_id]
+    events = MaintenanceEvent.query.filter(MaintenanceEvent.vehicle_id.in_(ids)).order_by(
+        MaintenanceEvent.performed_date.desc(), MaintenanceEvent.id.desc()).all()
+    # Existing maintenance expenses are also historical service records.
+    known = {(e.vehicle_id, e.name, e.performed_date, e.odometer) for e in events}
+    for expense in Expense.query.filter(Expense.vehicle_id.in_(ids), Expense.category == 'maintenance').all():
+        key = (expense.vehicle_id, expense.description, expense.date, expense.odometer)
+        if key not in known:
+            events.append(SimpleNamespace(
+                id=None, vehicle=expense.vehicle, name=expense.description or _('Maintenance'),
+                maintenance_type='custom', performed_date=expense.date,
+                odometer=expense.odometer, notes=expense.notes,
+            ))
+    events.sort(key=lambda e: (e.performed_date or date.min, e.id or 0), reverse=True)
+    return render_template('maintenance/history.html', events=events, vehicles=vehicles,
+                           selected_vehicle_id=vehicle_id)
 
 
 @bp.route('/')
@@ -81,6 +130,7 @@ def new():
             schedule.next_due_date = date.today() + relativedelta(months=schedule.interval_months)
 
         db.session.add(schedule)
+        _record_completion(schedule)
         db.session.commit()
 
         flash(_('Maintenance schedule "%(name)s" created') % {'name': schedule.name}, 'success')
@@ -108,6 +158,7 @@ def edit(schedule_id):
         return redirect(url_for('maintenance.index'))
 
     if request.method == 'POST':
+        _record_completion(schedule)
         schedule.name = request.form.get('name')
         schedule.maintenance_type = request.form.get('maintenance_type')
         schedule.description = request.form.get('description')
@@ -127,6 +178,7 @@ def edit(schedule_id):
             schedule.last_performed_odometer = parse_decimal(request.form.get('last_performed_odometer'))
 
         schedule.calculate_next_due()
+        _record_completion(schedule)
         db.session.commit()
 
         flash(_('Maintenance schedule updated'), 'success')
@@ -150,6 +202,8 @@ def complete(schedule_id):
         flash(_('Access denied'), 'error')
         return redirect(url_for('maintenance.index'))
 
+    _record_completion(schedule)
+
     # Update last performed — honouring a user-chosen completion date (#220)
     performed_date = date.today()
     if request.form.get('performed_date'):
@@ -167,6 +221,8 @@ def complete(schedule_id):
 
     # Calculate next due
     schedule.calculate_next_due()
+
+    _record_completion(schedule)
 
     # Create expense if requested
     if request.form.get('create_expense') == 'on':
@@ -202,6 +258,7 @@ def delete(schedule_id):
         flash(_('Access denied'), 'error')
         return redirect(url_for('maintenance.index'))
 
+    _record_completion(schedule)
     name = schedule.name
     db.session.delete(schedule)
     db.session.commit()

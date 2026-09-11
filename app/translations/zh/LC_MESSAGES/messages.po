@@ -5254,3 +5254,45 @@ msgstr "数据不足，无法显示消耗趋势。请添加更多满箱加油记
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "尚未记录任何燃油价格。"
+
+msgid "All axles"
+msgstr "所有车轴"
+
+msgid "Front axle"
+msgstr "前轴"
+
+msgid "Rear axle"
+msgstr "后轴"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "已跳过 %(count)s 条重复记录。"
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "燃油价格来源不可用。已保留保存的价格。"
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "由于价格数据不完整，部分加油站无法匹配。"
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "未找到唯一匹配的加油站。请检查邮政编码、地址和品牌。"
+
+msgid "Invalid axle"
+msgstr "无效的车轴"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "安装日期和仪表读数不能早于当前安装时的记录。"
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "如果未记录读数，请留空。输入 0 以确认实际读数为零。"
+
+msgid "Maintenance History"
+msgstr "保养历史"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "历史包含已记录的保养和最近保存的服务详情。以前被覆盖的详情无法恢复。"
+
+msgid "No maintenance history yet."
+msgstr "暂无保养历史。"
+
+msgid "Axle"
+msgstr "车轴"

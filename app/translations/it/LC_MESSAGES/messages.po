@@ -5447,3 +5447,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Nessun prezzo del carburante ancora registrato."
+
+msgid "All axles"
+msgstr "Tutti gli assi"
+
+msgid "Front axle"
+msgstr "Asse anteriore"
+
+msgid "Rear axle"
+msgstr "Asse posteriore"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "%(count)s duplicati saltati."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Le fonti dei prezzi del carburante non sono disponibili. I prezzi salvati sono stati conservati."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Alcune stazioni non sono state identificate perché i dati sui prezzi sono incompleti."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Nessuna stazione identificata univocamente. Controlla CAP, indirizzo e marchio."
+
+msgid "Invalid axle"
+msgstr "Asse non valido"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "La data e la lettura di montaggio non possono precedere il montaggio attuale."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Lascia vuoto se la lettura non è stata registrata. Inserisci 0 per confermare una lettura effettivamente pari a zero."
+
+msgid "Maintenance History"
+msgstr "Cronologia manutenzione"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "La cronologia include gli interventi registrati e gli ultimi dati salvati. I dati precedenti sovrascritti non possono essere recuperati."
+
+msgid "No maintenance history yet."
+msgstr "Nessuna cronologia di manutenzione disponibile."
+
+msgid "Axle"
+msgstr "Asse"

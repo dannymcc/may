@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.44.0] - 2026-09-11
+
+### Fixed
+
+- Missing historical fuel readings no longer dilute consumption averages.
+  Existing zero readings are kept but treated as unconfirmed; entering zero
+  explicitly confirms a real zero reading. Spans containing an unrecorded
+  fill-up are excluded, while other valid spans remain usable. Fuel CSV and
+  backup round-trips preserve this distinction. (#367)
+- Editing a historical fuel log no longer replaces its reading with today's
+  Tessie reading.
+- Fuel lookup failures distinguish unavailable or incomplete source data from
+  a station matching problem. Saved prices remain intact when feeds fail,
+  non-finite prices are rejected, and ambiguous postcode matches no longer
+  select an arbitrary station. The Fuel Finder API replacement remains open. (#371)
+
+### Added
+
+- Maintenance History, accessible from schedules and each vehicle, retains
+  service snapshots across schedule edits and deletion, and includes existing
+  maintenance expenses. Upgrades preserve the latest known service details;
+  previously overwritten history cannot be reconstructed. (#370)
+- Tire fittings can cover front, rear or all axles. Replacing one pair leaves
+  the other fitted and preserves its accumulated distance. Older fittings
+  retain their existing all-axles meaning. (#357)
+- JSON and full backups include service history and tire fitting history,
+  including axle identity. New interface text is translated in all 19 locales.
+
 ## [0.43.0] - 2026-09-10
 
 ### Added

@@ -1528,3 +1528,68 @@ class TestDerivedPriceEditing:
         db.session.refresh(sample_fuel_log)
         assert sample_fuel_log.volume == old_volume
         assert sample_fuel_log.price_per_unit == old_price
+
+
+class TestUnconfirmedReadings:
+    def test_legacy_zero_does_not_dilute_average(self, sample_vehicle, test_user):
+        sample_vehicle.odometer_unit = 'km'
+        for day, reading, confirmed in [(1, 0, False), (2, 100000, True), (3, 100500, True)]:
+            db.session.add(FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                                  date=date(2026, 1, day), odometer=reading,
+                                  odometer_confirmed=confirmed, volume=40, is_full_tank=True))
+        db.session.commit()
+        assert sample_vehicle.get_average_consumption() == pytest.approx(8)
+        assert sample_vehicle.get_total_distance() == 500
+
+    def test_explicit_zero_remains_valid(self, sample_vehicle, test_user):
+        sample_vehicle.odometer_unit = 'km'
+        for day, reading in [(1, 0), (2, 500)]:
+            db.session.add(FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                                  date=date(2026, 1, day), odometer=reading,
+                                  volume=40, is_full_tank=True))
+        db.session.commit()
+        assert sample_vehicle.get_average_consumption() == pytest.approx(8)
+
+    def test_unknown_fill_inside_span_invalidates_only_that_span(self, sample_vehicle, test_user):
+        sample_vehicle.odometer_unit = 'km'
+        logs = []
+        for day, reading, confirmed in [(1, 10000, True), (2, 0, False), (3, 10500, True), (4, 11000, True)]:
+            log = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                          date=date(2026, 1, day), odometer=reading,
+                          odometer_confirmed=confirmed, volume=40, is_full_tank=True)
+            db.session.add(log)
+            logs.append(log)
+        db.session.commit()
+        assert logs[2].get_consumption() is None
+        assert logs[3].get_consumption() == pytest.approx(8)
+        assert sample_vehicle.get_average_consumption() == pytest.approx(8)
+
+    def test_blank_reading_roundtrips_without_becoming_confirmed_zero(self, auth_client, sample_vehicle):
+        auth_client.post('/fuel/new', data={'vehicle_id': sample_vehicle.id,
+                         'date': '2026-01-01', 'odometer': '', 'volume': '40'})
+        log = sample_vehicle.fuel_logs.one()
+        assert log.odometer == 0
+        assert not log.has_recorded_odometer
+        response = auth_client.get(f'/fuel/{log.id}/edit')
+        assert response.status_code == 200
+        auth_client.post(f'/fuel/{log.id}/edit', data={'odometer': '0', 'volume': '40'})
+        db.session.refresh(log)
+        assert log.has_recorded_odometer
+
+
+@pytest.mark.parametrize('reading,confirmed', [('', False), ('0', True), ('500', True)])
+def test_csv_reading_presence_is_preserved(reading, confirmed, sample_vehicle, test_user):
+    from app.routes.api import create_record
+    record = create_record('fuel_logs', {'date': '2026-01-01', 'odometer': reading, 'volume': '40'},
+                           sample_vehicle.id, test_user.id, 'auto')
+    db.session.add(record)
+    db.session.commit()
+    assert bool(record.has_recorded_odometer) is confirmed
+
+
+@pytest.mark.parametrize('reading', ['garbage', 'nan', '-1'])
+def test_invalid_csv_reading_is_not_treated_as_missing(reading, sample_vehicle, test_user):
+    from app.routes.api import create_record
+    with pytest.raises(ValueError):
+        create_record('fuel_logs', {'date': '2026-01-01', 'odometer': reading, 'volume': '40'},
+                      sample_vehicle.id, test_user.id, 'auto')

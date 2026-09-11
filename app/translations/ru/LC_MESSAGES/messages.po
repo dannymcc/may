@@ -5424,3 +5424,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Цены на топливо пока не записаны."
+
+msgid "All axles"
+msgstr "Все оси"
+
+msgid "Front axle"
+msgstr "Передняя ось"
+
+msgid "Rear axle"
+msgstr "Задняя ось"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "Пропущено дубликатов: %(count)s."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Источники цен на топливо недоступны. Сохранённые цены оставлены без изменений."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Некоторые АЗС не удалось сопоставить из-за неполных данных о ценах."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Однозначное соответствие АЗС не найдено. Проверьте индекс, адрес и бренд."
+
+msgid "Invalid axle"
+msgstr "Недопустимая ось"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "Дата и показание счётчика при установке не могут предшествовать текущей установке."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Оставьте пустым, если показание не записано. Введите 0, чтобы подтвердить фактическое нулевое показание."
+
+msgid "Maintenance History"
+msgstr "История обслуживания"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "История включает зарегистрированные работы и последние сохранённые сведения об обслуживании. Ранее перезаписанные данные восстановить невозможно."
+
+msgid "No maintenance history yet."
+msgstr "Истории обслуживания пока нет."
+
+msgid "Axle"
+msgstr "Ось"

@@ -5431,3 +5431,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Ainda não há preços de combustível registrados."
+
+msgid "All axles"
+msgstr "Todos os eixos"
+
+msgid "Front axle"
+msgstr "Eixo dianteiro"
+
+msgid "Rear axle"
+msgstr "Eixo traseiro"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "%(count)s duplicado(s) ignorado(s)."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "As fontes de preços de combustível estão indisponíveis. Os preços guardados foram mantidos."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Não foi possível identificar algumas estações porque os dados de preços estão incompletos."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Não foi encontrada uma estação inequívoca. Verifique o código postal, o endereço e a marca."
+
+msgid "Invalid axle"
+msgstr "Eixo inválido"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "A data e a leitura de montagem não podem ser anteriores à montagem atual."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Deixe em branco se a leitura não foi registada. Introduza 0 para confirmar uma leitura realmente nula."
+
+msgid "Maintenance History"
+msgstr "Histórico de manutenção"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "O histórico inclui as manutenções registadas e os últimos dados guardados. Os dados anteriores substituídos não podem ser recuperados."
+
+msgid "No maintenance history yet."
+msgstr "Ainda não existe histórico de manutenção."
+
+msgid "Axle"
+msgstr "Eixo"

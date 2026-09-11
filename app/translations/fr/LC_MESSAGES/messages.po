@@ -5453,3 +5453,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Aucun prix de carburant enregistré pour le moment."
+
+msgid "All axles"
+msgstr "Tous les essieux"
+
+msgid "Front axle"
+msgstr "Essieu avant"
+
+msgid "Rear axle"
+msgstr "Essieu arrière"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "%(count)s doublon(s) ignoré(s)."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Les sources de prix des carburants sont indisponibles. Les prix enregistrés ont été conservés."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Certaines stations n’ont pas pu être identifiées car les données de prix sont incomplètes."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Aucune station identifiée sans ambiguïté. Vérifiez le code postal, l’adresse et l’enseigne."
+
+msgid "Invalid axle"
+msgstr "Essieu invalide"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "La date et le relevé de montage ne peuvent pas précéder le montage actuel."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Laissez vide si le relevé n’a pas été enregistré. Saisissez 0 pour confirmer un relevé réellement nul."
+
+msgid "Maintenance History"
+msgstr "Historique d’entretien"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "L’historique comprend les entretiens enregistrés et les dernières informations sauvegardées. Les anciennes informations écrasées ne peuvent pas être récupérées."
+
+msgid "No maintenance history yet."
+msgstr "Aucun historique d’entretien pour le moment."
+
+msgid "Axle"
+msgstr "Essieu"

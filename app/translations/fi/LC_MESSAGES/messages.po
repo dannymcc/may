@@ -5409,3 +5409,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Polttoaineen hintoja ei ole vielä kirjattu."
+
+msgid "All axles"
+msgstr "Kaikki akselit"
+
+msgid "Front axle"
+msgstr "Etuakseli"
+
+msgid "Rear axle"
+msgstr "Taka-akseli"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "%(count)s kaksoiskappaletta ohitettiin."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Polttoainehintojen lähteet eivät ole käytettävissä. Tallennetut hinnat on säilytetty."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Joitakin asemia ei voitu tunnistaa, koska hintatiedot ovat puutteellisia."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Yksiselitteistä asemaa ei löytynyt. Tarkista postinumero, osoite ja ketju."
+
+msgid "Invalid axle"
+msgstr "Virheellinen akseli"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "Asennuspäivä ja mittarilukema eivät voi edeltää nykyistä asennusta."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Jätä tyhjäksi, jos lukemaa ei kirjattu. Vahvista todellinen nollalukema syöttämällä 0."
+
+msgid "Maintenance History"
+msgstr "Huoltohistoria"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "Historia sisältää kirjatut huollot ja viimeksi tallennetut huoltotiedot. Aiemmin korvattuja tietoja ei voi palauttaa."
+
+msgid "No maintenance history yet."
+msgstr "Ei vielä huoltohistoriaa."
+
+msgid "Axle"
+msgstr "Akseli"

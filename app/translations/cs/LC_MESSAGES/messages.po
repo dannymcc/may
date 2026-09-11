@@ -5414,3 +5414,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Zatím nejsou zaznamenány žádné ceny paliva."
+
+msgid "All axles"
+msgstr "Všechny nápravy"
+
+msgid "Front axle"
+msgstr "Přední náprava"
+
+msgid "Rear axle"
+msgstr "Zadní náprava"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "Přeskočeno %(count)s duplicit."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Zdroje cen paliv nejsou dostupné. Uložené ceny byly zachovány."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Některé stanice nebylo možné přiřadit, protože cenové údaje nejsou úplné."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Nebyla nalezena jednoznačná shoda stanice. Zkontrolujte PSČ, adresu a značku."
+
+msgid "Invalid axle"
+msgstr "Neplatná náprava"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "Datum a stav počítadla při montáži nemohou předcházet aktuální montáži."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Pokud stav počítadla nebyl zaznamenán, ponechte prázdné. Skutečnou nulovou hodnotu potvrďte zadáním 0."
+
+msgid "Maintenance History"
+msgstr "Historie údržby"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "Historie zahrnuje zaznamenané úkony a poslední uložené servisní údaje. Dříve přepsané údaje nelze obnovit."
+
+msgid "No maintenance history yet."
+msgstr "Zatím žádná historie údržby."
+
+msgid "Axle"
+msgstr "Náprava"

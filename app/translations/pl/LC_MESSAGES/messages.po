@@ -5416,3 +5416,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Nie zarejestrowano jeszcze żadnych cen paliwa."
+
+msgid "All axles"
+msgstr "Wszystkie osie"
+
+msgid "Front axle"
+msgstr "Oś przednia"
+
+msgid "Rear axle"
+msgstr "Oś tylna"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "Pominięto %(count)s duplikatów."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Źródła cen paliw są niedostępne. Zachowano zapisane ceny."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Nie udało się dopasować niektórych stacji, ponieważ dane cenowe są niepełne."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Nie znaleziono jednoznacznie pasującej stacji. Sprawdź kod pocztowy, adres i markę."
+
+msgid "Invalid axle"
+msgstr "Nieprawidłowa oś"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "Data i stan licznika przy montażu nie mogą poprzedzać bieżącego montażu."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Pozostaw puste, jeśli nie zapisano stanu licznika. Wpisz 0, aby potwierdzić rzeczywistą wartość zerową."
+
+msgid "Maintenance History"
+msgstr "Historia konserwacji"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "Historia obejmuje zapisane czynności i ostatnie zapisane dane serwisowe. Wcześniejszych nadpisanych danych nie można odzyskać."
+
+msgid "No maintenance history yet."
+msgstr "Brak historii konserwacji."
+
+msgid "Axle"
+msgstr "Oś"

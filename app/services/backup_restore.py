@@ -12,6 +12,7 @@ restore would do.
 """
 import json
 import logging
+import math
 import os
 import zipfile
 from datetime import datetime, date, time
@@ -19,8 +20,8 @@ from datetime import datetime, date, time
 from app import db
 from app.models import (
     Vehicle, FuelLog, Expense, Trip, ChargingSession, Reminder,
-    MaintenanceSchedule, RecurringExpense, Document, VehicleSpec,
-    VehiclePart, FuelStation, FuelPriceHistory, Attachment
+    MaintenanceSchedule, MaintenanceEvent, RecurringExpense, Document, VehicleSpec,
+    VehiclePart, FuelStation, FuelPriceHistory, Attachment, TireSet, TireFitment
 )
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,9 @@ SECTION_LABELS = {
     'charging_sessions': 'Charging sessions',
     'reminders': 'Reminders',
     'maintenance_schedules': 'Maintenance schedules',
+    'maintenance_events': 'Maintenance History',
+    'tire_sets': 'Tire sets',
+    'tire_fitments': 'Tire fitting periods',
     'recurring_expenses': 'Recurring expenses',
     'documents': 'Documents',
     'parts': 'Parts',
@@ -198,7 +202,7 @@ VEHICLE_SECTIONS = [
              'created_at': 'datetime'},
             key_fields=('spec_type', 'label')),
     Section('fuel_logs', FuelLog,
-            {'date': 'date', 'odometer': 'float', 'volume': 'float',
+            {'date': 'date', 'odometer': 'float', 'odometer_confirmed': 'bool', 'volume': 'float',
              'price_per_unit': 'float', 'discount_per_unit': 'float',
              'total_cost': 'float', 'sales_tax': 'float',
              'fuel_type': 'str', 'fuel_distance': 'float', 'is_full_tank': 'bool',
@@ -241,6 +245,15 @@ VEHICLE_SECTIONS = [
              'remind_miles_before': 'int', 'is_active': 'bool',
              'created_at': 'datetime'},
             key_fields=('name', 'maintenance_type')),
+    Section('maintenance_events', MaintenanceEvent,
+            {'name': 'str', 'maintenance_type': 'str', 'performed_date': 'date',
+             'odometer': 'float', 'notes': 'str', 'created_at': 'datetime'},
+            key_fields=('name', 'maintenance_type', 'performed_date', 'odometer')),
+    Section('tire_sets', TireSet,
+            {'name': 'str', 'tire_type': 'str', 'size': 'str', 'purchase_date': 'date',
+             'purchase_odometer': 'float', 'cost': 'float', 'notes': 'str',
+             'is_retired': 'bool', 'created_at': 'datetime'},
+            key_fields=('name', 'tire_type', 'size')),
     Section('recurring_expenses', RecurringExpense,
             {'name': 'str', 'category': 'str', 'description': 'str',
              'amount': 'float', 'vendor': 'str', 'frequency': 'str',
@@ -467,7 +480,7 @@ def _restore_vehicles(data, user, summary, available_files):
         for section in VEHICLE_SECTIONS:
             added, skipped, (attach_added, attach_skipped) = _restore_child_records(
                 section, raw_vehicle.get(section.name) or [], vehicle, user,
-                available_files
+                available_files, summary['tire_fitments']
             )
             summary[section.name]['added'] += added
             summary[section.name]['skipped'] += skipped
@@ -496,7 +509,44 @@ def _existing_keys(section, vehicle_id):
 ATTACHMENT_OWNERS = {'fuel_logs': 'fuel_log_id', 'expenses': 'expense_id'}
 
 
-def _restore_child_records(section, records, vehicle, user, available_files):
+def _restore_fitments(tire_set, records, counts):
+    """Restore fitting history with axle identity, without duplicating periods."""
+    db.session.flush()
+    for raw in records:
+        if not isinstance(raw, dict):
+            continue
+        axle = raw.get('axle', 'all')
+        fitted_date = _parse_date(raw.get('fitted_date'))
+        fitted_odometer = PARSERS['float'](raw.get('fitted_odometer'))
+        if (axle not in ('all', 'front', 'rear') or fitted_date is None or fitted_odometer is None
+                or not math.isfinite(fitted_odometer) or fitted_odometer < 0):
+            counts['skipped'] += 1
+            continue
+        values = dict(axle=axle, fitted_date=fitted_date, fitted_odometer=fitted_odometer,
+                      removed_date=_parse_date(raw.get('removed_date')),
+                      removed_odometer=PARSERS['float'](raw.get('removed_odometer')))
+        removed = values['removed_odometer']
+        if ((removed is not None and (not math.isfinite(removed) or removed < fitted_odometer))
+                or (values['removed_date'] is not None and values['removed_date'] < fitted_date)):
+            counts['skipped'] += 1
+            continue
+        existing = tire_set.fitments.filter_by(axle=axle, fitted_date=fitted_date,
+                                               fitted_odometer=fitted_odometer).first()
+        conflict = None
+        if removed is None:
+            overlaps = db.or_(TireFitment.tire_set_id == tire_set.id, TireFitment.axle == 'all',
+                              TireFitment.axle == axle) if axle != 'all' else db.true()
+            conflict = TireFitment.query.join(TireSet).filter(
+                TireSet.vehicle_id == tire_set.vehicle_id,
+                TireFitment.removed_odometer.is_(None), overlaps).first()
+        if existing is not None or conflict is not None:
+            counts['skipped'] += 1
+        else:
+            db.session.add(TireFitment(tire_set_id=tire_set.id, **values))
+            counts['added'] += 1
+
+
+def _restore_child_records(section, records, vehicle, user, available_files, fitment_counts):
     """Add a vehicle's child records, skipping ones that already exist.
 
     Returns ``(added, skipped, attachments)`` where ``attachments`` is the
@@ -511,6 +561,13 @@ def _restore_child_records(section, records, vehicle, user, available_files):
         if not isinstance(record, dict):
             continue
         values = section.parse(record)
+        if section.name == 'maintenance_events':
+            schedules = vehicle.maintenance_schedules.filter_by(
+                name=values.get('name'), maintenance_type=values.get('maintenance_type')).all()
+            if len(schedules) == 1:
+                values['schedule_id'] = schedules[0].id
+        if section.name == 'fuel_logs' and 'odometer_confirmed' not in values:
+            values['odometer_confirmed'] = bool(values.get('odometer'))
         if section.needs_file:
             filename = values.get('filename')
             if not filename or filename not in available_files:
@@ -520,6 +577,10 @@ def _restore_child_records(section, records, vehicle, user, available_files):
         key = section.key_of_record(values)
         if key in seen:
             skipped += 1
+            if section.name == 'tire_sets':
+                existing = next(row for row in vehicle.tire_sets.all()
+                                if section.key_of_row(row) == key)
+                _restore_fitments(existing, record.get('fitments') or [], fitment_counts)
             if owner_field:
                 # The record is already here, so its attachments may be too;
                 # they are counted as skipped rather than duplicated.
@@ -532,6 +593,8 @@ def _restore_child_records(section, records, vehicle, user, available_files):
         db.session.add(row)
         seen.add(key)
         added += 1
+        if section.name == 'tire_sets':
+            _restore_fitments(row, record.get('fitments') or [], fitment_counts)
 
         if owner_field and record.get('attachments'):
             db.session.flush()

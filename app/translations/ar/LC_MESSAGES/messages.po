@@ -5348,3 +5348,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "لم يتم تسجيل أي أسعار وقود بعد."
+
+msgid "All axles"
+msgstr "جميع المحاور"
+
+msgid "Front axle"
+msgstr "المحور الأمامي"
+
+msgid "Rear axle"
+msgstr "المحور الخلفي"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "تم تخطي %(count)s من السجلات المكررة."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "مصادر أسعار الوقود غير متاحة. تم الاحتفاظ بالأسعار المحفوظة."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "تعذرت مطابقة بعض المحطات لأن بيانات الأسعار غير مكتملة."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "لم يتم العثور على محطة مطابقة بشكل فريد. تحقق من الرمز البريدي والعنوان والعلامة التجارية."
+
+msgid "Invalid axle"
+msgstr "محور غير صالح"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "لا يمكن أن يسبق تاريخ التركيب وقراءة العداد التركيب الحالي."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "اترك الحقل فارغًا إذا لم تُسجّل القراءة. أدخل 0 لتأكيد أن القراءة صفر بالفعل."
+
+msgid "Maintenance History"
+msgstr "سجل الصيانة"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "يتضمن السجل عمليات الصيانة المسجلة وآخر تفاصيل الخدمة المحفوظة. لا يمكن استعادة التفاصيل السابقة التي تم استبدالها."
+
+msgid "No maintenance history yet."
+msgstr "لا يوجد سجل صيانة بعد."
+
+msgid "Axle"
+msgstr "المحور"

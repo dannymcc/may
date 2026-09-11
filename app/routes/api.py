@@ -3,6 +3,7 @@ import hashlib
 import io
 import json
 import logging
+import math
 import os
 import re
 import sqlite3
@@ -286,6 +287,7 @@ def vehicle_stats(vehicle_id):
                 'date': log.date.isoformat(),
                 'consumption': round(consumption, 2),
                 'odometer': log.odometer,
+                'odometer_confirmed': log.odometer_confirmed,
                 # Each fuel gets its own series in the trend chart; mixing a
                 # diesel's AdBlue refills into its diesel line would be
                 # nonsense (#319).
@@ -613,7 +615,13 @@ def api_update_fuel_log(log_id):
             return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD', 'code': 'validation_error'}), 400
 
     if 'odometer' in data:
-        log.odometer = parse_decimal(data['odometer'])
+        from app.security import validate_positive_number
+        reading, error = validate_positive_number(data['odometer'], 'Odometer', max_value=9999999)
+        if error:
+            db.session.rollback()
+            return jsonify({'error': error, 'code': 'validation_error'}), 400
+        log.odometer = reading or 0
+        log.odometer_confirmed = reading is not None
     if 'volume' in data:
         log.volume = parse_decimal(data['volume']) if data['volume'] else None
     if 'price_per_unit' in data:
@@ -1643,7 +1651,7 @@ def export_csv():
             for log in vehicle.fuel_logs.order_by(FuelLog.date.desc(), FuelLog.odometer.desc()).all():
                 writer.writerow([
                     log.id, vehicle.id, vehicle.name, log.date.isoformat(),
-                    log.odometer, odometer_unit,
+                    log.odometer if log.has_recorded_odometer else '', odometer_unit,
                     log.volume, log.price_per_unit, log.total_cost, log.sales_tax,
                     log.fuel_type, log.fuel_distance,
                     log.is_full_tank, log.is_missed, log.station, log.notes,
@@ -1927,6 +1935,8 @@ def export_json():
             'expenses': [],
             'reminders': [],
             'maintenance_schedules': [],
+            'maintenance_events': [event.to_dict() for event in vehicle.maintenance_events.all()],
+            'tire_sets': [tire_set.to_dict() for tire_set in vehicle.tire_sets.all()],
             'recurring_expenses': [],
             'documents': [],
             'trips': [],
@@ -1950,6 +1960,7 @@ def export_json():
                 'id': log.id,
                 'date': log.date.isoformat() if log.date else None,
                 'odometer': log.odometer,
+                'odometer_confirmed': log.odometer_confirmed,
                 'volume': log.volume,
                 'price_per_unit': log.price_per_unit,
                 'total_cost': log.total_cost,
@@ -2213,6 +2224,8 @@ def export_full_backup():
             'expenses': [],
             'reminders': [],
             'maintenance_schedules': [],
+            'maintenance_events': [event.to_dict() for event in vehicle.maintenance_events.all()],
+            'tire_sets': [tire_set.to_dict() for tire_set in vehicle.tire_sets.all()],
             'recurring_expenses': [],
             'documents': [],
             'trips': [],
@@ -2254,6 +2267,7 @@ def export_full_backup():
                 'id': log.id,
                 'date': log.date.isoformat() if log.date else None,
                 'odometer': log.odometer,
+                'odometer_confirmed': log.odometer_confirmed,
                 'volume': log.volume,
                 'price_per_unit': log.price_per_unit,
                 'total_cost': log.total_cost,
@@ -2762,6 +2776,7 @@ def import_hammond():
                             user_id=current_user.id,
                             date=date,
                             odometer=_safe_float(hf, 'odo_reading', 0),
+                            odometer_confirmed=_safe_float(hf, 'odo_reading') is not None,
                             volume=_safe_float(hf, 'fuel_quantity'),
                             price_per_unit=_safe_float(hf, 'per_unit_price'),
                             total_cost=_safe_float(hf, 'total_amount'),
@@ -2975,6 +2990,7 @@ def import_clarkson():
                         user_id=current_user.id,
                         date=date,
                         odometer=float(values[5]) if values[5] and values[5] != 'NULL' else 0,
+                        odometer_confirmed=bool(values[5] and values[5] != 'NULL'),
                         volume=float(values[2]) if values[2] and values[2] != 'NULL' else None,
                         price_per_unit=float(values[3]) if values[3] and values[3] != 'NULL' else None,
                         total_cost=float(values[4]) if values[4] and values[4] != 'NULL' else None,
@@ -3147,6 +3163,7 @@ def import_fuelly():
                         user_id=current_user.id,
                         date=date,
                         odometer=odometer or 0,
+                        odometer_confirmed=odometer is not None,
                         volume=gallons,  # Store in original units (gallons)
                         price_per_unit=price,
                         total_cost=total_cost,
@@ -3179,7 +3196,7 @@ def get_import_fields(data_type):
     fields = {
         'fuel_logs': [
             {'name': 'date', 'label': 'Date', 'required': True, 'type': 'date'},
-            {'name': 'odometer', 'label': 'Odometer', 'required': True, 'type': 'float'},
+            {'name': 'odometer', 'label': 'Odometer', 'required': False, 'type': 'float'},
             {'name': 'volume', 'label': 'Volume', 'required': False, 'type': 'float'},
             {'name': 'price_per_unit', 'label': 'Price per Unit', 'required': False, 'type': 'float'},
             {'name': 'total_cost', 'label': 'Total Cost', 'required': False, 'type': 'float'},
@@ -3452,8 +3469,9 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
         if not date_val:
             raise ValueError('Missing or invalid date')
         odometer = parse_float_value(mapped_row.get('odometer'))
-        if odometer is None:
-            raise ValueError('Missing or invalid odometer')
+        if (mapped_row.get('odometer') not in (None, '') and odometer is None
+                or odometer is not None and (not math.isfinite(odometer) or odometer < 0)):
+            raise ValueError('Invalid odometer')
         volume = parse_float_value(mapped_row.get('volume'))
         price_per_unit = parse_float_value(mapped_row.get('price_per_unit'))
         total_cost = parse_float_value(mapped_row.get('total_cost'))
@@ -3463,7 +3481,8 @@ def create_record(data_type, mapped_row, vehicle_id, user_id, date_format, user_
             vehicle_id=vehicle_id,
             user_id=user_id,
             date=date_val,
-            odometer=odometer,
+            odometer=odometer or 0,
+            odometer_confirmed=odometer is not None,
             volume=volume,
             price_per_unit=price_per_unit,
             total_cost=total_cost,

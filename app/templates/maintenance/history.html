@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Maintenance History') }}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">{{ _('Maintenance History') }}</h1>
+<form method="GET" class="mb-6">
+    <label for="vehicle_id" class="sr-only">{{ _('Vehicle') }}</label>
+    <select name="vehicle_id" id="vehicle_id" onchange="this.form.submit()" class="rounded-md border-gray-300 dark:bg-gray-800 dark:text-white">
+        <option value="">{{ _('All Vehicles') }}</option>
+        {% for vehicle in vehicles %}<option value="{{ vehicle.id }}" {% if selected_vehicle_id == vehicle.id %}selected{% endif %}>{{ vehicle.name }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="ml-2 text-primary-600">{{ _('Search') }}</button>
+</form>
+<p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{{ _('History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered.') }}</p>
+<div class="space-y-3">
+{% for event in events %}
+<article class="rounded-lg bg-white dark:bg-gray-800 p-4 shadow">
+    <h2 class="font-semibold text-gray-900 dark:text-white">{{ event.name }}</h2>
+    <p class="text-sm text-gray-600 dark:text-gray-300">{{ event.vehicle.name }} · {{ event.performed_date|format_date if event.performed_date else _('Unknown') }}{% if event.odometer is not none %} · {{ event.odometer|groupnum }} {{ event.vehicle.get_reading_unit() }}{% endif %}</p>
+    {% if event.notes %}<p class="mt-2 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{{ event.notes }}</p>{% endif %}
+</article>
+{% else %}<p class="text-gray-500 dark:text-gray-400">{{ _('No maintenance history yet.') }}</p>{% endfor %}
+</div>
+{% endblock %}

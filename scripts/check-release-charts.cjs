@@ -25,3 +25,22 @@ inputs.price_per_unit.value = '1.5'; vm.runInContext(manualHandler, context); co
 assert.equal(inputs.price_per_unit.value, '1.5');
 assert.equal(inputs.total_cost.value, '42.00');
 console.log('Shared chart and fuel form behaviour checks passed.');
+// Editing historical fuel entries must not replace their reading with today's Tessie value.
+const odometerFunction = form.slice(form.indexOf('function updateVehicleOdometer('), form.indexOf('function updateFuelTypeSelector('));
+const attributes = {'data-uses-tessie': 'true', 'data-tessie-odometer': '90000', 'data-last-odometer': '90000'};
+const nodes = {};
+const nodeFor = id => nodes[id] ||= {value: '', classList: {add() {}, remove() {}}};
+nodeFor('vehicle_id').options = [{getAttribute: key => attributes[key]}];
+nodeFor('vehicle_id').selectedIndex = 0;
+const odometerContext = vm.createContext({isEditing: true, T_LAST_HOURS: 'Hours', T_LAST_ODOMETER: 'Odometer', document: {getElementById: nodeFor}});
+vm.runInContext(odometerFunction, odometerContext);
+nodeFor('odometer').value = '10000';
+odometerContext.updateVehicleOdometer(1);
+assert.equal(nodeFor('odometer').value, '10000');
+nodeFor('odometer').value = '';
+odometerContext.updateVehicleOdometer(1);
+assert.equal(nodeFor('odometer').value, '');
+odometerContext.isEditing = false;
+odometerContext.updateVehicleOdometer(1);
+assert.equal(nodeFor('odometer').value, 90000);
+console.log('Historical Tessie reading checks passed.');

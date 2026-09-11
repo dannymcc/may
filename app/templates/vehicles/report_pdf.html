@@ -361,7 +361,7 @@
         {% for log in fuel_logs %}
         <tr>
             <td>{{ log.date|format_date }}</td>
-            <td class="text-right">{{ "%.0f"|format(log.odometer) }} {{ vehicle.get_reading_unit() }}</td>
+            <td class="text-right">{{ "%.0f"|format(log.odometer) if log.has_recorded_odometer else "—" }} {{ vehicle.get_reading_unit() }}</td>
             <td class="text-right">{% if log.volume %}{{ "%.2f"|format(log.volume) }} {{ user.volume_unit }}{% else %}-{% endif %}</td>
             <td class="text-right">{% if log.price_per_unit %}{{ "%.3f"|format(log.price_per_unit) }}{% else %}-{% endif %}</td>
             <td class="text-right">{% if log.total_cost %}{{ log.total_cost|money }} {{ user.currency }}{% else %}-{% endif %}</td>

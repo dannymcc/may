@@ -5447,3 +5447,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Nog geen brandstofprijzen geregistreerd."
+
+msgid "All axles"
+msgstr "Alle assen"
+
+msgid "Front axle"
+msgstr "Vooras"
+
+msgid "Rear axle"
+msgstr "Achteras"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "%(count)s duplicaten overgeslagen."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Brandstofprijsbronnen zijn niet beschikbaar. Opgeslagen prijzen zijn behouden."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Sommige tankstations konden niet worden gekoppeld omdat de prijsgegevens onvolledig zijn."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Geen eenduidig tankstation gevonden. Controleer postcode, adres en merk."
+
+msgid "Invalid axle"
+msgstr "Ongeldige as"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "De montagedatum en tellerstand mogen niet vóór de huidige montage liggen."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Laat leeg als de tellerstand niet is vastgelegd. Voer 0 in om een echte nulstand te bevestigen."
+
+msgid "Maintenance History"
+msgstr "Onderhoudshistorie"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "De historie bevat vastgelegde onderhoudsbeurten en de laatst opgeslagen gegevens. Eerder overschreven gegevens kunnen niet worden hersteld."
+
+msgid "No maintenance history yet."
+msgstr "Nog geen onderhoudshistorie."
+
+msgid "Axle"
+msgstr "As"
