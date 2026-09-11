@@ -1043,10 +1043,6 @@ msgstr "ステーション「%(name)s」が削除されました"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(matched)s 件のスタンドから %(prices)s 件の最新価格を更新しました"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr "一致するスタンドが見つかりません。スタンドの郵便番号を確認してください。"
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"

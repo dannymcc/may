@@ -1068,11 +1068,6 @@ msgstr "\"%(name)s\" istasyonu silindi"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(matched)s istasyondan %(prices)s canlı fiyat güncellendi"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr ""
-"Eşleşen istasyon bulunamadı. İstasyonların posta kodlarını kontrol edin."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"

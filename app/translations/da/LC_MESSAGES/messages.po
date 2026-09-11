@@ -1061,11 +1061,6 @@ msgstr "Station \"%(name)s\" slettet"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(prices)s aktuelle priser opdateret fra %(matched)s stationer"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr ""
-"Der blev ikke fundet nogen matchende stationer. Tjek stationernes postnumre."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"

@@ -1061,10 +1061,6 @@ msgstr "Asema \"%(name)s\" poistettu"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "Päivitetty %(prices)s reaaliaikaista hintaa %(matched)s asemalta"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr "Vastaavia asemia ei löytynyt. Tarkista asemien postinumerot."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"

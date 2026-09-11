@@ -1063,11 +1063,6 @@ msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr ""
 "Aktualizováno %(prices)s aktuálních cen z %(matched)s čerpacích stanic"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr ""
-"Nebyly nalezeny žádné odpovídající čerpací stanice. Zkontrolujte PSČ stanic."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"

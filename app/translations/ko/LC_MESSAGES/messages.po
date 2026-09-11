@@ -1043,10 +1043,6 @@ msgstr "주유소 \"%(name)s\"이(가) 삭제되었습니다"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "주유소 %(matched)s곳에서 실시간 가격 %(prices)s건을 업데이트했습니다"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr "일치하는 주유소를 찾을 수 없습니다. 주유소 우편번호를 확인하세요."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"

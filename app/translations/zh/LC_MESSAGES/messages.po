@@ -1040,10 +1040,6 @@ msgstr "加油站\"%(name)s\"已删除"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "已从 %(matched)s 个加油站更新 %(prices)s 条实时价格"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr "未找到匹配的加油站。请检查加油站的邮政编码。"
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"

@@ -1067,11 +1067,6 @@ msgstr "Tankstelle \"%(name)s\" gelöscht"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(prices)s Live-Preise von %(matched)s Tankstellen aktualisiert"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr "Keine passenden Tankstellen gefunden. Prüfen Sie die Postleitzahlen der "
-"Stationen."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
