@@ -1067,11 +1067,6 @@ msgstr "Tankstelle \"%(name)s\" gelöscht"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(prices)s Live-Preise von %(matched)s Tankstellen aktualisiert"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr "Keine passenden Tankstellen gefunden. Prüfen Sie die Postleitzahlen der "
-"Stationen."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
@@ -5458,3 +5453,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Noch keine Kraftstoffpreise erfasst."
+
+msgid "All axles"
+msgstr "Alle Achsen"
+
+msgid "Front axle"
+msgstr "Vorderachse"
+
+msgid "Rear axle"
+msgstr "Hinterachse"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "%(count)s Duplikat(e) übersprungen."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Kraftstoffpreisquellen sind nicht verfügbar. Gespeicherte Preise wurden beibehalten."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Einige Tankstellen konnten wegen unvollständiger Preisdaten nicht zugeordnet werden."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Keine eindeutige Tankstelle gefunden. Prüfen Sie Postleitzahl, Adresse und Marke."
+
+msgid "Invalid axle"
+msgstr "Ungültige Achse"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "Montagedatum und Zählerstand dürfen nicht vor der aktuellen Montage liegen."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Leer lassen, wenn der Zählerstand nicht erfasst wurde. Geben Sie 0 ein, um einen tatsächlichen Nullstand zu bestätigen."
+
+msgid "Maintenance History"
+msgstr "Wartungshistorie"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "Der Verlauf enthält erfasste Wartungen und die zuletzt gespeicherten Wartungsdaten. Frühere überschriebene Angaben können nicht wiederhergestellt werden."
+
+msgid "No maintenance history yet."
+msgstr "Noch keine Wartungshistorie."
+
+msgid "Axle"
+msgstr "Achse"

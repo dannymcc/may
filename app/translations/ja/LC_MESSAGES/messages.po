@@ -1043,10 +1043,6 @@ msgstr "ステーション「%(name)s」が削除されました"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(matched)s 件のスタンドから %(prices)s 件の最新価格を更新しました"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr "一致するスタンドが見つかりません。スタンドの郵便番号を確認してください。"
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
@@ -5265,3 +5261,45 @@ msgstr "消費トレンドを表示するデータが不足しています。満
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "まだ燃料価格が記録されていません。"
+
+msgid "All axles"
+msgstr "全車軸"
+
+msgid "Front axle"
+msgstr "前車軸"
+
+msgid "Rear axle"
+msgstr "後車軸"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "重複する%(count)s件をスキップしました。"
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "燃料価格の情報源を利用できません。保存済みの価格は保持されています。"
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "価格データが不完全なため、一部の給油所を特定できませんでした。"
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "給油所を一意に特定できません。郵便番号、住所、ブランドを確認してください。"
+
+msgid "Invalid axle"
+msgstr "無効な車軸"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "取付日とメーター値は、現在の取付時点より前にはできません。"
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "メーター値を記録していない場合は空欄にしてください。実際にゼロだった場合は0を入力してください。"
+
+msgid "Maintenance History"
+msgstr "整備履歴"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "履歴には記録された整備と最後に保存された整備情報が含まれます。以前に上書きされた情報は復元できません。"
+
+msgid "No maintenance history yet."
+msgstr "整備履歴はまだありません。"
+
+msgid "Axle"
+msgstr "車軸"

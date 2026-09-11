@@ -7,6 +7,7 @@ odometer reading at each end, and the set's total distance is the sum of those
 periods (see ``TireSet.get_distance``).
 """
 from datetime import datetime, date
+import math
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
@@ -178,17 +179,35 @@ def fit(set_id):
     fitted_date = _parse_date(request.form.get('fitted_date'), date.today())
     fitted_odometer = _odometer_from_form('fitted_odometer', vehicle)
 
-    # Only one set can be on a vehicle at a time, so fitting one takes the
-    # other off at the same reading — the usual seasonal swap.
-    previous = vehicle.get_fitted_tire_set()
-    if previous is not None and previous.id != tire_set.id:
-        open_fitment = previous.current_fitment
-        open_fitment.removed_date = fitted_date
-        open_fitment.removed_odometer = fitted_odometer
-        flash(_('Took "%(name)s" off the vehicle', name=previous.name), 'info')
+    axle = request.form.get('axle', 'all')
+    if axle not in ('all', 'front', 'rear'):
+        flash(_('Invalid axle'), 'error')
+        return redirect(url_for('tires.index'))
+    previous = TireFitment.query.join(TireSet).filter(
+        TireSet.vehicle_id == vehicle.id,
+        TireFitment.removed_odometer.is_(None),
+    ).all()
+    overlapping = [f for f in previous if axle == 'all' or f.axle in ('all', axle)]
+    if (not math.isfinite(fitted_odometer) or fitted_odometer < 0
+            or any(fitted_odometer < f.fitted_odometer or fitted_date < f.fitted_date
+                   for f in overlapping)):
+        flash(_('The fitting date and reading cannot precede the current fitting.'), 'error')
+        return redirect(url_for('tires.index'))
+    for old in overlapping:
+        old.removed_date = fitted_date
+        old.removed_odometer = fitted_odometer
+        if old.axle == 'all' and axle != 'all':
+            # The unaffected pair stays fitted, continuing its distance history.
+            db.session.add(TireFitment(
+                tire_set_id=old.tire_set_id, axle='rear' if axle == 'front' else 'front',
+                fitted_date=fitted_date, fitted_odometer=fitted_odometer,
+            ))
+        else:
+            flash(_('Took "%(name)s" off the vehicle', name=old.tire_set.name), 'info')
 
     db.session.add(TireFitment(
         tire_set_id=tire_set.id,
+        axle=axle,
         fitted_date=fitted_date,
         fitted_odometer=fitted_odometer,
     ))
@@ -216,7 +235,8 @@ def remove(set_id):
     removed_date = _parse_date(request.form.get('removed_date'), date.today())
     removed_odometer = _odometer_from_form('removed_odometer', tire_set.vehicle)
 
-    if removed_odometer < fitment.fitted_odometer:
+    if (not math.isfinite(removed_odometer) or removed_odometer < fitment.fitted_odometer
+            or removed_date < fitment.fitted_date):
         flash(_('The odometer reading cannot be lower than the one the set was fitted at'), 'error')
         return redirect(url_for('tires.index'))
 

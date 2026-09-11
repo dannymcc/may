@@ -485,3 +485,34 @@ class TestSettingsRoute:
         resp = admin_client.get('/auth/settings')
         assert resp.status_code == 200
         assert b'UK Fuel Prices' in resp.data
+
+
+class TestIncompletePriceCoverage:
+    def test_ambiguous_station_is_not_arbitrarily_linked(self, uk_station):
+        uk_station.latitude = uk_station.longitude = None
+        uk_station.brand = uk_station.address = None
+        forecourts = UKFuelPriceService.parse_feed({'stations': [
+            {'site_id': 'one', 'postcode': uk_station.postcode, 'prices': {'E10': 140}},
+            {'site_id': 'two', 'postcode': uk_station.postcode, 'prices': {'E10': 150}},
+        ]})
+        assert UKFuelPriceService.match_forecourt(uk_station, forecourts) is None
+
+    @pytest.mark.parametrize('price', ['nan', 'inf', '-inf'])
+    def test_nonfinite_prices_are_rejected(self, price):
+        assert UKFuelPriceService.normalise_price(price) is None
+
+    def test_dead_sources_do_not_blame_postcode_or_change_saved_prices(self, auth_client, enabled_single_feed, uk_station, monkeypatch):
+        from app.routes.stations import _flash_uk_refresh
+        from flask import get_flashed_messages
+        db.session.add(FuelPriceHistory(station_id=uk_station.id, user_id=uk_station.user_id,
+                                       date=date.today(), fuel_type='petrol', price_per_unit=1.4))
+        db.session.commit()
+        monkeypatch.setattr(UKFuelPriceService, 'fetch_forecourts', lambda **kwargs: ([], ['Feed: HTTP 403']))
+        stats = UKFuelPriceService.refresh_prices([uk_station])
+        assert stats['source_available'] is False
+        assert FuelPriceHistory.query.one().price_per_unit == 1.4
+        with auth_client.application.test_request_context():
+            _flash_uk_refresh(stats)
+            messages = ' '.join(get_flashed_messages())
+            assert 'sources are unavailable' in messages
+            assert 'Check the station postcodes' not in messages

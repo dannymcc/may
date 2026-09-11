@@ -16,7 +16,7 @@ list entirely in Settings -> Integrations -> UK Fuel Prices.
 """
 
 from datetime import date, datetime, timedelta
-from math import asin, cos, radians, sin, sqrt
+from math import asin, cos, radians, sin, sqrt, isfinite
 
 import requests
 
@@ -123,7 +123,7 @@ class UKFuelPriceService:
             price = float(value)
         except (TypeError, ValueError):
             return None
-        if price <= 0:
+        if not isfinite(price) or price <= 0:
             return None
         if price > 10:
             price = price / 100
@@ -135,7 +135,7 @@ class UKFuelPriceService:
 
         Malformed entries are skipped rather than failing the whole feed.
         """
-        if not isinstance(payload, dict):
+        if not isinstance(payload, dict) or not isinstance(payload.get('stations'), list):
             return []
 
         forecourts = []
@@ -143,6 +143,8 @@ class UKFuelPriceService:
             if not isinstance(raw, dict):
                 continue
 
+            if not isinstance(raw.get('prices'), dict):
+                continue
             prices = {}
             for code, value in (raw.get('prices') or {}).items():
                 fuel_type = cls.FUEL_CODE_MAP.get(str(code).upper())
@@ -156,9 +158,13 @@ class UKFuelPriceService:
                 continue
 
             location = raw.get('location') or {}
+            if not isinstance(location, dict):
+                location = {}
             try:
                 latitude = float(location.get('latitude'))
                 longitude = float(location.get('longitude'))
+                if not (isfinite(latitude) and isfinite(longitude) and -90 <= latitude <= 90 and -180 <= longitude <= 180):
+                    latitude = longitude = None
             except (TypeError, ValueError):
                 latitude = longitude = None
 
@@ -223,7 +229,10 @@ class UKFuelPriceService:
                 errors.append(f"{retailer}: {e}")
                 continue
 
-            forecourts.extend(cls.parse_feed(payload, retailer))
+            parsed = cls.parse_feed(payload, retailer)
+            if not parsed:
+                errors.append(f'{retailer}: no usable forecourt prices')
+            forecourts.extend(parsed)
 
         return forecourts, errors
 
@@ -242,7 +251,7 @@ class UKFuelPriceService:
 
         Otherwise matching is by postcode. Where a postcode covers more than
         one forecourt, the nearest one within MATCH_RADIUS_KM wins, falling
-        back to a brand match and finally to the first candidate.
+        back to a unique address or brand match. Ambiguous matches are rejected.
         """
         if station.price_source == PRICE_SOURCE and station.external_id:
             for forecourt in forecourts:
@@ -274,16 +283,19 @@ class UKFuelPriceService:
                     station.latitude, station.longitude,
                     nearest['latitude'], nearest['longitude'],
                 )
-                if distance <= cls.MATCH_RADIUS_KM:
+                equally_close = [f for f in located if abs(cls._distance_km(
+                    station.latitude, station.longitude, f['latitude'], f['longitude']) - distance) < 0.01]
+                if distance <= cls.MATCH_RADIUS_KM and len(equally_close) == 1:
                     return nearest
 
-        if station.brand:
-            brand = station.brand.strip().lower()
-            for candidate in candidates:
-                if (candidate.get('brand') or '').strip().lower() == brand:
-                    return candidate
-
-        return candidates[0]
+        for field in ('address', 'brand'):
+            value = getattr(station, field, None)
+            if value:
+                normalised = ' '.join(value.casefold().split())
+                matches = [f for f in candidates if ' '.join(str(f.get(field) or '').casefold().split()) == normalised]
+                if len(matches) == 1:
+                    return matches[0]
+        return None
 
     @classmethod
     def record_prices(cls, station, forecourt, on_date=None):
@@ -343,6 +355,7 @@ class UKFuelPriceService:
             'skipped': 0,
             'prices': 0,
             'errors': [],
+            'source_available': False,
         }
 
         # Stations without a postcode can't be matched to a forecourt unless
@@ -362,6 +375,7 @@ class UKFuelPriceService:
             stats['unmatched'] = len(matchable)
             return stats
 
+        stats['source_available'] = True
         for station in matchable:
             forecourt = cls.match_forecourt(station, forecourts)
             if not forecourt:

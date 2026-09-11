@@ -171,9 +171,13 @@ def _flash_uk_refresh(stats):
             % {'prices': stats['prices'], 'matched': stats['matched']},
             'success',
         )
+    elif not stats.get('source_available', True) and stats['errors']:
+        flash(_('Fuel price sources are unavailable. Saved prices have been kept.'), 'warning')
+    elif stats['errors']:
+        flash(_('Some stations could not be matched because fuel price coverage is incomplete.'), 'warning')
     else:
         flash(
-            _('No matching forecourts found. Check the station postcodes.'),
+            _('No unique forecourt match found. Check the station postcode, address and brand.'),
             'info',
         )
 

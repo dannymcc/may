@@ -146,7 +146,8 @@ def new():
             vehicle_id=vehicle_id,
             user_id=current_user.id,
             date=date,
-            odometer=odometer,
+            odometer=odometer or 0,
+            odometer_confirmed=odometer is not None,
             volume=volume,
             price_per_unit=price_per_unit,
             discount_per_unit=discount_per_unit,
@@ -274,7 +275,13 @@ def edit(log_id):
                 log.vehicle_id = new_vehicle_id
         date_str = request.form.get('date')
         log.date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else log.date
-        log.odometer = parse_decimal(request.form.get('odometer'))
+        reading, err = validate_positive_number(request.form.get('odometer'), 'Odometer', max_value=9999999)
+        if err:
+            db.session.rollback()
+            flash(err, 'error')
+            return redirect(url_for('fuel.edit', log_id=log.id))
+        log.odometer = reading or 0
+        log.odometer_confirmed = reading is not None
         log.volume = parse_decimal(request.form.get('volume')) if request.form.get('volume') else None
         log.price_per_unit = parse_decimal(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else derived_price
         log.discount_per_unit = parse_decimal(request.form.get('discount_per_unit')) if request.form.get('discount_per_unit') else None

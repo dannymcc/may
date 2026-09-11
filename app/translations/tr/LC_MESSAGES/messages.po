@@ -1068,11 +1068,6 @@ msgstr "\"%(name)s\" istasyonu silindi"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(matched)s istasyondan %(prices)s canlı fiyat güncellendi"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr ""
-"Eşleşen istasyon bulunamadı. İstasyonların posta kodlarını kontrol edin."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
@@ -5428,3 +5423,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Henüz kaydedilmiş yakıt fiyatı yok."
+
+msgid "All axles"
+msgstr "Tüm akslar"
+
+msgid "Front axle"
+msgstr "Ön aks"
+
+msgid "Rear axle"
+msgstr "Arka aks"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "%(count)s yinelenen kayıt atlandı."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Yakıt fiyatı kaynaklarına erişilemiyor. Kayıtlı fiyatlar korundu."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Fiyat verileri eksik olduğu için bazı istasyonlar eşleştirilemedi."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Tek bir istasyon eşleşmesi bulunamadı. Posta kodunu, adresi ve markayı kontrol edin."
+
+msgid "Invalid axle"
+msgstr "Geçersiz aks"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "Montaj tarihi ve sayaç değeri mevcut montajdan önce olamaz."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Sayaç değeri kaydedilmediyse boş bırakın. Gerçek bir sıfır değerini onaylamak için 0 girin."
+
+msgid "Maintenance History"
+msgstr "Bakım geçmişi"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "Geçmiş, kaydedilen bakımları ve son kaydedilen servis bilgilerini içerir. Daha önce üzerine yazılmış bilgiler kurtarılamaz."
+
+msgid "No maintenance history yet."
+msgstr "Henüz bakım geçmişi yok."
+
+msgid "Axle"
+msgstr "Aks"

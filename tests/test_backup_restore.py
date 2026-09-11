@@ -3,6 +3,7 @@ import io
 import json
 import os
 import zipfile
+import pytest
 
 from app import db
 from app.services.backup_restore import read_backup, restore_backup
@@ -501,3 +502,41 @@ class TestBackupRoundTrip:
         summary = restore_backup(data, admin_user, dry_run=True)
         assert summary['total_added'] > 0
         assert Vehicle.query.filter_by(owner_id=admin_user.id).count() == 0
+
+
+class TestHistoryAndAxleBackup:
+    @pytest.mark.parametrize('endpoint', ['/api/export/json', '/api/export/backup'])
+    def test_new_records_roundtrip_and_reimport_without_duplication(self, auth_client, sample_vehicle, test_user, admin_user, endpoint):
+        from datetime import date
+        from app.models import MaintenanceSchedule, MaintenanceEvent, TireSet, TireFitment
+        schedule = MaintenanceSchedule(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                                       name='Service', maintenance_type='custom')
+        tire = TireSet(vehicle_id=sample_vehicle.id, user_id=test_user.id, name='Front pair')
+        db.session.add_all([schedule, tire])
+        db.session.flush()
+        db.session.add_all([
+            MaintenanceEvent(vehicle_id=sample_vehicle.id, user_id=test_user.id, schedule_id=schedule.id,
+                             name='Service', maintenance_type='custom', performed_date=date(2026, 1, 1), odometer=0),
+            TireFitment(tire_set_id=tire.id, axle='front', fitted_date=date(2026, 1, 1), fitted_odometer=0),
+            FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id, date=date(2026, 1, 1),
+                    odometer=0, odometer_confirmed=False, volume=40),
+        ])
+        db.session.commit()
+        response = auth_client.get(endpoint)
+        if endpoint.endswith('backup'):
+            with zipfile.ZipFile(io.BytesIO(response.data)) as archive:
+                data = json.loads(archive.read('data.json'))
+        else:
+            data = response.get_json()
+        first = restore_backup(data, admin_user)
+        second = restore_backup(data, admin_user)
+        assert first['tire_fitments']['added'] == 1
+        assert second['tire_fitments']['added'] == 0
+        assert second['tire_fitments']['skipped'] == 1
+        restored = Vehicle.query.filter_by(owner_id=admin_user.id).one()
+        assert restored.maintenance_events.count() == 1
+        assert restored.maintenance_events.one().schedule_id == restored.maintenance_schedules.one().id
+        assert restored.tire_sets.count() == 1
+        assert restored.tire_sets.one().fitments.count() == 1
+        assert restored.tire_sets.one().current_fitment.axle == 'front'
+        assert not restored.fuel_logs.one().has_recorded_odometer

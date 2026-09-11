@@ -1063,11 +1063,6 @@ msgstr "Station \"%(name)s\" borttaget"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(prices)s aktuella priser uppdaterade från %(matched)s stationer"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr ""
-"Inga matchande stationer hittades. Kontrollera stationernas postnummer."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
@@ -5416,3 +5411,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Inga bränslepriser registrerade ännu."
+
+msgid "All axles"
+msgstr "Alla axlar"
+
+msgid "Front axle"
+msgstr "Framaxel"
+
+msgid "Rear axle"
+msgstr "Bakaxel"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "%(count)s dubbletter hoppades över."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Källorna för bränslepriser är inte tillgängliga. Sparade priser har behållits."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Vissa stationer kunde inte matchas eftersom prisuppgifterna är ofullständiga."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Ingen entydig station hittades. Kontrollera postnummer, adress och varumärke."
+
+msgid "Invalid axle"
+msgstr "Ogiltig axel"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "Monteringsdatumet och mätarställningen får inte föregå den aktuella monteringen."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Lämna tomt om mätarställningen inte registrerades. Ange 0 för att bekräfta en verklig nollställning."
+
+msgid "Maintenance History"
+msgstr "Underhållshistorik"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "Historiken omfattar registrerade servicearbeten och de senast sparade uppgifterna. Tidigare överskrivna uppgifter kan inte återställas."
+
+msgid "No maintenance history yet."
+msgstr "Ingen underhållshistorik ännu."
+
+msgid "Axle"
+msgstr "Axel"

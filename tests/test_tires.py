@@ -295,3 +295,40 @@ class TestTireAccessControl:
                            follow_redirects=True)
         assert resp.status_code == 200
         assert sample_tire_set.fitments.count() == 0
+
+
+class TestAxleFitments:
+    def test_front_and_rear_can_remain_fitted(self, auth_client, sample_tire_set, summer_tire_set):
+        for tire, axle in [(sample_tire_set, 'front'), (summer_tire_set, 'rear')]:
+            auth_client.post(f'/tires/{tire.id}/fit', data={'axle': axle, 'fitted_odometer': '10000'})
+        assert sample_tire_set.current_fitment.axle == 'front'
+        assert summer_tire_set.current_fitment.axle == 'rear'
+        assert sample_tire_set.get_distance(10500) == 500
+        assert summer_tire_set.get_distance(10500) == 500
+
+    def test_partial_replacement_keeps_other_pair_and_distance(self, auth_client, sample_tire_set, summer_tire_set):
+        auth_client.post(f'/tires/{sample_tire_set.id}/fit', data={'axle': 'all', 'fitted_odometer': '10000'})
+        auth_client.post(f'/tires/{summer_tire_set.id}/fit', data={'axle': 'front', 'fitted_odometer': '10500'})
+        assert sample_tire_set.current_fitment.axle == 'rear'
+        assert summer_tire_set.current_fitment.axle == 'front'
+        assert sample_tire_set.get_distance(11000) == 1000
+        assert summer_tire_set.get_distance(11000) == 500
+
+    def test_all_axles_replace_both_pairs(self, auth_client, sample_tire_set, summer_tire_set, test_user, sample_vehicle):
+        auth_client.post(f'/tires/{sample_tire_set.id}/fit', data={'axle': 'front', 'fitted_odometer': '10000'})
+        auth_client.post(f'/tires/{summer_tire_set.id}/fit', data={'axle': 'rear', 'fitted_odometer': '10000'})
+        new_set = TireSet(vehicle_id=sample_vehicle.id, user_id=test_user.id, name='Full set')
+        db.session.add(new_set)
+        db.session.commit()
+        auth_client.post(f'/tires/{new_set.id}/fit', data={'axle': 'all', 'fitted_odometer': '11000'})
+        assert not sample_tire_set.is_fitted
+        assert not summer_tire_set.is_fitted
+        assert new_set.current_fitment.axle == 'all'
+
+    @pytest.mark.parametrize('data', [{'axle': 'invalid'}, {'axle': 'front', 'fitted_odometer': 'nan'},
+                                     {'axle': 'front', 'fitted_odometer': '9000'}])
+    def test_invalid_replacement_cannot_close_existing_fitment(self, auth_client, sample_tire_set, summer_tire_set, data):
+        auth_client.post(f'/tires/{sample_tire_set.id}/fit', data={'fitted_odometer': '10000'})
+        auth_client.post(f'/tires/{summer_tire_set.id}/fit', data=data)
+        assert sample_tire_set.current_fitment.axle == 'all'
+        assert not summer_tire_set.is_fitted

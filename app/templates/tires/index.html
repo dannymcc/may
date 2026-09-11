@@ -31,7 +31,7 @@
                     {{ tire_set.name }}
                     <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">{{ tire_set.type_label }}</span>
                     {% if fitment %}
-                    <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">{{ _('Fitted') }}</span>
+                    <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">{{ _('Fitted') }} · {{ fitment.axle_label }}</span>
                     {% elif tire_set.is_retired %}
                     <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">{{ _('Retired') }}</span>
                     {% else %}
@@ -99,6 +99,14 @@
             <form method="POST" action="{{ url_for('tires.fit', set_id=tire_set.id) }}" class="flex flex-wrap items-end gap-3">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div>
+                    <label for="axle_{{ tire_set.id }}" class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ _('Axle') }}</label>
+                    <select name="axle" id="axle_{{ tire_set.id }}" class="mt-1 rounded-md border-gray-300 dark:bg-gray-800 dark:text-white">
+                        <option value="all">{{ _('All axles') }}</option>
+                        <option value="front">{{ _('Front axle') }}</option>
+                        <option value="rear">{{ _('Rear axle') }}</option>
+                    </select>
+                </div>
+                <div>
                     <label for="fitted_date_{{ tire_set.id }}" class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ _('Date') }}</label>
                     <input type="text" name="fitted_date" id="fitted_date_{{ tire_set.id }}" data-datepicker value="{{ today.strftime('%Y-%m-%d') }}"
                            class="mt-1 block w-36 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
@@ -131,7 +139,7 @@
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         {% for f in fitments %}
                         <tr>
-                            <td class="px-3 py-2 whitespace-nowrap text-gray-900 dark:text-white">{{ f.fitted_date|format_date }} &middot; {{ f.fitted_odometer|groupnum }} {{ unit }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-gray-900 dark:text-white">{{ f.axle_label }} · {{ f.fitted_date|format_date }} &middot; {{ f.fitted_odometer|groupnum }} {{ unit }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-gray-900 dark:text-white">
                                 {% if f.removed_odometer is not none %}{{ f.removed_date|format_date }} &middot; {{ f.removed_odometer|groupnum }} {{ unit }}{% else %}{{ _('Still on') }}{% endif %}
                             </td>

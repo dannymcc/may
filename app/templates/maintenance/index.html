@@ -18,6 +18,7 @@
     {% endif %}
 </div>
 
+<p class="mb-4"><a class="text-primary-600 hover:underline" href="{{ url_for('maintenance.history') }}">{{ _('Maintenance History') }}</a></p>
 {% if schedules %}
 <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
     <ul class="divide-y divide-gray-200 dark:divide-gray-700">

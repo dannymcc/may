@@ -163,6 +163,8 @@ def _scalar_default_sql(column):
     fills existing rows once at column-creation time, so the captured value
     would be misleading anyway.
     """
+    if 'legacy_default' in column.info:
+        return '1' if column.info['legacy_default'] else '0'
     default = column.default
     if default is None or not getattr(default, 'is_scalar', False):
         return None
@@ -280,6 +282,18 @@ def _run_schema_migrations(app):
                     app.logger.warning(
                         f'Could not create {kind.lower()} {index.name}: {e}'
                     )
+
+        # Keep the last known service snapshot when upgrading an existing database.
+        if {'maintenance_events', 'maintenance_schedules'}.issubset(existing_tables):
+            conn.execute(text("""
+INSERT INTO maintenance_events
+(vehicle_id, user_id, schedule_id, name, maintenance_type, performed_date, odometer, notes, created_at)
+SELECT s.vehicle_id, s.user_id, s.id, s.name, s.maintenance_type,
+       s.last_performed_date, s.last_performed_odometer, s.description, CURRENT_TIMESTAMP
+FROM maintenance_schedules s
+WHERE (s.last_performed_date IS NOT NULL OR s.last_performed_odometer IS NOT NULL)
+  AND NOT EXISTS (SELECT 1 FROM maintenance_events e WHERE e.schedule_id = s.id)
+            """))
 
 
 def get_locale():

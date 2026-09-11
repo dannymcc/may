@@ -7,6 +7,8 @@
 {% endblock %}
 
 {% block content %}
+<p class="mb-4"><a class="text-primary-600 hover:underline" href="{{ url_for('maintenance.history', vehicle_id=vehicle.id) }}">{{ _('Maintenance History') }}</a></p>
+
 <div class="mb-6">
     <a href="{{ url_for('vehicles.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">&larr; {{ _('Back to vehicles') }}</a>
 </div>
@@ -955,7 +957,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-900 dark:text-white">{{ log.date|format_date }}</p>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                            {{ "%.0f"|format(log.odometer) }} {{ vehicle.get_reading_unit() }} &middot;
+                            {{ "%.0f"|format(log.odometer) if log.has_recorded_odometer else "—" }} {{ vehicle.get_reading_unit() }} &middot;
                             {{ "%.1f"|format(log.volume or 0) }} {{ current_user.volume_unit }}
                             {% if log.price_per_unit %}&middot; {{ "%.3f"|format(log.price_per_unit) }}/{{ current_user.volume_unit }}{% endif %}
                             {% if log.is_full_tank %}<span class="text-green-600">{{ _('(Full)') }}</span>{% endif %}

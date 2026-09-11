@@ -1066,12 +1066,6 @@ msgstr "Estación \"%(name)s\" eliminada"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(prices)s precios en directo actualizados de %(matched)s estaciones"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr ""
-"No se encontraron estaciones coincidentes. Compruebe los códigos postales de"
-" las estaciones."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
@@ -5452,3 +5446,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Aún no se han registrado precios de combustible."
+
+msgid "All axles"
+msgstr "Todos los ejes"
+
+msgid "Front axle"
+msgstr "Eje delantero"
+
+msgid "Rear axle"
+msgstr "Eje trasero"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "Se omitieron %(count)s duplicado(s)."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Las fuentes de precios de combustible no están disponibles. Se han conservado los precios guardados."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "No se pudieron identificar algunas estaciones porque los datos de precios están incompletos."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "No se encontró una estación inequívoca. Comprueba el código postal, la dirección y la marca."
+
+msgid "Invalid axle"
+msgstr "Eje no válido"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "La fecha y la lectura de montaje no pueden ser anteriores al montaje actual."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Déjalo vacío si no se registró la lectura. Introduce 0 para confirmar una lectura realmente nula."
+
+msgid "Maintenance History"
+msgstr "Historial de mantenimiento"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "El historial incluye los mantenimientos registrados y los últimos datos guardados. Los datos anteriores sobrescritos no se pueden recuperar."
+
+msgid "No maintenance history yet."
+msgstr "Todavía no hay historial de mantenimiento."
+
+msgid "Axle"
+msgstr "Eje"

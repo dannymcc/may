@@ -1043,10 +1043,6 @@ msgstr "주유소 \"%(name)s\"이(가) 삭제되었습니다"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "주유소 %(matched)s곳에서 실시간 가격 %(prices)s건을 업데이트했습니다"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr "일치하는 주유소를 찾을 수 없습니다. 주유소 우편번호를 확인하세요."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
@@ -5274,3 +5270,45 @@ msgstr "소비 추이를 표시할 데이터가 충분하지 않습니다. 완�
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "아직 기록된 연료 가격이 없습니다."
+
+msgid "All axles"
+msgstr "모든 차축"
+
+msgid "Front axle"
+msgstr "앞 차축"
+
+msgid "Rear axle"
+msgstr "뒤 차축"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "중복 %(count)s개를 건너뛰었습니다."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "연료 가격 정보원에 연결할 수 없습니다. 저장된 가격은 유지됩니다."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "가격 데이터가 불완전하여 일부 주유소를 찾을 수 없습니다."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "주유소를 하나로 특정할 수 없습니다. 우편번호, 주소, 브랜드를 확인하세요."
+
+msgid "Invalid axle"
+msgstr "잘못된 차축"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "장착 날짜와 계기판 수치는 현재 장착 시점보다 이전일 수 없습니다."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "수치를 기록하지 않았다면 비워 두세요. 실제로 0이었음을 확인하려면 0을 입력하세요."
+
+msgid "Maintenance History"
+msgstr "정비 이력"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "이력에는 기록된 정비와 마지막으로 저장된 정비 정보가 포함됩니다. 이전에 덮어쓴 정보는 복구할 수 없습니다."
+
+msgid "No maintenance history yet."
+msgstr "아직 정비 이력이 없습니다."
+
+msgid "Axle"
+msgstr "차축"

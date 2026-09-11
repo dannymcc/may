@@ -1065,12 +1065,6 @@ msgstr "“%(name)s” állomás törölve"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(prices)s élő ár frissítve %(matched)s töltőállomásról"
 
-#: app/routes/stations.py:176
-msgid "No matching forecourts found. Check the station postcodes."
-msgstr ""
-"Nem található megfelelő töltőállomás. Ellenőrizd az állomások "
-"irányítószámait."
-
 #: app/routes/stations.py:182
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
@@ -5445,3 +5439,45 @@ msgstr ""
 #: app/templates/vehicles/view.html:1262
 msgid "No fuel prices recorded yet."
 msgstr "Még nem rögzítettek üzemanyag árat."
+
+msgid "All axles"
+msgstr "Minden tengely"
+
+msgid "Front axle"
+msgstr "Első tengely"
+
+msgid "Rear axle"
+msgstr "Hátsó tengely"
+
+msgid "%(count)s duplicate(s) skipped."
+msgstr "%(count)s ismétlődés kihagyva."
+
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "Az üzemanyagárak forrásai nem érhetők el. A mentett árak megmaradtak."
+
+msgid "Some stations could not be matched because fuel price coverage is incomplete."
+msgstr "Néhány kutat nem sikerült azonosítani, mert az áradatok hiányosak."
+
+msgid "No unique forecourt match found. Check the station postcode, address and brand."
+msgstr "Nem található egyértelműen egyező kút. Ellenőrizd az irányítószámot, a címet és a márkát."
+
+msgid "Invalid axle"
+msgstr "Érvénytelen tengely"
+
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "A felszerelés dátuma és óraállása nem előzheti meg a jelenlegi felszerelést."
+
+msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
+msgstr "Hagyd üresen, ha az óraállást nem rögzítetted. Valódi nulla óraállás megerősítéséhez írj be 0-t."
+
+msgid "Maintenance History"
+msgstr "Karbantartási előzmények"
+
+msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
+msgstr "Az előzmények a rögzített karbantartásokat és a legutóbb mentett szervizadatokat tartalmazzák. A korábban felülírt adatok nem állíthatók vissza."
+
+msgid "No maintenance history yet."
+msgstr "Még nincsenek karbantartási előzmények."
+
+msgid "Axle"
+msgstr "Tengely"

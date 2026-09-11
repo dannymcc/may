@@ -566,3 +566,28 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Made with ❤️ by [Danny McClelland](https://github.com/dannymcc)**
+
+
+### Historical readings, maintenance and tire axles
+
+From v0.44.0, leave the fuel odometer field blank when the reading was not
+recorded. Older zero readings are retained but excluded from consumption until
+confirmed: edit the entry and enter `0` if it really was zero. Positive readings
+remain usable. An unknown reading inside a fill-to-fill interval makes that
+interval unsuitable for consumption calculations; other complete intervals
+still contribute. CSV exports leave unknown readings blank, and backups retain
+whether a reading was confirmed.
+
+Open **Maintenance History** from the maintenance list or a vehicle to see
+recorded services and existing maintenance expenses. Completing a schedule
+records a service even without an expense. Editing or deleting the schedule
+keeps its history. Upgrades retain the last known service details, but cannot
+recover values overwritten before this version.
+
+When fitting tires, select **Front axle**, **Rear axle**, or **All axles**.
+Front and rear pairs can stay fitted simultaneously. Replacing one axle of an
+all-axle set keeps the unaffected pair fitted and continues its distance history.
+
+UK fuel lookups still use the configured retailer feeds. Failed feeds now have
+clearer diagnostics; they do not erase saved prices. Government Fuel Finder API
+support is still pending verification of its authenticated API contract.

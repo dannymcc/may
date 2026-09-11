@@ -159,3 +159,61 @@ class TestMaintenanceComplete:
         ).first()
         assert expense is not None
         assert expense.date == date(2026, 7, 15)
+
+
+class TestMaintenanceHistory:
+    def test_completions_survive_schedule_edit_and_delete(self, auth_client, sample_schedule):
+        from app.models import MaintenanceEvent
+        for day, reading in [(1, 10000), (2, 15000)]:
+            response = auth_client.post(f'/maintenance/{sample_schedule.id}/complete', data={
+                'performed_date': f'2026-01-0{day}', 'odometer': str(reading)})
+            assert response.status_code == 302
+        assert MaintenanceEvent.query.count() == 2
+        auth_client.post(f'/maintenance/{sample_schedule.id}/delete')
+        assert MaintenanceEvent.query.count() == 2
+        assert all(e.schedule_id is None for e in MaintenanceEvent.query.all())
+        response = auth_client.get('/maintenance/history')
+        assert b'Oil Change' in response.data
+
+    def test_edit_preserves_previous_and_new_service_details(self, auth_client, sample_schedule):
+        from app.models import MaintenanceEvent
+        sample_schedule.last_performed_date = date(2025, 1, 1)
+        sample_schedule.last_performed_odometer = 5000
+        db.session.commit()
+        data = {'name': 'Oil Change', 'maintenance_type': 'oil_change',
+                'last_performed_date': '2026-01-01', 'last_performed_odometer': '10000'}
+        auth_client.post(f'/maintenance/{sample_schedule.id}/edit', data=data)
+        auth_client.post(f'/maintenance/{sample_schedule.id}/edit', data=data)
+        assert MaintenanceEvent.query.count() == 2
+        assert {e.odometer for e in MaintenanceEvent.query.all()} == {5000, 10000}
+
+    def test_private_history_cannot_be_requested(self, auth_client, admin_user):
+        from app.models import Vehicle
+        private = Vehicle(owner_id=admin_user.id, name='Private', vehicle_type='car')
+        db.session.add(private)
+        db.session.commit()
+        assert auth_client.get(f'/maintenance/history?vehicle_id={private.id}').status_code == 403
+
+    def test_existing_expenses_are_visible(self, auth_client, sample_expense):
+        sample_expense.category = 'maintenance'
+        sample_expense.description = 'Previous workshop service'
+        db.session.commit()
+        response = auth_client.get('/maintenance/history')
+        assert response.status_code == 200
+        assert b'Previous workshop service' in response.data
+
+
+def test_matching_service_details_on_different_vehicles_are_not_hidden(auth_client, sample_vehicle, test_user):
+    from app.models import Vehicle, Expense, MaintenanceEvent
+    second = Vehicle(owner_id=test_user.id, name='Second vehicle', vehicle_type='car')
+    db.session.add(second)
+    db.session.flush()
+    db.session.add_all([
+        MaintenanceEvent(vehicle_id=sample_vehicle.id, user_id=test_user.id, name='Oil service',
+                         maintenance_type='custom', performed_date=date(2026, 1, 1), odometer=100),
+        Expense(vehicle_id=second.id, user_id=test_user.id, description='Oil service',
+                category='maintenance', date=date(2026, 1, 1), odometer=100, cost=0),
+    ])
+    db.session.commit()
+    body = auth_client.get('/maintenance/history').get_data(as_text=True)
+    assert body.count('Oil service') == 2

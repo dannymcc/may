@@ -58,7 +58,7 @@
                             {{ log.vehicle.name }}
                         </a>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ "%.0f"|format(log.odometer) }} {{ log.vehicle.get_reading_unit() }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ "%.0f"|format(log.odometer) if log.has_recorded_odometer else "—" }} {{ log.vehicle.get_reading_unit() }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ log.effective_fuel_type|fuel_type_label }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {{ "%.1f"|format(log.volume or 0) }} {{ current_user.volume_unit }}
