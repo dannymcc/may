@@ -139,8 +139,9 @@ SECRET_KEY=your-secure-random-string
 # Database location (optional, defaults to SQLite in the app's data folder)
 # Note the slashes: sqlite:///path is relative, sqlite:////path is absolute.
 DATABASE_URL=sqlite:////srv/may/data/may.db
-# PostgreSQL is also supported:
+# PostgreSQL, MySQL, and MariaDB are also supported:
 # DATABASE_URL=postgresql://user:password@host:5432/may
+# DATABASE_URL=mysql+pymysql://user:password@host:3306/may
 
 # Upload folder for attachments (optional)
 UPLOAD_FOLDER=/srv/may/data/uploads
