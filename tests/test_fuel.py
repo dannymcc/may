@@ -1593,3 +1593,17 @@ def test_invalid_csv_reading_is_not_treated_as_missing(reading, sample_vehicle, 
     with pytest.raises(ValueError):
         create_record('fuel_logs', {'date': '2026-01-01', 'odometer': reading, 'volume': '40'},
                       sample_vehicle.id, test_user.id, 'auto')
+
+
+def test_unknown_adblue_reading_does_not_invalidate_diesel_consumption(sample_vehicle, test_user):
+    sample_vehicle.odometer_unit = 'km'
+    sample_vehicle.fuel_type = 'diesel'
+    logs = []
+    for day, reading, fuel, confirmed in [(1, 10000, 'diesel', True), (2, 0, 'adblue', False), (3, 10500, 'diesel', True)]:
+        log = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id, date=date(2026, 1, day),
+                      odometer=reading, fuel_type=fuel, odometer_confirmed=confirmed, volume=40, is_full_tank=True)
+        db.session.add(log)
+        logs.append(log)
+    db.session.commit()
+    assert logs[-1].get_consumption() == pytest.approx(8)
+    assert sample_vehicle.get_average_consumption() == pytest.approx(8)

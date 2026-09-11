@@ -560,15 +560,18 @@ class Vehicle(db.Model):
         return any(start_odometer < odometer <= end_odometer
                    for odometer in other_odometers)
 
+    def _unknown_fuel_reading_dates(self):
+        """Dates of unrecorded fuel readings; auxiliary fluids do not affect consumption."""
+        rows = self.fuel_logs.with_entities(FuelLog.date, FuelLog.fuel_type).filter(
+            ~FuelLog.recorded_odometer_filter()).all()
+        return [day for day, fuel_type in rows
+                if _propulsion_fuel_type(fuel_type or self.fuel_type)]
+
     def _has_unknown_reading_between(self, start, end, dates=None):
-        """An undated distance within a fill span makes its consumption unknowable."""
-        if dates is not None:
-            return any(min(start.date, end.date) <= day <= max(start.date, end.date) for day in dates)
-        return self.fuel_logs.filter(
-            ~FuelLog.recorded_odometer_filter(),
-            FuelLog.date >= min(start.date, end.date),
-            FuelLog.date <= max(start.date, end.date),
-        ).first() is not None
+        """An unrecorded fuel reading within a fill span makes its consumption unknowable."""
+        if dates is None:
+            dates = self._unknown_fuel_reading_dates()
+        return any(min(start.date, end.date) <= day <= max(start.date, end.date) for day in dates)
 
     def _valid_consumption_segments(self, fuel_type=None):
         """Collect (distance, fuel) spans usable for the consumption average.
@@ -611,8 +614,7 @@ class Vehicle(db.Model):
         ).order_by(FuelLog.odometer).all()
 
         other_fuel_odometers = self._other_fuel_odometers(fuel_type)
-        unknown_dates = [day for (day,) in self.fuel_logs.with_entities(FuelLog.date).filter(
-            ~FuelLog.recorded_odometer_filter()).all()]
+        unknown_dates = self._unknown_fuel_reading_dates()
         segments = []
         for start, end in zip(full_logs, full_logs[1:]):
             if self._has_unknown_reading_between(start, end, unknown_dates):
