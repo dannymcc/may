@@ -191,11 +191,6 @@ function updateQuickStationName(selectEl) {
     if (name) stationInput.value = name;
 }
 
-function parseDecimal(value) {
-    if (!value || value === '') return 0;
-    return parseFloat(value) || 0;
-}
-
 function calcQuickFuel(changed) {
     const volumeEl = document.getElementById('volume');
     const priceEl = document.getElementById('price_per_unit');
