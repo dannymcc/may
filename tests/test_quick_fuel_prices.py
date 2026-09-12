@@ -20,6 +20,7 @@ def test_quick_price_uses_primary_fuel_and_preserves_zero(auth_client, sample_ve
     assert get_last_fuel_price(sample_vehicle, test_user.id) == 1.5
     add_log(sample_vehicle, test_user, 0, 'diesel')
     add_log(sample_vehicle, test_user, -1, 'diesel')
+    add_log(sample_vehicle, test_user, 1001, 'diesel')
     assert get_last_fuel_price(sample_vehicle, test_user.id) == 0
     html = auth_client.get(f'/fuel/quick?vehicle_id={sample_vehicle.id}').text
     assert re.search(r'id="price_per_unit"[^>]*value="0(?:\.0)?"', html)
@@ -50,3 +51,20 @@ def test_quick_price_excludes_other_users_and_invalid_vehicle(auth_client, sampl
     html = auth_client.get(f'/fuel/quick?vehicle_id={private.id}').text
     assert 'data-last-price="8' not in html
     assert re.search(r'id="price_per_unit"[^>]*value=""', html)
+
+
+def test_quick_zero_price_is_saved_in_station_history(auth_client, sample_vehicle, test_user):
+    from app.models import FuelStation, FuelPriceHistory
+    station = FuelStation(user_id=test_user.id, name='Free fuel')
+    db.session.add(station)
+    db.session.commit()
+    response = auth_client.post('/fuel/quick', data={
+        'vehicle_id': sample_vehicle.id, 'odometer': '100', 'volume': '10',
+        'price_per_unit': '0', 'station_id': station.id,
+    })
+    assert response.status_code == 302
+    log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id).one()
+    assert log.total_cost == 0
+    assert log.price_per_unit == 0
+    assert FuelPriceHistory.query.filter_by(fuel_log_id=log.id).one().price_per_unit == 0
+    assert station.times_used == 1

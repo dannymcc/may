@@ -518,9 +518,9 @@ def quick():
         price_per_unit = parse_decimal(request.form.get('price_per_unit')) if request.form.get('price_per_unit') else None
 
         # Derive missing value if two of the three are provided
-        if volume and price_per_unit and not total_cost:
+        if volume and price_per_unit is not None and total_cost is None:
             total_cost = round(volume * price_per_unit, 2)
-        elif volume and total_cost and not price_per_unit:
+        elif volume and total_cost is not None and price_per_unit is None:
             price_per_unit = round(total_cost / volume, 3)
 
         log = FuelLog(
@@ -555,7 +555,7 @@ def quick():
                     user_id=current_user.id,
                     name=station_name
                 ).first()
-        if station and log.price_per_unit:
+        if station and log.price_per_unit is not None:
             db.session.add(FuelPriceHistory(
                 station_id=station.id,
                 user_id=current_user.id,
