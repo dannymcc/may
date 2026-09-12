@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.44.1] - 2026-09-12
+
+### Fixed
+
+- Quick fuel entry remembers the selected vehicle's latest primary-fuel price
+  and keeps the price stable while editing the total. Switching vehicles updates
+  the price, or clears it when no matching history exists. AdBlue and other fuel
+  types cannot supply a primary-fuel default. (#376)
+- Preserve zero-price defaults, calculated zero totals, and station history for
+  free fill-ups. Vehicle defaults remain limited to accessible vehicles.
+- Align quick fuel form controls while retaining dark-mode colours and spacing
+  between entered values and unit labels.
+
 ## [0.44.0] - 2026-09-11
 
 ### Fixed
