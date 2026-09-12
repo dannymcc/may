@@ -475,12 +475,14 @@ def delete_attachment(log_id, attachment_id):
     return redirect(url_for('fuel.edit', log_id=log_id))
 
 
-def get_last_fuel_price(vehicle_id, user_id):
+def get_last_fuel_price(vehicle, user_id):
     """Get the most recent fuel price for a vehicle, or None."""
     last_log = FuelLog.query.filter(
-        FuelLog.vehicle_id == vehicle_id,
+        FuelLog.vehicle_id == vehicle.id,
         FuelLog.user_id == user_id,
-        FuelLog.price_per_unit.isnot(None)
+        FuelLog.effective_fuel_type_filter(vehicle.get_primary_fuel_type(), vehicle.fuel_type),
+        FuelLog.price_per_unit >= 0,
+        FuelLog.price_per_unit <= 1000
     ).order_by(FuelLog.date.desc(), FuelLog.id.desc()).first()
     return last_log.price_per_unit if last_log else None
 
@@ -579,18 +581,18 @@ def quick():
     if not selected_vehicle_id and len(vehicles) == 1:
         selected_vehicle_id = vehicles[0].id
 
-    # Get last odometer and price for selected vehicle
-    last_odometer = None
-    last_price = None
-    if selected_vehicle_id:
-        vehicle = db.session.get(Vehicle, selected_vehicle_id)
-        if vehicle:
-            last_odometer = vehicle.get_last_odometer()
-            last_price = get_last_fuel_price(selected_vehicle_id, current_user.id)
+    # Resolve defaults only from vehicles this user can access.
+    vehicle = next((v for v in vehicles if v.id == selected_vehicle_id), vehicles[0])
+    if selected_vehicle_id != vehicle.id:
+        selected_vehicle_id = None
+    last_odometer = vehicle.get_last_odometer()
+    last_prices = {v.id: get_last_fuel_price(v, current_user.id) for v in vehicles}
+    last_price = last_prices[vehicle.id]
 
     return render_template('fuel/quick.html',
                            vehicles=vehicles,
                            stations=stations,
                            selected_vehicle_id=selected_vehicle_id,
                            last_odometer=last_odometer,
-                           last_price=last_price)
+                           last_price=last_price,
+                           last_prices=last_prices)

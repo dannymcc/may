@@ -14,9 +14,10 @@
         <div>
             <label for="vehicle_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Vehicle') }}</label>
             <select name="vehicle_id" id="vehicle_id" required onchange="updateVehicleOdometer()"
-                    class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 {% for vehicle in vehicles %}
                 <option value="{{ vehicle.id }}"
+                        data-last-price="{{ last_prices[vehicle.id] if last_prices[vehicle.id] is not none else '' }}"
                         data-odometer="{{ vehicle.get_last_odometer(vehicle.get_effective_odometer_unit()) }}"
                         data-odometer-unit="{{ vehicle.get_reading_unit() }}"
                         data-reading-label="{{ vehicle.get_reading_label() }}"
@@ -43,7 +44,7 @@
             <div class="mt-1 relative">
                 <input type="number" name="odometer" id="odometer" required step="0.1"
                        placeholder="{{ last_odometer or '0' }}"
-                       class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                       class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white pl-3 pr-12 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <span id="odometer-unit-badge" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{{ current_user.distance_unit }}</span>
             </div>
             <p id="last-odometer-hint" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -58,7 +59,7 @@
                 <div class="mt-1 relative">
                     <input type="number" name="volume" id="volume" step="0.001"
                            oninput="calcQuickFuel('volume')"
-                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white pl-3 pr-12 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{{ current_user.volume_unit }}</span>
                 </div>
             </div>
@@ -67,8 +68,8 @@
                 <div class="mt-1 relative">
                     <input type="number" name="price_per_unit" id="price_per_unit" step="0.001"
                            oninput="calcQuickFuel('price')"
-                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                           value="{{ last_price or '' }}">
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white pl-3 pr-12 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                           value="{{ last_price if last_price is not none else '' }}">
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{{ current_user.currency }}</span>
                 </div>
             </div>
@@ -78,7 +79,7 @@
             <div class="mt-1 relative">
                 <input type="number" name="total_cost" id="total_cost" step="0.01"
                        oninput="calcQuickFuel('total')"
-                       class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                       class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white pl-3 pr-12 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{{ current_user.currency }}</span>
             </div>
         </div>
@@ -95,7 +96,7 @@
             <label for="station" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Station') }}</label>
             {% if stations %}
             <select name="station_id" id="station_id" onchange="updateQuickStationName(this)"
-                    class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <option value="">{{ _('Select station or enter manually...') }}</option>
                 {% for station in stations %}
                 <option value="{{ station.id }}" data-name="{{ station.name }}{% if station.brand %} ({{ station.brand }}){% endif %}">
@@ -107,7 +108,7 @@
             {% endif %}
             <input type="text" name="station" id="station"
                    placeholder="{{ _('Optional') }}"
-                   class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                   class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
         </div>
 
         <!-- Submit Buttons -->
@@ -143,6 +144,8 @@ const T_FROM_TESSIE = {{ _('From Tessie')|tojson }};
 function updateVehicleOdometer() {
     const select = document.getElementById('vehicle_id');
     const option = select.options[select.selectedIndex];
+    document.getElementById('price_per_unit').value = option.dataset.lastPrice || '';
+    calcQuickFuel('price');
     const odometer = option.dataset.odometer;
     const odometerUnit = option.dataset.odometerUnit || '{{ current_user.distance_unit }}';
     const usesTessie = option.dataset.usesTessie === 'true';
@@ -202,16 +205,16 @@ function calcQuickFuel(changed) {
 
     if (changed === 'volume') {
       // Volume changed: recalculate total if price is set
-      if (volume > 0 && price > 0) {
+      if (volume > 0 && price !== null && price >= 0) {
         totalEl.value = (volume * price).toFixed(2);
       }
     } else if (changed === 'price') {
       // Price changed: recalculate total if volume is set
-      if (volume > 0 && price > 0) {
+      if (volume > 0 && price !== null && price >= 0) {
         totalEl.value = (volume * price).toFixed(2);
       }
     } else if (changed === 'total') {
-      // Total changed: recalculate either price or volume
+      // Keep the chosen price stable while editing the total
       if (total > 0 && price > 0) {
         volumeEl.value = (total / price).toFixed(3);
       }
