@@ -34,10 +34,12 @@ def _section_0_42_0():
 
 
 def test_app_version_is_bumped_to_current_release():
-    # Bumped to 0.42.1 for the mobile-row-truncation patch (#347). The 0.42.0
-    # changelog assertions below stay pinned — that section is history and must
-    # not be rewritten by a later release.
-    assert config.APP_VERSION == '0.44.0'
+    # Keep the app and newest release notes in sync without pinning later
+    # releases to a historical version. The 0.42.0 checks below stay pinned.
+    latest_release = re.search(r'^## \[([0-9]+\.[0-9]+\.[0-9]+)\] - ',
+                               _changelog_text(), re.MULTILINE)
+    assert latest_release is not None
+    assert config.APP_VERSION == latest_release.group(1)
 
 
 def test_changelog_dates_0_42_0_to_the_release_date():
