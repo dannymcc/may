@@ -34,6 +34,7 @@ else:
 
 
 SECRET_KEY_FILE = basedir / 'data' / '.secret_key'
+ALLOW_SELFHOSTED_WEBHOOK = int(os.environ.get('ALLOW_SELFHOSTED_WEBHOOK', 0))
 
 
 def _read_secret_key(path):
