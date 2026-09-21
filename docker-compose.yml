@@ -20,6 +20,8 @@ services:
       - PGID=${PGID:-1000}
       # Optional: set a fixed admin password (default is auto-generated and shown in logs)
       # - ADMIN_PASSWORD=your-secure-password
+      # Optional: enable if you want to send webhooks in the same network
+      # - ALLOW_SELFHOSTED_WEBHOOK=1
 
 volumes:
   may_data:

@@ -178,6 +178,7 @@ in `.env` has no effect — edit `docker-compose.yml` instead.
 | `TAILWIND_ASSET_URL` | Local Tailwind Play CDN JS path | `/static/vendor/tailwindcss.js` |
 | `TAILWIND_CDN_URL` | Tailwind CDN fallback URL | `https://cdn.tailwindcss.com` |
 | `HTMX_CDN_URL` | HTMX CDN URL | `https://unpkg.com/htmx.org@1.9.10` |
+| `ALLOW_SELFHOSTED_WEBHOOK` | Allow application to send webhooks in the same network | `0` (`Disabled`) |
 
 By default, Tailwind loads from `app/static/vendor/tailwindcss.js` and falls back to the CDN URL if the local asset is missing.
 
