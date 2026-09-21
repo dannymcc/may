@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.44.3] - 2026-09-21
+
+### Fixed
+
+- Allow application to send webhook on self-hosted application, where both applications 
+operate on the same network, with the port number being the only distinction between them.
+- Validate the webhook URL before sending a message.
+
 ## [0.44.2] - 2026-09-12
 
 ### Fixed
