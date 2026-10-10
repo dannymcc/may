@@ -5467,3 +5467,19 @@ msgstr "Ainda não existe histórico de manutenção."
 
 msgid "Axle"
 msgstr "Eixo"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Custo líquido por"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Custo líquido por %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Mostrar custo líquido por %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Deduz os reembolsos de quilometragem registados."

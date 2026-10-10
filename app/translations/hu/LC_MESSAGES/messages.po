@@ -5481,3 +5481,19 @@ msgstr "Még nincsenek karbantartási előzmények."
 
 msgid "Axle"
 msgstr "Tengely"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Nettó költség /"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Nettó költség / %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Nettó költség megjelenítése / %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Levonja a rögzített kilométer-költségtérítéseket."

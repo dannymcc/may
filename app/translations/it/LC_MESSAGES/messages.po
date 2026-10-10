@@ -5483,3 +5483,19 @@ msgstr "Nessuna cronologia di manutenzione disponibile."
 
 msgid "Axle"
 msgstr "Asse"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Costo netto per"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Costo netto per %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Mostra costo netto per %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Sottrae i rimborsi chilometrici registrati."

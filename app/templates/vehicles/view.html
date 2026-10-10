@@ -201,9 +201,16 @@
     {% endif %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Cost per') }} {{ vehicle.get_reading_unit() }}</dt>
-        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{% if stats.cost_per_distance %}{{ stats.cost_per_distance|money }}{% else %}-{% endif %}</dd>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{% if stats.cost_per_distance is not none %}{{ stats.cost_per_distance|money }}{% else %}-{% endif %}</dd>
         <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.currency }}</dd>
     </div>
+    {% if current_user.show_net_cost_per_distance %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Net cost per %(unit)s', unit=vehicle.get_reading_unit()) }}</dt>
+        <dd class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{% if stats.net_cost_per_distance is not none %}{{ stats.net_cost_per_distance|money }}{% else %}-{% endif %}</dd>
+        <dd class="text-sm text-gray-500 dark:text-gray-400">{{ current_user.currency }}</dd>
+    </div>
+    {% endif %}
     {% if vehicle.uses_fuel() and stats.total_fuel_volume %}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ _('Fuel Used') }}</dt>

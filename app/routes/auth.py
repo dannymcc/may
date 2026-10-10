@@ -215,6 +215,7 @@ def settings():
         if submitted_separator in ('none', 'space', 'comma', 'period'):
             current_user.thousand_separator = submitted_separator
         current_user.round_costs = request.form.get('round_costs') == 'on'
+        current_user.show_net_cost_per_distance = request.form.get('show_net_cost_per_distance') == 'on'
         currency = (request.form.get('currency', 'USD') or 'USD').strip()
         if currency == 'custom':
             custom_currency = (request.form.get('custom_currency') or '').strip()

@@ -5303,3 +5303,19 @@ msgstr "整備履歴はまだありません。"
 
 msgid "Axle"
 msgstr "車軸"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "純費用 /"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "%(unit)sあたりの純費用"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "%(unit)sあたりの純費用を表示"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "記録された走行距離精算額を差し引きます。"

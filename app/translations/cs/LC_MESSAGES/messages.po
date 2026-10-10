@@ -5451,3 +5451,19 @@ msgstr "Zatím žádná historie údržby."
 
 msgid "Axle"
 msgstr "Náprava"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Čisté náklady na"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Čisté náklady na %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Zobrazit čisté náklady na %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Odečítá zaznamenané náhrady za ujetou vzdálenost."

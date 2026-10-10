@@ -5312,3 +5312,19 @@ msgstr "아직 정비 이력이 없습니다."
 
 msgid "Axle"
 msgstr "차축"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "순비용 /"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "%(unit)s당 순비용"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "%(unit)s당 순비용 표시"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "기록된 주행 거리 환급액을 차감합니다."
