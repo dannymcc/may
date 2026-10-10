@@ -55,6 +55,7 @@
                 <select name="frequency" id="frequency" required
                         class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                     <option value="monthly" {% if recurring and recurring.frequency == 'monthly' %}selected{% endif %}>{{ _('Monthly') }}</option>
+                    <option value="biweekly" {% if recurring and recurring.frequency == 'biweekly' %}selected{% endif %}>{{ _('Biweekly (every 2 weeks)') }}</option>
                     <option value="quarterly" {% if recurring and recurring.frequency == 'quarterly' %}selected{% endif %}>{{ _('Quarterly (every 3 months)') }}</option>
                     <option value="biannual" {% if recurring and recurring.frequency == 'biannual' %}selected{% endif %}>{{ _('Biannual (every 6 months)') }}</option>
                     <option value="yearly" {% if recurring and recurring.frequency == 'yearly' %}selected{% endif %}>{{ _('Yearly') }}</option>

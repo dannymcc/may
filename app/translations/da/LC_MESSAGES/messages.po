@@ -5461,3 +5461,11 @@ msgstr "Ingen vedligeholdelseshistorik endnu."
 
 msgid "Axle"
 msgstr "Aksel"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Lånebetaling"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Hver anden uge"

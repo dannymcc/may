@@ -5454,3 +5454,11 @@ msgstr "Brak historii konserwacji."
 
 msgid "Axle"
 msgstr "Oś"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Spłata kredytu"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Co dwa tygodnie"

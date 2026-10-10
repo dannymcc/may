@@ -1408,6 +1408,7 @@ EXPENSE_CATEGORIES = [
     ('repairs', _l('Repairs')),
     ('inspection', _l('Inspection')),
     ('insurance', _l('Insurance')),
+    ('loan_payment', _l('Loan Payment')),
     ('tax', _l('Road Tax')),
     ('registration', _l('Registration')),
     ('parking', _l('Parking')),
@@ -1815,7 +1816,7 @@ class RecurringExpense(db.Model):
     vendor = db.Column(db.String(100))
 
     # Recurrence settings
-    frequency = db.Column(db.String(20), nullable=False)  # weekly, monthly, quarterly, yearly
+    frequency = db.Column(db.String(20), nullable=False)  # weekly, biweekly, monthly, quarterly, biannual, yearly
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date)  # optional end date
 
@@ -1843,6 +1844,8 @@ class RecurringExpense(db.Model):
 
         if self.frequency == 'weekly':
             self.next_due = base_date + relativedelta(weeks=1)
+        elif self.frequency == 'biweekly':
+            self.next_due = base_date + relativedelta(weeks=2)
         elif self.frequency == 'monthly':
             self.next_due = base_date + relativedelta(months=1)
         elif self.frequency == 'quarterly':
