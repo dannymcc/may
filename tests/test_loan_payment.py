@@ -6,6 +6,7 @@ from app.models import Expense, RecurringExpense
 
 
 def test_loan_payment_save_edit_and_chart(auth_client, sample_vehicle):
+    """Create and edit a loan payment and include its updated cost in the chart."""
     form = auth_client.get('/expenses/new')
     assert b'value="loan_payment"' in form.data
     assert b'Loan Payment' in form.data
@@ -32,6 +33,7 @@ def test_loan_payment_save_edit_and_chart(auth_client, sample_vehicle):
 
 
 def test_recurring_loan_payment_generates_expense(auth_client, sample_vehicle):
+    """Preserve the loan payment category and amount when generating an expense."""
     form = auth_client.get('/recurring/new')
     assert b'value="loan_payment"' in form.data
     response = auth_client.post('/recurring/new', data={
@@ -50,6 +52,7 @@ def test_recurring_loan_payment_generates_expense(auth_client, sample_vehicle):
 
 
 def test_api_accepts_loan_payment(client, api_headers, sample_vehicle):
+    """Accept the loan payment category when creating an expense through the API."""
     response = client.post(f'/api/v1/vehicles/{sample_vehicle.id}/expenses',
         headers=api_headers, json={
             'date': '2026-10-01', 'category': 'loan_payment',

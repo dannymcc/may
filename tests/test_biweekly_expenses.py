@@ -6,6 +6,7 @@ from app.services.recurring_processor import process_due_recurring_expenses
 
 
 def test_biweekly_form_save_and_generate(auth_client, sample_vehicle):
+    """Save a biweekly schedule and advance its generated payment across year-end."""
     form = auth_client.get('/recurring/new')
     assert b'Biweekly (every 2 weeks)' in form.data
     response = auth_client.post('/recurring/new', data={
@@ -27,6 +28,7 @@ def test_biweekly_form_save_and_generate(auth_client, sample_vehicle):
 
 
 def test_biweekly_catchup_does_not_duplicate(app, test_user, sample_vehicle):
+    """Generate overdue payments at 14-day intervals without duplicating a rerun."""
     today = date.today()
     start = today - timedelta(days=28)
     recurring = RecurringExpense(
