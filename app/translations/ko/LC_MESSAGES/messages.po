@@ -5312,3 +5312,11 @@ msgstr "아직 정비 이력이 없습니다."
 
 msgid "Axle"
 msgstr "차축"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "대출 상환"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "격주 (2주마다)"

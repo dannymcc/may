@@ -5309,3 +5309,10 @@ msgstr ""
 msgid "No fuel prices recorded yet."
 msgstr ""
 
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr ""
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr ""

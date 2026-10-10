@@ -5447,3 +5447,11 @@ msgstr "Ei vielä huoltohistoriaa."
 
 msgid "Axle"
 msgstr "Akseli"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Lainanmaksu"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Kahden viikon välein"

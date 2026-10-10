@@ -5303,3 +5303,11 @@ msgstr "整備履歴はまだありません。"
 
 msgid "Axle"
 msgstr "車軸"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "ローン返済"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "隔週（2週間ごと）"

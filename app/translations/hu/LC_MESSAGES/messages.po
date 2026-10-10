@@ -5481,3 +5481,11 @@ msgstr "Még nincsenek karbantartási előzmények."
 
 msgid "Axle"
 msgstr "Tengely"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Hiteltörlesztés"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Kéthetente"

@@ -5467,3 +5467,11 @@ msgstr "Ainda não existe histórico de manutenção."
 
 msgid "Axle"
 msgstr "Eixo"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Pagamento do empréstimo"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "A cada duas semanas"

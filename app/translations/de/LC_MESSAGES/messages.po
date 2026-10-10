@@ -5495,3 +5495,11 @@ msgstr "Noch keine Wartungshistorie."
 
 msgid "Axle"
 msgstr "Achse"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Kreditrate"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Alle zwei Wochen"

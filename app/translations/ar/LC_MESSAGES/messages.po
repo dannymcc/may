@@ -5386,3 +5386,11 @@ msgstr "لا يوجد سجل صيانة بعد."
 
 msgid "Axle"
 msgstr "المحور"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "سداد القرض"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "كل أسبوعين"

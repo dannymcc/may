@@ -5462,3 +5462,11 @@ msgstr "Истории обслуживания пока нет."
 
 msgid "Axle"
 msgstr "Ось"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Платёж по кредиту"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Каждые две недели"

@@ -5483,3 +5483,11 @@ msgstr "Nog geen onderhoudshistorie."
 
 msgid "Axle"
 msgstr "As"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Leningbetaling"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Elke twee weken"

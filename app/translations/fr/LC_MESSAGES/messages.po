@@ -5489,3 +5489,11 @@ msgstr "Aucun historique d’entretien pour le moment."
 
 msgid "Axle"
 msgstr "Essieu"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Remboursement de prêt"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Toutes les deux semaines"

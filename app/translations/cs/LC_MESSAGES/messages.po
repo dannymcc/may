@@ -5451,3 +5451,11 @@ msgstr "Zatím žádná historie údržby."
 
 msgid "Axle"
 msgstr "Náprava"
+
+#: app/models.py:1411
+msgid "Loan Payment"
+msgstr "Splátka úvěru"
+
+#: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Každé dva týdny"
