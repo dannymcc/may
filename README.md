@@ -204,6 +204,24 @@ Add and manage your vehicles with detailed information:
 - **Service Timeline**: Combined history of fuel, expenses, and charging, including any notes recorded against an entry and links to its attachments
 - **Expenses by Category**: A collapsible bar chart on the vehicle page breaking that vehicle's expenses down by category, alongside the dashboard chart covering the whole fleet. Vehicles with no expenses recorded do not show it.
 
+#### Starting odometer
+
+The optional **Starting odometer** field on a vehicle records the reading when
+cost tracking began, in the vehicle's odometer unit (or engine hours).
+
+- Leave it blank to retain May's existing distance calculation: the highest
+  usable fuel reading minus the lowest, or the full Tessie odometer for a
+  Tessie-connected vehicle.
+- Enter a value, including zero, to subtract it from the highest usable fuel
+  reading. Tessie-connected vehicles use the Tessie reading instead.
+- Trip, expense, and charging-session readings do not extend this distance.
+  With no usable endpoint, or a starting reading at or above the endpoint,
+  distance is zero and no cost-per-distance rate is calculated.
+
+This affects Total Distance and cost-per-distance statistics, not fuel economy.
+Costs are not date-filtered by the field, so choose a starting reading matching
+the costs you track. JSON backups preserve this value.
+
 ### Fuel Logs
 Track every fill-up with:
 - Date, odometer reading, and fuel amount

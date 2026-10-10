@@ -1,4 +1,5 @@
 import os
+import math
 import uuid
 from base64 import b64encode
 from io import BytesIO
@@ -84,16 +85,38 @@ def index():
                            archived_count=archived_count)
 
 
+def _starting_odometer_input():
+    """Parse an optional finite, nonnegative baseline; blank clears it."""
+    value = request.form.get('starting_odometer', '').strip()
+    if not value:
+        return None
+    try:
+        number = parse_decimal(value)
+    except ValueError:
+        raise ValueError('invalid starting odometer') from None
+    if number is None or not math.isfinite(number) or number < 0:
+        raise ValueError('invalid starting odometer')
+    return number
+
+
 @bp.route('/new', methods=['GET', 'POST'])
 @login_required
 def new():
+    """Create a vehicle with an optional validated cost-tracking baseline."""
     if request.method == 'POST':
+        try:
+            starting_odometer = _starting_odometer_input()
+        except ValueError:
+            flash(_('Starting odometer must be a nonnegative number.'), 'error')
+            return redirect(url_for('vehicles.new'))
+
         vehicle = Vehicle(
             owner_id=current_user.id,
             name=request.form.get('name'),
             vehicle_type=request.form.get('vehicle_type'),
             tracking_unit=request.form.get('tracking_unit', 'mileage'),
             odometer_unit=request.form.get('odometer_unit') or None,
+            starting_odometer=starting_odometer,
             make=request.form.get('make'),
             model=request.form.get('model'),
             year=int(request.form.get('year')) if request.form.get('year') else None,
@@ -260,14 +283,24 @@ def view(vehicle_id):
 @bp.route('/<int:vehicle_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit(vehicle_id):
+    """Let owners update a vehicle and set or clear its starting odometer."""
     vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check ownership
-    if vehicle.owner_id != current_user.id and not current_user.is_admin:
+    if (vehicle not in current_user.get_all_vehicles()
+            or (vehicle.owner_id != current_user.id and not current_user.is_admin)):
         flash(_('Access denied'), 'error')
         return redirect(url_for('vehicles.index'))
 
     if request.method == 'POST':
+        try:
+            starting_odometer = (_starting_odometer_input()
+                                 if 'starting_odometer' in request.form else vehicle.starting_odometer)
+        except ValueError:
+            flash(_('Starting odometer must be a nonnegative number.'), 'error')
+            return redirect(url_for('vehicles.edit', vehicle_id=vehicle.id))
+        vehicle.starting_odometer = starting_odometer
+
         vehicle.name = request.form.get('name')
         vehicle.vehicle_type = request.form.get('vehicle_type')
         # Changing the tracking unit would reinterpret every reading already
