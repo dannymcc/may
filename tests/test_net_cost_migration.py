@@ -8,6 +8,7 @@ from alembic.operations import Operations
 
 
 def test_net_cost_preference_migration(monkeypatch):
+    """Preserve existing accounts and preferences through repeat upgrades and rollback."""
     path = Path(__file__).resolve().parents[1] / 'migrations/versions/a7c9e2f4b610_add_net_cost_preference.py'
     spec = importlib.util.spec_from_file_location('net_cost_migration', path)
     migration = importlib.util.module_from_spec(spec)

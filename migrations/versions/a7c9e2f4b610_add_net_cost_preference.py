@@ -9,11 +9,13 @@ depends_on = None
 
 
 def upgrade():
+    """Add a default-off preference unless schema bootstrap already added it."""
     if 'show_net_cost_per_distance' not in {c['name'] for c in sa.inspect(op.get_bind()).get_columns('users')}:
         with op.batch_alter_table('users') as batch:
             batch.add_column(sa.Column('show_net_cost_per_distance', sa.Boolean(), nullable=False, server_default=sa.false()))
 
 
 def downgrade():
+    """Remove the display preference without changing other account data."""
     with op.batch_alter_table('users') as batch:
         batch.drop_column('show_net_cost_per_distance')

@@ -1,3 +1,5 @@
+"""Verify opt-in dashboard rates use fleet totals and compatible units."""
+
 from datetime import date
 import re
 import pytest
@@ -6,11 +8,13 @@ from app.models import Vehicle, Expense, MileageAllowance
 
 @pytest.mark.parametrize('allowance, expected', [(100, '0.30'), (1000, '0.00'), (1300, '-0.10')])
 def test_dashboard_weighted_net_cost(auth_client, test_user, sample_vehicle, monkeypatch, allowance, expected):
+    """Render weighted fleet rates, including zero, negative, and mixed-unit cases."""
     second = Vehicle(owner_id=test_user.id, name='Second', vehicle_type='car', fuel_type='petrol', odometer_unit='mi')
     db.session.add(second)
     db.session.flush()
     test_user.distance_unit = 'km'
     def distance(vehicle, unit=None):
+        """Supply already-converted distances and verify the requested display unit."""
         assert unit == 'km'
         return 1000 if vehicle.id == sample_vehicle.id else 2000
     monkeypatch.setattr(Vehicle, 'get_total_distance', distance)

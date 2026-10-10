@@ -1,3 +1,5 @@
+"""Verify the saved net-cost preference and vehicle statistics cards."""
+
 from datetime import date
 import re
 
@@ -9,6 +11,7 @@ from app.models import Expense, MileageAllowance, Vehicle
 
 @pytest.mark.parametrize('allowance,expected', [(0, 1690.12 / 2053), (804.54, 885.58 / 2053), (1690.12, 0), (1800, -109.88 / 2053)])
 def test_net_cost_card(auth_client, sample_vehicle, test_user, monkeypatch, allowance, expected):
+    """Preserve gross costs and display the net rate only after opting in."""
     monkeypatch.setattr(Vehicle, 'get_total_distance', lambda self, *args: 2053)
     db.session.add(Expense(vehicle_id=sample_vehicle.id, user_id=test_user.id,
                            date=date(2026, 10, 10), category='maintenance',
@@ -37,11 +40,13 @@ def test_net_cost_card(auth_client, sample_vehicle, test_user, monkeypatch, allo
 
 
 def test_no_distance_has_no_net_rate(app, sample_vehicle, monkeypatch):
+    """Avoid calculating a rate when no tracked distance is available."""
     monkeypatch.setattr(Vehicle, 'get_total_distance', lambda self, *args: 0)
     assert sample_vehicle.get_net_cost_per_distance() is None
 
 
 def test_settings_can_disable_net_card(auth_client, sample_vehicle, test_user):
+    """Persist opting out and ignore the obsolete query-string toggle."""
     test_user.show_net_cost_per_distance = True
     db.session.commit()
     response = auth_client.post('/auth/settings', data={})
