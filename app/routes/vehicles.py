@@ -91,10 +91,10 @@ def _starting_odometer_input():
     if not value:
         return None
     try:
-        number = float(value)
+        number = parse_decimal(value)
     except ValueError:
         raise ValueError('invalid starting odometer') from None
-    if not math.isfinite(number) or number < 0:
+    if number is None or not math.isfinite(number) or number < 0:
         raise ValueError('invalid starting odometer')
     return number
 
@@ -287,7 +287,8 @@ def edit(vehicle_id):
     vehicle = db.get_or_404(Vehicle, vehicle_id)
 
     # Check ownership
-    if vehicle.owner_id != current_user.id and not current_user.is_admin:
+    if (vehicle not in current_user.get_all_vehicles()
+            or (vehicle.owner_id != current_user.id and not current_user.is_admin)):
         flash(_('Access denied'), 'error')
         return redirect(url_for('vehicles.index'))
 

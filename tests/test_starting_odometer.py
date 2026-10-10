@@ -152,3 +152,62 @@ def test_tessie_baseline_units(app, sample_vehicle, monkeypatch):
     sample_vehicle.starting_odometer = 100
     assert sample_vehicle.get_total_distance() == pytest.approx(521.371)
     assert sample_vehicle.get_total_distance('km') == pytest.approx(1000 - 100 / 0.621371)
+
+
+@pytest.mark.parametrize('value,expected', [('1,5', 1.5), ('1.234,56', 1234.56), ('1,234.56', 1234.56)])
+def test_localised_baseline(auth_client, sample_vehicle, value, expected):
+    """Accept decimal formats supported by the other vehicle form fields."""
+    auth_client.post(f'/vehicles/{sample_vehicle.id}/edit', data={
+        'name': sample_vehicle.name, 'vehicle_type': 'car', 'starting_odometer': value})
+    db.session.refresh(sample_vehicle)
+    assert sample_vehicle.starting_odometer == expected
+
+
+def test_admin_edit_requires_vehicle_access(admin_client, sample_vehicle):
+    """Deny an unshared vehicle but allow an administrator once it is shared."""
+    url = f'/vehicles/{sample_vehicle.id}/edit'
+    data = {'name': sample_vehicle.name, 'vehicle_type': 'car', 'starting_odometer': '100'}
+    response = admin_client.post(url, data=data)
+    assert response.status_code == 302
+    assert sample_vehicle.starting_odometer is None
+    sample_vehicle.is_shared = True
+    db.session.commit()
+    admin_client.post(url, data=data)
+    db.session.refresh(sample_vehicle)
+    assert sample_vehicle.starting_odometer == 100
+
+
+@pytest.mark.parametrize('endpoint', ['/api/export/json', '/api/export/backup'])
+@pytest.mark.parametrize('tracking,unit', [('mileage', 'mi'), ('hours', 'km')])
+def test_baseline_export_restore_units(auth_client, sample_vehicle, admin_user, endpoint, tracking, unit):
+    """Both backup formats retain the baseline and its unit interpretation."""
+    import io
+    import json
+    import zipfile
+    from app.models import Vehicle
+    from app.services.backup_restore import restore_backup
+    sample_vehicle.starting_odometer = 120.5
+    sample_vehicle.odometer_unit = unit
+    sample_vehicle.tracking_unit = tracking
+    db.session.commit()
+    response = auth_client.get(endpoint)
+    assert response.status_code == 200
+    if endpoint.endswith('backup'):
+        with zipfile.ZipFile(io.BytesIO(response.data)) as archive:
+            data = json.loads(archive.read('data.json'))
+    else:
+        data = response.get_json()
+    restore_backup(data, admin_user)
+    restored = Vehicle.query.filter_by(owner_id=admin_user.id).one()
+    assert (restored.starting_odometer, restored.odometer_unit, restored.tracking_unit) == (120.5, unit, tracking)
+
+
+@pytest.mark.parametrize('value', [-1, float('nan'), float('inf'), 'bad', True])
+def test_restore_rejects_invalid_baseline(app, test_user, value):
+    """Reject corrupt backup baselines and roll back vehicle creation."""
+    from app.models import Vehicle
+    from app.services.backup_restore import BackupError, restore_backup
+    data = {'vehicles': [{'name': 'Invalid baseline', 'starting_odometer': value}]}
+    with pytest.raises(BackupError, match='Starting odometer'):
+        restore_backup(data, test_user)
+    assert Vehicle.query.filter_by(name='Invalid baseline').count() == 0
