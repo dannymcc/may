@@ -5309,3 +5309,17 @@ msgstr ""
 msgid "No fuel prices recorded yet."
 msgstr ""
 
+msgid "Net cost per"
+msgstr ""
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr ""
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr ""
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr ""

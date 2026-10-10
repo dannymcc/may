@@ -5386,3 +5386,19 @@ msgstr "لا يوجد سجل صيانة بعد."
 
 msgid "Axle"
 msgstr "المحور"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "صافي التكلفة لكل"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "صافي التكلفة لكل %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "إظهار صافي التكلفة لكل %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "يخصم تعويضات المسافة المسجلة."

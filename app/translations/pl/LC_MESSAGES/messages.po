@@ -5454,3 +5454,19 @@ msgstr "Brak historii konserwacji."
 
 msgid "Axle"
 msgstr "Oś"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Koszt netto na"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Koszt netto na %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Pokaż koszt netto na %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Odejmuje zapisane zwroty kosztów przejazdu."

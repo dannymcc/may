@@ -5489,3 +5489,19 @@ msgstr "Aucun historique d’entretien pour le moment."
 
 msgid "Axle"
 msgstr "Essieu"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Coût net par"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Coût net par %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Afficher le coût net par %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Déduit les indemnités kilométriques enregistrées."

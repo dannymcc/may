@@ -5444,3 +5444,19 @@ msgstr "Ingen vedlikeholdshistorikk ennå."
 
 msgid "Axle"
 msgstr "Aksel"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Nettokostnad per"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Nettokostnad per %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Vis nettokostnad per %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Trekker fra registrert kjøregodtgjørelse."

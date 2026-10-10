@@ -5483,3 +5483,19 @@ msgstr "Nog geen onderhoudshistorie."
 
 msgid "Axle"
 msgstr "As"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Nettokosten per"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Nettokosten per %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Nettokosten per %(unit)s tonen"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Trekt geregistreerde kilometervergoedingen af."

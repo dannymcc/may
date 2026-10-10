@@ -5447,3 +5447,19 @@ msgstr "Ei vielä huoltohistoriaa."
 
 msgid "Axle"
 msgstr "Akseli"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Nettokustannus per"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Nettokustannus / %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Näytä nettokustannus / %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Vähentää kirjatut kilometrikorvaukset."

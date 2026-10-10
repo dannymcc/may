@@ -5495,3 +5495,19 @@ msgstr "Noch keine Wartungshistorie."
 
 msgid "Axle"
 msgstr "Achse"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Nettokosten pro"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Nettokosten pro %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Nettokosten pro %(unit)s anzeigen"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Zieht erfasste Fahrtkostenerstattungen ab."

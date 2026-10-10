@@ -5462,3 +5462,19 @@ msgstr "Истории обслуживания пока нет."
 
 msgid "Axle"
 msgstr "Ось"
+
+#: app/templates/vehicles/view.html:203
+msgid "Net cost per"
+msgstr "Чистые затраты на"
+
+
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Чистые затраты на %(unit)s"
+
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Показывать чистые затраты на %(unit)s"
+
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Вычитает записанные компенсации за пробег."
