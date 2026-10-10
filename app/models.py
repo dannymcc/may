@@ -278,6 +278,8 @@ class Vehicle(db.Model):
     # Fuel info
     fuel_type = db.Column(db.String(20), default='petrol')  # petrol, diesel, electric, hybrid, lpg
     secondary_fuel_type = db.Column(db.String(20), nullable=True)  # e.g. adblue, lpg
+    # Baseline in the vehicle's odometer unit (or hours); None retains legacy totals.
+    starting_odometer = db.Column(db.Float, nullable=True)
     tank_capacity = db.Column(db.Float)  # in liters
     battery_capacity = db.Column(db.Float)  # in kWh for EVs
 
@@ -458,18 +460,44 @@ class Vehicle(db.Model):
     def get_total_distance(self, distance_unit=None):
         """Get total distance for the vehicle.
 
-        If Tessie is enabled, returns the current odometer reading.
-        Otherwise, calculates from fuel log entries.
+        An explicit starting odometer is subtracted from the highest usable
+        fuel reading (or Tessie reading). Trips, expenses, and charging
+        readings do not affect cost distance. A missing endpoint returns zero.
+
+        When the baseline is blank, preserve the original behavior:
+        if Tessie is enabled, return the current odometer reading.
+        Otherwise use the highest minus lowest usable fuel reading, requiring
+        at least two readings. Zero is a valid explicit baseline; None is blank.
 
         Args:
             distance_unit: If provided ('km' or 'mi'), converts the result
-                to this unit. Otherwise returns the raw value in the
-                vehicle's effective odometer unit.
+                to this unit. With a baseline, an omitted unit means the
+                vehicle's own unit. Without a baseline, Tessie retains its
+                legacy kilometres default; fuel logs use the vehicle unit.
 
         For an hours-tracked vehicle the readings are engine hours, so the
         span is returned as logged and ``distance_unit`` is ignored — there
         is no km/mi conversion to apply to an hour (#323).
         """
+        if self.starting_odometer is not None:
+            # A supplied baseline changes cost distance only. Fuel economy
+            # continues to use its existing full-tank consumption segments.
+            unit = self.get_effective_odometer_unit()
+            if (not self.tracks_hours() and self.uses_tessie_odometer()
+                    and self.tessie_last_odometer is not None):
+                latest = _distance_in(self.tessie_last_odometer, 'km', unit)
+            else:
+                last = self.fuel_logs.filter(
+                    FuelLog.recorded_odometer_filter()
+                ).order_by(FuelLog.odometer.desc()).first()
+                if last is None:
+                    return 0
+                latest = last.odometer
+            raw_distance = max(0, latest - self.starting_odometer)
+            if distance_unit and not self.tracks_hours():
+                return _distance_in(raw_distance, unit, distance_unit)
+            return raw_distance
+
         if self.tracks_hours():
             logs = self.fuel_logs.filter(FuelLog.recorded_odometer_filter()).order_by(FuelLog.odometer).all()
             if len(logs) < 2:
@@ -959,6 +987,7 @@ class Vehicle(db.Model):
             'fuel_type': self.fuel_type,
             'secondary_fuel_type': self.secondary_fuel_type,
             'tank_capacity': self.tank_capacity,
+            'starting_odometer': self.starting_odometer,
             'is_active': self.is_active,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'stats': {

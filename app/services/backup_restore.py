@@ -188,6 +188,7 @@ VEHICLE_SECTION = Section(
         'year': 'int', 'registration': 'str', 'vin': 'str',
         'tracking_unit': 'str', 'odometer_unit': 'str', 'fuel_type': 'str',
         'secondary_fuel_type': 'str', 'tank_capacity': 'float',
+        'starting_odometer': 'float',
         'battery_capacity': 'float', 'is_active': 'bool', 'notes': 'str',
         'image_filename': 'str', 'mot_status': 'str', 'mot_expiry': 'date',
         'tax_status': 'str', 'tax_due': 'date', 'created_at': 'datetime',
