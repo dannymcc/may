@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from app import db
 from app.models import MaintenanceSchedule
@@ -237,8 +239,10 @@ class TestAirConditioningService:
             'username': 'testuser', 'password': 'TestPass123!',
         }, follow_redirects=True)
         body = client.get('/maintenance/new').get_data(as_text=True)
-        assert 'value="air_conditioning_service"' in body
-        assert label in body
+        assert re.search(
+            rf'<option\b[^>]*value="air_conditioning_service"[^>]*>\s*{re.escape(label)}\s*</option>',
+            body,
+        )
         assert 'value="cabin_filter"' in body
 
         data = {
@@ -257,8 +261,10 @@ class TestAirConditioningService:
         assert label in client.get('/maintenance/').get_data(as_text=True)
 
         body = client.get(f'/maintenance/{schedule.id}/edit').get_data(as_text=True)
-        assert 'value="air_conditioning_service" selected' in body
-        assert label in body
+        assert re.search(
+            rf'<option\b[^>]*value="air_conditioning_service" selected[^>]*>\s*{re.escape(label)}\s*</option>',
+            body,
+        )
         data['interval_months'] = '24'
         assert client.post(f'/maintenance/{schedule.id}/edit', data=data).status_code == 302
         db.session.refresh(schedule)
@@ -275,4 +281,8 @@ class TestAirConditioningService:
         event = MaintenanceEvent.query.filter_by(schedule_id=schedule.id).one()
         assert event.maintenance_type == 'air_conditioning_service'
         assert event.performed_date == date(2026, 1, 15)
-        assert data['name'] in client.get('/maintenance/history').get_data(as_text=True)
+        body = client.get('/maintenance/history').get_data(as_text=True)
+        assert re.search(
+            rf'<article\b[^>]*>\s*<h2\b[^>]*>\s*{re.escape(data["name"])}\s*</h2>',
+            body,
+        )
