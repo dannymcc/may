@@ -5483,3 +5483,7 @@ msgstr "Nessuna cronologia di manutenzione disponibile."
 
 msgid "Axle"
 msgstr "Asse"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "Manutenzione dell’aria condizionata"

@@ -5386,3 +5386,7 @@ msgstr "لا يوجد سجل صيانة بعد."
 
 msgid "Axle"
 msgstr "المحور"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "صيانة مكيّف الهواء"

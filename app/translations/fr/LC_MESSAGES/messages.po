@@ -5489,3 +5489,7 @@ msgstr "Aucun historique d’entretien pour le moment."
 
 msgid "Axle"
 msgstr "Essieu"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "Entretien de la climatisation"
