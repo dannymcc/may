@@ -5483,3 +5483,7 @@ msgstr "Nog geen onderhoudshistorie."
 
 msgid "Axle"
 msgstr "As"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "Airco-onderhoud"

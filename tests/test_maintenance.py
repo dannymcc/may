@@ -217,3 +217,62 @@ def test_matching_service_details_on_different_vehicles_are_not_hidden(auth_clie
     db.session.commit()
     body = auth_client.get('/maintenance/history').get_data(as_text=True)
     assert body.count('Oil service') == 2
+
+
+class TestAirConditioningService:
+    """The built-in service type uses the normal schedule and history lifecycle."""
+
+    @pytest.mark.parametrize('language,label', [
+        ('en', 'Air-conditioning service'),
+        ('de', 'Klimaanlagenwartung'),
+    ])
+    def test_create_edit_and_complete(self, client, sample_vehicle, test_user,
+                                      language, label):
+        """Localize the selector/list and retain the type through edits and completion."""
+        from app.models import MaintenanceEvent
+
+        test_user.language = language
+        db.session.commit()
+        client.post('/auth/login', data={
+            'username': 'testuser', 'password': 'TestPass123!',
+        }, follow_redirects=True)
+        body = client.get('/maintenance/new').get_data(as_text=True)
+        assert 'value="air_conditioning_service"' in body
+        assert label in body
+        assert 'value="cabin_filter"' in body
+
+        data = {
+            'vehicle_id': str(sample_vehicle.id),
+            'name': 'Annual workshop visit',
+            'maintenance_type': 'air_conditioning_service',
+            'interval_months': '12',
+            'interval_km': '15000',
+        }
+        response = client.post('/maintenance/new', data=data)
+        assert response.status_code == 302
+        schedule = MaintenanceSchedule.query.filter_by(name=data['name']).one()
+        assert schedule.maintenance_type == 'air_conditioning_service'
+        assert schedule.interval_months == 12
+        assert schedule.interval_km == 15000
+        assert label in client.get('/maintenance/').get_data(as_text=True)
+
+        body = client.get(f'/maintenance/{schedule.id}/edit').get_data(as_text=True)
+        assert 'value="air_conditioning_service" selected' in body
+        assert label in body
+        data['interval_months'] = '24'
+        assert client.post(f'/maintenance/{schedule.id}/edit', data=data).status_code == 302
+        db.session.refresh(schedule)
+        assert schedule.interval_months == 24
+        assert schedule.maintenance_type == 'air_conditioning_service'
+
+        response = client.post(f'/maintenance/{schedule.id}/complete', data={
+            'performed_date': '2026-01-15', 'odometer': '20000',
+        })
+        assert response.status_code == 302
+        db.session.refresh(schedule)
+        assert schedule.next_due_date == date(2028, 1, 15)
+        assert schedule.next_due_odometer == 35000
+        event = MaintenanceEvent.query.filter_by(schedule_id=schedule.id).one()
+        assert event.maintenance_type == 'air_conditioning_service'
+        assert event.performed_date == date(2026, 1, 15)
+        assert data['name'] in client.get('/maintenance/history').get_data(as_text=True)

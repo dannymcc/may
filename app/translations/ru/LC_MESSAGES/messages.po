@@ -5462,3 +5462,7 @@ msgstr "Истории обслуживания пока нет."
 
 msgid "Axle"
 msgstr "Ось"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "Обслуживание кондиционера"

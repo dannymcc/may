@@ -5453,3 +5453,7 @@ msgstr "Ingen underhållshistorik ännu."
 
 msgid "Axle"
 msgstr "Axel"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "Service av luftkonditionering"

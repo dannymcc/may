@@ -5309,3 +5309,7 @@ msgstr ""
 msgid "No fuel prices recorded yet."
 msgstr ""
 
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr ""
