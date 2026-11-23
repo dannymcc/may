@@ -5546,3 +5546,146 @@ msgstr ""
 #: app/templates/vehicles/view.html:1290
 msgid "No fuel prices recorded yet."
 msgstr "Zatím nejsou zaznamenány žádné ceny paliva."
+
+#: app/models.py:2586
+msgid "Not recorded"
+msgstr "Nezaznamenáno"
+
+#: app/models.py:2587
+msgid "Front left"
+msgstr "Přední levá"
+
+#: app/models.py:2587
+msgid "Front right"
+msgstr "Přední pravá"
+
+#: app/models.py:2588
+msgid "Rear left"
+msgstr "Zadní levá"
+
+#: app/models.py:2588
+msgid "Rear right"
+msgstr "Zadní pravá"
+
+#: app/models.py:2589
+msgid "Front"
+msgstr "Přední"
+
+#: app/models.py:2589
+msgid "Rear"
+msgstr "Zadní"
+
+#: app/models.py:2589
+msgid "Spare"
+msgstr "Rezerva"
+
+#: app/models.py:2616
+msgid "Replacement threshold reached"
+msgstr "Dosažen práh výměny"
+
+#: app/models.py:2618
+msgid "Warning threshold reached"
+msgstr "Dosažen varovný práh"
+
+#: app/routes/tires.py:562
+msgid "Invalid tread measurement. Check the tire, date, depth and reading."
+msgstr "Neplatné měření. Zkontrolujte pneumatiku, datum, hloubku a stav počítadla."
+
+#: app/services/backup_restore.py:46
+#: app/templates/tires/_tread_history.html:3
+#: app/templates/tires/index.html:78
+msgid "Tread depth history"
+msgstr "Historie hloubky dezénu"
+
+#: app/templates/tires/_tread_form.html:101
+msgid "Leave threshold fields blank to disable them."
+msgstr "Prázdná pole mezních hodnot je vypnou."
+
+#: app/templates/tires/_tread_form.html:90
+msgid "Warning threshold"
+msgstr "Varovný práh"
+
+#: app/templates/tires/_tread_form.html:91
+msgid "Replacement threshold"
+msgstr "Práh výměny"
+
+#: app/templates/tires/tread.html:17
+msgid "New tire"
+msgstr "Nová pneumatika"
+
+#: app/templates/tires/tread.html:27
+msgid "New tire label"
+msgstr "Označení nové pneumatiky"
+
+#: app/templates/auth/settings.html:135 app/templates/tires/tread.html:36
+msgid "Tread depth"
+msgstr "Hloubka dezénu"
+
+#: app/templates/tires/tread.html:47
+msgid "Position at measurement"
+msgstr "Poloha při měření"
+
+#: app/templates/tires/_tread_history.html:26
+msgid "Delete this measurement?"
+msgstr "Smazat toto měření?"
+
+#: app/services/backup_restore.py:45
+msgid "Individual tires"
+msgstr "Jednotlivé pneumatiky"
+
+#: app/templates/tires/_tread_form.html:12
+msgid "Track tread depth"
+msgstr "Sledovat hloubku dezénu"
+
+#: app/templates/tires/_tread_form.html:15
+msgid "Leave wheels you did not measure blank."
+msgstr "U neměřených kol nechte pole prázdná."
+
+#: app/templates/tires/_tread_form.html:32
+msgid "Use the latest vehicle reading"
+msgstr "Použít poslední údaj vozidla"
+
+#: app/templates/tires/_tread_form.html:38
+msgid "If you moved a tire, select its existing label at the new position."
+msgstr "Pokud jste pneumatiku přemístili, na nové pozici vyberte její stávající označení."
+
+#: app/templates/tires/_tread_form.html:43
+msgid "Wheel positions"
+msgstr "Pozice kol"
+
+#: app/templates/tires/_tread_form.html:61
+msgid "Last measured:"
+msgstr "Poslední měření:"
+
+#: app/templates/tires/_tread_form.html:106 app/templates/tires/tread.html:2
+#: app/templates/tires/tread.html:10
+msgid "Individual measurements"
+msgstr "Jednotlivá měření"
+
+#: app/templates/tires/_tread_history.html:22
+msgid "Distance on this set"
+msgstr "Vzdálenost ujetá na této sadě"
+
+#: app/templates/tires/_tread_history.html:40
+msgid "No tread measurements yet."
+msgstr "Zatím nejsou žádná měření hloubky dezénu."
+
+#: app/routes/tires.py:331 app/routes/tires.py:378
+msgid "Check the tread depths, date, odometer and tire selection."
+msgstr "Zkontrolujte hloubky dezénu, datum, stav počítadla a výběr pneumatik."
+
+#: app/templates/tires/_tread_form.html:68
+msgid "Tire assignment"
+msgstr "Přiřazení pneumatiky"
+
+#: app/templates/tires/_tread_form.html:71
+msgid "First measurement"
+msgstr "První měření"
+
+#: app/templates/tires/_tread_form.html:75
+msgid "Replace tire"
+msgstr "Vyměnit pneumatiku"
+
+#: app/templates/tires/_tread_form.html:79
+msgid "The previous tire and its measurements stay in the history."
+msgstr "Předchozí pneumatika a její měření zůstanou v historii."

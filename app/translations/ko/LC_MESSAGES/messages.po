@@ -5397,3 +5397,146 @@ msgstr "소비 추이를 표시할 데이터가 충분하지 않습니다. 완�
 #: app/templates/vehicles/view.html:1290
 msgid "No fuel prices recorded yet."
 msgstr "아직 기록된 연료 가격이 없습니다."
+
+#: app/models.py:2586
+msgid "Not recorded"
+msgstr "기록되지 않음"
+
+#: app/models.py:2587
+msgid "Front left"
+msgstr "왼쪽 앞"
+
+#: app/models.py:2587
+msgid "Front right"
+msgstr "오른쪽 앞"
+
+#: app/models.py:2588
+msgid "Rear left"
+msgstr "왼쪽 뒤"
+
+#: app/models.py:2588
+msgid "Rear right"
+msgstr "오른쪽 뒤"
+
+#: app/models.py:2589
+msgid "Front"
+msgstr "앞"
+
+#: app/models.py:2589
+msgid "Rear"
+msgstr "뒤"
+
+#: app/models.py:2589
+msgid "Spare"
+msgstr "스페어"
+
+#: app/models.py:2616
+msgid "Replacement threshold reached"
+msgstr "교체 기준 도달"
+
+#: app/models.py:2618
+msgid "Warning threshold reached"
+msgstr "경고 기준 도달"
+
+#: app/routes/tires.py:562
+msgid "Invalid tread measurement. Check the tire, date, depth and reading."
+msgstr "잘못된 측정값입니다. 타이어, 날짜, 깊이 및 계기판 값을 확인하세요."
+
+#: app/services/backup_restore.py:46
+#: app/templates/tires/_tread_history.html:3
+#: app/templates/tires/index.html:78
+msgid "Tread depth history"
+msgstr "트레드 깊이 이력"
+
+#: app/templates/tires/_tread_form.html:101
+msgid "Leave threshold fields blank to disable them."
+msgstr "기준값을 사용하지 않으려면 비워 두세요."
+
+#: app/templates/tires/_tread_form.html:90
+msgid "Warning threshold"
+msgstr "경고 기준"
+
+#: app/templates/tires/_tread_form.html:91
+msgid "Replacement threshold"
+msgstr "교체 기준"
+
+#: app/templates/tires/tread.html:17
+msgid "New tire"
+msgstr "새 타이어"
+
+#: app/templates/tires/tread.html:27
+msgid "New tire label"
+msgstr "새 타이어 이름"
+
+#: app/templates/auth/settings.html:135 app/templates/tires/tread.html:36
+msgid "Tread depth"
+msgstr "트레드 깊이"
+
+#: app/templates/tires/tread.html:47
+msgid "Position at measurement"
+msgstr "측정 당시 위치"
+
+#: app/templates/tires/_tread_history.html:26
+msgid "Delete this measurement?"
+msgstr "이 측정을 삭제할까요?"
+
+#: app/services/backup_restore.py:45
+msgid "Individual tires"
+msgstr "개별 타이어"
+
+#: app/templates/tires/_tread_form.html:12
+msgid "Track tread depth"
+msgstr "트레드 깊이 기록"
+
+#: app/templates/tires/_tread_form.html:15
+msgid "Leave wheels you did not measure blank."
+msgstr "측정하지 않은 바퀴는 비워 두세요."
+
+#: app/templates/tires/_tread_form.html:32
+msgid "Use the latest vehicle reading"
+msgstr "최근 차량 계기판 값 사용"
+
+#: app/templates/tires/_tread_form.html:38
+msgid "If you moved a tire, select its existing label at the new position."
+msgstr "타이어를 옮겼다면 새 위치에서 기존 타이어 이름을 선택하세요."
+
+#: app/templates/tires/_tread_form.html:43
+msgid "Wheel positions"
+msgstr "바퀴 위치"
+
+#: app/templates/tires/_tread_form.html:61
+msgid "Last measured:"
+msgstr "최근 측정값:"
+
+#: app/templates/tires/_tread_form.html:106 app/templates/tires/tread.html:2
+#: app/templates/tires/tread.html:10
+msgid "Individual measurements"
+msgstr "개별 측정"
+
+#: app/templates/tires/_tread_history.html:22
+msgid "Distance on this set"
+msgstr "이 세트의 주행 거리"
+
+#: app/templates/tires/_tread_history.html:40
+msgid "No tread measurements yet."
+msgstr "아직 트레드 깊이 측정값이 없습니다."
+
+#: app/routes/tires.py:331 app/routes/tires.py:378
+msgid "Check the tread depths, date, odometer and tire selection."
+msgstr "트레드 깊이, 날짜, 계기판 값 및 선택한 타이어를 확인하세요."
+
+#: app/templates/tires/_tread_form.html:68
+msgid "Tire assignment"
+msgstr "타이어 지정"
+
+#: app/templates/tires/_tread_form.html:71
+msgid "First measurement"
+msgstr "첫 측정"
+
+#: app/templates/tires/_tread_form.html:75
+msgid "Replace tire"
+msgstr "타이어 교체"
+
+#: app/templates/tires/_tread_form.html:79
+msgid "The previous tire and its measurements stay in the history."
+msgstr "이전 타이어와 해당 측정값은 기록에 남습니다."

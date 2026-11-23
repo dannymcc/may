@@ -5549,3 +5549,146 @@ msgstr ""
 #: app/templates/vehicles/view.html:1290
 msgid "No fuel prices recorded yet."
 msgstr "Nie zarejestrowano jeszcze żadnych cen paliwa."
+
+#: app/models.py:2586
+msgid "Not recorded"
+msgstr "Nie zapisano"
+
+#: app/models.py:2587
+msgid "Front left"
+msgstr "Przód lewy"
+
+#: app/models.py:2587
+msgid "Front right"
+msgstr "Przód prawy"
+
+#: app/models.py:2588
+msgid "Rear left"
+msgstr "Tył lewy"
+
+#: app/models.py:2588
+msgid "Rear right"
+msgstr "Tył prawy"
+
+#: app/models.py:2589
+msgid "Front"
+msgstr "Przód"
+
+#: app/models.py:2589
+msgid "Rear"
+msgstr "Tył"
+
+#: app/models.py:2589
+msgid "Spare"
+msgstr "Zapasowe"
+
+#: app/models.py:2616
+msgid "Replacement threshold reached"
+msgstr "Osiągnięto próg wymiany"
+
+#: app/models.py:2618
+msgid "Warning threshold reached"
+msgstr "Osiągnięto próg ostrzegawczy"
+
+#: app/routes/tires.py:562
+msgid "Invalid tread measurement. Check the tire, date, depth and reading."
+msgstr "Nieprawidłowy pomiar. Sprawdź oponę, datę, głębokość i wskazanie licznika."
+
+#: app/services/backup_restore.py:46
+#: app/templates/tires/_tread_history.html:3
+#: app/templates/tires/index.html:78
+msgid "Tread depth history"
+msgstr "Historia głębokości bieżnika"
+
+#: app/templates/tires/_tread_form.html:101
+msgid "Leave threshold fields blank to disable them."
+msgstr "Pozostaw pola progów puste, aby je wyłączyć."
+
+#: app/templates/tires/_tread_form.html:90
+msgid "Warning threshold"
+msgstr "Próg ostrzegawczy"
+
+#: app/templates/tires/_tread_form.html:91
+msgid "Replacement threshold"
+msgstr "Próg wymiany"
+
+#: app/templates/tires/tread.html:17
+msgid "New tire"
+msgstr "Nowa opona"
+
+#: app/templates/tires/tread.html:27
+msgid "New tire label"
+msgstr "Nazwa nowej opony"
+
+#: app/templates/auth/settings.html:135 app/templates/tires/tread.html:36
+msgid "Tread depth"
+msgstr "Głębokość bieżnika"
+
+#: app/templates/tires/tread.html:47
+msgid "Position at measurement"
+msgstr "Pozycja podczas pomiaru"
+
+#: app/templates/tires/_tread_history.html:26
+msgid "Delete this measurement?"
+msgstr "Usunąć ten pomiar?"
+
+#: app/services/backup_restore.py:45
+msgid "Individual tires"
+msgstr "Pojedyncze opony"
+
+#: app/templates/tires/_tread_form.html:12
+msgid "Track tread depth"
+msgstr "Rejestruj głębokość bieżnika"
+
+#: app/templates/tires/_tread_form.html:15
+msgid "Leave wheels you did not measure blank."
+msgstr "Pozostaw puste pola przy kołach, których nie mierzono."
+
+#: app/templates/tires/_tread_form.html:32
+msgid "Use the latest vehicle reading"
+msgstr "Użyj ostatniego odczytu pojazdu"
+
+#: app/templates/tires/_tread_form.html:38
+msgid "If you moved a tire, select its existing label at the new position."
+msgstr "Jeśli zmienisz pozycję opony, wybierz jej dotychczasową etykietę w nowym miejscu."
+
+#: app/templates/tires/_tread_form.html:43
+msgid "Wheel positions"
+msgstr "Pozycje kół"
+
+#: app/templates/tires/_tread_form.html:61
+msgid "Last measured:"
+msgstr "Ostatni pomiar:"
+
+#: app/templates/tires/_tread_form.html:106 app/templates/tires/tread.html:2
+#: app/templates/tires/tread.html:10
+msgid "Individual measurements"
+msgstr "Pojedyncze pomiary"
+
+#: app/templates/tires/_tread_history.html:22
+msgid "Distance on this set"
+msgstr "Dystans przejechany na tym komplecie"
+
+#: app/templates/tires/_tread_history.html:40
+msgid "No tread measurements yet."
+msgstr "Brak pomiarów głębokości bieżnika."
+
+#: app/routes/tires.py:331 app/routes/tires.py:378
+msgid "Check the tread depths, date, odometer and tire selection."
+msgstr "Sprawdź głębokości bieżnika, datę, stan licznika i wybrane opony."
+
+#: app/templates/tires/_tread_form.html:68
+msgid "Tire assignment"
+msgstr "Przypisanie opony"
+
+#: app/templates/tires/_tread_form.html:71
+msgid "First measurement"
+msgstr "Pierwszy pomiar"
+
+#: app/templates/tires/_tread_form.html:75
+msgid "Replace tire"
+msgstr "Wymień oponę"
+
+#: app/templates/tires/_tread_form.html:79
+msgid "The previous tire and its measurements stay in the history."
+msgstr "Poprzednia opona i jej pomiary pozostaną w historii."

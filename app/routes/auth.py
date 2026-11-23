@@ -6,7 +6,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import User, AppSettings, USER_ROLES, USER_ROLE_DESCRIPTIONS, ROLE_EDITOR, ROLE_WRITE_SCOPES
+from app.models import User, AppSettings, USER_ROLES, USER_ROLE_DESCRIPTIONS, ROLE_EDITOR, ROLE_WRITE_SCOPES, TREAD_UNITS
 from app.security import (
     get_safe_redirect_url, validate_password_strength,
     validate_webhook_url, admin_required
@@ -224,6 +224,9 @@ def settings():
         current_user.distance_unit = request.form.get('distance_unit', 'km')
         current_user.volume_unit = request.form.get('volume_unit', 'L')
         current_user.consumption_unit = request.form.get('consumption_unit', 'L/100km')
+        tread_unit = request.form.get('tread_unit')
+        if tread_unit in TREAD_UNITS:
+            current_user.tread_unit = tread_unit
         submitted_separator = request.form.get('thousand_separator', 'none')
         if submitted_separator in ('none', 'space', 'comma', 'period'):
             current_user.thousand_separator = submitted_separator
@@ -320,6 +323,7 @@ def settings():
     registration_enabled = AppSettings.get('registration_enabled', 'true') == 'true'
 
     return render_template('auth/settings.html',
+                           tread_units=TREAD_UNITS,
                            branding=branding,
                            smtp_settings=smtp_settings,
                            smtp_configured=smtp_configured,

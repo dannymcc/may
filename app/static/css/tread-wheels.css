@@ -1,0 +1,96 @@
+.tread-wheel-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(2.5rem, 16%, 5.5rem) minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(5rem, auto));
+    gap: .75rem .5rem;
+    align-items: start;
+    margin-block-start: 1rem;
+    min-inline-size: 0;
+}
+
+.tread-wheel-layout[hidden] { display: none; }
+
+.tread-wheel-layout--car { direction: ltr; }
+
+.tread-wheel { min-width: 0; }
+.tread-wheel--front_left { grid-area: 1 / 1; }
+.tread-wheel--front_right { grid-area: 1 / 3; }
+.tread-wheel--rear_left { grid-area: 2 / 1; }
+.tread-wheel--rear_right { grid-area: 2 / 3; }
+.tread-wheel--front { grid-area: 1 / 3; }
+.tread-wheel--rear { grid-area: 2 / 3; }
+
+[dir="rtl"] .tread-wheel { direction: rtl; }
+
+.tread-depth-input {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+.tread-body {
+    grid-area: 1 / 2 / 3;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    align-self: stretch;
+    padding-block: .25rem;
+}
+
+.tread-body-shell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 72%;
+    border: 2px solid #64748b;
+    border-radius: 40% 40% 27% 27% / 14% 14% 10% 10%;
+    background: #cbd5e1;
+}
+
+.tread-body-cabin {
+    width: 76%;
+    height: 54%;
+    border: 1px solid #64748b;
+    border-block-width: .65rem;
+    border-radius: 27% / 17%;
+    background: #e2e8f0;
+}
+
+.tread-body-shell::before,
+.tread-body-shell::after {
+    content: '';
+    position: absolute;
+    inset-inline: -23%;
+    height: 19%;
+    z-index: 0;
+    background: linear-gradient(to right, #475569 18%, transparent 18% 82%, #475569 82%);
+    border-radius: .2rem;
+}
+
+.tread-body-shell::before { top: 15%; }
+.tread-body-shell::after { bottom: 15%; }
+.dark .tread-body-shell { background: #475569; border-color: #94a3b8; }
+.dark .tread-body-cabin { background: #334155; border-color: #94a3b8; }
+.dark .tread-body-shell::before,
+.dark .tread-body-shell::after {
+    background: linear-gradient(to right, #94a3b8 18%, transparent 18% 82%, #94a3b8 82%);
+}
+
+.tread-wheel-layout--bike .tread-body-shell {
+    width: 32%;
+    border-radius: 36%;
+}
+
+.tread-wheel-layout--bike .tread-body-cabin {
+    width: 140%;
+    height: 35%;
+}
+
+.tread-wheel-layout--bike .tread-body-shell::before,
+.tread-wheel-layout--bike .tread-body-shell::after {
+    inset-inline: 10%;
+    background: #475569;
+}
+
+.dark .tread-wheel-layout--bike .tread-body-shell::before,
+.dark .tread-wheel-layout--bike .tread-body-shell::after { background: #94a3b8; }

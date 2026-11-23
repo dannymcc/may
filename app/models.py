@@ -1,3 +1,4 @@
+from uuid import uuid4
 import secrets
 from datetime import date, datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -82,6 +83,9 @@ vehicle_users = db.Table('vehicle_users',
 )
 
 
+TREAD_UNITS = {'mm': 'mm', 'inch32': '1/32″'}
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -96,6 +100,7 @@ class User(UserMixin, db.Model):
     # User preferences
     language = db.Column(db.String(10), default='en')  # en, de, fr, es, etc.
     distance_unit = db.Column(db.String(10), default='km')  # km, mi
+    tread_unit = db.Column(db.String(8), nullable=False, default='mm', server_default='mm')
     volume_unit = db.Column(db.String(10), default='L')  # L, gal, us_gal
     consumption_unit = db.Column(db.String(10), default='L/100km')  # L/100km, mpg, mpg_us
     currency = db.Column(db.String(10), default='USD')
@@ -2433,6 +2438,9 @@ class TireSet(db.Model):
     name = db.Column(db.String(100), nullable=False)  # "Michelin Alpin 6"
     tire_type = db.Column(db.String(20), nullable=False, default='all_season')
     size = db.Column(db.String(50))  # "205/55 R16 91H"
+    tread_tracking = db.Column(db.Boolean)
+    tread_warning_mm = db.Column(db.Float)
+    tread_replace_mm = db.Column(db.Float)
 
     purchase_date = db.Column(db.Date)
     purchase_odometer = db.Column(db.Float)  # vehicle odometer when the set was bought
@@ -2462,6 +2470,13 @@ class TireSet(db.Model):
     @property
     def is_fitted(self):
         return self.current_fitment is not None
+
+    @property
+    def tracks_tread(self):
+        # Legacy backups and sets created before opt-in inherit their existing use.
+        if self.tread_tracking is not None:
+            return self.tread_tracking
+        return bool(self.tires or self.tread_warning_mm is not None or self.tread_replace_mm is not None)
 
     def get_distance(self, current_odometer=None):
         """Total distance covered on this set, in the vehicle's odometer unit.
@@ -2499,6 +2514,10 @@ class TireSet(db.Model):
             'is_fitted': self.is_fitted,
             'distance': self.get_distance(),
             'fitments': [f.to_dict() for f in self.fitments.all()],
+            'tires': [t.to_dict() for t in self.tires],
+            'tread_tracking': self.tread_tracking,
+            'tread_warning_mm': self.tread_warning_mm,
+            'tread_replace_mm': self.tread_replace_mm,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 
@@ -2561,3 +2580,70 @@ class TireFitment(db.Model):
             'removed_odometer': self.removed_odometer,
             'distance': self.get_distance(),
         }
+
+
+TIRE_POSITIONS = (
+    ('', _l('Not recorded')),
+    ('front_left', _l('Front left')), ('front_right', _l('Front right')),
+    ('rear_left', _l('Rear left')), ('rear_right', _l('Rear right')),
+    ('front', _l('Front')), ('rear', _l('Rear')), ('spare', _l('Spare')),
+)
+
+
+class Tire(db.Model):
+    """A physical tire; its identity survives wheel-position changes (#424)."""
+    __tablename__ = 'tires'
+    id = db.Column(db.Integer, primary_key=True)
+    tire_set_id = db.Column(db.Integer, db.ForeignKey('tire_sets.id'), nullable=False)
+    identity = db.Column(db.String(36), nullable=False,
+                         default=lambda: uuid4().hex)
+    label = db.Column(db.String(100), nullable=False)
+    tire_set = db.relationship('TireSet', backref=db.backref(
+        'tires', cascade='all, delete-orphan', order_by='Tire.id'))
+    __table_args__ = (db.UniqueConstraint('tire_set_id', 'label'),
+                      db.UniqueConstraint('tire_set_id', 'identity'))
+
+    @property
+    def latest_measurement(self):
+        return self.measurements[0] if self.measurements else None
+
+    @property
+    def tread_status(self):
+        latest = self.latest_measurement
+        if latest is None:
+            return None
+        if self.tire_set.tread_replace_mm is not None and latest.depth_mm <= self.tire_set.tread_replace_mm:
+            return _l('Replacement threshold reached')
+        if self.tire_set.tread_warning_mm is not None and latest.depth_mm <= self.tire_set.tread_warning_mm:
+            return _l('Warning threshold reached')
+        return None
+
+    def to_dict(self):
+        return dict(identity=self.identity, label=self.label,
+                    measurements=[m.to_dict() for m in self.measurements])
+
+
+class TireMeasurement(db.Model):
+    """One dated reading; position describes this measurement, not tire identity."""
+    __tablename__ = 'tire_measurements'
+    id = db.Column(db.Integer, primary_key=True)
+    tire_id = db.Column(db.Integer, db.ForeignKey('tires.id'), nullable=False, index=True)
+    measured_date = db.Column(db.Date, nullable=False)
+    depth_mm = db.Column(db.Float, nullable=False)
+    odometer = db.Column(db.Float)
+    position = db.Column(db.String(20), nullable=False, default='')
+    tire = db.relationship('Tire', backref=db.backref(
+        'measurements', cascade='all, delete-orphan',
+        order_by='TireMeasurement.measured_date.desc(), TireMeasurement.id.desc()'))
+    __table_args__ = (
+        db.CheckConstraint('depth_mm >= 0 AND depth_mm <= 100', name='valid_tread_depth'),
+        db.CheckConstraint('odometer IS NULL OR odometer >= 0', name='valid_tread_odometer'),
+    )
+
+    @property
+    def position_label(self):
+        return dict(TIRE_POSITIONS).get(self.position, self.position)
+
+    def to_dict(self):
+        return dict(measured_date=self.measured_date.isoformat(), depth_mm=self.depth_mm,
+                    odometer=self.odometer, position=self.position)
