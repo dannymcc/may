@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-26 00:16+0000\n"
+"POT-Creation-Date: 2026-11-23 13:47+0000\n"
 "PO-Revision-Date: 2026-08-03 16:49+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: ru <LL@li.org>\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/models.py:50
+#: app/models.py:52
 msgid "Editor"
 msgstr "Редактор"
 
-#: app/models.py:51
+#: app/models.py:53
 msgid "Contributor"
 msgstr "Участник"
 
-#: app/models.py:52
+#: app/models.py:54
 msgid "Viewer"
 msgstr "Наблюдатель"
 
-#: app/models.py:56
+#: app/models.py:58
 msgid "Full access to the vehicles and data this account can see."
 msgstr "Полный доступ к автомобилям и данным, доступным этой учётной записи."
 
-#: app/models.py:57
+#: app/models.py:59
 msgid ""
 "Can record fuel fill-ups and charging sessions. Everything else is read-"
 "only."
@@ -42,522 +42,542 @@ msgstr ""
 "Может записывать заправки и зарядные сессии. Всё остальное — только для "
 "чтения."
 
-#: app/models.py:58
+#: app/models.py:60
 msgid "Read-only. Can see the data but cannot change anything."
 msgstr "Только чтение. Видит данные, но не может ничего изменить."
 
-#: app/models.py:183 app/templates/auth/create_user.html:71
+#: app/models.py:187 app/templates/auth/create_user.html:71
 #: app/templates/auth/edit_user.html:59
 msgid "Administrator"
 msgstr "Администратор"
 
-#: app/models.py:390 app/templates/maintenance/form.html:126
+#: app/models.py:396 app/templates/maintenance/form.html:126
 msgid "Engine hours"
 msgstr "Моточасы"
 
-#: app/models.py:391 app/templates/charging/form.html:86
+#: app/models.py:397 app/templates/charging/form.html:86
 #: app/templates/expenses/form.html:76 app/templates/expenses/index.html:32
 #: app/templates/fuel/form.html:51 app/templates/fuel/index.html:43
-#: app/templates/fuel/index.html:146 app/templates/fuel/quick.html:35
+#: app/templates/fuel/index.html:146 app/templates/fuel/quick.html:36
 #: app/templates/maintenance/form.html:126
 #: app/templates/maintenance/form.html:127 app/templates/notes/form.html:41
 #: app/templates/notes/index.html:31 app/templates/tires/index.html:92
-#: app/templates/tires/index.html:107 app/templates/vehicles/view.html:484
+#: app/templates/tires/index.html:115 app/templates/vehicles/view.html:493
 msgid "Odometer"
 msgstr "Пробег"
 
-#: app/models.py:396 app/models.py:1411 app/templates/trips/form.html:189
+#: app/models.py:402 app/models.py:1499 app/templates/trips/form.html:189
 msgid "Hours"
 msgstr "Часы"
 
-#: app/models.py:397 app/templates/allowance/form.html:48
+#: app/models.py:403 app/templates/allowance/form.html:48
 #: app/templates/allowance/index.html:30 app/templates/auth/settings.html:126
-#: app/templates/tires/index.html:127 app/templates/trips/form.html:97
+#: app/templates/tires/index.html:135 app/templates/trips/form.html:97
 #: app/templates/trips/form.html:188 app/templates/trips/report.html:102
 msgid "Distance"
 msgstr "Расстояние"
 
-#: app/models.py:1358
+#: app/models.py:1445
 msgid "Front Tire Size"
 msgstr "Размер передней шины"
 
-#: app/models.py:1359
+#: app/models.py:1446
 msgid "Rear Tire Size"
 msgstr "Размер задней шины"
 
-#: app/models.py:1360
+#: app/models.py:1447
 msgid "Wheel Size"
 msgstr "Размер колеса"
 
-#: app/models.py:1361
+#: app/models.py:1448
 msgid "Engine Oil Type"
 msgstr "Тип моторного масла"
 
-#: app/models.py:1362
+#: app/models.py:1449
 msgid "Oil Capacity"
 msgstr "Объём масла"
 
-#: app/models.py:1363
+#: app/models.py:1450
 msgid "Coolant Type"
 msgstr "Тип охлаждающей жидкости"
 
-#: app/models.py:1364
+#: app/models.py:1451
 msgid "Front Wiper Size"
 msgstr "Размер переднего дворника"
 
-#: app/models.py:1365
+#: app/models.py:1452
 msgid "Rear Wiper Size"
 msgstr "Размер заднего дворника"
 
-#: app/models.py:1366
+#: app/models.py:1453
 msgid "Battery Type"
 msgstr "Тип аккумулятора"
 
-#: app/models.py:1367
+#: app/models.py:1454
 msgid "Spark Plug Type"
 msgstr "Тип свечей зажигания"
 
-#: app/models.py:1368
+#: app/models.py:1455
 msgid "Air Filter Part #"
 msgstr "Артикул воздушного фильтра"
 
-#: app/models.py:1369
+#: app/models.py:1456
 msgid "Cabin Filter Part #"
 msgstr "Артикул салонного фильтра"
 
-#: app/models.py:1370
+#: app/models.py:1457
 msgid "Front Brake Pads"
 msgstr "Передние тормозные колодки"
 
-#: app/models.py:1371
+#: app/models.py:1458
 msgid "Rear Brake Pads"
 msgstr "Задние тормозные колодки"
 
-#: app/models.py:1372 app/models.py:2147
+#: app/models.py:1459 app/models.py:2263
 msgid "Transmission Fluid"
 msgstr "Трансмиссионное масло"
 
-#: app/models.py:1373 app/models.py:1493 app/models.py:1558
-#: app/templates/auth/settings.html:195
+#: app/models.py:1460 app/models.py:1581 app/models.py:1647
+#: app/templates/auth/settings.html:204
 msgid "Custom"
 msgstr "Пользовательский"
 
-#: app/models.py:1378 app/templates/auth/settings.html:440
-#: app/templates/auth/settings.html:506 app/templates/base.html:318
-#: app/templates/base.html:412
+#: app/models.py:1465 app/routes/maintenance.py:54
+#: app/templates/auth/settings.html:449 app/templates/auth/settings.html:515
+#: app/templates/base.html:318 app/templates/base.html:421
 msgid "Maintenance"
 msgstr "Техобслуживание"
 
-#: app/models.py:1379
+#: app/models.py:1466
 msgid "Repairs"
 msgstr "Ремонт"
 
-#: app/models.py:1380
+#: app/models.py:1467
 msgid "Inspection"
 msgstr "Техосмотр"
 
-#: app/models.py:1381
+#: app/models.py:1468
 msgid "Insurance"
 msgstr "Страховка"
 
-#: app/models.py:1382 app/models.py:1488
+#: app/models.py:1469
+msgid "Loan Payment"
+msgstr "Платёж по кредиту"
+
+#: app/models.py:1470 app/models.py:1576
 msgid "Road Tax"
 msgstr "Транспортный налог"
 
-#: app/models.py:1383
+#: app/models.py:1471
 msgid "Registration"
 msgstr "Регистрация"
 
-#: app/models.py:1384
+#: app/models.py:1472
 msgid "Parking"
 msgstr "Парковка"
 
-#: app/models.py:1385
+#: app/models.py:1473
 msgid "Tolls"
 msgstr "Платные дороги"
 
-#: app/models.py:1386
+#: app/models.py:1474
 msgid "Cleaning"
 msgstr "Мойка"
 
-#: app/models.py:1387
+#: app/models.py:1475
 msgid "Accessories"
 msgstr "Аксессуары"
 
-#: app/models.py:1388 app/models.py:1405 app/models.py:1434 app/models.py:1526
-#: app/models.py:1536 app/models.py:1570 app/models.py:1578 app/models.py:2153
+#: app/models.py:1476 app/models.py:1493 app/models.py:1522 app/models.py:1614
+#: app/models.py:1624 app/models.py:1659 app/models.py:1667 app/models.py:2269
 msgid "Other"
 msgstr "Другое"
 
-#: app/models.py:1393
+#: app/models.py:1481
 msgid "Car"
 msgstr "Автомобиль"
 
-#: app/models.py:1394
+#: app/models.py:1482
 msgid "Van"
 msgstr "Фургон"
 
-#: app/models.py:1395
+#: app/models.py:1483
 msgid "Motorbike"
 msgstr "Мотоцикл"
 
-#: app/models.py:1396
+#: app/models.py:1484
 msgid "Scooter"
 msgstr "Скутер"
 
-#: app/models.py:1397
+#: app/models.py:1485
 msgid "Truck"
 msgstr "Грузовик"
 
-#: app/models.py:1398
+#: app/models.py:1486
 msgid "SUV"
 msgstr "Внедорожник"
 
-#: app/models.py:1399
+#: app/models.py:1487
 msgid "Hatchback"
 msgstr "Хэтчбек"
 
-#: app/models.py:1400
+#: app/models.py:1488
 msgid "Station Wagon / Estate"
 msgstr "Универсал"
 
-#: app/models.py:1401
+#: app/models.py:1489
 msgid "Pickup / Ute"
 msgstr "Пикап"
 
-#: app/models.py:1402
+#: app/models.py:1490
 msgid "Tractor"
 msgstr "Трактор"
 
-#: app/models.py:1403
+#: app/models.py:1491
 msgid "ATV/UTV"
 msgstr "Квадроцикл/UTV"
 
-#: app/models.py:1404
+#: app/models.py:1492
 msgid "Boat"
 msgstr "Лодка"
 
-#: app/models.py:1410
+#: app/models.py:1498
 msgid "Mileage (km/mi)"
 msgstr "Пробег (км/мили)"
 
-#: app/models.py:1416 app/templates/auth/settings.html:129
+#: app/models.py:1504 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "Километры (км)"
 
-#: app/models.py:1417 app/templates/auth/settings.html:130
+#: app/models.py:1505 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "Мили (mi)"
 
-#: app/models.py:1422
+#: app/models.py:1510
 msgid "Petrol/Gasoline"
 msgstr "Бензин"
 
-#: app/models.py:1423
+#: app/models.py:1511
 msgid "Diesel"
 msgstr "Дизель"
 
-#: app/models.py:1424
+#: app/models.py:1512
 msgid "Electric"
 msgstr "Электро"
 
-#: app/models.py:1425
+#: app/models.py:1513
 msgid "Hybrid"
 msgstr "Гибрид"
 
-#: app/models.py:1426
+#: app/models.py:1514
 msgid "Plug-in Hybrid"
 msgstr "Подключаемый гибрид"
 
-#: app/models.py:1427
+#: app/models.py:1515
 msgid "LPG"
 msgstr "Газ (LPG)"
 
-#: app/models.py:1428
+#: app/models.py:1516
 msgid "CNG"
 msgstr "Природный газ (CNG)"
 
-#: app/models.py:1429
+#: app/models.py:1517
 msgid "Hydrogen"
 msgstr "Водород"
 
-#: app/models.py:1430
+#: app/models.py:1518
 msgid "E85/Flex Fuel"
 msgstr "E85/Флекс-топливо"
 
-#: app/models.py:1433
+#: app/models.py:1521
 msgid "AdBlue/DEF"
 msgstr "AdBlue/DEF"
 
-#: app/models.py:1485
+#: app/models.py:1573
 msgid "MOT/Inspection"
 msgstr "Техосмотр"
 
-#: app/models.py:1486
+#: app/models.py:1574
 msgid "Service Due"
 msgstr "Срок ТО"
 
-#: app/models.py:1487
+#: app/models.py:1575
 msgid "Insurance Renewal"
 msgstr "Продление страховки"
 
-#: app/models.py:1489
+#: app/models.py:1577
 msgid "Registration Renewal"
 msgstr "Продление регистрации"
 
-#: app/models.py:1490
+#: app/models.py:1578
 msgid "Warranty Expiry"
 msgstr "Окончание гарантии"
 
-#: app/models.py:1491
+#: app/models.py:1579
 msgid "Tire Change"
 msgstr "Замена шин"
 
-#: app/models.py:1492 app/models.py:1541
+#: app/models.py:1580 app/models.py:1629
 msgid "Oil Change"
 msgstr "Замена масла"
 
-#: app/models.py:1512
+#: app/models.py:1600
 msgid "No Repeat"
 msgstr "Без повтора"
 
-#: app/models.py:1513
+#: app/models.py:1601
 msgid "Day(s)"
 msgstr "День(дни)"
 
-#: app/models.py:1514
+#: app/models.py:1602
 msgid "Week(s)"
 msgstr "Неделя(и)"
 
-#: app/models.py:1515
+#: app/models.py:1603
 msgid "Month(s)"
 msgstr "Месяц(ы)"
 
-#: app/models.py:1516
+#: app/models.py:1604
 msgid "Year(s)"
 msgstr "Год(ы)"
 
-#: app/models.py:1521
+#: app/models.py:1609
 msgid "Business"
 msgstr "Деловая"
 
-#: app/models.py:1522
+#: app/models.py:1610
 msgid "Personal"
 msgstr "Личная"
 
-#: app/models.py:1523
+#: app/models.py:1611
 msgid "Commute"
 msgstr "Поездка на работу"
 
-#: app/models.py:1524
+#: app/models.py:1612
 msgid "Medical"
 msgstr "Медицинская"
 
-#: app/models.py:1525
+#: app/models.py:1613
 msgid "Charity"
 msgstr "Благотворительная"
 
-#: app/models.py:1531
+#: app/models.py:1619
 msgid "Home Charging"
 msgstr "Зарядка дома"
 
-#: app/models.py:1532
+#: app/models.py:1620
 msgid "Level 1"
 msgstr "Уровень 1"
 
-#: app/models.py:1533
+#: app/models.py:1621
 msgid "Level 2"
 msgstr "Уровень 2"
 
-#: app/models.py:1534
+#: app/models.py:1622
 msgid "DC Fast Charge"
 msgstr "Быстрая зарядка DC"
 
-#: app/models.py:1535
+#: app/models.py:1623
 msgid "Tesla Supercharger"
 msgstr "Tesla Supercharger"
 
-#: app/models.py:1542 app/models.py:2139
+#: app/models.py:1630 app/models.py:2255
 msgid "Oil Filter"
 msgstr "Масляный фильтр"
 
-#: app/models.py:1543 app/models.py:2140
+#: app/models.py:1631 app/models.py:2256
 msgid "Air Filter"
 msgstr "Воздушный фильтр"
 
-#: app/models.py:1544
+#: app/models.py:1632
 msgid "Cabin/Pollen Filter"
 msgstr "Салонный фильтр"
 
-#: app/models.py:1545 app/models.py:2141
+#: app/models.py:1633
+msgid "Air-conditioning service"
+msgstr "Обслуживание кондиционера"
+
+#: app/models.py:1634 app/models.py:2257
 msgid "Fuel Filter"
 msgstr "Топливный фильтр"
 
-#: app/models.py:1546
+#: app/models.py:1635
 msgid "Spark Plugs"
 msgstr "Свечи зажигания"
 
-#: app/models.py:1547
+#: app/models.py:1636
 msgid "Brake Pads"
 msgstr "Тормозные колодки"
 
-#: app/models.py:1548 app/models.py:2145
+#: app/models.py:1637 app/models.py:2261
 msgid "Brake Fluid"
 msgstr "Тормозная жидкость"
 
-#: app/models.py:1549
+#: app/models.py:1638
 msgid "Coolant Flush"
 msgstr "Замена охлаждающей жидкости"
 
-#: app/models.py:1550
+#: app/models.py:1639
 msgid "Transmission Service"
 msgstr "Обслуживание трансмиссии"
 
-#: app/models.py:1551
+#: app/models.py:1640
 msgid "Timing Belt"
 msgstr "Ремень ГРМ"
 
-#: app/models.py:1552
+#: app/models.py:1641
 msgid "Serpentine Belt"
 msgstr "Приводной ремень"
 
-#: app/models.py:1553
+#: app/models.py:1642
 msgid "Tire Rotation"
 msgstr "Перестановка шин"
 
-#: app/models.py:1554
+#: app/models.py:1643
 msgid "Wheel Alignment"
 msgstr "Развал-схождение"
 
-#: app/models.py:1555
+#: app/models.py:1644
 msgid "Battery Check/Replace"
 msgstr "Проверка/замена аккумулятора"
 
-#: app/models.py:1556
+#: app/models.py:1645
 msgid "Wiper Blades"
 msgstr "Щётки стеклоочистителя"
 
-#: app/models.py:1557
+#: app/models.py:1646
 msgid "Full Service"
 msgstr "Полное ТО"
 
-#: app/models.py:1563
+#: app/models.py:1652
 msgid "Insurance Policy"
 msgstr "Страховой полис"
 
-#: app/models.py:1564
+#: app/models.py:1653
 msgid "Registration/V5C"
 msgstr "Регистрация/ПТС"
 
-#: app/models.py:1565
+#: app/models.py:1654
 msgid "MOT Certificate"
 msgstr "Сертификат техосмотра (MOT)"
 
-#: app/models.py:1566
+#: app/models.py:1655
 msgid "Service Record"
 msgstr "История обслуживания"
 
-#: app/models.py:1567
+#: app/models.py:1656
 msgid "Purchase Invoice"
 msgstr "Счёт на покупку"
 
-#: app/models.py:1568
+#: app/models.py:1657
 msgid "Warranty Document"
 msgstr "Гарантийный документ"
 
-#: app/models.py:1569
+#: app/models.py:1658
 msgid "Owner's Manual"
 msgstr "Руководство пользователя"
 
-#: app/models.py:1575
+#: app/models.py:1664
 msgid "Summer"
 msgstr "Летние"
 
-#: app/models.py:1576
+#: app/models.py:1665
 msgid "Winter"
 msgstr "Зимние"
 
-#: app/models.py:1577
+#: app/models.py:1666
 msgid "All Season"
 msgstr "Всесезонные"
 
-#: app/models.py:2138
+#: app/models.py:2254
 msgid "Engine Oil"
 msgstr "Моторное масло"
 
-#: app/models.py:2142
+#: app/models.py:2258
 msgid "Cabin Filter"
 msgstr "Салонный фильтр"
 
-#: app/models.py:2143
+#: app/models.py:2259
 msgid "Spark Plug"
 msgstr "Свеча зажигания"
 
-#: app/models.py:2144
+#: app/models.py:2260
 msgid "Brake Pad"
 msgstr "Тормозная колодка"
 
-#: app/models.py:2146
+#: app/models.py:2262
 msgid "Coolant"
 msgstr "Охлаждающая жидкость"
 
-#: app/models.py:2148
+#: app/models.py:2264
 msgid "Battery"
 msgstr "Аккумулятор"
 
-#: app/models.py:2149
+#: app/models.py:2265
 msgid "Tire"
 msgstr "Шина"
 
-#: app/models.py:2150
+#: app/models.py:2266
 msgid "Belt"
 msgstr "Ремень"
 
-#: app/models.py:2151
+#: app/models.py:2267
 msgid "Wiper Blade"
 msgstr "Щётка стеклоочистителя"
 
-#: app/models.py:2152
+#: app/models.py:2268
 msgid "Light Bulb"
 msgstr "Лампочка"
+
+#: app/models.py:2538 app/templates/tires/index.html:104
+msgid "All axles"
+msgstr "Все оси"
+
+#: app/models.py:2538 app/templates/tires/index.html:105
+msgid "Front axle"
+msgstr "Передняя ось"
+
+#: app/models.py:2538 app/templates/tires/index.html:106
+msgid "Rear axle"
+msgstr "Задняя ось"
 
 #: app/permissions.py:128
 msgid "Your account does not have permission to change this data."
 msgstr "У вашей учётной записи нет прав на изменение этих данных."
 
-#: app/routes/allowance.py:31 app/routes/expenses.py:155 app/routes/fuel.py:72
-#: app/routes/fuel.py:444 app/routes/notes.py:31 app/routes/reminders.py:64
-#: app/routes/tires.py:76 app/routes/trips.py:76
+#: app/routes/allowance.py:31 app/routes/expenses.py:155 app/routes/fuel.py:78
+#: app/routes/fuel.py:505 app/routes/notes.py:31 app/routes/reminders.py:64
+#: app/routes/tires.py:77 app/routes/trips.py:76
 msgid "Please add a vehicle first"
 msgstr "Сначала добавьте автомобиль"
 
 #: app/routes/allowance.py:40 app/routes/allowance.py:78
-#: app/routes/allowance.py:110 app/routes/charging.py:63
-#: app/routes/charging.py:123 app/routes/charging.py:173
+#: app/routes/allowance.py:110 app/routes/charging.py:83
+#: app/routes/charging.py:143 app/routes/charging.py:193
 #: app/routes/documents.py:130 app/routes/documents.py:146
 #: app/routes/documents.py:165 app/routes/documents.py:205
 #: app/routes/expenses.py:164 app/routes/expenses.py:248
 #: app/routes/expenses.py:297 app/routes/expenses.py:326
-#: app/routes/expenses.py:331 app/routes/fuel.py:81 app/routes/fuel.py:226
-#: app/routes/fuel.py:362 app/routes/fuel.py:417 app/routes/fuel.py:422
-#: app/routes/fuel.py:458 app/routes/maintenance.py:107
-#: app/routes/maintenance.py:150 app/routes/maintenance.py:202
+#: app/routes/expenses.py:331 app/routes/fuel.py:87 app/routes/fuel.py:245
+#: app/routes/fuel.py:411 app/routes/fuel.py:466 app/routes/fuel.py:471
+#: app/routes/fuel.py:519 app/routes/maintenance.py:157
+#: app/routes/maintenance.py:202 app/routes/maintenance.py:258
 #: app/routes/notes.py:40 app/routes/notes.py:87 app/routes/notes.py:128
 #: app/routes/reminders.py:72 app/routes/reminders.py:127
 #: app/routes/reminders.py:214 app/routes/reminders.py:237
-#: app/routes/reminders.py:256 app/routes/tires.py:83 app/routes/tires.py:127
-#: app/routes/tires.py:167 app/routes/tires.py:208 app/routes/tires.py:239
-#: app/routes/tires.py:254 app/routes/trips.py:84 app/routes/trips.py:157
+#: app/routes/reminders.py:256 app/routes/tires.py:84 app/routes/tires.py:128
+#: app/routes/tires.py:168 app/routes/tires.py:227 app/routes/tires.py:259
+#: app/routes/tires.py:274 app/routes/trips.py:84 app/routes/trips.py:157
 #: app/routes/trips.py:201 app/routes/trips.py:234 app/routes/trips.py:266
-#: app/routes/trips.py:277 app/routes/trips.py:306 app/routes/vehicles.py:164
-#: app/routes/vehicles.py:260 app/routes/vehicles.py:353
-#: app/routes/vehicles.py:379 app/routes/vehicles.py:430
-#: app/routes/vehicles.py:435 app/routes/vehicles.py:467
-#: app/routes/vehicles.py:472 app/routes/vehicles.py:500
-#: app/routes/vehicles.py:531 app/routes/vehicles.py:550
-#: app/routes/vehicles.py:566 app/routes/vehicles.py:657
-#: app/routes/vehicles.py:737 app/routes/vehicles.py:766
-#: app/routes/vehicles.py:804 app/routes/vehicles.py:842
+#: app/routes/trips.py:277 app/routes/trips.py:306 app/routes/vehicles.py:187
+#: app/routes/vehicles.py:293 app/routes/vehicles.py:394
+#: app/routes/vehicles.py:420 app/routes/vehicles.py:471
+#: app/routes/vehicles.py:476 app/routes/vehicles.py:508
+#: app/routes/vehicles.py:513 app/routes/vehicles.py:541
+#: app/routes/vehicles.py:572 app/routes/vehicles.py:591
+#: app/routes/vehicles.py:607 app/routes/vehicles.py:698
+#: app/routes/vehicles.py:778 app/routes/vehicles.py:807
+#: app/routes/vehicles.py:845 app/routes/vehicles.py:883
 msgid "Access denied"
 msgstr "Доступ запрещён"
 
@@ -577,20 +597,20 @@ msgstr "Компенсация за пробег успешно обновлен
 msgid "Mileage allowance deleted successfully"
 msgstr "Компенсация за пробег успешно удалена"
 
-#: app/routes/api.py:2657 app/routes/api.py:2870 app/routes/api.py:3045
+#: app/routes/api.py:2677 app/routes/api.py:2891 app/routes/api.py:3067
 msgid "No file uploaded"
 msgstr "Файл не загружен"
 
-#: app/routes/api.py:2662 app/routes/api.py:2875 app/routes/api.py:3050
+#: app/routes/api.py:2682 app/routes/api.py:2896 app/routes/api.py:3072
 #: app/routes/documents.py:67 app/routes/documents.py:72
 msgid "No file selected"
 msgstr "Файл не выбран"
 
-#: app/routes/api.py:2684
+#: app/routes/api.py:2704
 msgid "The uploaded file is not a valid SQLite database."
 msgstr "Загруженный файл не является корректной базой данных SQLite."
 
-#: app/routes/api.py:2689
+#: app/routes/api.py:2709
 msgid ""
 "This does not appear to be a Hammond database — no vehicles, fillups, or "
 "expenses tables found."
@@ -598,7 +618,7 @@ msgstr ""
 "Похоже, это не база данных Hammond — таблицы автомобилей, заправок или "
 "расходов не найдены."
 
-#: app/routes/api.py:2838
+#: app/routes/api.py:2859
 #, python-format
 msgid ""
 "Hammond import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs, "
@@ -607,7 +627,7 @@ msgstr ""
 "Импорт из Hammond завершён: автомобилей — %(vehicles)s, записей о заправках "
 "— %(fuel_logs)s, расходов — %(expenses)s."
 
-#: app/routes/api.py:2840
+#: app/routes/api.py:2861
 #, python-format
 msgid ""
 "(%(total_skipped)s records skipped due to errors — check server logs for "
@@ -616,7 +636,7 @@ msgstr ""
 "(Пропущено записей из-за ошибок: %(total_skipped)s — подробности см. в "
 "журналах сервера.)"
 
-#: app/routes/api.py:2847
+#: app/routes/api.py:2868
 #, python-format
 msgid ""
 "Import failed due to a database error. Check that the file is a valid "
@@ -625,13 +645,13 @@ msgstr ""
 "Импорт не удался из-за ошибки базы данных. Убедитесь, что файл является "
 "корректной базой данных Hammond. Ошибка: %(error)s"
 
-#: app/routes/api.py:2852 app/routes/api.py:2996 app/routes/api.py:3168
-#: app/routes/api.py:3674
+#: app/routes/api.py:2873 app/routes/api.py:3018 app/routes/api.py:3191
+#: app/routes/api.py:3763
 #, python-format
 msgid "Import failed: %(error)s"
 msgstr "Импорт не удался: %(error)s"
 
-#: app/routes/api.py:2992
+#: app/routes/api.py:3014
 #, python-format
 msgid ""
 "Clarkson import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs"
@@ -639,7 +659,7 @@ msgstr ""
 "Импорт из Clarkson завершён: автомобилей — %(vehicles)s, записей о заправках"
 " — %(fuel_logs)s"
 
-#: app/routes/api.py:3164
+#: app/routes/api.py:3187
 #, python-format
 msgid ""
 "Fuelly import complete: %(vehicles)s new vehicles, %(fuel_logs)s fuel logs"
@@ -647,58 +667,63 @@ msgstr ""
 "Импорт из Fuelly завершён: новых автомобилей — %(vehicles)s, записей о "
 "заправках — %(fuel_logs)s"
 
-#: app/routes/api.py:3527
+#: app/routes/api.py:3599
 msgid "Please add a vehicle before importing data."
 msgstr "Прежде чем импортировать данные, добавьте автомобиль."
 
-#: app/routes/api.py:3540
+#: app/routes/api.py:3612
 msgid "Invalid data type selected."
 msgstr "Выбран неверный тип данных."
 
-#: app/routes/api.py:3545 app/routes/api.py:3620
+#: app/routes/api.py:3617 app/routes/api.py:3702
 msgid "Vehicle not found."
 msgstr "Автомобиль не найден."
 
-#: app/routes/api.py:3549
+#: app/routes/api.py:3621
 msgid "No CSV file uploaded."
 msgstr "Файл CSV не загружен."
 
-#: app/routes/api.py:3560
+#: app/routes/api.py:3640
 msgid "CSV file has no column headers."
 msgstr "В файле CSV отсутствуют заголовки столбцов."
 
-#: app/routes/api.py:3601
+#: app/routes/api.py:3682
 #, python-format
 msgid "Failed to parse CSV file: %(error)s"
 msgstr "Не удалось обработать файл CSV: %(error)s"
 
-#: app/routes/api.py:3615
+#: app/routes/api.py:3697
 msgid "Invalid data type."
 msgstr "Неверный тип данных."
 
-#: app/routes/api.py:3624
+#: app/routes/api.py:3706
 msgid "CSV file expired. Please upload again."
 msgstr "Срок действия файла CSV истёк. Загрузите его снова."
 
-#: app/routes/api.py:3662
+#: app/routes/api.py:3748
 #, python-format
 msgid "CSV import complete: %(count)s %(label)s imported."
 msgstr "Импорт CSV завершён: импортировано %(count)s %(label)s."
 
-#: app/routes/api.py:3709
+#: app/routes/api.py:3751
+#, python-format
+msgid "%(count)s duplicate(s) skipped."
+msgstr "Пропущено дубликатов: %(count)s."
+
+#: app/routes/api.py:3798
 msgid "No backup file uploaded."
 msgstr "Файл резервной копии не загружен."
 
-#: app/routes/api.py:3732
+#: app/routes/api.py:3821
 #, python-format
 msgid "Could not read that backup: %(error)s"
 msgstr "Не удалось прочитать резервную копию: %(error)s"
 
-#: app/routes/api.py:3751
+#: app/routes/api.py:3840
 msgid "The uploaded backup has expired. Please upload it again."
 msgstr "Срок действия загруженной резервной копии истёк. Загрузите её заново."
 
-#: app/routes/api.py:3764
+#: app/routes/api.py:3853
 #, python-format
 msgid ""
 "Backup restored: %(added)s records added, %(skipped)s already present and "
@@ -707,7 +732,7 @@ msgstr ""
 "Резервная копия восстановлена: добавлено записей — %(added)s, уже "
 "присутствовало и оставлено без изменений — %(skipped)s."
 
-#: app/routes/api.py:3772
+#: app/routes/api.py:3861
 #, python-format
 msgid "Restore failed: %(error)s"
 msgstr "Не удалось восстановить: %(error)s"
@@ -732,8 +757,8 @@ msgstr ""
 msgid "Invalid or expired reset link. Please request a new one."
 msgstr "Ссылка для сброса недействительна или устарела. Запросите новую."
 
-#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:240
-#: app/routes/auth.py:574 app/routes/auth.py:621
+#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:253
+#: app/routes/auth.py:585 app/routes/auth.py:632
 msgid "Passwords do not match"
 msgstr "Пароли не совпадают"
 
@@ -745,7 +770,7 @@ msgstr "Ваш пароль сброшен. Пожалуйста, войдите
 msgid "New account registration is currently disabled."
 msgstr "Регистрация новых учётных записей сейчас отключена."
 
-#: app/routes/auth.py:180 app/routes/auth.py:632
+#: app/routes/auth.py:180 app/routes/auth.py:643
 msgid "Username already exists"
 msgstr "Такое имя пользователя уже занято"
 
@@ -761,104 +786,104 @@ msgstr "Регистрация прошла успешно! Пожалуйста
 msgid "You have been logged out."
 msgstr "Вы вышли из системы."
 
-#: app/routes/auth.py:230 app/routes/auth.py:565
+#: app/routes/auth.py:244 app/routes/auth.py:576
 msgid "Email already in use by another account"
 msgstr "Этот email уже используется другой учётной записью"
 
-#: app/routes/auth.py:252
+#: app/routes/auth.py:263
 msgid "Settings updated successfully"
 msgstr "Настройки успешно обновлены"
 
-#: app/routes/auth.py:341
+#: app/routes/auth.py:352
 #, python-format
 msgid "Invalid webhook URL: %(error)s"
 msgstr "Неверный URL вебхука: %(error)s"
 
-#: app/routes/auth.py:356
+#: app/routes/auth.py:367
 msgid "Notification preferences updated"
 msgstr "Настройки уведомлений обновлены"
 
-#: app/routes/auth.py:382
+#: app/routes/auth.py:393
 msgid "Menu preferences updated"
 msgstr "Настройки меню обновлены"
 
-#: app/routes/auth.py:407
+#: app/routes/auth.py:418
 msgid "Notification settings updated"
 msgstr "Настройки уведомлений обновлены"
 
-#: app/routes/auth.py:436
+#: app/routes/auth.py:447
 msgid "Branding settings updated successfully"
 msgstr "Настройки брендинга успешно обновлены"
 
-#: app/routes/auth.py:452
+#: app/routes/auth.py:463
 msgid "Logo removed successfully"
 msgstr "Логотип успешно удалён"
 
-#: app/routes/auth.py:465
+#: app/routes/auth.py:476
 msgid "DVLA settings updated"
 msgstr "Настройки DVLA обновлены"
 
-#: app/routes/auth.py:480
+#: app/routes/auth.py:491
 msgid "UK fuel price settings updated"
 msgstr "Настройки цен на топливо в Великобритании обновлены"
 
-#: app/routes/auth.py:493
+#: app/routes/auth.py:504
 msgid "Tessie settings updated"
 msgstr "Настройки Tessie обновлены"
 
-#: app/routes/auth.py:506
+#: app/routes/auth.py:517
 msgid "Registration settings updated"
 msgstr "Настройки регистрации обновлены"
 
-#: app/routes/auth.py:530
+#: app/routes/auth.py:541
 msgid "Cannot remove admin status from the last administrator."
 msgstr "Нельзя снять права администратора с последнего администратора."
 
-#: app/routes/auth.py:535
+#: app/routes/auth.py:546
 #, python-format
 msgid "Admin status updated for %(username)s"
 msgstr "Права администратора обновлены для %(username)s"
 
-#: app/routes/auth.py:548
+#: app/routes/auth.py:559
 #, python-format
 msgid "User %(username)s deleted"
 msgstr "Пользователь %(username)s удалён"
 
-#: app/routes/auth.py:593
+#: app/routes/auth.py:604
 #, python-format
 msgid "User %(username)s updated successfully"
 msgstr "Пользователь %(username)s успешно обновлён"
 
-#: app/routes/auth.py:616
+#: app/routes/auth.py:627
 msgid "Username, email, and password are required"
 msgstr "Требуются имя пользователя, email и пароль"
 
-#: app/routes/auth.py:637
+#: app/routes/auth.py:648
 msgid "Email already in use"
 msgstr "Этот email уже используется"
 
-#: app/routes/auth.py:646
+#: app/routes/auth.py:657
 #, python-format
 msgid "User %(username)s created successfully"
 msgstr "Пользователь %(username)s успешно создан"
 
-#: app/routes/charging.py:55
+#: app/routes/charging.py:75
 msgid "No electric vehicles found. Add an EV or hybrid vehicle first."
 msgstr "Электромобили не найдены. Сначала добавьте электромобиль или гибрид."
 
-#: app/routes/charging.py:101
+#: app/routes/charging.py:121
 msgid "Charging session logged successfully"
 msgstr "Сеанс зарядки успешно записан"
 
-#: app/routes/charging.py:155
+#: app/routes/charging.py:175
 msgid "Charging session updated successfully"
 msgstr "Сеанс зарядки успешно обновлён"
 
-#: app/routes/charging.py:178
+#: app/routes/charging.py:198
 msgid "Charging session deleted successfully"
 msgstr "Сеанс зарядки успешно удалён"
 
-#: app/routes/documents.py:62 app/routes/maintenance.py:49
+#: app/routes/documents.py:62 app/routes/maintenance.py:98
 msgid "Invalid vehicle"
 msgstr "Неверный автомобиль"
 
@@ -880,7 +905,7 @@ msgstr "Документ обновлён"
 msgid "Document \"%(title)s\" deleted"
 msgstr "Документ «%(title)s» удалён"
 
-#: app/routes/expenses.py:60 app/routes/vehicles.py:411
+#: app/routes/expenses.py:60 app/routes/vehicles.py:452
 #, python-format
 msgid ""
 "These files were not saved because the file type is not supported: %(names)s"
@@ -903,59 +928,71 @@ msgstr "Расход успешно обновлён"
 msgid "Expense deleted successfully"
 msgstr "Расход успешно удалён"
 
-#: app/routes/expenses.py:340 app/routes/fuel.py:431
+#: app/routes/expenses.py:340 app/routes/fuel.py:480
 msgid "Attachment deleted"
 msgstr "Вложение удалено"
 
-#: app/routes/fuel.py:193
+#: app/routes/fuel.py:212
 msgid "Fuel log added successfully"
 msgstr "Запись о заправке успешно добавлена"
 
-#: app/routes/fuel.py:332
+#: app/routes/fuel.py:381
 msgid "Fuel log updated successfully"
 msgstr "Запись о заправке успешно обновлена"
 
-#: app/routes/fuel.py:396
+#: app/routes/fuel.py:445
 msgid "Fuel log deleted successfully"
 msgstr "Запись о заправке успешно удалена"
 
-#: app/routes/fuel.py:515
+#: app/routes/fuel.py:576
 msgid "Fuel log added!"
 msgstr "Запись о заправке добавлена!"
 
-#: app/routes/main.py:259
+#: app/routes/main.py:134 app/routes/vehicles.py:236
+#: app/templates/base.html:358 app/templates/base.html:387
+#: app/templates/dashboard.html:376 app/templates/timeline/index.html:114
+#: app/templates/trips/index.html:127 app/templates/vehicles/view.html:95
+msgid "Fuel"
+msgstr "Топливо"
+
+#: app/routes/main.py:137 app/routes/vehicles.py:239
+#: app/templates/timeline/index.html:126
+msgid "Charging"
+msgstr "Зарядка"
+
+#: app/routes/main.py:270
 #, python-format
 msgid "Fuel: %(volume).1f L"
 msgstr "Топливо: %(volume).1f L"
 
-#: app/routes/main.py:260 app/templates/search/index.html:74
+#: app/routes/main.py:271 app/templates/search/index.html:74
 msgid "Fuel Log"
 msgstr "Заправка"
 
-#: app/routes/main.py:284
+#: app/routes/main.py:295
 #, python-format
 msgid "Charging: %(kwh).1f kWh"
 msgstr "Зарядка: %(kwh).1f kWh"
 
-#: app/routes/main.py:285 app/templates/search/index.html:160
+#: app/routes/main.py:296 app/templates/search/index.html:160
 msgid "Charging Session"
 msgstr "Сеанс зарядки"
 
-#: app/routes/maintenance.py:86
+#: app/routes/maintenance.py:136
 #, python-format
 msgid "Maintenance schedule \"%(name)s\" created"
 msgstr "График обслуживания «%(name)s» создан"
 
-#: app/routes/maintenance.py:132
+#: app/routes/maintenance.py:184
 msgid "Maintenance schedule updated"
 msgstr "График обслуживания обновлён"
 
-#: app/routes/maintenance.py:190
+#: app/routes/maintenance.py:246
 #, python-format
 msgid "Maintenance \"%(name)s\" marked as completed"
 msgstr "Обслуживание «%(name)s» отмечено как выполненное"
 
-#: app/routes/maintenance.py:209
+#: app/routes/maintenance.py:266
 #, python-format
 msgid "Maintenance schedule \"%(name)s\" deleted"
 msgstr "График обслуживания «%(name)s» удалён"
@@ -980,32 +1017,37 @@ msgstr "Заметка успешно обновлена"
 msgid "Note deleted successfully"
 msgstr "Заметка успешно удалена"
 
-#: app/routes/recurring.py:37
+#: app/routes/recurring.py:38
 msgid "Please add a vehicle first."
 msgstr "Сначала добавьте автомобиль."
 
-#: app/routes/recurring.py:46
+#: app/routes/recurring.py:47
 msgid "Invalid vehicle."
 msgstr "Неверный автомобиль."
 
-#: app/routes/recurring.py:73
+#: app/routes/recurring.py:75
 msgid "Recurring expense created."
 msgstr "Регулярный расход создан."
 
-#: app/routes/recurring.py:115
+#: app/routes/recurring.py:119
 msgid "Recurring expense updated."
 msgstr "Регулярный расход обновлён."
 
-#: app/routes/recurring.py:138
+#: app/routes/recurring.py:143
 msgid "Recurring expense deleted."
 msgstr "Регулярный расход удалён."
 
-#: app/routes/recurring.py:158
+#: app/routes/recurring.py:161
+#, python-format
+msgid "%(name)s was already generated for this period."
+msgstr "Запись «%(name)s» уже создана за этот период."
+
+#: app/routes/recurring.py:165
 #, python-format
 msgid "Expense created for %(name)s."
 msgstr "Расход создан для «%(name)s»."
 
-#: app/routes/recurring.py:177
+#: app/routes/recurring.py:184
 #, python-format
 msgid "Recurring expense %(status)s."
 msgstr "Регулярный расход %(status)s."
@@ -1059,76 +1101,105 @@ msgstr "Заправка «%(name)s» удалена"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "Обновлено цен: %(prices)s, с заправок: %(matched)s"
 
-#: app/routes/stations.py:182
+#: app/routes/stations.py:175
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr ""
+"Источники цен на топливо недоступны. Сохранённые цены оставлены без "
+"изменений."
+
+#: app/routes/stations.py:177
+msgid ""
+"Some stations could not be matched because fuel price coverage is "
+"incomplete."
+msgstr "Некоторые АЗС не удалось сопоставить из-за неполных данных о ценах."
+
+#: app/routes/stations.py:180
+msgid ""
+"No unique forecourt match found. Check the station postcode, address and "
+"brand."
+msgstr ""
+"Однозначное соответствие АЗС не найдено. Проверьте индекс, адрес и бренд."
+
+#: app/routes/stations.py:186
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
 msgstr "Некоторые источники продавцов не удалось прочитать: %(errors)s"
 
-#: app/routes/stations.py:193 app/routes/stations.py:209
+#: app/routes/stations.py:197 app/routes/stations.py:213
 msgid "UK fuel prices are not enabled. An admin can turn them on in Settings."
 msgstr ""
 "Цены на топливо в Великобритании не включены. Администратор может включить "
 "их в настройках."
 
-#: app/routes/stations.py:229
+#: app/routes/stations.py:233
 msgid "You can only delete your own price entries"
 msgstr "Вы можете удалять только свои записи о ценах"
 
-#: app/routes/stations.py:236
+#: app/routes/stations.py:240
 msgid "Price entry deleted"
 msgstr "Запись о цене удалена"
 
-#: app/routes/tires.py:88 app/routes/tires.py:133
+#: app/routes/tires.py:89 app/routes/tires.py:134
 msgid "Please give the tire set a name"
 msgstr "Укажите название комплекта шин"
 
-#: app/routes/tires.py:105 app/routes/tires.py:141
+#: app/routes/tires.py:106 app/routes/tires.py:142
 msgid "Invalid data submitted. Please check the odometer and cost fields."
 msgstr "Отправлены некорректные данные. Проверьте поля пробега и стоимости."
 
-#: app/routes/tires.py:112
+#: app/routes/tires.py:113
 #, python-format
 msgid "Tire set \"%(name)s\" added"
 msgstr "Комплект шин «%(name)s» добавлен"
 
-#: app/routes/tires.py:153
+#: app/routes/tires.py:154
 msgid "Tire set updated"
 msgstr "Комплект шин обновлён"
 
-#: app/routes/tires.py:171
+#: app/routes/tires.py:172
 msgid "That tire set is already on the vehicle"
 msgstr "Этот комплект шин уже установлен на автомобиль"
 
-#: app/routes/tires.py:174
+#: app/routes/tires.py:175
 msgid "That tire set is retired. Reinstate it before fitting it again."
 msgstr ""
 "Этот комплект шин списан. Верните его в работу, прежде чем устанавливать "
 "снова."
 
-#: app/routes/tires.py:188 app/routes/tires.py:227
+#: app/routes/tires.py:184
+msgid "Invalid axle"
+msgstr "Недопустимая ось"
+
+#: app/routes/tires.py:194
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr ""
+"Дата и показание счётчика при установке не могут предшествовать текущей "
+"установке."
+
+#: app/routes/tires.py:206 app/routes/tires.py:247
 #, python-format
 msgid "Took \"%(name)s\" off the vehicle"
 msgstr "«%(name)s» снят с автомобиля"
 
-#: app/routes/tires.py:197
+#: app/routes/tires.py:216
 #, python-format
 msgid "Fitted \"%(name)s\""
 msgstr "«%(name)s» установлен"
 
-#: app/routes/tires.py:213
+#: app/routes/tires.py:232
 msgid "That tire set is not on the vehicle"
 msgstr "Этот комплект шин не установлен на автомобиль"
 
-#: app/routes/tires.py:220
+#: app/routes/tires.py:240
 msgid ""
 "The odometer reading cannot be lower than the one the set was fitted at"
 msgstr "Показание одометра не может быть меньше, чем при установке комплекта"
 
-#: app/routes/tires.py:244
+#: app/routes/tires.py:264
 msgid "Fitting record deleted"
 msgstr "Запись об установке удалена"
 
-#: app/routes/tires.py:261
+#: app/routes/tires.py:281
 #, python-format
 msgid "Tire set \"%(name)s\" deleted"
 msgstr "Комплект шин «%(name)s» удалён"
@@ -1161,12 +1232,16 @@ msgstr "Шаблон обновлён"
 msgid "Template deleted"
 msgstr "Шаблон удалён"
 
-#: app/routes/vehicles.py:142
+#: app/routes/vehicles.py:110 app/routes/vehicles.py:301
+msgid "Starting odometer must be a nonnegative number."
+msgstr "Начальный пробег должен быть неотрицательным числом."
+
+#: app/routes/vehicles.py:165
 #, python-format
 msgid "Vehicle \"%(name)s\" added successfully"
 msgstr "Автомобиль «%(name)s» успешно добавлен"
 
-#: app/routes/vehicles.py:272
+#: app/routes/vehicles.py:313
 msgid ""
 "Tracking unit cannot be changed once readings have been logged for this "
 "vehicle. Existing readings were kept as they are."
@@ -1174,125 +1249,125 @@ msgstr ""
 "Единицу учёта нельзя изменить после того, как для этого автомобиля внесены "
 "показания. Существующие показания оставлены без изменений."
 
-#: app/routes/vehicles.py:329
+#: app/routes/vehicles.py:370
 msgid "Vehicle updated successfully"
 msgstr "Автомобиль успешно обновлён"
 
-#: app/routes/vehicles.py:363
+#: app/routes/vehicles.py:404
 msgid "Vehicle deleted successfully"
 msgstr "Автомобиль успешно удалён"
 
-#: app/routes/vehicles.py:414
+#: app/routes/vehicles.py:455
 msgid "Photo added"
 msgstr "Фото добавлено"
 
-#: app/routes/vehicles.py:416
+#: app/routes/vehicles.py:457
 #, python-format
 msgid "%(count)s photos added"
 msgstr "Добавлено фото: %(count)s"
 
-#: app/routes/vehicles.py:418
+#: app/routes/vehicles.py:459
 msgid "No photos were selected"
 msgstr "Фотографии не выбраны"
 
-#: app/routes/vehicles.py:456
+#: app/routes/vehicles.py:497
 msgid "Main photo updated"
 msgstr "Главное фото обновлено"
 
-#: app/routes/vehicles.py:489
+#: app/routes/vehicles.py:530
 msgid "Photo deleted"
 msgstr "Фото удалено"
 
-#: app/routes/vehicles.py:508
+#: app/routes/vehicles.py:549
 msgid "User not found"
 msgstr "Пользователь не найден"
 
-#: app/routes/vehicles.py:510
+#: app/routes/vehicles.py:551
 msgid "You are already the owner"
 msgstr "Вы уже являетесь владельцем"
 
-#: app/routes/vehicles.py:512
+#: app/routes/vehicles.py:553
 msgid "Vehicle already shared with this user"
 msgstr "Автомобиль уже открыт для этого пользователя"
 
-#: app/routes/vehicles.py:516
+#: app/routes/vehicles.py:557
 #, python-format
 msgid "Vehicle shared with %(username)s"
 msgstr "Доступ к автомобилю предоставлен пользователю %(username)s"
 
-#: app/routes/vehicles.py:538
+#: app/routes/vehicles.py:579
 #, python-format
 msgid "Sharing removed for %(username)s"
 msgstr "Доступ для %(username)s отозван"
 
-#: app/routes/vehicles.py:555
+#: app/routes/vehicles.py:596
 #, python-format
 msgid "Vehicle \"%(name)s\" has been archived"
 msgstr "Автомобиль «%(name)s» перемещён в архив"
 
-#: app/routes/vehicles.py:571
+#: app/routes/vehicles.py:612
 #, python-format
 msgid "Vehicle \"%(name)s\" has been restored"
 msgstr "Автомобиль «%(name)s» восстановлен"
 
-#: app/routes/vehicles.py:663
+#: app/routes/vehicles.py:704
 msgid "PDF generation is not available. Please install weasyprint."
 msgstr "Создание PDF недоступно. Установите weasyprint."
 
-#: app/routes/vehicles.py:786
+#: app/routes/vehicles.py:827
 #, python-format
 msgid "Part \"%(name)s\" added successfully"
 msgstr "Деталь «%(name)s» успешно добавлена"
 
-#: app/routes/vehicles.py:809 app/routes/vehicles.py:847
+#: app/routes/vehicles.py:850 app/routes/vehicles.py:888
 msgid "Part not found"
 msgstr "Деталь не найдена"
 
-#: app/routes/vehicles.py:824
+#: app/routes/vehicles.py:865
 msgid "Part updated successfully"
 msgstr "Деталь успешно обновлена"
 
-#: app/routes/vehicles.py:853
+#: app/routes/vehicles.py:894
 msgid "Part deleted successfully"
 msgstr "Деталь успешно удалена"
 
-#: app/templates/auth/settings.html:434 app/templates/base.html:271
-#: app/templates/base.html:391 app/templates/dashboard.html:2
+#: app/templates/auth/settings.html:443 app/templates/base.html:271
+#: app/templates/base.html:400 app/templates/dashboard.html:2
 #: app/templates/dashboard.html:11
 msgid "Dashboard"
 msgstr "Панель управления"
 
-#: app/templates/auth/settings.html:435 app/templates/auth/settings.html:486
-#: app/templates/base.html:275 app/templates/base.html:393
+#: app/templates/auth/settings.html:444 app/templates/auth/settings.html:495
+#: app/templates/base.html:275 app/templates/base.html:402
 #: app/templates/dashboard.html:27 app/templates/vehicles/index.html:2
 #: app/templates/vehicles/index.html:7
 msgid "Vehicles"
 msgstr "Автомобили"
 
-#: app/templates/auth/settings.html:436 app/templates/auth/settings.html:491
-#: app/templates/base.html:280 app/templates/base.html:396
+#: app/templates/auth/settings.html:445 app/templates/auth/settings.html:500
+#: app/templates/base.html:280 app/templates/base.html:405
 #: app/templates/fuel/index.html:2 app/templates/fuel/index.html:7
-#: app/templates/search/index.html:66 app/templates/vehicles/view.html:947
+#: app/templates/search/index.html:66 app/templates/vehicles/view.html:956
 msgid "Fuel Logs"
 msgstr "Заправки"
 
-#: app/templates/auth/settings.html:438 app/templates/auth/settings.html:496
-#: app/templates/base.html:285 app/templates/base.html:399
-#: app/templates/dashboard.html:398 app/templates/expenses/index.html:2
+#: app/templates/auth/settings.html:447 app/templates/auth/settings.html:505
+#: app/templates/base.html:285 app/templates/base.html:408
+#: app/templates/dashboard.html:382 app/templates/expenses/index.html:2
 #: app/templates/expenses/index.html:7 app/templates/expenses/index.html:143
 #: app/templates/search/index.html:43 app/templates/timeline/index.html:120
-#: app/templates/vehicles/view.html:1004
+#: app/templates/vehicles/view.html:1013
 msgid "Expenses"
 msgstr "Расходы"
 
-#: app/templates/auth/settings.html:439 app/templates/auth/settings.html:501
-#: app/templates/base.html:290 app/templates/base.html:402
+#: app/templates/auth/settings.html:448 app/templates/auth/settings.html:510
+#: app/templates/base.html:290 app/templates/base.html:411
 #: app/templates/reminders/index.html:2 app/templates/reminders/index.html:7
 msgid "Reminders"
 msgstr "Напоминания"
 
-#: app/templates/auth/settings.html:444 app/templates/auth/settings.html:526
-#: app/templates/base.html:295 app/templates/base.html:406
+#: app/templates/auth/settings.html:453 app/templates/auth/settings.html:535
+#: app/templates/base.html:295 app/templates/base.html:415
 #: app/templates/search/index.html:130 app/templates/trips/index.html:2
 #: app/templates/trips/index.html:7
 msgid "Trips"
@@ -1302,78 +1377,73 @@ msgstr "Поездки"
 msgid "More"
 msgstr "Ещё"
 
-#: app/templates/base.html:321 app/templates/base.html:415
+#: app/templates/base.html:321 app/templates/base.html:424
 msgid "Recurring"
 msgstr "Регулярные"
 
-#: app/templates/auth/settings.html:442 app/templates/auth/settings.html:516
-#: app/templates/base.html:324 app/templates/base.html:418
+#: app/templates/auth/settings.html:451 app/templates/auth/settings.html:525
+#: app/templates/base.html:324 app/templates/base.html:427
 #: app/templates/documents/index.html:2 app/templates/documents/index.html:7
 #: app/templates/search/index.html:89
 msgid "Documents"
 msgstr "Документы"
 
-#: app/templates/auth/settings.html:443 app/templates/auth/settings.html:521
-#: app/templates/base.html:327 app/templates/base.html:421
+#: app/templates/auth/settings.html:452 app/templates/auth/settings.html:530
+#: app/templates/base.html:327 app/templates/base.html:430
 #: app/templates/stations/index.html:2 app/templates/stations/index.html:7
 msgid "Fuel Stations"
 msgstr "Заправочные станции"
 
-#: app/templates/auth/settings.html:445 app/templates/auth/settings.html:531
-#: app/templates/base.html:330 app/templates/base.html:409
+#: app/templates/auth/settings.html:454 app/templates/auth/settings.html:540
+#: app/templates/base.html:330 app/templates/base.html:418
 msgid "EV Charging"
 msgstr "Зарядка электромобиля"
 
 #: app/templates/allowance/index.html:2 app/templates/allowance/index.html:7
-#: app/templates/auth/settings.html:446 app/templates/auth/settings.html:536
-#: app/templates/base.html:333 app/templates/base.html:424
-#: app/templates/dashboard.html:158 app/templates/vehicles/view.html:151
+#: app/templates/auth/settings.html:455 app/templates/auth/settings.html:545
+#: app/templates/base.html:333 app/templates/base.html:433
+#: app/templates/dashboard.html:181 app/templates/vehicles/view.html:153
 msgid "Mileage Allowance"
 msgstr "Компенсация за пробег"
 
-#: app/templates/auth/settings.html:541 app/templates/base.html:336
-#: app/templates/base.html:427 app/templates/tires/index.html:2
+#: app/templates/auth/settings.html:550 app/templates/base.html:336
+#: app/templates/base.html:436 app/templates/tires/index.html:2
 #: app/templates/tires/index.html:7
 msgid "Tires"
 msgstr "Шины"
 
-#: app/templates/auth/settings.html:447 app/templates/auth/settings.html:546
-#: app/templates/base.html:339 app/templates/base.html:430
+#: app/templates/auth/settings.html:456 app/templates/auth/settings.html:555
+#: app/templates/base.html:339 app/templates/base.html:439
 #: app/templates/charging/form.html:149 app/templates/expenses/form.html:112
-#: app/templates/fuel/form.html:168 app/templates/notes/index.html:2
+#: app/templates/fuel/form.html:171 app/templates/notes/index.html:2
 #: app/templates/notes/index.html:7 app/templates/search/index.html:110
 #: app/templates/stations/form.html:74 app/templates/tires/form.html:83
 #: app/templates/trips/form.html:142 app/templates/trips/template_form.html:76
-#: app/templates/vehicles/form.html:223
+#: app/templates/vehicles/form.html:232
 #: app/templates/vehicles/part_form.html:87
-#: app/templates/vehicles/view.html:746
+#: app/templates/vehicles/view.html:755
 msgid "Notes"
 msgstr "Заметки"
 
-#: app/templates/auth/settings.html:437 app/templates/base.html:342
-#: app/templates/base.html:354 app/templates/base.html:433
-#: app/templates/fuel/quick.html:2 app/templates/fuel/quick.html:7
+#: app/templates/auth/settings.html:446 app/templates/base.html:342
+#: app/templates/base.html:354 app/templates/base.html:383
+#: app/templates/base.html:442 app/templates/fuel/quick.html:2
+#: app/templates/fuel/quick.html:7
 msgid "Quick Fuel Entry"
 msgstr "Быстрое добавление заправки"
 
-#: app/templates/base.html:358 app/templates/dashboard.html:392
-#: app/templates/timeline/index.html:114 app/templates/trips/index.html:127
-#: app/templates/vehicles/view.html:93
-msgid "Fuel"
-msgstr "Топливо"
-
-#: app/templates/base.html:362 app/templates/base.html:404
-#: app/templates/search/index.html:2 app/templates/search/index.html:6
-#: app/templates/search/index.html:32
+#: app/templates/base.html:362 app/templates/base.html:413
+#: app/templates/maintenance/history.html:11 app/templates/search/index.html:2
+#: app/templates/search/index.html:6 app/templates/search/index.html:32
 msgid "Search"
 msgstr "Поиск"
 
 #: app/templates/auth/settings.html:2 app/templates/auth/settings.html:6
-#: app/templates/base.html:367 app/templates/base.html:435
+#: app/templates/base.html:367 app/templates/base.html:444
 msgid "Settings"
 msgstr "Настройки"
 
-#: app/templates/base.html:374 app/templates/base.html:440
+#: app/templates/base.html:374 app/templates/base.html:449
 msgid "Logout"
 msgstr "Выйти"
 
@@ -1381,20 +1451,20 @@ msgstr "Выйти"
 msgid "Overview of your vehicles and expenses"
 msgstr "Обзор ваших автомобилей и расходов"
 
-#: app/templates/dashboard.html:45 app/templates/vehicles/view.html:132
+#: app/templates/dashboard.html:45 app/templates/vehicles/view.html:134
 msgid "Total Fuel Cost"
 msgstr "Общие затраты на топливо"
 
-#: app/templates/dashboard.html:64 app/templates/vehicles/view.html:139
+#: app/templates/dashboard.html:64 app/templates/vehicles/view.html:141
 msgid "Total Charging Cost"
 msgstr "Общие затраты на зарядку"
 
-#: app/templates/dashboard.html:83 app/templates/vehicles/view.html:145
+#: app/templates/dashboard.html:83 app/templates/vehicles/view.html:147
 msgid "Other Expenses"
 msgstr "Прочие расходы"
 
 #: app/templates/dashboard.html:101 app/templates/trips/index.html:40
-#: app/templates/trips/report.html:35 app/templates/vehicles/view.html:162
+#: app/templates/trips/report.html:35 app/templates/vehicles/view.html:164
 msgid "Total Distance"
 msgstr "Общее расстояние"
 
@@ -1405,14 +1475,14 @@ msgstr "Общее расстояние"
 msgid "This total covers vehicles metered in distance and in engine hours."
 msgstr "В этот итог входят автомобили с учётом в километрах и в моточасах."
 
-#: app/templates/dashboard.html:102 app/templates/trips/index.html:41
-#: app/templates/trips/index.html:45 app/templates/trips/report.html:36
-#: app/templates/trips/report.html:40 app/templates/trips/report.html:68
-#: app/templates/trips/report.html:127
+#: app/templates/dashboard.html:102 app/templates/dashboard.html:140
+#: app/templates/trips/index.html:41 app/templates/trips/index.html:45
+#: app/templates/trips/report.html:36 app/templates/trips/report.html:40
+#: app/templates/trips/report.html:68 app/templates/trips/report.html:127
 msgid "mixed units"
 msgstr "разные единицы"
 
-#: app/templates/dashboard.html:119 app/templates/vehicles/view.html:201
+#: app/templates/dashboard.html:119 app/templates/vehicles/view.html:203
 msgid "Cost per"
 msgstr "Стоимость за"
 
@@ -1420,66 +1490,75 @@ msgstr "Стоимость за"
 msgid "unit"
 msgstr "единица"
 
+#: app/templates/dashboard.html:140 app/templates/vehicles/view.html:209
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "Чистые затраты на %(unit)s"
+
+#: app/templates/dashboard.html:140
+msgid "Net cost per"
+msgstr "Чистые затраты на"
+
 #: app/templates/charging/form.html:140 app/templates/charging/index.html:28
-#: app/templates/dashboard.html:139 app/templates/fuel/form.html:94
-#: app/templates/fuel/quick.html:76
+#: app/templates/dashboard.html:162 app/templates/fuel/form.html:96
+#: app/templates/fuel/quick.html:78
 msgid "Total Cost"
 msgstr "Общая стоимость"
 
-#: app/templates/dashboard.html:176 app/templates/vehicles/view.html:156
+#: app/templates/dashboard.html:199 app/templates/vehicles/view.html:158
 msgid "Net Cost"
 msgstr "Чистая стоимость"
 
-#: app/templates/dashboard.html:189
+#: app/templates/dashboard.html:212
 msgid "Monthly Spending"
 msgstr "Расходы по месяцам"
 
-#: app/templates/dashboard.html:198 app/templates/stations/cheapest.html:2
+#: app/templates/dashboard.html:221 app/templates/stations/cheapest.html:2
 #: app/templates/stations/cheapest.html:7 app/templates/stations/index.html:28
 msgid "Cheapest Fuel"
 msgstr "Самое дешёвое топливо"
 
-#: app/templates/dashboard.html:199 app/templates/dashboard.html:290
-#: app/templates/dashboard.html:314 app/templates/vehicles/view.html:652
-#: app/templates/vehicles/view.html:766 app/templates/vehicles/view.html:824
+#: app/templates/dashboard.html:222 app/templates/dashboard.html:313
+#: app/templates/dashboard.html:337 app/templates/vehicles/view.html:661
+#: app/templates/vehicles/view.html:775 app/templates/vehicles/view.html:833
 msgid "View all"
 msgstr "Смотреть все"
 
-#: app/templates/dashboard.html:223
+#: app/templates/dashboard.html:246
 msgid "No price data yet. Add fuel stations and log fuel to track prices."
 msgstr ""
 "Данных о ценах пока нет. Добавьте заправочные станции и записи о заправках, "
 "чтобы отслеживать цены."
 
-#: app/templates/dashboard.html:230 app/templates/vehicles/view.html:932
+#: app/templates/dashboard.html:253 app/templates/vehicles/view.html:941
 msgid "Expenses by Category"
 msgstr "Расходы по категориям"
 
-#: app/templates/dashboard.html:241
+#: app/templates/dashboard.html:264
 msgid "Your Vehicles"
 msgstr "Ваши автомобили"
 
-#: app/templates/dashboard.html:243
+#: app/templates/dashboard.html:266
 msgid "Add"
 msgstr "Добавить"
 
-#: app/templates/dashboard.html:280
+#: app/templates/dashboard.html:303
 msgid "Add your first vehicle"
 msgstr "Добавьте свой первый автомобиль"
 
-#: app/templates/dashboard.html:289
+#: app/templates/dashboard.html:312
 msgid "Recent Fuel Logs"
 msgstr "Последние заправки"
 
-#: app/templates/dashboard.html:307 app/templates/vehicles/view.html:998
+#: app/templates/dashboard.html:330 app/templates/vehicles/view.html:1007
 msgid "No fuel logs yet."
 msgstr "Заправок пока нет."
 
-#: app/templates/dashboard.html:313
+#: app/templates/dashboard.html:336
 msgid "Recent Expenses"
 msgstr "Последние расходы"
 
-#: app/templates/dashboard.html:331 app/templates/vehicles/view.html:1046
+#: app/templates/dashboard.html:354 app/templates/vehicles/view.html:1055
 msgid "No expenses yet."
 msgstr "Расходов пока нет."
 
@@ -1503,11 +1582,11 @@ msgstr "Назад к компенсации за пробег"
 #: app/templates/expenses/index.html:29 app/templates/fuel/form.html:19
 #: app/templates/fuel/index.html:42 app/templates/fuel/index.html:145
 #: app/templates/fuel/quick.html:15 app/templates/maintenance/form.html:30
-#: app/templates/notes/form.html:19 app/templates/notes/index.html:29
-#: app/templates/recurring/form.html:21 app/templates/reminders/form.html:26
-#: app/templates/reminders/index.html:27 app/templates/tires/form.html:16
-#: app/templates/trips/form.html:37 app/templates/trips/index.html:53
-#: app/templates/trips/report.html:99
+#: app/templates/maintenance/history.html:6 app/templates/notes/form.html:19
+#: app/templates/notes/index.html:29 app/templates/recurring/form.html:21
+#: app/templates/reminders/form.html:26 app/templates/reminders/index.html:27
+#: app/templates/tires/form.html:16 app/templates/trips/form.html:37
+#: app/templates/trips/index.html:53 app/templates/trips/report.html:99
 msgid "Vehicle"
 msgstr "Автомобиль"
 
@@ -1517,13 +1596,13 @@ msgstr "Автомобиль"
 #: app/templates/fuel/index.html:41 app/templates/fuel/index.html:144
 #: app/templates/maintenance/form.html:119 app/templates/notes/form.html:34
 #: app/templates/notes/index.html:28 app/templates/tires/index.html:87
-#: app/templates/tires/index.html:102 app/templates/trips/form.html:67
+#: app/templates/tires/index.html:110 app/templates/trips/form.html:67
 #: app/templates/trips/report.html:98
 msgid "Date"
 msgstr "Дата"
 
 #: app/templates/allowance/form.html:41 app/templates/allowance/index.html:31
-#: app/templates/recurring/form.html:65
+#: app/templates/recurring/form.html:66
 msgid "Amount"
 msgstr "Сумма"
 
@@ -1540,8 +1619,9 @@ msgstr ""
 #: app/templates/allowance/form.html:65 app/templates/allowance/index.html:29
 #: app/templates/documents/form.html:91 app/templates/documents/view.html:98
 #: app/templates/expenses/form.html:61 app/templates/expenses/index.html:31
-#: app/templates/maintenance/form.html:68 app/templates/recurring/form.html:96
-#: app/templates/trips/form.html:134 app/templates/trips/report.html:101
+#: app/templates/maintenance/form.html:68
+#: app/templates/recurring/form.html:112 app/templates/trips/form.html:134
+#: app/templates/trips/report.html:101
 #: app/templates/trips/template_form.html:68
 msgid "Description"
 msgstr "Описание"
@@ -1552,26 +1632,26 @@ msgstr "например, поездки к клиентам в июне"
 
 #: app/templates/allowance/form.html:77 app/templates/charging/form.html:159
 #: app/templates/documents/form.html:122 app/templates/expenses/form.html:146
-#: app/templates/fuel/form.html:201
+#: app/templates/fuel/form.html:204
 #: app/templates/import/backup_preview.html:90
 #: app/templates/maintenance/form.html:177
-#: app/templates/maintenance/index.html:162 app/templates/notes/form.html:72
-#: app/templates/recurring/form.html:128 app/templates/reminders/form.html:126
+#: app/templates/maintenance/index.html:163 app/templates/notes/form.html:72
+#: app/templates/recurring/form.html:144 app/templates/reminders/form.html:126
 #: app/templates/stations/form.html:101 app/templates/tires/form.html:103
 #: app/templates/trips/form.html:152 app/templates/trips/template_form.html:86
-#: app/templates/vehicles/form.html:322
+#: app/templates/vehicles/form.html:331
 #: app/templates/vehicles/part_form.html:98
 msgid "Cancel"
 msgstr "Отмена"
 
 #: app/templates/allowance/form.html:81 app/templates/auth/edit_user.html:91
-#: app/templates/auth/settings.html:212 app/templates/charging/form.html:163
+#: app/templates/auth/settings.html:221 app/templates/charging/form.html:163
 #: app/templates/documents/form.html:126 app/templates/expenses/form.html:150
-#: app/templates/fuel/form.html:205 app/templates/maintenance/form.html:181
-#: app/templates/notes/form.html:76 app/templates/recurring/form.html:132
+#: app/templates/fuel/form.html:208 app/templates/maintenance/form.html:181
+#: app/templates/notes/form.html:76 app/templates/recurring/form.html:148
 #: app/templates/stations/form.html:105 app/templates/tires/form.html:107
 #: app/templates/trips/form.html:156 app/templates/trips/template_form.html:90
-#: app/templates/vehicles/form.html:326
+#: app/templates/vehicles/form.html:335
 #: app/templates/vehicles/part_form.html:102
 msgid "Save Changes"
 msgstr "Сохранить изменения"
@@ -1585,16 +1665,16 @@ msgstr ""
 
 #: app/templates/allowance/index.html:32 app/templates/expenses/index.html:34
 #: app/templates/fuel/index.html:49 app/templates/fuel/index.html:150
-#: app/templates/notes/index.html:32 app/templates/tires/index.html:128
+#: app/templates/notes/index.html:32 app/templates/tires/index.html:136
 msgid "Actions"
 msgstr "Действия"
 
 #: app/templates/allowance/index.html:51 app/templates/documents/view.html:31
 #: app/templates/expenses/index.html:64 app/templates/fuel/index.html:85
-#: app/templates/fuel/index.html:174 app/templates/maintenance/index.html:85
+#: app/templates/fuel/index.html:174 app/templates/maintenance/index.html:86
 #: app/templates/notes/index.html:55 app/templates/stations/index.html:80
-#: app/templates/tires/index.html:158 app/templates/vehicles/view.html:75
-#: app/templates/vehicles/view.html:593
+#: app/templates/tires/index.html:166 app/templates/vehicles/view.html:77
+#: app/templates/vehicles/view.html:602
 msgid "Edit"
 msgstr "Изменить"
 
@@ -1604,10 +1684,10 @@ msgstr "Удалить эту запись о компенсации?"
 
 #: app/templates/allowance/index.html:57 app/templates/documents/form.html:114
 #: app/templates/expenses/form.html:126 app/templates/expenses/index.html:70
-#: app/templates/fuel/form.html:182 app/templates/fuel/index.html:92
-#: app/templates/notes/index.html:61 app/templates/recurring/form.html:120
-#: app/templates/stations/form.html:93 app/templates/tires/index.html:144
-#: app/templates/tires/index.html:162 app/templates/vehicles/view.html:337
+#: app/templates/fuel/form.html:185 app/templates/fuel/index.html:92
+#: app/templates/notes/index.html:61 app/templates/recurring/form.html:136
+#: app/templates/stations/form.html:93 app/templates/tires/index.html:152
+#: app/templates/tires/index.html:170 app/templates/vehicles/view.html:346
 msgid "Delete"
 msgstr "Удалить"
 
@@ -1643,14 +1723,14 @@ msgstr "Данные учётной записи"
 
 #: app/templates/auth/create_user.html:27 app/templates/auth/edit_user.html:28
 #: app/templates/auth/login.html:18 app/templates/auth/register.html:18
-#: app/templates/auth/settings.html:230
+#: app/templates/auth/settings.html:239
 msgid "Username"
 msgstr "Имя пользователя"
 
 #: app/templates/auth/create_user.html:33 app/templates/auth/edit_user.html:33
 #: app/templates/auth/forgot_password.html:20
-#: app/templates/auth/register.html:24 app/templates/auth/settings.html:247
-#: app/templates/auth/settings.html:1370
+#: app/templates/auth/register.html:24 app/templates/auth/settings.html:256
+#: app/templates/auth/settings.html:1379
 msgid "Email"
 msgstr "Email"
 
@@ -1665,7 +1745,7 @@ msgid "Confirm Password"
 msgstr "Подтвердите пароль"
 
 #: app/templates/auth/create_user.html:53 app/templates/auth/edit_user.html:40
-#: app/templates/auth/settings.html:234 app/templates/auth/users.html:21
+#: app/templates/auth/settings.html:243 app/templates/auth/users.html:21
 msgid "Role"
 msgstr "Роль"
 
@@ -1694,11 +1774,11 @@ msgstr "Оставьте пустым, чтобы сохранить текущ�
 
 #: app/templates/auth/edit_user.html:75
 #: app/templates/auth/reset_password.html:18
-#: app/templates/auth/settings.html:372
+#: app/templates/auth/settings.html:381
 msgid "New Password"
 msgstr "Новый пароль"
 
-#: app/templates/auth/edit_user.html:80 app/templates/auth/settings.html:378
+#: app/templates/auth/edit_user.html:80 app/templates/auth/settings.html:387
 msgid "Confirm New Password"
 msgstr "Подтвердите новый пароль"
 
@@ -1776,7 +1856,7 @@ msgstr "Единицы измерения"
 msgid "Account & Security"
 msgstr "Учётная запись и безопасность"
 
-#: app/templates/auth/settings.html:34 app/templates/auth/settings.html:423
+#: app/templates/auth/settings.html:34 app/templates/auth/settings.html:432
 msgid "Menu & Navigation"
 msgstr "Меню и навигация"
 
@@ -1788,8 +1868,8 @@ msgstr "Импорт / экспорт"
 msgid "API"
 msgstr "API"
 
-#: app/templates/auth/settings.html:58 app/templates/auth/settings.html:356
-#: app/templates/auth/settings.html:796
+#: app/templates/auth/settings.html:58 app/templates/auth/settings.html:365
+#: app/templates/auth/settings.html:805
 msgid "Integrations"
 msgstr "Интеграции"
 
@@ -1801,7 +1881,7 @@ msgstr "Уведомления"
 msgid "Branding"
 msgstr "Брендинг"
 
-#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1771
+#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1780
 msgid "About"
 msgstr "О программе"
 
@@ -1833,8 +1913,8 @@ msgstr "ГГГГ-ММ-ДД"
 msgid "DD.MM.YYYY"
 msgstr "ДД.ММ.ГГГГ"
 
-#: app/templates/auth/settings.html:135 app/templates/fuel/form.html:68
-#: app/templates/fuel/index.html:45 app/templates/fuel/quick.html:57
+#: app/templates/auth/settings.html:135 app/templates/fuel/form.html:69
+#: app/templates/fuel/index.html:45 app/templates/fuel/quick.html:58
 msgid "Volume"
 msgstr "Объём"
 
@@ -1891,35 +1971,44 @@ msgstr "Запятая"
 msgid "Period"
 msgstr "Точка"
 
-#: app/templates/auth/settings.html:170
+#: app/templates/auth/settings.html:169
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "Показывать чистые затраты на %(unit)s"
+
+#: app/templates/auth/settings.html:171
+msgid "Deducts recorded mileage reimbursements."
+msgstr "Вычитает записанные компенсации за пробег."
+
+#: app/templates/auth/settings.html:177
 msgid "Round costs to whole numbers"
 msgstr "Округлять расходы до целых чисел"
 
-#: app/templates/auth/settings.html:176
+#: app/templates/auth/settings.html:183
 msgid "Currency"
 msgstr "Валюта"
 
-#: app/templates/auth/settings.html:198
+#: app/templates/auth/settings.html:207
 msgid "Custom Currency"
 msgstr "Своя валюта"
 
-#: app/templates/auth/settings.html:201
+#: app/templates/auth/settings.html:210
 msgid "e.g. ZAR, R, CHF"
 msgstr "например, ZAR, R, CHF"
 
-#: app/templates/auth/settings.html:203
+#: app/templates/auth/settings.html:212
 msgid "Enter a currency code or symbol to display"
 msgstr "Введите код или символ валюты для отображения"
 
-#: app/templates/auth/settings.html:224
+#: app/templates/auth/settings.html:233
 msgid "Account Information"
 msgstr "Информация об учётной записи"
 
-#: app/templates/auth/settings.html:225
+#: app/templates/auth/settings.html:234
 msgid "Your account details"
 msgstr "Данные вашей учётной записи"
 
-#: app/templates/auth/settings.html:239
+#: app/templates/auth/settings.html:248
 msgid ""
 "Your account can see the data but cannot change it. Ask an administrator if "
 "you need more access."
@@ -1927,7 +2016,7 @@ msgstr ""
 "Ваша учётная запись видит данные, но не может их изменять. Обратитесь к "
 "администратору, если нужен более широкий доступ."
 
-#: app/templates/auth/settings.html:241
+#: app/templates/auth/settings.html:250
 msgid ""
 "Your account can record fuel fill-ups and charging sessions. Ask an "
 "administrator if you need more access."
@@ -1935,125 +2024,125 @@ msgstr ""
 "Ваша учётная запись может записывать заправки и зарядные сессии. Обратитесь "
 "к администратору, если нужен более широкий доступ."
 
-#: app/templates/auth/settings.html:252
+#: app/templates/auth/settings.html:261
 msgid "Member Since"
 msgstr "Участник с"
 
-#: app/templates/auth/settings.html:259
+#: app/templates/auth/settings.html:268
 msgid "Save Email"
 msgstr "Сохранить email"
 
-#: app/templates/auth/settings.html:267
+#: app/templates/auth/settings.html:276
 msgid "Appearance"
 msgstr "Внешний вид"
 
-#: app/templates/auth/settings.html:268
+#: app/templates/auth/settings.html:277
 msgid "Customize how the app looks"
 msgstr "Настройте внешний вид приложения"
 
-#: app/templates/auth/settings.html:274
+#: app/templates/auth/settings.html:283
 msgid "Dark Mode"
 msgstr "Тёмная тема"
 
-#: app/templates/auth/settings.html:275
+#: app/templates/auth/settings.html:284
 msgid "Use dark theme for the interface"
 msgstr "Использовать тёмную тему интерфейса"
 
-#: app/templates/auth/settings.html:290
+#: app/templates/auth/settings.html:299
 msgid "User Management"
 msgstr "Управление пользователями"
 
-#: app/templates/auth/settings.html:291
+#: app/templates/auth/settings.html:300
 msgid "Manage users and permissions"
 msgstr "Управление пользователями и правами доступа"
 
-#: app/templates/auth/settings.html:297 app/templates/auth/users.html:2
+#: app/templates/auth/settings.html:306 app/templates/auth/users.html:2
 msgid "Users"
 msgstr "Пользователи"
 
-#: app/templates/auth/settings.html:298
+#: app/templates/auth/settings.html:307
 msgid "View and manage all users"
 msgstr "Просмотр и управление всеми пользователями"
 
-#: app/templates/auth/settings.html:302
+#: app/templates/auth/settings.html:311
 msgid "Manage Users"
 msgstr "Управление пользователями"
 
-#: app/templates/auth/settings.html:308
+#: app/templates/auth/settings.html:317
 msgid "Allow Registration"
 msgstr "Разрешить регистрацию"
 
-#: app/templates/auth/settings.html:309
+#: app/templates/auth/settings.html:318
 msgid "Allow new users to create accounts"
 msgstr "Разрешить новым пользователям создавать учётные записи"
 
-#: app/templates/auth/settings.html:343
+#: app/templates/auth/settings.html:352
 msgid "Admin Settings"
 msgstr "Настройки администратора"
 
-#: app/templates/auth/settings.html:344
+#: app/templates/auth/settings.html:353
 msgid "Configure system-wide settings for all users:"
 msgstr "Настройте общесистемные параметры для всех пользователей:"
 
-#: app/templates/auth/settings.html:348
+#: app/templates/auth/settings.html:357
 msgid "SMTP / Notifications"
 msgstr "SMTP / уведомления"
 
-#: app/templates/auth/settings.html:352
+#: app/templates/auth/settings.html:361
 msgid "Branding / Appearance"
 msgstr "Брендинг / внешний вид"
 
-#: app/templates/auth/settings.html:365
+#: app/templates/auth/settings.html:374
 msgid "Change Password"
 msgstr "Смена пароля"
 
-#: app/templates/auth/settings.html:366
+#: app/templates/auth/settings.html:375
 msgid "Update your password to keep your account secure"
 msgstr "Обновите пароль, чтобы обеспечить безопасность учётной записи"
 
-#: app/templates/auth/settings.html:388
+#: app/templates/auth/settings.html:397
 msgid "Update Password"
 msgstr "Обновить пароль"
 
-#: app/templates/auth/settings.html:396 app/templates/vehicles/view.html:1054
+#: app/templates/auth/settings.html:405 app/templates/vehicles/view.html:1063
 msgid "Danger Zone"
 msgstr "Опасная зона"
 
-#: app/templates/auth/settings.html:397
+#: app/templates/auth/settings.html:406
 msgid "Irreversible actions"
 msgstr "Необратимые действия"
 
-#: app/templates/auth/settings.html:403 app/templates/auth/settings.html:408
+#: app/templates/auth/settings.html:412 app/templates/auth/settings.html:417
 msgid "Delete Account"
 msgstr "Удалить учётную запись"
 
-#: app/templates/auth/settings.html:404
+#: app/templates/auth/settings.html:413
 msgid "Permanently delete your account and all data"
 msgstr "Безвозвратно удалить учётную запись и все данные"
 
-#: app/templates/auth/settings.html:424
+#: app/templates/auth/settings.html:433
 msgid "Customize which menu items to show and your start page"
 msgstr "Настройте отображаемые пункты меню и стартовую страницу"
 
-#: app/templates/auth/settings.html:430
+#: app/templates/auth/settings.html:439
 msgid "Start Page"
 msgstr "Стартовая страница"
 
-#: app/templates/auth/settings.html:431
+#: app/templates/auth/settings.html:440
 msgid "Which page to show when you log in"
 msgstr "Какую страницу показывать при входе"
 
-#: app/templates/auth/settings.html:441 app/templates/auth/settings.html:511
+#: app/templates/auth/settings.html:450 app/templates/auth/settings.html:520
 #: app/templates/recurring/index.html:2 app/templates/recurring/index.html:7
 msgid "Recurring Expenses"
 msgstr "Регулярные расходы"
 
-#: app/templates/auth/settings.html:453
+#: app/templates/auth/settings.html:462
 #: app/templates/trips/template_form.html:27
 msgid "Default Vehicle"
 msgstr "Автомобиль по умолчанию"
 
-#: app/templates/auth/settings.html:454
+#: app/templates/auth/settings.html:463
 msgid ""
 "Pre-selected vehicle when adding fuel logs, expenses, trips, and charging "
 "sessions"
@@ -2061,37 +2150,37 @@ msgstr ""
 "Автомобиль, выбираемый по умолчанию при добавлении заправок, расходов, "
 "поездок и сеансов зарядки"
 
-#: app/templates/auth/settings.html:457
+#: app/templates/auth/settings.html:466
 msgid "No default"
 msgstr "Нет значения по умолчанию"
 
-#: app/templates/auth/settings.html:467
+#: app/templates/auth/settings.html:476
 msgid "Quick Entry Button"
 msgstr "Кнопка быстрого добавления"
 
-#: app/templates/auth/settings.html:468
+#: app/templates/auth/settings.html:477
 msgid "Show a quick fuel entry button in the navigation bar for rapid logging"
 msgstr ""
 "Показывать кнопку быстрого добавления заправки на панели навигации для "
 "ускоренного ввода"
 
-#: app/templates/auth/settings.html:479
+#: app/templates/auth/settings.html:488
 msgid "Show Menu Items"
 msgstr "Отображаемые пункты меню"
 
-#: app/templates/auth/settings.html:480
+#: app/templates/auth/settings.html:489
 msgid "Choose which items appear in the navigation menu"
 msgstr "Выберите, какие пункты отображать в меню навигации"
 
-#: app/templates/auth/settings.html:555 app/templates/auth/settings.html:1476
+#: app/templates/auth/settings.html:564 app/templates/auth/settings.html:1485
 msgid "Save Preferences"
 msgstr "Сохранить настройки"
 
-#: app/templates/auth/settings.html:568
+#: app/templates/auth/settings.html:577
 msgid "Import Data"
 msgstr "Импорт данных"
 
-#: app/templates/auth/settings.html:569
+#: app/templates/auth/settings.html:578
 msgid ""
 "Restore a May backup, or import your data from other fuel tracking "
 "applications"
@@ -2099,11 +2188,11 @@ msgstr ""
 "Восстановите резервную копию May или импортируйте данные из других "
 "приложений учёта топлива"
 
-#: app/templates/auth/settings.html:575
+#: app/templates/auth/settings.html:584
 msgid "Restore May Backup"
 msgstr "Восстановить резервную копию May"
 
-#: app/templates/auth/settings.html:576
+#: app/templates/auth/settings.html:585
 msgid ""
 "Restore a JSON export (.json) or full backup (.zip) from another May "
 "instance"
@@ -2111,58 +2200,58 @@ msgstr ""
 "Восстановить экспорт JSON (.json) или полную резервную копию (.zip) из "
 "другого экземпляра May"
 
-#: app/templates/auth/settings.html:580
+#: app/templates/auth/settings.html:589
 msgid "Restore"
 msgstr "Восстановить"
 
-#: app/templates/auth/settings.html:587
+#: app/templates/auth/settings.html:596
 msgid "Import from Hammond SQLite database (.db file)"
 msgstr "Импорт из базы SQLite приложения Hammond (файл .db)"
 
-#: app/templates/auth/settings.html:595 app/templates/auth/settings.html:611
-#: app/templates/auth/settings.html:627 app/templates/auth/settings.html:639
+#: app/templates/auth/settings.html:604 app/templates/auth/settings.html:620
+#: app/templates/auth/settings.html:636 app/templates/auth/settings.html:648
 msgid "Import"
 msgstr "Импорт"
 
-#: app/templates/auth/settings.html:603
+#: app/templates/auth/settings.html:612
 msgid "Import from Clarkson MySQL dump (.sql file)"
 msgstr "Импорт из дампа MySQL приложения Clarkson (файл .sql)"
 
-#: app/templates/auth/settings.html:619
+#: app/templates/auth/settings.html:628
 msgid "Import from Fuelly CSV export (.csv file)"
 msgstr "Импорт из экспорта CSV сервиса Fuelly (файл .csv)"
 
-#: app/templates/auth/settings.html:634 app/templates/import/csv_upload.html:2
+#: app/templates/auth/settings.html:643 app/templates/import/csv_upload.html:2
 msgid "CSV Import"
 msgstr "Импорт CSV"
 
-#: app/templates/auth/settings.html:635
+#: app/templates/auth/settings.html:644
 msgid ""
 "Import fuel logs, expenses, trips, or charging sessions from any CSV file"
 msgstr ""
 "Импорт заправок, расходов, поездок или зарядных сессий из любого файла CSV"
 
-#: app/templates/auth/settings.html:646
+#: app/templates/auth/settings.html:655
 msgid "Import from Drivvo backup files"
 msgstr "Импорт из файлов резервных копий Drivvo"
 
-#: app/templates/auth/settings.html:650
+#: app/templates/auth/settings.html:659
 msgid "Soon"
 msgstr "Скоро"
 
-#: app/templates/auth/settings.html:659
+#: app/templates/auth/settings.html:668
 msgid "Export Data"
 msgstr "Экспорт данных"
 
-#: app/templates/auth/settings.html:660
+#: app/templates/auth/settings.html:669
 msgid "Download your data for backup or migration"
 msgstr "Скачайте свои данные для резервного копирования или переноса"
 
-#: app/templates/auth/settings.html:666
+#: app/templates/auth/settings.html:675
 msgid "Export as CSV"
 msgstr "Экспорт в CSV"
 
-#: app/templates/auth/settings.html:667
+#: app/templates/auth/settings.html:676
 msgid ""
 "Download all your vehicles, fuel logs, and expenses as CSV files (ZIP "
 "archive)"
@@ -2170,27 +2259,27 @@ msgstr ""
 "Скачайте все свои автомобили, заправки и расходы в виде файлов CSV (архив "
 "ZIP)"
 
-#: app/templates/auth/settings.html:671
+#: app/templates/auth/settings.html:680
 msgid "Download CSV"
 msgstr "Скачать CSV"
 
-#: app/templates/auth/settings.html:677
+#: app/templates/auth/settings.html:686
 msgid "Export as JSON"
 msgstr "Экспорт в JSON"
 
-#: app/templates/auth/settings.html:678
+#: app/templates/auth/settings.html:687
 msgid "Download a complete backup of your data in JSON format"
 msgstr "Скачайте полную резервную копию данных в формате JSON"
 
-#: app/templates/auth/settings.html:682
+#: app/templates/auth/settings.html:691
 msgid "Download JSON"
 msgstr "Скачать JSON"
 
-#: app/templates/auth/settings.html:688
+#: app/templates/auth/settings.html:697
 msgid "Full Backup"
 msgstr "Полная резервная копия"
 
-#: app/templates/auth/settings.html:689
+#: app/templates/auth/settings.html:698
 msgid ""
 "Download all data and files (images, documents, attachments) as a ZIP "
 "archive"
@@ -2198,48 +2287,48 @@ msgstr ""
 "Скачайте все данные и файлы (изображения, документы, вложения) в виде архива"
 " ZIP"
 
-#: app/templates/auth/settings.html:693
+#: app/templates/auth/settings.html:702
 msgid "Download ZIP"
 msgstr "Скачать ZIP"
 
-#: app/templates/auth/settings.html:709
+#: app/templates/auth/settings.html:718
 msgid "API Access"
 msgstr "Доступ к API"
 
-#: app/templates/auth/settings.html:710
+#: app/templates/auth/settings.html:719
 msgid "Generate API keys to connect external applications"
 msgstr "Создавайте ключи API для подключения внешних приложений"
 
-#: app/templates/auth/settings.html:712
+#: app/templates/auth/settings.html:721
 msgid "View API Docs"
 msgstr "Открыть документацию API"
 
-#: app/templates/auth/settings.html:721
+#: app/templates/auth/settings.html:730
 msgid "Your API Key"
 msgstr "Ваш ключ API"
 
-#: app/templates/auth/settings.html:740 app/templates/auth/settings.html:777
-#: app/templates/auth/settings.html:953 app/templates/auth/settings.html:967
+#: app/templates/auth/settings.html:749 app/templates/auth/settings.html:786
+#: app/templates/auth/settings.html:962 app/templates/auth/settings.html:976
 msgid "Copy"
 msgstr "Копировать"
 
-#: app/templates/auth/settings.html:743
+#: app/templates/auth/settings.html:752
 msgid "Created"
 msgstr "Создан"
 
-#: app/templates/auth/settings.html:747
+#: app/templates/auth/settings.html:756
 msgid "Regenerate Key"
 msgstr "Пересоздать ключ"
 
-#: app/templates/auth/settings.html:751
+#: app/templates/auth/settings.html:760
 msgid "Revoke Key"
 msgstr "Отозвать ключ"
 
-#: app/templates/auth/settings.html:758
+#: app/templates/auth/settings.html:767
 msgid "API Key"
 msgstr "Ключ API"
 
-#: app/templates/auth/settings.html:759
+#: app/templates/auth/settings.html:768
 msgid ""
 "Generate an API key to access May programmatically. You can use it to "
 "integrate with other applications or build your own tools."
@@ -2247,113 +2336,113 @@ msgstr ""
 "Создайте ключ API для программного доступа к May. Его можно использовать для"
 " интеграции с другими приложениями или создания собственных инструментов."
 
-#: app/templates/auth/settings.html:762
+#: app/templates/auth/settings.html:771
 msgid "Generate API Key"
 msgstr "Создать ключ API"
 
-#: app/templates/auth/settings.html:771
+#: app/templates/auth/settings.html:780
 msgid "API Key Generated"
 msgstr "Ключ API создан"
 
-#: app/templates/auth/settings.html:772
+#: app/templates/auth/settings.html:781
 msgid "Copy your API key now. For security, it won't be shown in full again."
 msgstr ""
 "Скопируйте ключ API сейчас. В целях безопасности он больше не будет показан "
 "полностью."
 
-#: app/templates/auth/settings.html:783
+#: app/templates/auth/settings.html:792
 msgid "Done"
 msgstr "Готово"
 
-#: app/templates/auth/settings.html:797
+#: app/templates/auth/settings.html:806
 msgid "Connect May with external services and applications"
 msgstr "Подключите May к внешним сервисам и приложениям"
 
-#: app/templates/auth/settings.html:811
+#: app/templates/auth/settings.html:820
 msgid "Calendar"
 msgstr "Календарь"
 
-#: app/templates/auth/settings.html:814
+#: app/templates/auth/settings.html:823
 msgid "Subscribe to reminders in your calendar app"
 msgstr "Подпишитесь на напоминания в своём календаре"
 
-#: app/templates/auth/settings.html:816 app/templates/auth/settings.html:837
+#: app/templates/auth/settings.html:825 app/templates/auth/settings.html:846
 msgid "Ready"
 msgstr "Готово"
 
-#: app/templates/auth/settings.html:818 app/templates/auth/settings.html:839
+#: app/templates/auth/settings.html:827 app/templates/auth/settings.html:848
 msgid "Requires API key"
 msgstr "Требуется ключ API"
 
-#: app/templates/auth/settings.html:832 app/templates/auth/settings.html:1019
+#: app/templates/auth/settings.html:841 app/templates/auth/settings.html:1028
 msgid "Home Assistant"
 msgstr "Home Assistant"
 
-#: app/templates/auth/settings.html:835 app/templates/auth/settings.html:1020
+#: app/templates/auth/settings.html:844 app/templates/auth/settings.html:1029
 msgid "Create sensors and automations for your vehicles"
 msgstr "Создавайте датчики и автоматизации для своих автомобилей"
 
-#: app/templates/auth/settings.html:854
+#: app/templates/auth/settings.html:863
 msgid "DVLA"
 msgstr "DVLA"
 
-#: app/templates/auth/settings.html:855 app/templates/auth/settings.html:877
-#: app/templates/auth/settings.html:899 app/templates/auth/settings.html:1492
+#: app/templates/auth/settings.html:864 app/templates/auth/settings.html:886
+#: app/templates/auth/settings.html:908 app/templates/auth/settings.html:1501
 msgid "Admin"
 msgstr "Администратор"
 
-#: app/templates/auth/settings.html:858 app/templates/auth/settings.html:1115
+#: app/templates/auth/settings.html:867 app/templates/auth/settings.html:1124
 msgid "Look up UK vehicle MOT and tax status"
 msgstr ""
 "Проверка статуса техосмотра (MOT) и налога для автомобилей Великобритании"
 
-#: app/templates/auth/settings.html:860 app/templates/auth/settings.html:882
+#: app/templates/auth/settings.html:869 app/templates/auth/settings.html:891
 msgid "Configured"
 msgstr "Настроено"
 
-#: app/templates/auth/settings.html:862 app/templates/auth/settings.html:884
+#: app/templates/auth/settings.html:871 app/templates/auth/settings.html:893
 msgid "Not configured"
 msgstr "Не настроено"
 
-#: app/templates/auth/settings.html:876
+#: app/templates/auth/settings.html:885
 msgid "Tessie"
 msgstr "Tessie"
 
-#: app/templates/auth/settings.html:880
+#: app/templates/auth/settings.html:889
 msgid "Sync Tesla vehicle odometer and battery"
 msgstr "Синхронизация пробега и заряда батареи автомобиля Tesla"
 
-#: app/templates/auth/settings.html:898 app/templates/auth/settings.html:1265
+#: app/templates/auth/settings.html:907 app/templates/auth/settings.html:1274
 msgid "UK Fuel Prices"
 msgstr "Цены на топливо в Великобритании"
 
-#: app/templates/auth/settings.html:902 app/templates/auth/settings.html:1266
+#: app/templates/auth/settings.html:911 app/templates/auth/settings.html:1275
 msgid "Pull live forecourt prices for saved stations"
 msgstr "Получать актуальные цены заправок для сохранённых станций"
 
-#: app/templates/auth/settings.html:904
+#: app/templates/auth/settings.html:913
 msgid "Enabled"
 msgstr "Включено"
 
-#: app/templates/auth/settings.html:906
+#: app/templates/auth/settings.html:915
 msgid "Disabled"
 msgstr "Отключено"
 
-#: app/templates/auth/settings.html:920 app/templates/auth/settings.html:1006
-#: app/templates/auth/settings.html:1101 app/templates/auth/settings.html:1172
-#: app/templates/auth/settings.html:1252
+#: app/templates/auth/settings.html:929 app/templates/auth/settings.html:1015
+#: app/templates/auth/settings.html:1110 app/templates/auth/settings.html:1181
+#: app/templates/auth/settings.html:1261
 msgid "Back to Integrations"
 msgstr "Назад к интеграциям"
 
-#: app/templates/auth/settings.html:933
+#: app/templates/auth/settings.html:942
 msgid "Calendar Subscription"
 msgstr "Подписка на календарь"
 
-#: app/templates/auth/settings.html:934
+#: app/templates/auth/settings.html:943
 msgid "Subscribe to your reminders in any calendar app"
 msgstr "Подпишитесь на свои напоминания в любом приложении-календаре"
 
-#: app/templates/auth/settings.html:942
+#: app/templates/auth/settings.html:951
 msgid ""
 "Add this calendar to Apple Calendar, Google Calendar, Outlook, or any other "
 "calendar app that supports iCal subscriptions."
@@ -2361,58 +2450,58 @@ msgstr ""
 "Добавьте этот календарь в Apple Calendar, Google Calendar, Outlook или любое"
 " другое приложение, поддерживающее подписки iCal."
 
-#: app/templates/auth/settings.html:945
+#: app/templates/auth/settings.html:954
 msgid "Webcal URL"
 msgstr "URL webcal"
 
-#: app/templates/auth/settings.html:946
+#: app/templates/auth/settings.html:955
 msgid "Use this URL for most calendar apps (Apple Calendar, Outlook, etc.)"
 msgstr ""
 "Используйте этот URL для большинства календарных приложений (Apple Calendar,"
 " Outlook и др.)"
 
-#: app/templates/auth/settings.html:959
+#: app/templates/auth/settings.html:968
 msgid "HTTPS URL"
 msgstr "URL HTTPS"
 
-#: app/templates/auth/settings.html:960
+#: app/templates/auth/settings.html:969
 msgid "Use this URL for Google Calendar"
 msgstr "Используйте этот URL для Google Calendar"
 
-#: app/templates/auth/settings.html:973
+#: app/templates/auth/settings.html:982
 msgid "What's included in the calendar?"
 msgstr "Что включено в календарь?"
 
-#: app/templates/auth/settings.html:975
+#: app/templates/auth/settings.html:984
 msgid "Maintenance schedules"
 msgstr "Графики обслуживания"
 
-#: app/templates/auth/settings.html:976
+#: app/templates/auth/settings.html:985
 msgid "Recurring expense due dates"
 msgstr "Даты регулярных расходов"
 
-#: app/templates/auth/settings.html:977
+#: app/templates/auth/settings.html:986
 msgid "Document expiry dates"
 msgstr "Сроки действия документов"
 
-#: app/templates/auth/settings.html:978
+#: app/templates/auth/settings.html:987
 msgid "Custom reminders"
 msgstr "Пользовательские напоминания"
 
-#: app/templates/auth/settings.html:987 app/templates/auth/settings.html:1081
+#: app/templates/auth/settings.html:996 app/templates/auth/settings.html:1090
 msgid "API Key Required"
 msgstr "Требуется ключ API"
 
-#: app/templates/auth/settings.html:988
+#: app/templates/auth/settings.html:997
 msgid "Generate an API key in the API section to enable calendar integration."
 msgstr ""
 "Создайте ключ API в разделе API, чтобы включить интеграцию с календарём."
 
-#: app/templates/auth/settings.html:991 app/templates/auth/settings.html:1085
+#: app/templates/auth/settings.html:1000 app/templates/auth/settings.html:1094
 msgid "Go to API Settings"
 msgstr "Перейти к настройкам API"
 
-#: app/templates/auth/settings.html:1028
+#: app/templates/auth/settings.html:1037
 msgid ""
 "Add the following configuration to your Home Assistant configuration.yaml to"
 " create vehicle sensors."
@@ -2420,49 +2509,49 @@ msgstr ""
 "Добавьте следующую конфигурацию в файл configuration.yaml Home Assistant, "
 "чтобы создать датчики автомобилей."
 
-#: app/templates/auth/settings.html:1031
+#: app/templates/auth/settings.html:1040
 msgid "REST Sensor Configuration"
 msgstr "Конфигурация REST-датчика"
 
-#: app/templates/auth/settings.html:1047
+#: app/templates/auth/settings.html:1056
 msgid "Copy configuration"
 msgstr "Скопировать конфигурацию"
 
-#: app/templates/auth/settings.html:1051
+#: app/templates/auth/settings.html:1060
 msgid "Available API Endpoints"
 msgstr "Доступные конечные точки API"
 
-#: app/templates/auth/settings.html:1055
+#: app/templates/auth/settings.html:1064
 msgid "API health check"
 msgstr "Проверка работоспособности API"
 
-#: app/templates/auth/settings.html:1059
+#: app/templates/auth/settings.html:1068
 msgid "List all vehicles"
 msgstr "Список всех автомобилей"
 
-#: app/templates/auth/settings.html:1063
+#: app/templates/auth/settings.html:1072
 msgid "Vehicle statistics"
 msgstr "Статистика по автомобилю"
 
-#: app/templates/auth/settings.html:1067
+#: app/templates/auth/settings.html:1076
 msgid "Upcoming reminders"
 msgstr "Предстоящие напоминания"
 
-#: app/templates/auth/settings.html:1071
+#: app/templates/auth/settings.html:1080
 msgid "Combined summary"
 msgstr "Сводная информация"
 
-#: app/templates/auth/settings.html:1082
+#: app/templates/auth/settings.html:1091
 msgid ""
 "Generate an API key in the API section to enable Home Assistant integration."
 msgstr ""
 "Создайте ключ API в разделе API, чтобы включить интеграцию с Home Assistant."
 
-#: app/templates/auth/settings.html:1114
+#: app/templates/auth/settings.html:1123
 msgid "DVLA Vehicle Lookup"
 msgstr "Проверка автомобиля через DVLA"
 
-#: app/templates/auth/settings.html:1123
+#: app/templates/auth/settings.html:1132
 msgid ""
 "The DVLA Vehicle Enquiry Service allows you to look up MOT status, tax "
 "status, and vehicle details for UK registered vehicles. This enables "
@@ -2473,52 +2562,52 @@ msgstr ""
 "Это позволяет автоматически заполнять информацию при добавлении новых "
 "автомобилей."
 
-#: app/templates/auth/settings.html:1127
+#: app/templates/auth/settings.html:1136
 msgid "How to get an API key"
 msgstr "Как получить ключ API"
 
-#: app/templates/auth/settings.html:1129
+#: app/templates/auth/settings.html:1138
 msgid "Visit the"
 msgstr "Перейдите на"
 
-#: app/templates/auth/settings.html:1129
+#: app/templates/auth/settings.html:1138
 msgid "DVLA Developer Portal"
 msgstr "портал разработчиков DVLA"
 
-#: app/templates/auth/settings.html:1130
+#: app/templates/auth/settings.html:1139
 msgid "Register for a free account"
 msgstr "Зарегистрируйте бесплатную учётную запись"
 
-#: app/templates/auth/settings.html:1131
+#: app/templates/auth/settings.html:1140
 msgid "Subscribe to the Vehicle Enquiry Service API"
 msgstr "Подпишитесь на API Vehicle Enquiry Service"
 
-#: app/templates/auth/settings.html:1132
+#: app/templates/auth/settings.html:1141
 msgid "Copy your API key and paste it below"
 msgstr "Скопируйте ключ API и вставьте его ниже"
 
-#: app/templates/auth/settings.html:1139
+#: app/templates/auth/settings.html:1148
 msgid "DVLA API Key"
 msgstr "Ключ API DVLA"
 
-#: app/templates/auth/settings.html:1147 app/templates/auth/settings.html:1227
-#: app/templates/auth/settings.html:1577
+#: app/templates/auth/settings.html:1156 app/templates/auth/settings.html:1236
+#: app/templates/auth/settings.html:1586
 msgid "Test"
 msgstr "Проверить"
 
-#: app/templates/auth/settings.html:1156
+#: app/templates/auth/settings.html:1165
 msgid "Save DVLA Settings"
 msgstr "Сохранить настройки DVLA"
 
-#: app/templates/auth/settings.html:1185 app/templates/vehicles/form.html:269
+#: app/templates/auth/settings.html:1194 app/templates/vehicles/form.html:278
 msgid "Tessie Integration"
 msgstr "Интеграция с Tessie"
 
-#: app/templates/auth/settings.html:1186
+#: app/templates/auth/settings.html:1195
 msgid "Sync Tesla vehicle data via Tessie"
 msgstr "Синхронизация данных Tesla через Tessie"
 
-#: app/templates/auth/settings.html:1194
+#: app/templates/auth/settings.html:1203
 msgid ""
 "Tessie allows you to automatically sync odometer readings, battery level, "
 "and range from your Tesla vehicles. When enabled for a vehicle, odometer "
@@ -2528,51 +2617,51 @@ msgstr ""
 "заряда и запас хода ваших автомобилей Tesla. Когда эта функция включена для "
 "автомобиля, учёт пробега становится автоматическим."
 
-#: app/templates/auth/settings.html:1198
+#: app/templates/auth/settings.html:1207
 msgid "Important"
 msgstr "Важно"
 
-#: app/templates/auth/settings.html:1200
+#: app/templates/auth/settings.html:1209
 msgid "Tessie subscription required ($6.99/month per vehicle)"
 msgstr "Требуется подписка Tessie ($6,99/мес за автомобиль)"
 
-#: app/templates/auth/settings.html:1201
+#: app/templates/auth/settings.html:1210
 msgid "Your Tesla must be connected to Tessie"
 msgstr "Ваш автомобиль Tesla должен быть подключён к Tessie"
 
-#: app/templates/auth/settings.html:1202
+#: app/templates/auth/settings.html:1211
 msgid "When enabled, manual odometer entry is disabled"
 msgstr "При включении ручной ввод пробега отключается"
 
-#: app/templates/auth/settings.html:1207
+#: app/templates/auth/settings.html:1216
 msgid "How to get an API token"
 msgstr "Как получить токен API"
 
-#: app/templates/auth/settings.html:1209
+#: app/templates/auth/settings.html:1218
 msgid "Sign up at"
 msgstr "Зарегистрируйтесь на"
 
-#: app/templates/auth/settings.html:1210
+#: app/templates/auth/settings.html:1219
 msgid "Connect your Tesla account"
 msgstr "Подключите свою учётную запись Tesla"
 
-#: app/templates/auth/settings.html:1211
+#: app/templates/auth/settings.html:1220
 msgid "Go to Settings and create an API token"
 msgstr "Перейдите в настройки и создайте токен API"
 
-#: app/templates/auth/settings.html:1212
+#: app/templates/auth/settings.html:1221
 msgid "Paste the token below"
 msgstr "Вставьте токен ниже"
 
-#: app/templates/auth/settings.html:1219
+#: app/templates/auth/settings.html:1228
 msgid "Tessie API Token"
 msgstr "Токен API Tessie"
 
-#: app/templates/auth/settings.html:1236
+#: app/templates/auth/settings.html:1245
 msgid "Save Tessie Settings"
 msgstr "Сохранить настройки Tessie"
 
-#: app/templates/auth/settings.html:1274
+#: app/templates/auth/settings.html:1283
 msgid ""
 "UK retailers publish forecourt prices under the government fuel price "
 "transparency scheme. May matches your saved stations to those forecourts by "
@@ -2584,21 +2673,21 @@ msgstr ""
 "этими заправками по почтовому индексу и записывает цены, поэтому история цен"
 " и самое дешёвое топливо остаются актуальными без ручного ввода."
 
-#: app/templates/auth/settings.html:1278
+#: app/templates/auth/settings.html:1287
 msgid "Before you start"
 msgstr "Прежде чем начать"
 
-#: app/templates/auth/settings.html:1280
+#: app/templates/auth/settings.html:1289
 msgid "No API key is needed; the feeds are open data"
 msgstr "Ключ API не нужен; источники — открытые данные"
 
-#: app/templates/auth/settings.html:1281
+#: app/templates/auth/settings.html:1290
 msgid "Give each station a postcode so it can be matched to a forecourt"
 msgstr ""
 "Укажите почтовый индекс для каждой станции, чтобы её можно было сопоставить "
 "с заправкой"
 
-#: app/templates/auth/settings.html:1282
+#: app/templates/auth/settings.html:1291
 msgid ""
 "Prices refresh automatically every few hours, or on demand from the Fuel "
 "Stations page"
@@ -2606,27 +2695,27 @@ msgstr ""
 "Цены обновляются автоматически каждые несколько часов или по запросу со "
 "страницы «Заправки»"
 
-#: app/templates/auth/settings.html:1283
+#: app/templates/auth/settings.html:1292
 msgid "See the"
 msgstr "См."
 
-#: app/templates/auth/settings.html:1283
+#: app/templates/auth/settings.html:1292
 msgid "gov.uk guidance"
 msgstr "руководство gov.uk"
 
-#: app/templates/auth/settings.html:1283
+#: app/templates/auth/settings.html:1292
 msgid "for the current retailer list"
 msgstr "для актуального списка продавцов"
 
-#: app/templates/auth/settings.html:1293
+#: app/templates/auth/settings.html:1302
 msgid "Enable UK fuel price updates"
 msgstr "Включить обновление цен на топливо в Великобритании"
 
-#: app/templates/auth/settings.html:1297
+#: app/templates/auth/settings.html:1306
 msgid "Retailer feeds (optional)"
 msgstr "Источники продавцов (необязательно)"
 
-#: app/templates/auth/settings.html:1302
+#: app/templates/auth/settings.html:1311
 #, python-format
 msgid ""
 "One feed per line. Leave blank to use the built-in list (%(count)s "
@@ -2635,101 +2724,101 @@ msgstr ""
 "По одному источнику в строке. Оставьте пустым, чтобы использовать встроенный"
 " список (%(count)s продавцов)."
 
-#: app/templates/auth/settings.html:1309
+#: app/templates/auth/settings.html:1318
 msgid "Save UK Fuel Price Settings"
 msgstr "Сохранить настройки цен на топливо"
 
-#: app/templates/auth/settings.html:1328
+#: app/templates/auth/settings.html:1337
 msgid "Notification Preferences"
 msgstr "Настройки уведомлений"
 
-#: app/templates/auth/settings.html:1329
+#: app/templates/auth/settings.html:1338
 msgid "Configure how you receive reminders about your vehicles"
 msgstr "Настройте способ получения напоминаний об автомобилях"
 
-#: app/templates/auth/settings.html:1336
+#: app/templates/auth/settings.html:1345
 msgid "Enable Reminders"
 msgstr "Включить напоминания"
 
-#: app/templates/auth/settings.html:1337
+#: app/templates/auth/settings.html:1346
 msgid "Receive notifications for upcoming reminders"
 msgstr "Получать уведомления о предстоящих напоминаниях"
 
-#: app/templates/auth/settings.html:1349
+#: app/templates/auth/settings.html:1358
 msgid "Default Reminder Lead Time"
 msgstr "Время предупреждения по умолчанию"
 
-#: app/templates/auth/settings.html:1350
+#: app/templates/auth/settings.html:1359
 msgid "How many days before the due date should you be notified?"
 msgstr "За сколько дней до срока вас нужно уведомить?"
 
-#: app/templates/auth/settings.html:1353 app/templates/reminders/form.html:108
+#: app/templates/auth/settings.html:1362 app/templates/reminders/form.html:108
 msgid "On the due date"
 msgstr "В день срока"
 
-#: app/templates/auth/settings.html:1354 app/templates/reminders/form.html:109
+#: app/templates/auth/settings.html:1363 app/templates/reminders/form.html:109
 msgid "1 day before"
 msgstr "За 1 день"
 
-#: app/templates/auth/settings.html:1355 app/templates/reminders/form.html:110
+#: app/templates/auth/settings.html:1364 app/templates/reminders/form.html:110
 msgid "3 days before"
 msgstr "За 3 дня"
 
-#: app/templates/auth/settings.html:1356 app/templates/reminders/form.html:111
+#: app/templates/auth/settings.html:1365 app/templates/reminders/form.html:111
 msgid "1 week before"
 msgstr "За 1 неделю"
 
-#: app/templates/auth/settings.html:1357 app/templates/reminders/form.html:112
+#: app/templates/auth/settings.html:1366 app/templates/reminders/form.html:112
 msgid "2 weeks before"
 msgstr "За 2 недели"
 
-#: app/templates/auth/settings.html:1358 app/templates/reminders/form.html:113
+#: app/templates/auth/settings.html:1367 app/templates/reminders/form.html:113
 msgid "1 month before"
 msgstr "За 1 месяц"
 
-#: app/templates/auth/settings.html:1364
+#: app/templates/auth/settings.html:1373
 msgid "Notification Method"
 msgstr "Способ уведомления"
 
-#: app/templates/auth/settings.html:1365
+#: app/templates/auth/settings.html:1374
 msgid "Choose how you want to receive notifications"
 msgstr "Выберите, как вы хотите получать уведомления"
 
-#: app/templates/auth/settings.html:1370 app/templates/auth/settings.html:1374
+#: app/templates/auth/settings.html:1379 app/templates/auth/settings.html:1383
 msgid "not configured"
 msgstr "не настроено"
 
-#: app/templates/auth/settings.html:1372
+#: app/templates/auth/settings.html:1381
 msgid "ntfy (Push Notifications)"
 msgstr "ntfy (push-уведомления)"
 
-#: app/templates/auth/settings.html:1374 app/templates/auth/settings.html:1590
+#: app/templates/auth/settings.html:1383 app/templates/auth/settings.html:1599
 msgid "Pushover"
 msgstr "Pushover"
 
-#: app/templates/auth/settings.html:1376
+#: app/templates/auth/settings.html:1385
 msgid "Webhook (HTTP POST)"
 msgstr "Вебхук (HTTP POST)"
 
-#: app/templates/auth/settings.html:1386
+#: app/templates/auth/settings.html:1395
 msgid "Notifications will be sent to"
 msgstr "Уведомления будут отправляться на"
 
-#: app/templates/auth/settings.html:1393
+#: app/templates/auth/settings.html:1402
 msgid "Email not configured. Ask an administrator to configure SMTP settings."
 msgstr "Email не настроен. Попросите администратора настроить параметры SMTP."
 
-#: app/templates/auth/settings.html:1402
+#: app/templates/auth/settings.html:1411
 msgid "is a simple pub-sub notification service. Enter your topic below."
 msgstr ""
 "— простой сервис уведомлений по модели publish-subscribe. Введите свою тему "
 "ниже."
 
-#: app/templates/auth/settings.html:1405
+#: app/templates/auth/settings.html:1414
 msgid "ntfy Topic or Server URL"
 msgstr "Тема ntfy или URL сервера"
 
-#: app/templates/auth/settings.html:1410
+#: app/templates/auth/settings.html:1419
 msgid ""
 "For ntfy.sh, just enter your topic name. For self-hosted, enter the full "
 "URL."
@@ -2737,15 +2826,15 @@ msgstr ""
 "Для ntfy.sh просто введите название темы. Для самостоятельно размещённого "
 "сервера введите полный URL."
 
-#: app/templates/auth/settings.html:1413
+#: app/templates/auth/settings.html:1422
 msgid "ntfy Access Token"
 msgstr "Токен доступа ntfy"
 
-#: app/templates/auth/settings.html:1415
+#: app/templates/auth/settings.html:1424
 msgid "Token saved — enter a new one to replace it"
 msgstr "Токен сохранён — введите новый, чтобы заменить его"
 
-#: app/templates/auth/settings.html:1418
+#: app/templates/auth/settings.html:1427
 msgid ""
 "Optional — only needed for self-hosted ntfy servers with authentication "
 "enabled. Leave blank to keep the saved token."
@@ -2753,109 +2842,109 @@ msgstr ""
 "Необязательно — нужно только для самостоятельно размещённых серверов ntfy с "
 "включённой аутентификацией. Оставьте пустым, чтобы сохранить текущий токен."
 
-#: app/templates/auth/settings.html:1423
+#: app/templates/auth/settings.html:1432
 msgid "Remove the saved token"
 msgstr "Удалить сохранённый токен"
 
-#: app/templates/auth/settings.html:1433
+#: app/templates/auth/settings.html:1442
 msgid "sends notifications to your devices. Enter your User Key below."
 msgstr ""
 "отправляет уведомления на ваши устройства. Введите свой User Key ниже."
 
-#: app/templates/auth/settings.html:1436
+#: app/templates/auth/settings.html:1445
 msgid "Pushover User Key"
 msgstr "User Key Pushover"
 
-#: app/templates/auth/settings.html:1441
+#: app/templates/auth/settings.html:1450
 msgid "Find your User Key on your Pushover dashboard."
 msgstr "Найдите свой User Key на панели управления Pushover."
 
-#: app/templates/auth/settings.html:1448
+#: app/templates/auth/settings.html:1457
 msgid "Notifications will be sent as JSON POST requests to your webhook URL."
 msgstr ""
 "Уведомления будут отправляться в виде JSON POST-запросов на URL вашего "
 "вебхука."
 
-#: app/templates/auth/settings.html:1451
+#: app/templates/auth/settings.html:1460
 msgid "Webhook URL"
 msgstr "URL вебхука"
 
-#: app/templates/auth/settings.html:1456
+#: app/templates/auth/settings.html:1465
 #, python-brace-format
 msgid "JSON payload: {title, message, reminder_id, vehicle_name, due_date}"
 msgstr ""
 "Полезная нагрузка JSON: {title, message, reminder_id, vehicle_name, "
 "due_date}"
 
-#: app/templates/auth/settings.html:1467
+#: app/templates/auth/settings.html:1476
 msgid "Send Test Notification"
 msgstr "Отправить тестовое уведомление"
 
-#: app/templates/auth/settings.html:1491
+#: app/templates/auth/settings.html:1500
 msgid "Notification Services"
 msgstr "Сервисы уведомлений"
 
-#: app/templates/auth/settings.html:1494
+#: app/templates/auth/settings.html:1503
 msgid "Configure notification services available to all users"
 msgstr "Настройте сервисы уведомлений, доступные всем пользователям"
 
-#: app/templates/auth/settings.html:1507
+#: app/templates/auth/settings.html:1516
 msgid "Email (SMTP)"
 msgstr "Email (SMTP)"
 
-#: app/templates/auth/settings.html:1519
+#: app/templates/auth/settings.html:1528
 msgid "SMTP Host"
 msgstr "Хост SMTP"
 
-#: app/templates/auth/settings.html:1526
+#: app/templates/auth/settings.html:1535
 msgid "SMTP Port"
 msgstr "Порт SMTP"
 
-#: app/templates/auth/settings.html:1533
+#: app/templates/auth/settings.html:1542
 msgid "SMTP Username"
 msgstr "Имя пользователя SMTP"
 
-#: app/templates/auth/settings.html:1540
+#: app/templates/auth/settings.html:1549
 msgid "SMTP Password"
 msgstr "Пароль SMTP"
 
-#: app/templates/auth/settings.html:1547
+#: app/templates/auth/settings.html:1556
 msgid "Sender Email"
 msgstr "Email отправителя"
 
-#: app/templates/auth/settings.html:1554
+#: app/templates/auth/settings.html:1563
 msgid "Sender Name"
 msgstr "Имя отправителя"
 
-#: app/templates/auth/settings.html:1567
+#: app/templates/auth/settings.html:1576
 msgid "Use TLS"
 msgstr "Использовать TLS"
 
-#: app/templates/auth/settings.html:1573
+#: app/templates/auth/settings.html:1582
 msgid "Use SSL"
 msgstr "Использовать SSL"
 
-#: app/templates/auth/settings.html:1601
+#: app/templates/auth/settings.html:1610
 msgid "sends push notifications to iOS and Android devices."
 msgstr "отправляет push-уведомления на устройства iOS и Android."
 
-#: app/templates/auth/settings.html:1604
+#: app/templates/auth/settings.html:1613
 msgid "Application Token"
 msgstr "Токен приложения"
 
-#: app/templates/auth/settings.html:1609
+#: app/templates/auth/settings.html:1618
 msgid "Create an application at pushover.net to get your token"
 msgstr "Создайте приложение на pushover.net, чтобы получить токен"
 
-#: app/templates/auth/settings.html:1619
+#: app/templates/auth/settings.html:1628
 msgid "ntfy"
 msgstr "ntfy"
 
-#: app/templates/auth/settings.html:1620 app/templates/auth/settings.html:1635
+#: app/templates/auth/settings.html:1629 app/templates/auth/settings.html:1644
 msgid "Always available"
 msgstr "Всегда доступно"
 
-#: app/templates/auth/settings.html:1624
+#: app/templates/auth/settings.html:1633
 msgid ""
 "is a free, open-source notification service that requires no admin "
 "configuration. Users can set their own topic."
@@ -2863,11 +2952,11 @@ msgstr ""
 "— бесплатный сервис уведомлений с открытым исходным кодом, не требующий "
 "настройки администратором. Пользователи могут задать свою собственную тему."
 
-#: app/templates/auth/settings.html:1634
+#: app/templates/auth/settings.html:1643
 msgid "Webhook"
 msgstr "Вебхук"
 
-#: app/templates/auth/settings.html:1638
+#: app/templates/auth/settings.html:1647
 msgid ""
 "Webhooks allow users to integrate with any service that accepts HTTP POST "
 "requests (Home Assistant, Discord, Slack, etc.)"
@@ -2875,147 +2964,147 @@ msgstr ""
 "Вебхуки позволяют пользователям интегрироваться с любым сервисом, "
 "принимающим HTTP POST-запросы (Home Assistant, Discord, Slack и т. д.)"
 
-#: app/templates/auth/settings.html:1645
+#: app/templates/auth/settings.html:1654
 msgid "Save Notification Settings"
 msgstr "Сохранить настройки уведомлений"
 
-#: app/templates/auth/settings.html:1656
+#: app/templates/auth/settings.html:1665
 msgid "Manage Reminders"
 msgstr "Управление напоминаниями"
 
-#: app/templates/auth/settings.html:1657
+#: app/templates/auth/settings.html:1666
 msgid "View and manage your upcoming reminders"
 msgstr "Просмотр и управление предстоящими напоминаниями"
 
-#: app/templates/auth/settings.html:1662
+#: app/templates/auth/settings.html:1671
 msgid "View all reminders"
 msgstr "Смотреть все напоминания"
 
-#: app/templates/auth/settings.html:1679
+#: app/templates/auth/settings.html:1688
 msgid "Application Branding"
 msgstr "Брендинг приложения"
 
-#: app/templates/auth/settings.html:1680
+#: app/templates/auth/settings.html:1689
 msgid "Customize how May appears to all users"
 msgstr "Настройте, как May отображается всем пользователям"
 
-#: app/templates/auth/settings.html:1686
+#: app/templates/auth/settings.html:1695
 msgid "Application Name"
 msgstr "Название приложения"
 
-#: app/templates/auth/settings.html:1694
+#: app/templates/auth/settings.html:1703
 msgid "Tagline"
 msgstr "Слоган"
 
-#: app/templates/auth/settings.html:1702
+#: app/templates/auth/settings.html:1711
 msgid "Primary Color"
 msgstr "Основной цвет"
 
-#: app/templates/auth/settings.html:1714
+#: app/templates/auth/settings.html:1723
 msgid "Logo"
 msgstr "Логотип"
 
-#: app/templates/auth/settings.html:1718 app/templates/auth/settings.html:1719
+#: app/templates/auth/settings.html:1727 app/templates/auth/settings.html:1728
 msgid "Current logo"
 msgstr "Текущий логотип"
 
-#: app/templates/auth/settings.html:1731
+#: app/templates/auth/settings.html:1740
 msgid "Remove Logo"
 msgstr "Удалить логотип"
 
-#: app/templates/auth/settings.html:1736
+#: app/templates/auth/settings.html:1745
 msgid "Are you sure you want to remove the logo?"
 msgstr "Вы уверены, что хотите удалить логотип?"
 
-#: app/templates/auth/settings.html:1759
+#: app/templates/auth/settings.html:1768
 msgid "Save Branding"
 msgstr "Сохранить брендинг"
 
-#: app/templates/auth/settings.html:1772
+#: app/templates/auth/settings.html:1781
 msgid "Version information and updates"
 msgstr "Информация о версии и обновлениях"
 
-#: app/templates/auth/settings.html:1779
+#: app/templates/auth/settings.html:1788
 msgid "Current Version"
 msgstr "Текущая версия"
 
-#: app/templates/auth/settings.html:1802
+#: app/templates/auth/settings.html:1811
 msgid "Check for Updates"
 msgstr "Проверить наличие обновлений"
 
-#: app/templates/auth/settings.html:1803
+#: app/templates/auth/settings.html:1812
 msgid "Click to check for newer versions"
 msgstr "Нажмите, чтобы проверить наличие новых версий"
 
-#: app/templates/auth/settings.html:1810
+#: app/templates/auth/settings.html:1819
 msgid "Check Now"
 msgstr "Проверить сейчас"
 
-#: app/templates/auth/settings.html:1821
+#: app/templates/auth/settings.html:1830
 msgid "Update Available"
 msgstr "Доступно обновление"
 
-#: app/templates/auth/settings.html:1823
+#: app/templates/auth/settings.html:1832
 msgid "Version"
 msgstr "Версия"
 
-#: app/templates/auth/settings.html:1823
+#: app/templates/auth/settings.html:1832
 msgid "is available"
 msgstr "доступна"
 
-#: app/templates/auth/settings.html:1827
+#: app/templates/auth/settings.html:1836
 msgid "View Release Notes"
 msgstr "Посмотреть заметки о выпуске"
 
-#: app/templates/auth/settings.html:1834
+#: app/templates/auth/settings.html:1843
 msgid "To update (Docker):"
 msgstr "Чтобы обновить (Docker):"
 
-#: app/templates/auth/settings.html:1837
+#: app/templates/auth/settings.html:1846
 msgid "Or use Watchtower for automatic updates."
 msgstr "Или используйте Watchtower для автоматических обновлений."
 
-#: app/templates/auth/settings.html:1849
+#: app/templates/auth/settings.html:1858
 msgid "You are running the latest version"
 msgstr "Вы используете последнюю версию"
 
-#: app/templates/auth/settings.html:1856
+#: app/templates/auth/settings.html:1865
 msgid "Resources"
 msgstr "Ресурсы"
 
-#: app/templates/auth/settings.html:1863
+#: app/templates/auth/settings.html:1872
 msgid "Source Code"
 msgstr "Исходный код"
 
-#: app/templates/auth/settings.html:1870
+#: app/templates/auth/settings.html:1879
 msgid "Report an Issue"
 msgstr "Сообщить о проблеме"
 
-#: app/templates/auth/settings.html:1877
+#: app/templates/auth/settings.html:1886
 msgid "All Releases"
 msgstr "Все выпуски"
 
-#: app/templates/auth/settings.html:1884
+#: app/templates/auth/settings.html:1893
 msgid "Documentation"
 msgstr "Документация"
 
-#: app/templates/auth/settings.html:2292
+#: app/templates/auth/settings.html:2302
 msgid "Checking..."
 msgstr "Проверка…"
 
-#: app/templates/auth/settings.html:2304
+#: app/templates/auth/settings.html:2321
 msgid "A newer version is available"
 msgstr "Доступна более новая версия"
 
-#: app/templates/auth/settings.html:2309
+#: app/templates/auth/settings.html:2326
 msgid "Last checked just now"
 msgstr "Последняя проверка только что"
 
-#: app/templates/auth/settings.html:2313
+#: app/templates/auth/settings.html:2330
 msgid "Could not check for updates"
 msgstr "Не удалось проверить наличие обновлений"
 
-#: app/templates/auth/settings.html:2318
+#: app/templates/auth/settings.html:2335
 msgid "Error checking for updates"
 msgstr "Ошибка при проверке обновлений"
 
@@ -3109,6 +3198,7 @@ msgid "Total Energy"
 msgstr "Общая энергия"
 
 #: app/templates/charging/index.html:40 app/templates/documents/index.html:25
+#: app/templates/maintenance/history.html:8
 #: app/templates/reminders/index.html:29 app/templates/trips/index.html:55
 msgid "All Vehicles"
 msgstr "Все автомобили"
@@ -3171,7 +3261,7 @@ msgstr "например, страховой полис 2024"
 #: app/templates/documents/form.html:56 app/templates/maintenance/form.html:54
 #: app/templates/reminders/form.html:53 app/templates/reminders/index.html:36
 #: app/templates/tires/form.html:43 app/templates/vehicles/form.html:26
-#: app/templates/vehicles/view.html:89
+#: app/templates/vehicles/view.html:91
 msgid "Type"
 msgstr "Тип"
 
@@ -3191,7 +3281,7 @@ msgstr "Дата выдачи"
 msgid "Expiry Date"
 msgstr "Дата окончания срока действия"
 
-#: app/templates/documents/form.html:94 app/templates/recurring/form.html:99
+#: app/templates/documents/form.html:94 app/templates/recurring/form.html:115
 msgid "Optional notes"
 msgstr "Необязательные заметки"
 
@@ -3203,7 +3293,7 @@ msgstr "Напомнить перед окончанием срока дейст
 msgid "Days before to remind"
 msgstr "За сколько дней напомнить"
 
-#: app/templates/documents/form.html:126 app/templates/vehicles/view.html:304
+#: app/templates/documents/form.html:126 app/templates/vehicles/view.html:313
 msgid "Upload"
 msgstr "Загрузить"
 
@@ -3251,7 +3341,7 @@ msgstr "Изменить расход"
 
 #: app/templates/expenses/form.html:2 app/templates/expenses/form.html:11
 #: app/templates/expenses/form.html:150 app/templates/expenses/index.html:16
-#: app/templates/expenses/index.html:125 app/templates/vehicles/view.html:263
+#: app/templates/expenses/index.html:125 app/templates/vehicles/view.html:272
 msgid "Add Expense"
 msgstr "Добавить расход"
 
@@ -3277,11 +3367,11 @@ msgstr "Категория"
 msgid "e.g., Oil change, Annual service"
 msgstr "например, замена масла, ежегодное ТО"
 
-#: app/templates/expenses/form.html:83
+#: app/templates/expenses/form.html:83 app/templates/recurring/form.html:80
 msgid "Vendor / Service Provider"
 msgstr "Поставщик / организация"
 
-#: app/templates/expenses/form.html:86
+#: app/templates/expenses/form.html:86 app/templates/recurring/form.html:83
 msgid "e.g., Local Garage"
 msgstr "например, местный автосервис"
 
@@ -3302,7 +3392,7 @@ msgstr ""
 msgid "Receipts / Attachments"
 msgstr "Чеки / вложения"
 
-#: app/templates/expenses/form.html:125 app/templates/fuel/form.html:181
+#: app/templates/expenses/form.html:125 app/templates/fuel/form.html:184
 msgid "Delete this attachment?"
 msgstr "Удалить это вложение?"
 
@@ -3314,7 +3404,7 @@ msgstr "Можно выбрать несколько файлов"
 msgid "Track maintenance, repairs, insurance, and other costs"
 msgstr "Учёт техобслуживания, ремонта, страховки и других расходов"
 
-#: app/templates/expenses/index.html:68 app/templates/vehicles/view.html:1030
+#: app/templates/expenses/index.html:68 app/templates/vehicles/view.html:1039
 msgid "Delete this expense?"
 msgstr "Удалить этот расход?"
 
@@ -3343,7 +3433,7 @@ msgid "Spend by Vendor"
 msgstr "Расходы по поставщикам"
 
 #: app/templates/expenses/index.html:142
-#: app/templates/maintenance/index.html:151
+#: app/templates/maintenance/index.html:152
 msgid "Vendor"
 msgstr "Поставщик"
 
@@ -3358,8 +3448,8 @@ msgid "Edit Fuel Log"
 msgstr "Изменить запись о заправке"
 
 #: app/templates/fuel/form.html:2 app/templates/fuel/form.html:11
-#: app/templates/fuel/form.html:205 app/templates/fuel/index.html:16
-#: app/templates/fuel/index.html:116 app/templates/vehicles/view.html:233
+#: app/templates/fuel/form.html:208 app/templates/fuel/index.html:16
+#: app/templates/fuel/index.html:116 app/templates/vehicles/view.html:242
 msgid "Add Fuel Log"
 msgstr "Добавить запись о заправке"
 
@@ -3367,44 +3457,52 @@ msgstr "Добавить запись о заправке"
 msgid "Back to fuel logs"
 msgstr "Назад к заправкам"
 
-#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:213
+#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:216
 #: app/templates/trips/form.html:56 app/templates/trips/form.html:183
 msgid "Last engine hours"
 msgstr "Последние моточасы"
 
-#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:212
+#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:215
 #: app/templates/trips/form.html:56 app/templates/trips/form.html:182
 msgid "Last odometer"
 msgstr "Последний пробег"
 
-#: app/templates/fuel/form.html:56 app/templates/fuel/quick.html:140
+#: app/templates/fuel/form.html:56 app/templates/fuel/quick.html:142
 msgid "From Tessie"
 msgstr "Из Tessie"
 
-#: app/templates/fuel/form.html:63
+#: app/templates/fuel/form.html:62
+msgid ""
+"Leave blank if the reading was not recorded. Enter 0 to confirm a genuine "
+"zero reading."
+msgstr ""
+"Оставьте пустым, если показание не записано. Введите 0, чтобы подтвердить "
+"фактическое нулевое показание."
+
+#: app/templates/fuel/form.html:64
 msgid "Odometer is automatically tracked via Tessie for this vehicle."
 msgstr "Пробег этого автомобиля отслеживается автоматически через Tessie."
 
-#: app/templates/fuel/form.html:76 app/templates/fuel/quick.html:66
-#: app/templates/vehicles/view.html:1234
+#: app/templates/fuel/form.html:77 app/templates/fuel/quick.html:67
+#: app/templates/vehicles/view.html:1262
 msgid "Price per"
 msgstr "Цена за"
 
-#: app/templates/fuel/form.html:84
+#: app/templates/fuel/form.html:86
 msgid "Discount per"
 msgstr "Скидка за"
 
-#: app/templates/fuel/form.html:90
+#: app/templates/fuel/form.html:92
 msgid "Optional loyalty discount, subtracted from the price per unit."
 msgstr ""
 "Необязательная скидка по программе лояльности, вычитается из цены за "
 "единицу."
 
-#: app/templates/fuel/form.html:101
+#: app/templates/fuel/form.html:104
 msgid "Sales Tax"
 msgstr "Налог с продаж"
 
-#: app/templates/fuel/form.html:106
+#: app/templates/fuel/form.html:109
 msgid ""
 "Optional. Sales tax shown on the receipt, already included in the total "
 "cost. Add the amounts together where more than one tax applies."
@@ -3412,36 +3510,36 @@ msgstr ""
 "Необязательно. Налог, указанный в чеке и уже включённый в общую стоимость. "
 "Если налогов несколько, сложите суммы."
 
-#: app/templates/fuel/form.html:110 app/templates/fuel/quick.html:94
+#: app/templates/fuel/form.html:113 app/templates/fuel/quick.html:96
 msgid "Station"
 msgstr "Заправка"
 
-#: app/templates/fuel/form.html:114 app/templates/fuel/quick.html:98
+#: app/templates/fuel/form.html:117 app/templates/fuel/quick.html:100
 msgid "Select station or enter manually..."
 msgstr "Выберите заправку или введите вручную…"
 
-#: app/templates/fuel/form.html:125
+#: app/templates/fuel/form.html:128
 msgid "e.g., Shell, BP"
 msgstr "например, Shell, BP"
 
-#: app/templates/fuel/form.html:129
+#: app/templates/fuel/form.html:132
 msgid "Add saved stations"
 msgstr "Добавьте сохранённые заправки"
 
-#: app/templates/fuel/form.html:129
+#: app/templates/fuel/form.html:132
 msgid "for quick selection and price tracking"
 msgstr "для быстрого выбора и отслеживания цен"
 
-#: app/templates/fuel/form.html:135 app/templates/fuel/index.html:44
+#: app/templates/fuel/form.html:138 app/templates/fuel/index.html:44
 #: app/templates/vehicles/form.html:59
 msgid "Fuel Type"
 msgstr "Вид топлива"
 
-#: app/templates/fuel/form.html:143
+#: app/templates/fuel/form.html:146
 msgid "Distance on this fuel"
 msgstr "Пробег на этом топливе"
 
-#: app/templates/fuel/form.html:148
+#: app/templates/fuel/form.html:151
 msgid ""
 "Distance run on this fuel since your last fill-up of it. The odometer can’t "
 "tell the fuels apart, so consumption for a dual-fuel vehicle needs this."
@@ -3450,15 +3548,15 @@ msgstr ""
 "различает виды топлива, поэтому для расхода двухтопливного автомобиля нужен "
 "этот показатель."
 
-#: app/templates/fuel/form.html:156
+#: app/templates/fuel/form.html:159
 msgid "Full tank fill-up"
 msgstr "Полная заправка бака"
 
-#: app/templates/fuel/form.html:163
+#: app/templates/fuel/form.html:166
 msgid "Missed fill-up (incomplete data)"
 msgstr "Пропущенная заправка (неполные данные)"
 
-#: app/templates/fuel/form.html:174
+#: app/templates/fuel/form.html:177
 msgid "Receipt / Attachment"
 msgstr "Чек / вложение"
 
@@ -3491,7 +3589,7 @@ msgstr "Пропущена"
 msgid "incl. tax %(amount)s"
 msgstr "с налогом %(amount)s"
 
-#: app/templates/fuel/index.html:89 app/templates/vehicles/view.html:981
+#: app/templates/fuel/index.html:89 app/templates/vehicles/view.html:990
 msgid "Delete this fuel log?"
 msgstr "Удалить эту запись о заправке?"
 
@@ -3524,28 +3622,28 @@ msgstr "кВт·ч"
 msgid "Fast fuel logging for mobile"
 msgstr "Быстрое добавление заправки для мобильных устройств"
 
-#: app/templates/fuel/quick.html:50 app/templates/fuel/quick.html:139
+#: app/templates/fuel/quick.html:51 app/templates/fuel/quick.html:141
 msgid "Last"
 msgstr "Последний"
 
-#: app/templates/fuel/quick.html:89
+#: app/templates/fuel/quick.html:91
 msgid "Full tank"
 msgstr "Полный бак"
 
-#: app/templates/fuel/quick.html:108 app/templates/maintenance/index.html:135
-#: app/templates/maintenance/index.html:154
+#: app/templates/fuel/quick.html:110 app/templates/maintenance/index.html:136
+#: app/templates/maintenance/index.html:155
 msgid "Optional"
 msgstr "Необязательно"
 
-#: app/templates/fuel/quick.html:119
+#: app/templates/fuel/quick.html:121
 msgid "Save"
 msgstr "Сохранить"
 
-#: app/templates/fuel/quick.html:126
+#: app/templates/fuel/quick.html:128
 msgid "Save & Add Another"
 msgstr "Сохранить и добавить ещё"
 
-#: app/templates/fuel/quick.html:133
+#: app/templates/fuel/quick.html:135
 msgid "Need more options? Use full form"
 msgstr "Нужно больше параметров? Используйте полную форму"
 
@@ -3587,6 +3685,7 @@ msgstr "Экспортировано"
 
 #: app/templates/import/backup_preview.html:22
 #: app/templates/import/backup_preview.html:26
+#: app/templates/maintenance/history.html:18
 msgid "Unknown"
 msgstr "Неизвестно"
 
@@ -3793,6 +3892,24 @@ msgstr "Создать график"
 msgid "Delete this maintenance schedule?"
 msgstr "Удалить этот график обслуживания?"
 
+#: app/templates/maintenance/history.html:2
+#: app/templates/maintenance/history.html:4
+#: app/templates/maintenance/index.html:21 app/templates/vehicles/view.html:10
+msgid "Maintenance History"
+msgstr "История обслуживания"
+
+#: app/templates/maintenance/history.html:13
+msgid ""
+"History includes recorded completions and the latest saved service details. "
+"Earlier overwritten details cannot be recovered."
+msgstr ""
+"История включает зарегистрированные работы и последние сохранённые сведения "
+"об обслуживании. Ранее перезаписанные данные восстановить невозможно."
+
+#: app/templates/maintenance/history.html:21
+msgid "No maintenance history yet."
+msgstr "Истории обслуживания пока нет."
+
 #: app/templates/maintenance/index.html:2
 #: app/templates/maintenance/index.html:7
 msgid "Maintenance Schedules"
@@ -3806,52 +3923,52 @@ msgstr "Настройте регулярное обслуживание с ав
 msgid "Add Schedule"
 msgstr "Добавить график"
 
-#: app/templates/maintenance/index.html:35
+#: app/templates/maintenance/index.html:36
 msgid "Due Now"
 msgstr "Срок наступил"
 
-#: app/templates/maintenance/index.html:39
+#: app/templates/maintenance/index.html:40
 msgid "Due Soon"
 msgstr "Скоро наступит срок"
 
-#: app/templates/maintenance/index.html:77
+#: app/templates/maintenance/index.html:78
 msgid "Mark Complete"
 msgstr "Отметить выполненным"
 
-#: app/templates/maintenance/index.html:102
+#: app/templates/maintenance/index.html:103
 msgid "No maintenance schedules"
 msgstr "Графиков обслуживания нет"
 
-#: app/templates/maintenance/index.html:103
+#: app/templates/maintenance/index.html:104
 msgid "Set up recurring maintenance reminders for your vehicles."
 msgstr ""
 "Настройте регулярные напоминания об обслуживании для своих автомобилей."
 
-#: app/templates/maintenance/index.html:111
+#: app/templates/maintenance/index.html:112
 msgid "Add Maintenance Schedule"
 msgstr "Добавить график обслуживания"
 
-#: app/templates/maintenance/index.html:124
+#: app/templates/maintenance/index.html:125
 msgid "Mark as Completed"
 msgstr "Отметить как выполненное"
 
-#: app/templates/maintenance/index.html:127
+#: app/templates/maintenance/index.html:128
 msgid "Completed on"
 msgstr "Выполнено"
 
-#: app/templates/maintenance/index.html:132
+#: app/templates/maintenance/index.html:133
 msgid "Current Odometer"
 msgstr "Текущий пробег"
 
-#: app/templates/maintenance/index.html:141
+#: app/templates/maintenance/index.html:142
 msgid "Create expense entry"
 msgstr "Создать запись о расходе"
 
-#: app/templates/maintenance/index.html:146
+#: app/templates/maintenance/index.html:147
 msgid "Actual Cost"
 msgstr "Фактическая стоимость"
 
-#: app/templates/maintenance/index.html:166
+#: app/templates/maintenance/index.html:167
 msgid "Complete"
 msgstr "Выполнить"
 
@@ -3926,42 +4043,46 @@ msgid "Monthly"
 msgstr "Ежемесячно"
 
 #: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "Каждые две недели"
+
+#: app/templates/recurring/form.html:59
 msgid "Quarterly (every 3 months)"
 msgstr "Ежеквартально (каждые 3 месяца)"
 
-#: app/templates/recurring/form.html:59
+#: app/templates/recurring/form.html:60
 msgid "Biannual (every 6 months)"
 msgstr "Раз в полгода (каждые 6 месяцев)"
 
-#: app/templates/recurring/form.html:60
+#: app/templates/recurring/form.html:61
 msgid "Yearly"
 msgstr "Ежегодно"
 
-#: app/templates/recurring/form.html:75
+#: app/templates/recurring/form.html:76
 msgid "Leave blank if amount varies"
 msgstr "Оставьте пустым, если сумма меняется"
 
-#: app/templates/recurring/form.html:80
+#: app/templates/recurring/form.html:96
 msgid "Start Date"
 msgstr "Дата начала"
 
-#: app/templates/recurring/form.html:87
+#: app/templates/recurring/form.html:103
 msgid "Next Due"
 msgstr "Следующий срок"
 
-#: app/templates/recurring/form.html:106
+#: app/templates/recurring/form.html:122
 msgid "Auto-create expense when due"
 msgstr "Автоматически создавать расход при наступлении срока"
 
-#: app/templates/recurring/form.html:110
+#: app/templates/recurring/form.html:126
 msgid "Remind days before"
 msgstr "Напомнить за (дней)"
 
-#: app/templates/recurring/form.html:132 app/templates/recurring/index.html:16
+#: app/templates/recurring/form.html:148 app/templates/recurring/index.html:16
 msgid "Add Recurring"
 msgstr "Добавить регулярный расход"
 
-#: app/templates/recurring/form.html:144
+#: app/templates/recurring/form.html:160
 msgid "Delete this recurring expense?"
 msgstr "Удалить этот регулярный расход?"
 
@@ -4007,12 +4128,12 @@ msgid "%(num)d days overdue"
 msgstr "просрочено на %(num)d дн."
 
 #: app/templates/reminders/_reminder_row.html:71
-#: app/templates/vehicles/view.html:693
+#: app/templates/vehicles/view.html:702
 msgid "Due today"
 msgstr "Срок сегодня"
 
 #: app/templates/reminders/_reminder_row.html:73
-#: app/templates/vehicles/view.html:695
+#: app/templates/vehicles/view.html:704
 msgid "Due tomorrow"
 msgstr "Срок завтра"
 
@@ -4086,7 +4207,7 @@ msgid "Keep track of important dates for your vehicles"
 msgstr "Отслеживайте важные даты для своих автомобилей"
 
 #: app/templates/reminders/index.html:17
-#: app/templates/reminders/index.html:141 app/templates/vehicles/view.html:272
+#: app/templates/reminders/index.html:141 app/templates/vehicles/view.html:281
 msgid "Add Reminder"
 msgstr "Добавить напоминание"
 
@@ -4102,7 +4223,7 @@ msgstr "Показать выполненные"
 msgid "Clear filters"
 msgstr "Сбросить фильтры"
 
-#: app/templates/reminders/index.html:65 app/templates/vehicles/view.html:778
+#: app/templates/reminders/index.html:65 app/templates/vehicles/view.html:787
 msgid "Overdue"
 msgstr "Просрочено"
 
@@ -4296,7 +4417,7 @@ msgstr "История цен для этой заправки отсутств�
 msgid "Prices are automatically recorded when you log fuel at this station."
 msgstr "Цены записываются автоматически при заправке на этой станции."
 
-#: app/templates/timeline/index.html:2 app/templates/vehicles/view.html:287
+#: app/templates/timeline/index.html:2 app/templates/vehicles/view.html:296
 msgid "Timeline"
 msgstr "Хронология"
 
@@ -4324,17 +4445,13 @@ msgstr "Хронология активности"
 msgid "No activity recorded for this vehicle yet."
 msgstr "Для этого автомобиля пока не записано ни одной активности."
 
-#: app/templates/timeline/index.html:126
-msgid "Charging"
-msgstr "Зарядка"
-
 #: app/templates/tires/form.html:2 app/templates/tires/form.html:8
 msgid "Edit Tire Set"
 msgstr "Изменить комплект шин"
 
 #: app/templates/tires/form.html:2 app/templates/tires/form.html:8
 #: app/templates/tires/form.html:107 app/templates/tires/index.html:16
-#: app/templates/tires/index.html:183
+#: app/templates/tires/index.html:191
 msgid "Add Tire Set"
 msgstr "Добавить комплект шин"
 
@@ -4407,7 +4524,7 @@ msgstr "Общий пробег на этом комплекте"
 msgid "Purchased"
 msgstr "Куплен"
 
-#: app/templates/tires/index.html:66 app/templates/vehicles/form.html:246
+#: app/templates/tires/index.html:66 app/templates/vehicles/form.html:255
 msgid "Status"
 msgstr "Статус"
 
@@ -4424,39 +4541,43 @@ msgstr "Не на автомобиле"
 msgid "Take Off"
 msgstr "Снять"
 
-#: app/templates/tires/index.html:111
+#: app/templates/tires/index.html:102
+msgid "Axle"
+msgstr "Ось"
+
+#: app/templates/tires/index.html:119
 msgid "Put On"
 msgstr "Установить"
 
-#: app/templates/tires/index.html:120
+#: app/templates/tires/index.html:128
 msgid "Fitting history"
 msgstr "История установок"
 
-#: app/templates/tires/index.html:125
+#: app/templates/tires/index.html:133
 msgid "On"
 msgstr "Установка"
 
-#: app/templates/tires/index.html:126
+#: app/templates/tires/index.html:134
 msgid "Off"
 msgstr "Снятие"
 
-#: app/templates/tires/index.html:136
+#: app/templates/tires/index.html:144
 msgid "Still on"
 msgstr "Всё ещё установлен"
 
-#: app/templates/tires/index.html:142
+#: app/templates/tires/index.html:150
 msgid "Delete this fitting record?"
 msgstr "Удалить эту запись об установке?"
 
-#: app/templates/tires/index.html:160
+#: app/templates/tires/index.html:168
 msgid "Delete this tire set and its fitting history?"
 msgstr "Удалить этот комплект шин и историю его установок?"
 
-#: app/templates/tires/index.html:174
+#: app/templates/tires/index.html:182
 msgid "No tire sets"
 msgstr "Нет комплектов шин"
 
-#: app/templates/tires/index.html:175
+#: app/templates/tires/index.html:183
 msgid "Add a set of tires to track when it goes on and off the vehicle."
 msgstr ""
 "Добавьте комплект шин, чтобы отслеживать, когда он ставится на автомобиль и "
@@ -4468,7 +4589,7 @@ msgstr "Изменить поездку"
 
 #: app/templates/trips/form.html:2 app/templates/trips/form.html:13
 #: app/templates/trips/form.html:156 app/templates/trips/index.html:31
-#: app/templates/vehicles/view.html:254
+#: app/templates/vehicles/view.html:263
 msgid "Log Trip"
 msgstr "Записать поездку"
 
@@ -4698,12 +4819,12 @@ msgstr "Создайте свой первый шаблон"
 msgid "Edit Vehicle"
 msgstr "Изменить автомобиль"
 
-#: app/templates/vehicles/form.html:2 app/templates/vehicles/form.html:326
+#: app/templates/vehicles/form.html:2 app/templates/vehicles/form.html:335
 #: app/templates/vehicles/index.html:33 app/templates/vehicles/index.html:116
 msgid "Add Vehicle"
 msgstr "Добавить автомобиль"
 
-#: app/templates/vehicles/form.html:7 app/templates/vehicles/view.html:11
+#: app/templates/vehicles/form.html:7 app/templates/vehicles/view.html:13
 msgid "Back to vehicles"
 msgstr "Назад к автомобилям"
 
@@ -4776,60 +4897,77 @@ msgid "e.g., 2020"
 msgstr "например, 2020"
 
 #: app/templates/vehicles/form.html:107
+msgid "Starting odometer"
+msgstr "Начальный пробег"
+
+#: app/templates/vehicles/form.html:110
+msgid "e.g., 16000"
+msgstr "напр., 16000"
+
+#: app/templates/vehicles/form.html:113
+#, python-format
+msgid ""
+"Optional. Used to calculate distance and cost per %(unit)s since tracking "
+"began."
+msgstr ""
+"Необязательно. Используется для расчёта расстояния и стоимости за %(unit)s с"
+" начала учёта."
+
+#: app/templates/vehicles/form.html:116
 msgid "Tank Capacity (L)"
 msgstr "Объём бака (л)"
 
-#: app/templates/vehicles/form.html:110
+#: app/templates/vehicles/form.html:119
 msgid "e.g., 50"
 msgstr "например, 50"
 
-#: app/templates/vehicles/form.html:117
+#: app/templates/vehicles/form.html:126
 msgid "Identification"
 msgstr "Идентификация"
 
-#: app/templates/vehicles/form.html:121
+#: app/templates/vehicles/form.html:130
 msgid "Registration / License Plate"
 msgstr "Регистрационный / гос. номер"
 
-#: app/templates/vehicles/form.html:124
+#: app/templates/vehicles/form.html:133
 msgid "e.g., ABC 123"
 msgstr "например, А123ВС"
 
-#: app/templates/vehicles/form.html:129 app/templates/vehicles/view.html:528
+#: app/templates/vehicles/form.html:138 app/templates/vehicles/view.html:537
 msgid "VIN"
 msgstr "VIN"
 
-#: app/templates/vehicles/form.html:132
+#: app/templates/vehicles/form.html:141
 msgid "Vehicle Identification Number"
 msgstr "Идентификационный номер автомобиля"
 
-#: app/templates/vehicles/form.html:139
+#: app/templates/vehicles/form.html:148
 msgid "Photo"
 msgstr "Фото"
 
-#: app/templates/vehicles/form.html:142
+#: app/templates/vehicles/form.html:151
 msgid "Vehicle Image"
 msgstr "Изображение автомобиля"
 
-#: app/templates/vehicles/form.html:156 app/templates/vehicles/view.html:730
+#: app/templates/vehicles/form.html:165 app/templates/vehicles/view.html:739
 msgid "Specifications"
 msgstr "Характеристики"
 
-#: app/templates/vehicles/form.html:157
+#: app/templates/vehicles/form.html:166
 msgid "Add technical details like tire sizes, oil type, wiper sizes, etc."
 msgstr ""
 "Добавьте технические данные, такие как размеры шин, тип масла, размеры "
 "дворников и т. д."
 
-#: app/templates/vehicles/form.html:191
+#: app/templates/vehicles/form.html:200
 msgid "Add Specification"
 msgstr "Добавить характеристику"
 
-#: app/templates/vehicles/form.html:196
+#: app/templates/vehicles/form.html:205
 msgid "Annual Mileage Tracking"
 msgstr "Учёт годового пробега"
 
-#: app/templates/vehicles/form.html:197
+#: app/templates/vehicles/form.html:206
 msgid ""
 "Set a yearly distance limit to track progress — useful for leasing contracts"
 " or insurance policies."
@@ -4837,54 +4975,54 @@ msgstr ""
 "Задайте годовой лимит пробега для отслеживания — полезно для договоров "
 "лизинга или страховых полисов."
 
-#: app/templates/vehicles/form.html:202
+#: app/templates/vehicles/form.html:211
 msgid "Annual Limit"
 msgstr "Годовой лимит"
 
-#: app/templates/vehicles/form.html:207
+#: app/templates/vehicles/form.html:216
 msgid "e.g. 25000"
 msgstr "например, 25000"
 
-#: app/templates/vehicles/form.html:211
+#: app/templates/vehicles/form.html:220
 msgid "Period Start Date"
 msgstr "Дата начала периода"
 
-#: app/templates/vehicles/form.html:215
+#: app/templates/vehicles/form.html:224
 msgid "e.g. the date your lease or insurance starts"
 msgstr "например, дата начала лизинга или страховки"
 
-#: app/templates/vehicles/form.html:217
+#: app/templates/vehicles/form.html:226
 msgid "Tracking resets on this date each year."
 msgstr "Учёт сбрасывается в эту дату каждый год."
 
-#: app/templates/vehicles/form.html:226
+#: app/templates/vehicles/form.html:235
 msgid "General Notes"
 msgstr "Общие заметки"
 
-#: app/templates/vehicles/form.html:228
+#: app/templates/vehicles/form.html:237
 msgid "Any additional notes about this vehicle..."
 msgstr "Любые дополнительные заметки об этом автомобиле…"
 
-#: app/templates/vehicles/form.html:233
+#: app/templates/vehicles/form.html:242
 msgid "Default Trip Type"
 msgstr "Тип поездки по умолчанию"
 
-#: app/templates/vehicles/form.html:240
+#: app/templates/vehicles/form.html:249
 msgid "Pre-selected when logging a new trip for this vehicle"
 msgstr "Выбирается по умолчанию при записи новой поездки для этого автомобиля"
 
-#: app/templates/vehicles/form.html:251
+#: app/templates/vehicles/form.html:260
 msgid "Active (show in lists and calculations)"
 msgstr "Активен (отображается в списках и расчётах)"
 
-#: app/templates/vehicles/form.html:257
+#: app/templates/vehicles/form.html:266
 msgid ""
 "Shared — all users on this instance can view and log against this vehicle"
 msgstr ""
 "Общий доступ — все пользователи этого экземпляра могут просматривать и "
 "вносить записи по этому автомобилю"
 
-#: app/templates/vehicles/form.html:273
+#: app/templates/vehicles/form.html:282
 msgid ""
 "Link this vehicle to Tessie for automatic odometer and battery tracking. "
 "When enabled, manual odometer entry will be disabled."
@@ -4892,23 +5030,23 @@ msgstr ""
 "Свяжите этот автомобиль с Tessie для автоматического учёта пробега и заряда "
 "батареи. При включении ручной ввод пробега будет отключён."
 
-#: app/templates/vehicles/form.html:277
+#: app/templates/vehicles/form.html:286
 msgid "Tessie VIN"
 msgstr "VIN в Tessie"
 
-#: app/templates/vehicles/form.html:281
+#: app/templates/vehicles/form.html:290
 msgid "Enter Tesla VIN or select from list"
 msgstr "Введите VIN Tesla или выберите из списка"
 
-#: app/templates/vehicles/form.html:289
+#: app/templates/vehicles/form.html:298
 msgid "Lookup"
 msgstr "Поиск"
 
-#: app/templates/vehicles/form.html:300
+#: app/templates/vehicles/form.html:309
 msgid "Enable Tessie tracking (disables manual odometer entry)"
 msgstr "Включить отслеживание через Tessie (отключает ручной ввод пробега)"
 
-#: app/templates/vehicles/form.html:310
+#: app/templates/vehicles/form.html:319
 msgid "Tessie tracking is active for this vehicle"
 msgstr "Отслеживание через Tessie активно для этого автомобиля"
 
@@ -4952,7 +5090,7 @@ msgstr "Изменить деталь"
 #: app/templates/vehicles/part_form.html:2
 #: app/templates/vehicles/part_form.html:8
 #: app/templates/vehicles/part_form.html:102
-#: app/templates/vehicles/parts.html:20 app/templates/vehicles/view.html:874
+#: app/templates/vehicles/parts.html:20 app/templates/vehicles/view.html:883
 msgid "Add Part"
 msgstr "Добавить деталь"
 
@@ -5029,7 +5167,7 @@ msgid "Link to purchase this part"
 msgstr "Ссылка для покупки этой детали"
 
 #: app/templates/vehicles/parts.html:2 app/templates/vehicles/parts.html:11
-#: app/templates/vehicles/view.html:821
+#: app/templates/vehicles/view.html:830
 msgid "Parts & Consumables"
 msgstr "Детали и расходники"
 
@@ -5052,7 +5190,7 @@ msgid "Add First Part"
 msgstr "Добавьте первую деталь"
 
 #: app/templates/vehicles/share.html:2 app/templates/vehicles/share.html:20
-#: app/templates/vehicles/view.html:81
+#: app/templates/vehicles/view.html:83
 msgid "Share"
 msgstr "Поделиться"
 
@@ -5086,51 +5224,51 @@ msgstr "Удалить"
 msgid "This vehicle is not shared with anyone yet."
 msgstr "Этот автомобиль пока ни с кем не открыт."
 
-#: app/templates/vehicles/view.html:31
+#: app/templates/vehicles/view.html:33
 msgid "Previous photo"
 msgstr "Предыдущее фото"
 
-#: app/templates/vehicles/view.html:38
+#: app/templates/vehicles/view.html:40
 msgid "Next photo"
 msgstr "Следующее фото"
 
-#: app/templates/vehicles/view.html:58
+#: app/templates/vehicles/view.html:60
 msgid "Download PDF Report"
 msgstr "Скачать отчёт PDF"
 
-#: app/templates/vehicles/view.html:66
+#: app/templates/vehicles/view.html:68
 msgid "Download PDF Report with receipt images"
 msgstr "Скачать PDF-отчёт с изображениями чеков"
 
-#: app/templates/vehicles/view.html:70
+#: app/templates/vehicles/view.html:72
 msgid "PDF + Receipts"
 msgstr "PDF + чеки"
 
-#: app/templates/vehicles/view.html:94 app/templates/vehicles/view.html:98
+#: app/templates/vehicles/view.html:96 app/templates/vehicles/view.html:100
 msgid "Not set"
 msgstr "Не задано"
 
-#: app/templates/vehicles/view.html:97
+#: app/templates/vehicles/view.html:99
 msgid "Registration plate"
 msgstr "Регистрационный номер"
 
-#: app/templates/vehicles/view.html:101
+#: app/templates/vehicles/view.html:103
 msgid "Last Odometer"
 msgstr "Последний пробег"
 
-#: app/templates/vehicles/view.html:162
+#: app/templates/vehicles/view.html:164
 msgid "Total Hours"
 msgstr "Всего моточасов"
 
-#: app/templates/vehicles/view.html:172
+#: app/templates/vehicles/view.html:174
 msgid "Avg. Consumption"
 msgstr "Средний расход"
 
-#: app/templates/vehicles/view.html:179
+#: app/templates/vehicles/view.html:181
 msgid "A missed fill-up in the range means we can’t calculate this honestly."
 msgstr "Пропущенная заправка в диапазоне не позволяет рассчитать это точно."
 
-#: app/templates/vehicles/view.html:181
+#: app/templates/vehicles/view.html:183
 msgid ""
 "Consumption can’t be worked out until the distance run on each fuel is "
 "recorded — the odometer can’t tell petrol from LPG. Add it to your fill-ups."
@@ -5138,228 +5276,228 @@ msgstr ""
 "Расход нельзя рассчитать, пока не записан пробег на каждом виде топлива — "
 "одометр не отличает бензин от газа. Добавьте его к заправкам."
 
-#: app/templates/vehicles/view.html:183
+#: app/templates/vehicles/view.html:185
 msgid "Not enough distance or fuel data yet to calculate this."
 msgstr "Пока недостаточно данных о расстоянии или топливе для расчёта."
 
-#: app/templates/vehicles/view.html:185
+#: app/templates/vehicles/view.html:187
 msgid "Needs at least two full-tank fill-ups."
 msgstr "Требуется как минимум две полные заправки."
 
-#: app/templates/vehicles/view.html:195
+#: app/templates/vehicles/view.html:197
 msgid "Avg. Charging"
 msgstr "Средняя зарядка"
 
-#: app/templates/vehicles/view.html:207
+#: app/templates/vehicles/view.html:216
 msgid "Fuel Used"
 msgstr "Израсходовано топлива"
 
-#: app/templates/vehicles/view.html:212
+#: app/templates/vehicles/view.html:221
 msgid "CO₂ Emissions"
 msgstr "Выбросы CO₂"
 
-#: app/templates/vehicles/view.html:215
+#: app/templates/vehicles/view.html:224
 msgid "tonnes (estimated)"
 msgstr "тонн (оценка)"
 
-#: app/templates/vehicles/view.html:218
+#: app/templates/vehicles/view.html:227
 msgid "kg (estimated)"
 msgstr "кг (оценка)"
 
-#: app/templates/vehicles/view.html:244
+#: app/templates/vehicles/view.html:253
 msgid "Add Charging"
 msgstr "Добавить зарядку"
 
-#: app/templates/vehicles/view.html:280
+#: app/templates/vehicles/view.html:289
 msgid "Parts"
 msgstr "Детали"
 
-#: app/templates/vehicles/view.html:294
+#: app/templates/vehicles/view.html:303
 msgid "Photos"
 msgstr "Фото"
 
-#: app/templates/vehicles/view.html:321
+#: app/templates/vehicles/view.html:330
 msgid "Main"
 msgstr "Главное"
 
-#: app/templates/vehicles/view.html:326
+#: app/templates/vehicles/view.html:335
 msgid "Set as main"
 msgstr "Сделать главным"
 
-#: app/templates/vehicles/view.html:335
+#: app/templates/vehicles/view.html:344
 msgid "Delete this photo?"
 msgstr "Удалить это фото?"
 
-#: app/templates/vehicles/view.html:347
+#: app/templates/vehicles/view.html:356
 msgid "No photos yet."
 msgstr "Фотографий пока нет."
 
-#: app/templates/vehicles/view.html:360
+#: app/templates/vehicles/view.html:369
 msgid "DVLA Status"
 msgstr "Статус DVLA"
 
-#: app/templates/vehicles/view.html:367 app/templates/vehicles/view.html:476
+#: app/templates/vehicles/view.html:376 app/templates/vehicles/view.html:485
 msgid "Refresh"
 msgstr "Обновить"
 
-#: app/templates/vehicles/view.html:374
+#: app/templates/vehicles/view.html:383
 msgid "MOT Status"
 msgstr "Статус техосмотра (MOT)"
 
-#: app/templates/vehicles/view.html:392
+#: app/templates/vehicles/view.html:401
 msgid "MOT Expiry"
 msgstr "Срок действия техосмотра (MOT)"
 
-#: app/templates/vehicles/view.html:402
+#: app/templates/vehicles/view.html:411
 msgid "Tax Status"
 msgstr "Статус налога"
 
-#: app/templates/vehicles/view.html:420
+#: app/templates/vehicles/view.html:429
 msgid "Tax Due"
 msgstr "Срок уплаты налога"
 
-#: app/templates/vehicles/view.html:431 app/templates/vehicles/view.html:533
+#: app/templates/vehicles/view.html:440 app/templates/vehicles/view.html:542
 msgid "Last updated"
 msgstr "Последнее обновление"
 
-#: app/templates/vehicles/view.html:435
+#: app/templates/vehicles/view.html:444
 msgid "No DVLA data available for this vehicle."
 msgstr "Данные DVLA для этого автомобиля отсутствуют."
 
-#: app/templates/vehicles/view.html:441
+#: app/templates/vehicles/view.html:450
 msgid "Fetch from DVLA"
 msgstr "Получить из DVLA"
 
-#: app/templates/vehicles/view.html:458
+#: app/templates/vehicles/view.html:467
 msgid "Tessie Status"
 msgstr "Статус Tessie"
 
-#: app/templates/vehicles/view.html:460
+#: app/templates/vehicles/view.html:469
 msgid "Live"
 msgstr "В реальном времени"
 
-#: app/templates/vehicles/view.html:469
+#: app/templates/vehicles/view.html:478
 msgid "Import Charges"
 msgstr "Импортировать зарядки"
 
-#: app/templates/vehicles/view.html:498
+#: app/templates/vehicles/view.html:507
 msgid "Battery Level"
 msgstr "Уровень заряда батареи"
 
-#: app/templates/vehicles/view.html:514
+#: app/templates/vehicles/view.html:523
 msgid "Est. Range"
 msgstr "Ориент. запас хода"
 
-#: app/templates/vehicles/view.html:537
+#: app/templates/vehicles/view.html:546
 msgid "No Tessie data available for this vehicle yet."
 msgstr "Данные Tessie для этого автомобиля пока отсутствуют."
 
-#: app/templates/vehicles/view.html:543
+#: app/templates/vehicles/view.html:552
 msgid "Fetch from Tessie"
 msgstr "Получить из Tessie"
 
-#: app/templates/vehicles/view.html:558
+#: app/templates/vehicles/view.html:567
 msgid ""
 "This vehicle is archived. It won't appear in regular lists or calculations."
 msgstr ""
 "Этот автомобиль в архиве. Он не будет отображаться в обычных списках и "
 "расчётах."
 
-#: app/templates/vehicles/view.html:572
+#: app/templates/vehicles/view.html:581
 msgid "Annual Mileage"
 msgstr "Годовой пробег"
 
-#: app/templates/vehicles/view.html:577
+#: app/templates/vehicles/view.html:586
 msgid "Over limit"
 msgstr "Лимит превышен"
 
-#: app/templates/vehicles/view.html:581
+#: app/templates/vehicles/view.html:590
 msgid "Approaching limit"
 msgstr "Приближается к лимиту"
 
-#: app/templates/vehicles/view.html:585
+#: app/templates/vehicles/view.html:594
 msgid "On pace"
 msgstr "В пределах нормы"
 
-#: app/templates/vehicles/view.html:589
+#: app/templates/vehicles/view.html:598
 msgid "Over pace"
 msgstr "Опережает норму"
 
-#: app/templates/vehicles/view.html:607 app/templates/vehicles/view.html:614
+#: app/templates/vehicles/view.html:616 app/templates/vehicles/view.html:623
 msgid "Time elapsed"
 msgstr "Прошло времени"
 
-#: app/templates/vehicles/view.html:614
+#: app/templates/vehicles/view.html:623
 msgid "of year elapsed"
 msgstr "года прошло"
 
-#: app/templates/vehicles/view.html:623
+#: app/templates/vehicles/view.html:632
 msgid "remaining"
 msgstr "осталось"
 
-#: app/templates/vehicles/view.html:627
+#: app/templates/vehicles/view.html:636
 msgid "days remaining"
 msgstr "дней осталось"
 
-#: app/templates/vehicles/view.html:631
+#: app/templates/vehicles/view.html:640
 msgid "projected year-end"
 msgstr "прогноз на конец года"
 
-#: app/templates/vehicles/view.html:635
+#: app/templates/vehicles/view.html:644
 msgid "expected at this point"
 msgstr "ожидается на текущий момент"
 
-#: app/templates/vehicles/view.html:650
+#: app/templates/vehicles/view.html:659
 msgid "Upcoming Reminders"
 msgstr "Предстоящие напоминания"
 
-#: app/templates/vehicles/view.html:663
+#: app/templates/vehicles/view.html:672
 msgid "Mark as completed"
 msgstr "Отметить как выполненное"
 
-#: app/templates/vehicles/view.html:691
+#: app/templates/vehicles/view.html:700
 #, python-format
 msgid "%(days)s days overdue"
 msgstr "Просрочено на %(days)s дн."
 
-#: app/templates/vehicles/view.html:697
+#: app/templates/vehicles/view.html:706
 #, python-format
 msgid "In %(days)s days"
 msgstr "Через %(days)s дн."
 
-#: app/templates/vehicles/view.html:764
+#: app/templates/vehicles/view.html:773
 msgid "Upcoming Maintenance"
 msgstr "Предстоящее обслуживание"
 
-#: app/templates/vehicles/view.html:780
+#: app/templates/vehicles/view.html:789
 msgid "Due soon"
 msgstr "Скоро наступит срок"
 
-#: app/templates/vehicles/view.html:814
+#: app/templates/vehicles/view.html:823
 msgid "Toggle section"
 msgstr "Свернуть/развернуть раздел"
 
-#: app/templates/vehicles/view.html:867
+#: app/templates/vehicles/view.html:876
 msgid "No parts added yet."
 msgstr "Детали пока не добавлены."
 
-#: app/templates/vehicles/view.html:904
+#: app/templates/vehicles/view.html:913
 msgid "Fuel Consumption Trend"
 msgstr "Динамика расхода топлива"
 
-#: app/templates/vehicles/view.html:917
+#: app/templates/vehicles/view.html:926
 msgid "Fuel Price Trend"
 msgstr "Динамика цен на топливо"
 
-#: app/templates/vehicles/view.html:961
+#: app/templates/vehicles/view.html:970
 msgid "(Full)"
 msgstr "(Полная)"
 
-#: app/templates/vehicles/view.html:1062
+#: app/templates/vehicles/view.html:1071
 msgid "Archive this vehicle"
 msgstr "Архивировать этот автомобиль"
 
-#: app/templates/vehicles/view.html:1063
+#: app/templates/vehicles/view.html:1072
 msgid ""
 "Archived vehicles won't appear in regular lists or calculations. You can "
 "restore them later."
@@ -5367,30 +5505,30 @@ msgstr ""
 "Архивные автомобили не отображаются в обычных списках и расчётах. Их можно "
 "восстановить позже."
 
-#: app/templates/vehicles/view.html:1065
+#: app/templates/vehicles/view.html:1074
 msgid "Restore this vehicle"
 msgstr "Восстановить этот автомобиль"
 
-#: app/templates/vehicles/view.html:1066
+#: app/templates/vehicles/view.html:1075
 msgid ""
 "Restore this vehicle to make it active again and include it in calculations."
 msgstr ""
 "Восстановите этот автомобиль, чтобы снова сделать его активным и учитывать в"
 " расчётах."
 
-#: app/templates/vehicles/view.html:1075
+#: app/templates/vehicles/view.html:1084
 msgid "Archive Vehicle"
 msgstr "Архивировать автомобиль"
 
-#: app/templates/vehicles/view.html:1085
+#: app/templates/vehicles/view.html:1094
 msgid "Restore Vehicle"
 msgstr "Восстановить автомобиль"
 
-#: app/templates/vehicles/view.html:1096
+#: app/templates/vehicles/view.html:1105
 msgid "Delete this vehicle"
 msgstr "Удалить этот автомобиль"
 
-#: app/templates/vehicles/view.html:1097
+#: app/templates/vehicles/view.html:1106
 msgid ""
 "Once you delete a vehicle, there is no going back. This will also delete all"
 " associated fuel logs and expenses."
@@ -5398,18 +5536,18 @@ msgstr ""
 "После удаления автомобиля отменить это действие будет невозможно. Также "
 "будут удалены все связанные записи о заправках и расходах."
 
-#: app/templates/vehicles/view.html:1101
+#: app/templates/vehicles/view.html:1110
 msgid ""
 "Are you sure you want to delete this vehicle? This action cannot be undone."
 msgstr ""
 "Вы уверены, что хотите удалить этот автомобиль? Это действие нельзя "
 "отменить."
 
-#: app/templates/vehicles/view.html:1105
+#: app/templates/vehicles/view.html:1114
 msgid "Delete Vehicle"
 msgstr "Удалить автомобиль"
 
-#: app/templates/vehicles/view.html:1224
+#: app/templates/vehicles/view.html:1252
 msgid ""
 "Not enough data to show consumption trend. Add more fuel logs with full tank"
 " fills."
@@ -5417,52 +5555,6 @@ msgstr ""
 "Недостаточно данных для отображения динамики расхода. Добавьте больше "
 "заправок с полным баком."
 
-#: app/templates/vehicles/view.html:1262
+#: app/templates/vehicles/view.html:1290
 msgid "No fuel prices recorded yet."
 msgstr "Цены на топливо пока не записаны."
-
-msgid "All axles"
-msgstr "Все оси"
-
-msgid "Front axle"
-msgstr "Передняя ось"
-
-msgid "Rear axle"
-msgstr "Задняя ось"
-
-msgid "%(count)s duplicate(s) skipped."
-msgstr "Пропущено дубликатов: %(count)s."
-
-msgid "Fuel price sources are unavailable. Saved prices have been kept."
-msgstr "Источники цен на топливо недоступны. Сохранённые цены оставлены без изменений."
-
-msgid "Some stations could not be matched because fuel price coverage is incomplete."
-msgstr "Некоторые АЗС не удалось сопоставить из-за неполных данных о ценах."
-
-msgid "No unique forecourt match found. Check the station postcode, address and brand."
-msgstr "Однозначное соответствие АЗС не найдено. Проверьте индекс, адрес и бренд."
-
-msgid "Invalid axle"
-msgstr "Недопустимая ось"
-
-msgid "The fitting date and reading cannot precede the current fitting."
-msgstr "Дата и показание счётчика при установке не могут предшествовать текущей установке."
-
-msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
-msgstr "Оставьте пустым, если показание не записано. Введите 0, чтобы подтвердить фактическое нулевое показание."
-
-msgid "Maintenance History"
-msgstr "История обслуживания"
-
-msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
-msgstr "История включает зарегистрированные работы и последние сохранённые сведения об обслуживании. Ранее перезаписанные данные восстановить невозможно."
-
-msgid "No maintenance history yet."
-msgstr "Истории обслуживания пока нет."
-
-msgid "Axle"
-msgstr "Ось"
-
-#: app/models.py:1574
-msgid "Air-conditioning service"
-msgstr "Обслуживание кондиционера"
