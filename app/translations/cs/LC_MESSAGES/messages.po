@@ -5451,3 +5451,7 @@ msgstr "Zatím žádná historie údržby."
 
 msgid "Axle"
 msgstr "Náprava"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "Servis klimatizace"

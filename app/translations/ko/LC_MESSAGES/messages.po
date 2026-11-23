@@ -5312,3 +5312,7 @@ msgstr "아직 정비 이력이 없습니다."
 
 msgid "Axle"
 msgstr "차축"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "에어컨 정비"

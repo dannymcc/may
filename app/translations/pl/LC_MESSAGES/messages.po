@@ -5454,3 +5454,7 @@ msgstr "Brak historii konserwacji."
 
 msgid "Axle"
 msgstr "Oś"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "Serwis klimatyzacji"

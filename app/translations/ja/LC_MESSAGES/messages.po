@@ -5303,3 +5303,7 @@ msgstr "整備履歴はまだありません。"
 
 msgid "Axle"
 msgstr "車軸"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "エアコン整備"

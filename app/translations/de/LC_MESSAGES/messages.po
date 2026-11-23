@@ -5495,3 +5495,7 @@ msgstr "Noch keine Wartungshistorie."
 
 msgid "Axle"
 msgstr "Achse"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "Klimaanlagenwartung"

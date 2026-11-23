@@ -1571,6 +1571,7 @@ MAINTENANCE_TYPES = [
     ('oil_filter', _l('Oil Filter')),
     ('air_filter', _l('Air Filter')),
     ('cabin_filter', _l('Cabin/Pollen Filter')),
+    ('air_conditioning_service', _l('Air-conditioning service')),
     ('fuel_filter', _l('Fuel Filter')),
     ('spark_plugs', _l('Spark Plugs')),
     ('brake_pads', _l('Brake Pads')),

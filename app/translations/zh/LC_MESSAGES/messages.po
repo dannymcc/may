@@ -5292,3 +5292,7 @@ msgstr "暂无保养历史。"
 
 msgid "Axle"
 msgstr "车轴"
+
+#: app/models.py:1574
+msgid "Air-conditioning service"
+msgstr "空调保养"
