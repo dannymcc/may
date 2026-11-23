@@ -145,7 +145,7 @@ function updateVehicleOdometer() {
     const select = document.getElementById('vehicle_id');
     const option = select.options[select.selectedIndex];
     document.getElementById('price_per_unit').value = option.dataset.lastPrice || '';
-    calcQuickFuel('price');
+    calcQuickFuel('price', true);
     const odometer = option.dataset.odometer;
     const odometerUnit = option.dataset.odometerUnit || '{{ current_user.distance_unit }}';
     const usesTessie = option.dataset.usesTessie === 'true';
@@ -194,7 +194,11 @@ function updateQuickStationName(selectEl) {
     if (name) stationInput.value = name;
 }
 
-function calcQuickFuel(changed) {
+// Which of volume and price the driver typed themselves, as opposed to a
+// remembered default or a figure this form worked out for them.
+const quickTyped = {volume: false, price: false};
+
+function calcQuickFuel(changed, automatic) {
     const volumeEl = document.getElementById('volume');
     const priceEl = document.getElementById('price_per_unit');
     const totalEl = document.getElementById('total_cost');
@@ -202,6 +206,9 @@ function calcQuickFuel(changed) {
     const volume = parseDecimal(volumeEl.value);
     const price = parseDecimal(priceEl.value);
     const total = parseDecimal(totalEl.value);
+
+    if (changed === 'volume') quickTyped.volume = volumeEl.value !== '';
+    if (changed === 'price') quickTyped.price = !automatic && priceEl.value !== '';
 
     if (changed === 'volume') {
       // Volume changed: recalculate total if price is set
@@ -214,8 +221,12 @@ function calcQuickFuel(changed) {
         totalEl.value = (volume * price).toFixed(2);
       }
     } else if (changed === 'total') {
-      // Keep the chosen price stable while editing the total
-      if (total > 0 && price > 0) {
+      if (total > 0 && volume > 0 && quickTyped.volume && !quickTyped.price) {
+        // The pump gave both the volume and the total, so the remembered
+        // price is the figure that is out of date (#423).
+        priceEl.value = (total / volume).toFixed(3);
+      } else if (total > 0 && price > 0) {
+        // Otherwise keep the chosen price stable and work out the volume
         volumeEl.value = (total / price).toFixed(3);
       }
     }
