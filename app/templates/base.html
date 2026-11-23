@@ -377,7 +377,16 @@
                             </svg>
                         </a>
                     </div>
-                    <div class="flex items-center sm:hidden">
+                    <div class="flex items-center gap-2 sm:hidden">
+                        {# Kept beside the menu button on phones, where the desktop shortcut is hidden (#415). #}
+                        {% if current_user.show_quick_entry and can_write('fuel') %}
+                        <a href="{{ url_for('fuel.quick') }}" data-mobile-quick-fuel class="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md shadow-sm" title="{{ _('Quick Fuel Entry') }}" aria-label="{{ _('Quick Fuel Entry') }}">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            <span>{{ _('Fuel') }}</span>
+                        </a>
+                        {% endif %}
                         <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-500 dark:text-gray-400">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
