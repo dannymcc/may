@@ -415,9 +415,10 @@ def _zip_upload_names(zip_path):
 def restore_backup(data, user, zip_path=None, upload_folder=None, dry_run=False):
     """Merge a backup into ``user``'s account.
 
-    Existing records are never modified or deleted; a record whose natural key
-    already exists is counted as skipped. With ``dry_run`` the work is done and
-    then rolled back, so the returned summary previews a real restore.
+    A record whose natural key already exists is counted as skipped. Existing
+    measurement values are preserved. Inserting a missing tread measurement can
+    update the ordering metadata of retained readings on the same date.
+    With ``dry_run``, all changes, including ordering updates, are rolled back.
     """
     summary = _new_summary()
     summary['vehicle_details'] = []
@@ -850,34 +851,40 @@ def _merge_tread_measurements(tire_set, pending, counts):
 
     for day, incoming in incoming_by_day.items():
         existing = existing_by_day[day]
-        matches = {(row.tire_id, row.depth_mm, row.odometer, row.position): row for row in existing}
-        imported = []
+        anchor_positions = {}
+        for index, row in enumerate(existing):
+            key = (row.tire_id, row.depth_mm, row.odometer, row.position)
+            # An equal value measured again may be newer than the backup.
+            anchor_positions.setdefault(key, index)
+
+        insertions = defaultdict(list)
+        waiting = []
+        after_last_anchor = 0
         for key, values in incoming.items():
-            reading = matches.get(key)
-            if reading is None:
+            position = anchor_positions.get(key)
+            if position is None:
                 reading = TireMeasurement(tire_id=key[0], **values)
                 db.session.add(reading)
+                waiting.append(reading)
                 counts['added'] += 1
-            else:
-                counts['skipped'] += 1
-            imported.append(reading)
+                continue
+            counts['skipped'] += 1
+            if waiting:
+                insertions[position].extend(waiting)
+                waiting = []
+            after_last_anchor = position + 1
 
-        # Attach destination-only readings to their next shared reading. Those
-        # with no later shared reading stay at the end in their existing order.
-        anchors = set(imported)
-        before = {}
-        unmatched = []
-        for reading in existing:
-            if reading in anchors:
-                before[reading] = unmatched
-                unmatched = []
-            else:
-                unmatched.append(reading)
-
+        # Insert missing readings before their next shared observation, or
+        # after their last shared observation when the backup has no next one.
+        # The destination list stays in order even if backup anchors disagree.
+        if waiting:
+            insertions[after_last_anchor].extend(waiting)
+        if not insertions:
+            continue
         merged = []
-        for reading in imported:
-            merged.extend(before.get(reading, ()))
+        for position, reading in enumerate(existing):
+            merged.extend(insertions.get(position, ()))
             merged.append(reading)
-        merged.extend(unmatched)
+        merged.extend(insertions.get(len(existing), ()))
         for order, reading in enumerate(merged, 1):
             reading.day_order = order

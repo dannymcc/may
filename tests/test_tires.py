@@ -593,6 +593,55 @@ class TestTreadHistory:
         self.record(auth_client, restored_set, tire_id=restored.id, depth_mm='5')
         assert restored.latest_measurement.depth_mm == 5
 
+    def test_restore_older_backup_keeps_newest_equal_reading(self, auth_client, sample_tire_set,
+                                                            test_user):
+        from app.models import Tire
+        from app.services.backup_restore import restore_backup
+
+        self.record(auth_client, sample_tire_set, label='A', depth_mm='2')
+        tire = Tire.query.one()
+        self.record(auth_client, sample_tire_set, tire_id=tire.id, depth_mm='6')
+        sample_tire_set.tread_replace_mm = 3
+        db.session.commit()
+        backup = auth_client.get('/api/export/json').get_json()
+
+        self.record(auth_client, sample_tire_set, tire_id=tire.id, depth_mm='2')
+        retained = [(row.id, row.day_order, row.depth_mm) for row in tire.measurements]
+
+        merged = restore_backup(backup, test_user)
+        assert merged['tire_measurements'] == {'added': 0, 'skipped': 2}
+        assert [(row.id, row.day_order, row.depth_mm) for row in tire.measurements] == retained
+        assert tire.latest_measurement.depth_mm == 2
+        assert str(tire.tread_status) == 'Replacement threshold reached'
+
+    def test_restore_fills_gap_between_shared_readings_without_moving_local_tail(
+            self, auth_client, sample_tire_set, admin_user):
+        from copy import deepcopy
+        from app.models import Tire
+        from app.services.backup_restore import restore_backup
+
+        self.record(auth_client, sample_tire_set, label='A', depth_mm='6')
+        source_tire = Tire.query.one()
+        for depth in ('4', '2'):
+            self.record(auth_client, sample_tire_set, tire_id=source_tire.id, depth_mm=depth)
+        backup = auth_client.get('/api/export/json').get_json()
+        partial = deepcopy(backup)
+        tire_data = partial['vehicles'][0]['tire_sets'][0]['tires'][0]
+        tire_data['measurements'] = [row for row in tire_data['measurements'] if row['depth_mm'] != 4]
+        restore_backup(partial, admin_user)
+        restored_set = admin_user.get_all_vehicles()[0].tire_sets.first()
+        tire = restored_set.tires[0]
+        auth_client.get('/auth/logout')
+        auth_client.post('/auth/login', data=dict(username='admin', password='AdminPass123!'))
+        self.record(auth_client, restored_set, tire_id=tire.id, depth_mm='5')
+        retained_ids = [row.id for row in tire.measurements]
+
+        merged = restore_backup(backup, admin_user)
+        assert merged['tire_measurements'] == {'added': 1, 'skipped': 2}
+        assert [row.depth_mm for row in tire.measurements] == [5, 2, 4, 6]
+        assert [row.id for row in tire.measurements if row.depth_mm != 4] == retained_ids
+        assert restore_backup(backup, admin_user)['tire_measurements'] == {'added': 0, 'skipped': 3}
+
     def test_tread_odometer_prevents_changing_tracking_unit(self, auth_client, sample_tire_set):
         from app.models import TireMeasurement
         vehicle = sample_tire_set.vehicle
