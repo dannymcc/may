@@ -104,6 +104,15 @@
                 </div>
 
                 <div>
+                    <label for="starting_odometer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Starting odometer') }}</label>
+                    <input type="number" name="starting_odometer" id="starting_odometer" min="0" step="any"
+                           value="{{ vehicle.starting_odometer if vehicle and vehicle.starting_odometer is not none else '' }}"
+                           placeholder="{{ _('e.g., 16000') }}"
+                           aria-describedby="starting-odometer-help"
+                           class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <p id="starting-odometer-help" class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Optional. Used to calculate distance and cost per %(unit)s since tracking began.', unit=vehicle.get_reading_unit() if vehicle else current_user.distance_unit) }}</p>
+                </div>
+                <div>
                     <label for="tank_capacity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Tank Capacity (L)') }}</label>
                     <input type="number" name="tank_capacity" id="tank_capacity" step="0.1"
                            value="{{ vehicle.tank_capacity if vehicle else '' }}"

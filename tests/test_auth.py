@@ -207,6 +207,31 @@ class TestSettingsRoute:
             user = User.query.filter_by(username='testuser').first()
             assert user.currency == 'EUR'
 
+    @pytest.mark.parametrize('form,message', [
+        ({'new_password': 'NewPass123!', 'confirm_new_password': 'Different123!'},
+         b'Passwords do not match'),
+        ({'new_password': 'short', 'confirm_new_password': 'short'}, None),
+        ({'email': 'taken@example.com'}, b'Email already in use'),
+    ])
+    def test_rejected_settings_change_shows_error_for_admin(
+            self, admin_client, app, form, message):
+        """An admin whose change is rejected sees the error, not a 500 (#414)."""
+        other = User(username='other', email='taken@example.com')
+        other.set_password('OtherPass123!')
+        db.session.add(other)
+        db.session.commit()
+        response = admin_client.post('/auth/settings', data={
+            'language': 'en', 'distance_unit': 'km', 'volume_unit': 'L',
+            'consumption_unit': 'L/100km', 'currency': 'EUR', **form,
+        }, follow_redirects=True)
+        assert response.status_code == 200
+        assert b'Settings updated successfully' not in response.data
+        if message:
+            assert message in response.data
+        # Nothing from the rejected form is saved.
+        admin = User.query.filter_by(is_admin=True).first()
+        assert admin.currency != 'EUR'
+
     def test_post_settings_password_mismatch(self, auth_client):
         response = auth_client.post('/auth/settings', data={
             'distance_unit': 'km',

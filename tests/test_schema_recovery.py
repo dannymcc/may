@@ -17,6 +17,8 @@ from app import (
     create_app,
     db,
 )
+from sqlalchemy import inspect, text
+
 from app.models import User
 
 
@@ -216,3 +218,56 @@ def test_fresh_db_stamps_head_and_replay_survives(tmp_path):
         assert rev == head
         db.session.remove()
         db.engine.dispose()
+
+
+def test_boolean_defaults_use_postgres_literals():
+    """PostgreSQL rejects an integer default on a boolean column (#410)."""
+    from sqlalchemy.dialects import postgresql, sqlite
+
+    from app.models import FuelLog, User
+
+    pg, lite = postgresql.dialect(), sqlite.dialect()
+    tires = User.__table__.c.show_menu_tires
+    confirmed = FuelLog.__table__.c.odometer_confirmed
+
+    assert 'BOOLEAN DEFAULT TRUE' in _add_column_clause(tires, pg)
+    assert 'BOOLEAN DEFAULT 1' in _add_column_clause(tires, lite)
+    # ``legacy_default`` backfills existing rows as unconfirmed on both.
+    assert 'DEFAULT FALSE NOT NULL' in _add_column_clause(confirmed, pg)
+    assert 'DEFAULT 0 NOT NULL' in _add_column_clause(confirmed, lite)
+
+
+def test_no_boolean_column_gets_an_integer_default_on_postgres():
+    """Every boolean the models declare must recover cleanly on PostgreSQL."""
+    from sqlalchemy import Boolean
+    from sqlalchemy.dialects import postgresql
+
+    pg = postgresql.dialect()
+    for table in db.metadata.tables.values():
+        for column in table.columns:
+            if isinstance(column.type, Boolean):
+                clause = _add_column_clause(column, pg)
+                assert 'DEFAULT 1' not in clause and 'DEFAULT 0' not in clause, (
+                    f'{table.name}.{column.name}: {clause}')
+
+
+def test_one_rejected_column_does_not_block_the_rest(app, monkeypatch):
+    """A failed ALTER is isolated so later columns are still added (#410)."""
+    import app as app_module
+
+    with db.engine.begin() as conn:
+        conn.execute(text('ALTER TABLE users DROP COLUMN show_menu_tires'))
+        conn.execute(text('ALTER TABLE fuel_logs DROP COLUMN sales_tax'))
+
+    real = app_module._add_column_clause
+
+    def broken_for_tires(column, dialect):
+        if column.name == 'show_menu_tires':
+            return 'show_menu_tires NOT_A_TYPE DEFAULT ('
+        return real(column, dialect)
+
+    monkeypatch.setattr(app_module, '_add_column_clause', broken_for_tires)
+    _run_schema_migrations(app)
+
+    columns = {c['name'] for c in inspect(db.engine).get_columns('fuel_logs')}
+    assert 'sales_tax' in columns

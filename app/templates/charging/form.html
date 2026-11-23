@@ -112,13 +112,13 @@
                         </div>
                         <div>
                             <label for="start_soc" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Start SOC') }} (%)</label>
-                            <input type="number" name="start_soc" id="start_soc" min="0" max="100"
+                            <input type="number" name="start_soc" id="start_soc" min="0" max="100" step="any" inputmode="decimal"
                                    value="{{ session.start_soc if session else '' }}"
                                    class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         </div>
                         <div>
                             <label for="end_soc" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('End SOC') }} (%)</label>
-                            <input type="number" name="end_soc" id="end_soc" min="0" max="100"
+                            <input type="number" name="end_soc" id="end_soc" min="0" max="100" step="any" inputmode="decimal"
                                    value="{{ session.end_soc if session else '' }}"
                                    class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         </div>

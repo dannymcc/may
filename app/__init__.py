@@ -154,7 +154,19 @@ def _log_startup_banner(app):
     app.logger.warning(f'May {version} starting (alembic_version={alembic_rev})')
 
 
-def _scalar_default_sql(column):
+def _bool_sql(value, dialect=None):
+    """Spell a boolean default the way the target database accepts it.
+
+    SQLite stores booleans as integers and takes ``1``/``0``. PostgreSQL has a
+    real boolean type and rejects an integer default for it outright, which
+    failed every boolean column the recovery tried to add (#410).
+    """
+    if dialect is not None and dialect.name == 'postgresql':
+        return 'TRUE' if value else 'FALSE'
+    return '1' if value else '0'
+
+
+def _scalar_default_sql(column, dialect=None):
     """Render a SQLAlchemy column's Python-side default as a SQL literal.
 
     Returns None when no scalar default is set, when the default is callable
@@ -163,14 +175,20 @@ def _scalar_default_sql(column):
     fills existing rows once at column-creation time, so the captured value
     would be misleading anyway.
     """
+    from sqlalchemy import Boolean
+
+    is_boolean = isinstance(column.type, Boolean)
     if 'legacy_default' in column.info:
-        return '1' if column.info['legacy_default'] else '0'
+        legacy = column.info['legacy_default']
+        if is_boolean or isinstance(legacy, bool):
+            return _bool_sql(legacy, dialect)
+        return '1' if legacy else '0'
     default = column.default
     if default is None or not getattr(default, 'is_scalar', False):
         return None
     arg = default.arg
-    if isinstance(arg, bool):
-        return '1' if arg else '0'
+    if isinstance(arg, bool) or (is_boolean and isinstance(arg, int)):
+        return _bool_sql(arg, dialect)
     if isinstance(arg, (int, float)):
         return str(arg)
     if isinstance(arg, str):
@@ -187,7 +205,7 @@ def _add_column_clause(column, dialect):
     instantly violate the constraint.
     """
     parts = [column.name, column.type.compile(dialect=dialect)]
-    default_sql = _scalar_default_sql(column)
+    default_sql = _scalar_default_sql(column, dialect)
     if default_sql is not None:
         parts.append(f'DEFAULT {default_sql}')
         if not column.nullable:
@@ -218,11 +236,14 @@ def _run_schema_migrations(app):
     """
     from sqlalchemy import text, inspect
 
-    inspector = inspect(db.engine)
-    existing_tables = set(inspector.get_table_names())
     dialect = db.engine.dialect
 
     with db.engine.begin() as conn:
+        # Inspect through this same connection. Once a column has been added
+        # the transaction holds a lock on that table, and on PostgreSQL an
+        # inspector on a second connection waits on it forever (#410).
+        inspector = inspect(conn)
+        existing_tables = set(inspector.get_table_names())
         for table in db.metadata.tables.values():
             if table.name not in existing_tables:
                 continue
@@ -232,7 +253,12 @@ def _run_schema_migrations(app):
                     continue
                 clause = _add_column_clause(column, dialect)
                 try:
-                    conn.execute(text(f'ALTER TABLE {table.name} ADD COLUMN {clause}'))
+                    # A savepoint per statement: PostgreSQL aborts the whole
+                    # transaction on the first error, so without one a single
+                    # rejected column took every later column down with it
+                    # (#410).
+                    with conn.begin_nested():
+                        conn.execute(text(f'ALTER TABLE {table.name} ADD COLUMN {clause}'))
                     app.logger.info(f'Added column {column.name} to {table.name}')
                 except Exception as e:
                     app.logger.warning(
@@ -240,7 +266,7 @@ def _run_schema_migrations(app):
                     )
 
         # Re-inspect so we see indexes on freshly-added columns.
-        inspector = inspect(db.engine)
+        inspector = inspect(conn)
         for table in db.metadata.tables.values():
             if table.name not in existing_tables:
                 continue
@@ -253,9 +279,10 @@ def _run_schema_migrations(app):
                     continue
                 kind = 'UNIQUE INDEX' if column.unique else 'INDEX'
                 try:
-                    conn.execute(text(
-                        f'CREATE {kind} {index_name} ON {table.name} ({column.name})'
-                    ))
+                    with conn.begin_nested():
+                        conn.execute(text(
+                            f'CREATE {kind} {index_name} ON {table.name} ({column.name})'
+                        ))
                     app.logger.info(f'Created {kind.lower()} {index_name}')
                 except Exception as e:
                     app.logger.warning(
@@ -273,10 +300,11 @@ def _run_schema_migrations(app):
                     continue
                 kind = 'UNIQUE INDEX' if index.unique else 'INDEX'
                 try:
-                    conn.execute(text(
-                        f'CREATE {kind} {index.name} ON {table.name} '
-                        f'({", ".join(index_cols)})'
-                    ))
+                    with conn.begin_nested():
+                        conn.execute(text(
+                            f'CREATE {kind} {index.name} ON {table.name} '
+                            f'({", ".join(index_cols)})'
+                        ))
                     app.logger.info(f'Created {kind.lower()} {index.name}')
                 except Exception as e:
                     app.logger.warning(
@@ -548,6 +576,40 @@ def create_app(config_class=Config):
     return app
 
 
+_scheduler_lock_file = None
+
+
+def _hold_scheduler_lock(app):
+    """Return True when this process owns the background jobs.
+
+    Gunicorn runs several workers and each one starts the scheduler thread, so
+    every hourly job ran once per worker at the same moment — which is how a
+    recurring expense came to be written twice (#403). An advisory lock on a
+    file in the data directory lets one process run them; the kernel releases
+    it if that process dies, so a surviving worker takes over on its next pass.
+    Where locking is unavailable the jobs run anyway, as they always have.
+    """
+    global _scheduler_lock_file
+    if _scheduler_lock_file is not None:
+        return True
+    try:
+        import fcntl
+    except ImportError:  # not a POSIX platform
+        return True
+    try:
+        from config import SECRET_KEY_FILE
+        handle = open(SECRET_KEY_FILE.parent / '.scheduler.lock', 'w')
+    except OSError:
+        return True
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        handle.close()
+        return False
+    _scheduler_lock_file = handle
+    return True
+
+
 def _start_reminder_scheduler(app):
     """Start a background thread that processes reminders daily."""
     import threading
@@ -562,6 +624,12 @@ def _start_reminder_scheduler(app):
         time.sleep(60)
 
         while True:
+            if not _hold_scheduler_lock(app):
+                # Another worker process owns the scheduled jobs. Keep asking,
+                # so this one takes over if that worker is recycled.
+                time.sleep(3600)
+                continue
+
             try:
                 with app.app_context():
                     from app.services.reminder_processor import process_due_reminders

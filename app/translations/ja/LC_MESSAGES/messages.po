@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-26 00:16+0000\n"
+"POT-Creation-Date: 2026-11-23 13:47+0000\n"
 "PO-Revision-Date: 2026-02-17 20:56+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: ja <LL@li.org>\n"
@@ -18,544 +18,564 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/models.py:50
+#: app/models.py:52
 msgid "Editor"
 msgstr "編集者"
 
-#: app/models.py:51
+#: app/models.py:53
 msgid "Contributor"
 msgstr "記録担当"
 
-#: app/models.py:52
+#: app/models.py:54
 msgid "Viewer"
 msgstr "閲覧者"
 
-#: app/models.py:56
+#: app/models.py:58
 msgid "Full access to the vehicles and data this account can see."
 msgstr "このアカウントで表示できる車両とデータへのフルアクセス。"
 
-#: app/models.py:57
+#: app/models.py:59
 msgid ""
 "Can record fuel fill-ups and charging sessions. Everything else is read-"
 "only."
 msgstr "給油と充電の記録ができます。それ以外はすべて閲覧のみです。"
 
-#: app/models.py:58
+#: app/models.py:60
 msgid "Read-only. Can see the data but cannot change anything."
 msgstr "閲覧のみ。データは見られますが、変更はできません。"
 
-#: app/models.py:183 app/templates/auth/create_user.html:71
+#: app/models.py:187 app/templates/auth/create_user.html:71
 #: app/templates/auth/edit_user.html:59
 msgid "Administrator"
 msgstr "管理者"
 
-#: app/models.py:390 app/templates/maintenance/form.html:126
+#: app/models.py:396 app/templates/maintenance/form.html:126
 msgid "Engine hours"
 msgstr "エンジンアワー"
 
-#: app/models.py:391 app/templates/charging/form.html:86
+#: app/models.py:397 app/templates/charging/form.html:86
 #: app/templates/expenses/form.html:76 app/templates/expenses/index.html:32
 #: app/templates/fuel/form.html:51 app/templates/fuel/index.html:43
-#: app/templates/fuel/index.html:146 app/templates/fuel/quick.html:35
+#: app/templates/fuel/index.html:146 app/templates/fuel/quick.html:36
 #: app/templates/maintenance/form.html:126
 #: app/templates/maintenance/form.html:127 app/templates/notes/form.html:41
 #: app/templates/notes/index.html:31 app/templates/tires/index.html:92
-#: app/templates/tires/index.html:107 app/templates/vehicles/view.html:484
+#: app/templates/tires/index.html:115 app/templates/vehicles/view.html:493
 msgid "Odometer"
 msgstr "走行距離計"
 
-#: app/models.py:396 app/models.py:1411 app/templates/trips/form.html:189
+#: app/models.py:402 app/models.py:1499 app/templates/trips/form.html:189
 msgid "Hours"
 msgstr "時間"
 
-#: app/models.py:397 app/templates/allowance/form.html:48
+#: app/models.py:403 app/templates/allowance/form.html:48
 #: app/templates/allowance/index.html:30 app/templates/auth/settings.html:126
-#: app/templates/tires/index.html:127 app/templates/trips/form.html:97
+#: app/templates/tires/index.html:135 app/templates/trips/form.html:97
 #: app/templates/trips/form.html:188 app/templates/trips/report.html:102
 msgid "Distance"
 msgstr "距離"
 
-#: app/models.py:1358
+#: app/models.py:1445
 msgid "Front Tire Size"
 msgstr "フロントタイヤサイズ"
 
-#: app/models.py:1359
+#: app/models.py:1446
 msgid "Rear Tire Size"
 msgstr "リアタイヤサイズ"
 
-#: app/models.py:1360
+#: app/models.py:1447
 msgid "Wheel Size"
 msgstr "ホイールサイズ"
 
-#: app/models.py:1361
+#: app/models.py:1448
 msgid "Engine Oil Type"
 msgstr "エンジンオイルの種類"
 
-#: app/models.py:1362
+#: app/models.py:1449
 msgid "Oil Capacity"
 msgstr "オイル容量"
 
-#: app/models.py:1363
+#: app/models.py:1450
 msgid "Coolant Type"
 msgstr "冷却水の種類"
 
-#: app/models.py:1364
+#: app/models.py:1451
 msgid "Front Wiper Size"
 msgstr "フロントワイパーサイズ"
 
-#: app/models.py:1365
+#: app/models.py:1452
 msgid "Rear Wiper Size"
 msgstr "リアワイパーサイズ"
 
-#: app/models.py:1366
+#: app/models.py:1453
 msgid "Battery Type"
 msgstr "バッテリーの種類"
 
-#: app/models.py:1367
+#: app/models.py:1454
 msgid "Spark Plug Type"
 msgstr "スパークプラグの種類"
 
-#: app/models.py:1368
+#: app/models.py:1455
 msgid "Air Filter Part #"
 msgstr "エアフィルター品番"
 
-#: app/models.py:1369
+#: app/models.py:1456
 msgid "Cabin Filter Part #"
 msgstr "キャビンフィルター品番"
 
-#: app/models.py:1370
+#: app/models.py:1457
 msgid "Front Brake Pads"
 msgstr "フロントブレーキパッド"
 
-#: app/models.py:1371
+#: app/models.py:1458
 msgid "Rear Brake Pads"
 msgstr "リアブレーキパッド"
 
-#: app/models.py:1372 app/models.py:2147
+#: app/models.py:1459 app/models.py:2263
 msgid "Transmission Fluid"
 msgstr "トランスミッションフルード"
 
-#: app/models.py:1373 app/models.py:1493 app/models.py:1558
-#: app/templates/auth/settings.html:195
+#: app/models.py:1460 app/models.py:1581 app/models.py:1647
+#: app/templates/auth/settings.html:204
 msgid "Custom"
 msgstr "カスタム"
 
-#: app/models.py:1378 app/templates/auth/settings.html:440
-#: app/templates/auth/settings.html:506 app/templates/base.html:318
-#: app/templates/base.html:412
+#: app/models.py:1465 app/routes/maintenance.py:54
+#: app/templates/auth/settings.html:449 app/templates/auth/settings.html:515
+#: app/templates/base.html:318 app/templates/base.html:421
 msgid "Maintenance"
 msgstr "メンテナンス"
 
-#: app/models.py:1379
+#: app/models.py:1466
 msgid "Repairs"
 msgstr "修理"
 
-#: app/models.py:1380
+#: app/models.py:1467
 msgid "Inspection"
 msgstr "検査"
 
-#: app/models.py:1381
+#: app/models.py:1468
 msgid "Insurance"
 msgstr "保険"
 
-#: app/models.py:1382 app/models.py:1488
+#: app/models.py:1469
+msgid "Loan Payment"
+msgstr "ローン返済"
+
+#: app/models.py:1470 app/models.py:1576
 msgid "Road Tax"
 msgstr "自動車税"
 
-#: app/models.py:1383
+#: app/models.py:1471
 msgid "Registration"
 msgstr "登録"
 
-#: app/models.py:1384
+#: app/models.py:1472
 msgid "Parking"
 msgstr "駐車料金"
 
-#: app/models.py:1385
+#: app/models.py:1473
 msgid "Tolls"
 msgstr "通行料"
 
-#: app/models.py:1386
+#: app/models.py:1474
 msgid "Cleaning"
 msgstr "洗車"
 
-#: app/models.py:1387
+#: app/models.py:1475
 msgid "Accessories"
 msgstr "アクセサリー"
 
-#: app/models.py:1388 app/models.py:1405 app/models.py:1434 app/models.py:1526
-#: app/models.py:1536 app/models.py:1570 app/models.py:1578 app/models.py:2153
+#: app/models.py:1476 app/models.py:1493 app/models.py:1522 app/models.py:1614
+#: app/models.py:1624 app/models.py:1659 app/models.py:1667 app/models.py:2269
 msgid "Other"
 msgstr "その他"
 
-#: app/models.py:1393
+#: app/models.py:1481
 msgid "Car"
 msgstr "自動車"
 
-#: app/models.py:1394
+#: app/models.py:1482
 msgid "Van"
 msgstr "バン"
 
-#: app/models.py:1395
+#: app/models.py:1483
 msgid "Motorbike"
 msgstr "オートバイ"
 
-#: app/models.py:1396
+#: app/models.py:1484
 msgid "Scooter"
 msgstr "スクーター"
 
-#: app/models.py:1397
+#: app/models.py:1485
 msgid "Truck"
 msgstr "トラック"
 
-#: app/models.py:1398
+#: app/models.py:1486
 msgid "SUV"
 msgstr "SUV"
 
-#: app/models.py:1399
+#: app/models.py:1487
 msgid "Hatchback"
 msgstr "ハッチバック"
 
-#: app/models.py:1400
+#: app/models.py:1488
 msgid "Station Wagon / Estate"
 msgstr "ステーションワゴン"
 
-#: app/models.py:1401
+#: app/models.py:1489
 msgid "Pickup / Ute"
 msgstr "ピックアップトラック"
 
-#: app/models.py:1402
+#: app/models.py:1490
 msgid "Tractor"
 msgstr "トラクター"
 
-#: app/models.py:1403
+#: app/models.py:1491
 msgid "ATV/UTV"
 msgstr "ATV/UTV"
 
-#: app/models.py:1404
+#: app/models.py:1492
 msgid "Boat"
 msgstr "ボート"
 
-#: app/models.py:1410
+#: app/models.py:1498
 msgid "Mileage (km/mi)"
 msgstr "走行距離 (km/mi)"
 
-#: app/models.py:1416 app/templates/auth/settings.html:129
+#: app/models.py:1504 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "キロメートル (km)"
 
-#: app/models.py:1417 app/templates/auth/settings.html:130
+#: app/models.py:1505 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "マイル (mi)"
 
-#: app/models.py:1422
+#: app/models.py:1510
 msgid "Petrol/Gasoline"
 msgstr "ガソリン"
 
-#: app/models.py:1423
+#: app/models.py:1511
 msgid "Diesel"
 msgstr "ディーゼル"
 
-#: app/models.py:1424
+#: app/models.py:1512
 msgid "Electric"
 msgstr "電気"
 
-#: app/models.py:1425
+#: app/models.py:1513
 msgid "Hybrid"
 msgstr "ハイブリッド"
 
-#: app/models.py:1426
+#: app/models.py:1514
 msgid "Plug-in Hybrid"
 msgstr "プラグインハイブリッド"
 
-#: app/models.py:1427
+#: app/models.py:1515
 msgid "LPG"
 msgstr "LPG"
 
-#: app/models.py:1428
+#: app/models.py:1516
 msgid "CNG"
 msgstr "CNG"
 
-#: app/models.py:1429
+#: app/models.py:1517
 msgid "Hydrogen"
 msgstr "水素"
 
-#: app/models.py:1430
+#: app/models.py:1518
 msgid "E85/Flex Fuel"
 msgstr "E85/フレックス燃料"
 
-#: app/models.py:1433
+#: app/models.py:1521
 msgid "AdBlue/DEF"
 msgstr "AdBlue/DEF"
 
-#: app/models.py:1485
+#: app/models.py:1573
 msgid "MOT/Inspection"
 msgstr "車検/検査"
 
-#: app/models.py:1486
+#: app/models.py:1574
 msgid "Service Due"
 msgstr "点検予定"
 
-#: app/models.py:1487
+#: app/models.py:1575
 msgid "Insurance Renewal"
 msgstr "保険更新"
 
-#: app/models.py:1489
+#: app/models.py:1577
 msgid "Registration Renewal"
 msgstr "登録更新"
 
-#: app/models.py:1490
+#: app/models.py:1578
 msgid "Warranty Expiry"
 msgstr "保証期限"
 
-#: app/models.py:1491
+#: app/models.py:1579
 msgid "Tire Change"
 msgstr "タイヤ交換"
 
-#: app/models.py:1492 app/models.py:1541
+#: app/models.py:1580 app/models.py:1629
 msgid "Oil Change"
 msgstr "オイル交換"
 
-#: app/models.py:1512
+#: app/models.py:1600
 msgid "No Repeat"
 msgstr "繰り返しなし"
 
-#: app/models.py:1513
+#: app/models.py:1601
 msgid "Day(s)"
 msgstr "日"
 
-#: app/models.py:1514
+#: app/models.py:1602
 msgid "Week(s)"
 msgstr "週"
 
-#: app/models.py:1515
+#: app/models.py:1603
 msgid "Month(s)"
 msgstr "ヶ月"
 
-#: app/models.py:1516
+#: app/models.py:1604
 msgid "Year(s)"
 msgstr "年"
 
-#: app/models.py:1521
+#: app/models.py:1609
 msgid "Business"
 msgstr "ビジネス"
 
-#: app/models.py:1522
+#: app/models.py:1610
 msgid "Personal"
 msgstr "個人"
 
-#: app/models.py:1523
+#: app/models.py:1611
 msgid "Commute"
 msgstr "通勤"
 
-#: app/models.py:1524
+#: app/models.py:1612
 msgid "Medical"
 msgstr "通院"
 
-#: app/models.py:1525
+#: app/models.py:1613
 msgid "Charity"
 msgstr "慈善活動"
 
-#: app/models.py:1531
+#: app/models.py:1619
 msgid "Home Charging"
 msgstr "自宅充電"
 
-#: app/models.py:1532
+#: app/models.py:1620
 msgid "Level 1"
 msgstr "レベル1"
 
-#: app/models.py:1533
+#: app/models.py:1621
 msgid "Level 2"
 msgstr "レベル2"
 
-#: app/models.py:1534
+#: app/models.py:1622
 msgid "DC Fast Charge"
 msgstr "DC急速充電"
 
-#: app/models.py:1535
+#: app/models.py:1623
 msgid "Tesla Supercharger"
 msgstr "Teslaスーパーチャージャー"
 
-#: app/models.py:1542 app/models.py:2139
+#: app/models.py:1630 app/models.py:2255
 msgid "Oil Filter"
 msgstr "オイルフィルター"
 
-#: app/models.py:1543 app/models.py:2140
+#: app/models.py:1631 app/models.py:2256
 msgid "Air Filter"
 msgstr "エアフィルター"
 
-#: app/models.py:1544
+#: app/models.py:1632
 msgid "Cabin/Pollen Filter"
 msgstr "キャビン/花粉フィルター"
 
-#: app/models.py:1545 app/models.py:2141
+#: app/models.py:1633
+msgid "Air-conditioning service"
+msgstr "エアコン整備"
+
+#: app/models.py:1634 app/models.py:2257
 msgid "Fuel Filter"
 msgstr "燃料フィルター"
 
-#: app/models.py:1546
+#: app/models.py:1635
 msgid "Spark Plugs"
 msgstr "スパークプラグ"
 
-#: app/models.py:1547
+#: app/models.py:1636
 msgid "Brake Pads"
 msgstr "ブレーキパッド"
 
-#: app/models.py:1548 app/models.py:2145
+#: app/models.py:1637 app/models.py:2261
 msgid "Brake Fluid"
 msgstr "ブレーキフルード"
 
-#: app/models.py:1549
+#: app/models.py:1638
 msgid "Coolant Flush"
 msgstr "冷却水交換"
 
-#: app/models.py:1550
+#: app/models.py:1639
 msgid "Transmission Service"
 msgstr "トランスミッション整備"
 
-#: app/models.py:1551
+#: app/models.py:1640
 msgid "Timing Belt"
 msgstr "タイミングベルト"
 
-#: app/models.py:1552
+#: app/models.py:1641
 msgid "Serpentine Belt"
 msgstr "サーペンタインベルト"
 
-#: app/models.py:1553
+#: app/models.py:1642
 msgid "Tire Rotation"
 msgstr "タイヤローテーション"
 
-#: app/models.py:1554
+#: app/models.py:1643
 msgid "Wheel Alignment"
 msgstr "ホイールアライメント"
 
-#: app/models.py:1555
+#: app/models.py:1644
 msgid "Battery Check/Replace"
 msgstr "バッテリー点検/交換"
 
-#: app/models.py:1556
+#: app/models.py:1645
 msgid "Wiper Blades"
 msgstr "ワイパーブレード"
 
-#: app/models.py:1557
+#: app/models.py:1646
 msgid "Full Service"
 msgstr "フルサービス点検"
 
-#: app/models.py:1563
+#: app/models.py:1652
 msgid "Insurance Policy"
 msgstr "保険証券"
 
-#: app/models.py:1564
+#: app/models.py:1653
 msgid "Registration/V5C"
 msgstr "登録証/V5C"
 
-#: app/models.py:1565
+#: app/models.py:1654
 msgid "MOT Certificate"
 msgstr "車検証"
 
-#: app/models.py:1566
+#: app/models.py:1655
 msgid "Service Record"
 msgstr "整備記録"
 
-#: app/models.py:1567
+#: app/models.py:1656
 msgid "Purchase Invoice"
 msgstr "購入請求書"
 
-#: app/models.py:1568
+#: app/models.py:1657
 msgid "Warranty Document"
 msgstr "保証書"
 
-#: app/models.py:1569
+#: app/models.py:1658
 msgid "Owner's Manual"
 msgstr "取扱説明書"
 
-#: app/models.py:1575
+#: app/models.py:1664
 msgid "Summer"
 msgstr "夏用"
 
-#: app/models.py:1576
+#: app/models.py:1665
 msgid "Winter"
 msgstr "冬用"
 
-#: app/models.py:1577
+#: app/models.py:1666
 msgid "All Season"
 msgstr "オールシーズン"
 
-#: app/models.py:2138
+#: app/models.py:2254
 msgid "Engine Oil"
 msgstr "エンジンオイル"
 
-#: app/models.py:2142
+#: app/models.py:2258
 msgid "Cabin Filter"
 msgstr "キャビンフィルター"
 
-#: app/models.py:2143
+#: app/models.py:2259
 msgid "Spark Plug"
 msgstr "スパークプラグ"
 
-#: app/models.py:2144
+#: app/models.py:2260
 msgid "Brake Pad"
 msgstr "ブレーキパッド"
 
-#: app/models.py:2146
+#: app/models.py:2262
 msgid "Coolant"
 msgstr "冷却水"
 
-#: app/models.py:2148
+#: app/models.py:2264
 msgid "Battery"
 msgstr "バッテリー"
 
-#: app/models.py:2149
+#: app/models.py:2265
 msgid "Tire"
 msgstr "タイヤ"
 
-#: app/models.py:2150
+#: app/models.py:2266
 msgid "Belt"
 msgstr "ベルト"
 
-#: app/models.py:2151
+#: app/models.py:2267
 msgid "Wiper Blade"
 msgstr "ワイパーブレード"
 
-#: app/models.py:2152
+#: app/models.py:2268
 msgid "Light Bulb"
 msgstr "電球"
+
+#: app/models.py:2538 app/templates/tires/index.html:104
+msgid "All axles"
+msgstr "全車軸"
+
+#: app/models.py:2538 app/templates/tires/index.html:105
+msgid "Front axle"
+msgstr "前車軸"
+
+#: app/models.py:2538 app/templates/tires/index.html:106
+msgid "Rear axle"
+msgstr "後車軸"
 
 #: app/permissions.py:128
 msgid "Your account does not have permission to change this data."
 msgstr "このアカウントにはデータを変更する権限がありません。"
 
-#: app/routes/allowance.py:31 app/routes/expenses.py:155 app/routes/fuel.py:72
-#: app/routes/fuel.py:444 app/routes/notes.py:31 app/routes/reminders.py:64
-#: app/routes/tires.py:76 app/routes/trips.py:76
+#: app/routes/allowance.py:31 app/routes/expenses.py:155 app/routes/fuel.py:78
+#: app/routes/fuel.py:505 app/routes/notes.py:31 app/routes/reminders.py:64
+#: app/routes/tires.py:77 app/routes/trips.py:76
 msgid "Please add a vehicle first"
 msgstr "まず車両を追加してください"
 
 #: app/routes/allowance.py:40 app/routes/allowance.py:78
-#: app/routes/allowance.py:110 app/routes/charging.py:63
-#: app/routes/charging.py:123 app/routes/charging.py:173
+#: app/routes/allowance.py:110 app/routes/charging.py:83
+#: app/routes/charging.py:143 app/routes/charging.py:193
 #: app/routes/documents.py:130 app/routes/documents.py:146
 #: app/routes/documents.py:165 app/routes/documents.py:205
 #: app/routes/expenses.py:164 app/routes/expenses.py:248
 #: app/routes/expenses.py:297 app/routes/expenses.py:326
-#: app/routes/expenses.py:331 app/routes/fuel.py:81 app/routes/fuel.py:226
-#: app/routes/fuel.py:362 app/routes/fuel.py:417 app/routes/fuel.py:422
-#: app/routes/fuel.py:458 app/routes/maintenance.py:107
-#: app/routes/maintenance.py:150 app/routes/maintenance.py:202
+#: app/routes/expenses.py:331 app/routes/fuel.py:87 app/routes/fuel.py:245
+#: app/routes/fuel.py:411 app/routes/fuel.py:466 app/routes/fuel.py:471
+#: app/routes/fuel.py:519 app/routes/maintenance.py:157
+#: app/routes/maintenance.py:202 app/routes/maintenance.py:258
 #: app/routes/notes.py:40 app/routes/notes.py:87 app/routes/notes.py:128
 #: app/routes/reminders.py:72 app/routes/reminders.py:127
 #: app/routes/reminders.py:214 app/routes/reminders.py:237
-#: app/routes/reminders.py:256 app/routes/tires.py:83 app/routes/tires.py:127
-#: app/routes/tires.py:167 app/routes/tires.py:208 app/routes/tires.py:239
-#: app/routes/tires.py:254 app/routes/trips.py:84 app/routes/trips.py:157
+#: app/routes/reminders.py:256 app/routes/tires.py:84 app/routes/tires.py:128
+#: app/routes/tires.py:168 app/routes/tires.py:227 app/routes/tires.py:259
+#: app/routes/tires.py:274 app/routes/trips.py:84 app/routes/trips.py:157
 #: app/routes/trips.py:201 app/routes/trips.py:234 app/routes/trips.py:266
-#: app/routes/trips.py:277 app/routes/trips.py:306 app/routes/vehicles.py:164
-#: app/routes/vehicles.py:260 app/routes/vehicles.py:353
-#: app/routes/vehicles.py:379 app/routes/vehicles.py:430
-#: app/routes/vehicles.py:435 app/routes/vehicles.py:467
-#: app/routes/vehicles.py:472 app/routes/vehicles.py:500
-#: app/routes/vehicles.py:531 app/routes/vehicles.py:550
-#: app/routes/vehicles.py:566 app/routes/vehicles.py:657
-#: app/routes/vehicles.py:737 app/routes/vehicles.py:766
-#: app/routes/vehicles.py:804 app/routes/vehicles.py:842
+#: app/routes/trips.py:277 app/routes/trips.py:306 app/routes/vehicles.py:187
+#: app/routes/vehicles.py:293 app/routes/vehicles.py:394
+#: app/routes/vehicles.py:420 app/routes/vehicles.py:471
+#: app/routes/vehicles.py:476 app/routes/vehicles.py:508
+#: app/routes/vehicles.py:513 app/routes/vehicles.py:541
+#: app/routes/vehicles.py:572 app/routes/vehicles.py:591
+#: app/routes/vehicles.py:607 app/routes/vehicles.py:698
+#: app/routes/vehicles.py:778 app/routes/vehicles.py:807
+#: app/routes/vehicles.py:845 app/routes/vehicles.py:883
 msgid "Access denied"
 msgstr "アクセスが拒否されました"
 
@@ -575,26 +595,26 @@ msgstr "マイレージ手当が正常に更新されました"
 msgid "Mileage allowance deleted successfully"
 msgstr "マイレージ手当が正常に削除されました"
 
-#: app/routes/api.py:2657 app/routes/api.py:2870 app/routes/api.py:3045
+#: app/routes/api.py:2677 app/routes/api.py:2891 app/routes/api.py:3067
 msgid "No file uploaded"
 msgstr "ファイルがアップロードされていません"
 
-#: app/routes/api.py:2662 app/routes/api.py:2875 app/routes/api.py:3050
+#: app/routes/api.py:2682 app/routes/api.py:2896 app/routes/api.py:3072
 #: app/routes/documents.py:67 app/routes/documents.py:72
 msgid "No file selected"
 msgstr "ファイルが選択されていません"
 
-#: app/routes/api.py:2684
+#: app/routes/api.py:2704
 msgid "The uploaded file is not a valid SQLite database."
 msgstr "アップロードされたファイルは有効なSQLiteデータベースではありません。"
 
-#: app/routes/api.py:2689
+#: app/routes/api.py:2709
 msgid ""
 "This does not appear to be a Hammond database — no vehicles, fillups, or "
 "expenses tables found."
 msgstr "これはHammondデータベースではないようです — 車両、給油、経費のテーブルが見つかりません。"
 
-#: app/routes/api.py:2838
+#: app/routes/api.py:2859
 #, python-format
 msgid ""
 "Hammond import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs, "
@@ -603,14 +623,14 @@ msgstr ""
 "Hammondインポート完了: "
 "%(vehicles)s台の車両、%(fuel_logs)s件の給油記録、%(expenses)s件の経費をインポートしました。"
 
-#: app/routes/api.py:2840
+#: app/routes/api.py:2861
 #, python-format
 msgid ""
 "(%(total_skipped)s records skipped due to errors — check server logs for "
 "details.)"
 msgstr "(エラーにより%(total_skipped)s件のレコードがスキップされました — 詳細はサーバーログを確認してください。)"
 
-#: app/routes/api.py:2847
+#: app/routes/api.py:2868
 #, python-format
 msgid ""
 "Import failed due to a database error. Check that the file is a valid "
@@ -618,83 +638,88 @@ msgid ""
 msgstr ""
 "データベースエラーによりインポートに失敗しました。ファイルが有効なHammondデータベースであることを確認してください。エラー: %(error)s"
 
-#: app/routes/api.py:2852 app/routes/api.py:2996 app/routes/api.py:3168
-#: app/routes/api.py:3674
+#: app/routes/api.py:2873 app/routes/api.py:3018 app/routes/api.py:3191
+#: app/routes/api.py:3763
 #, python-format
 msgid "Import failed: %(error)s"
 msgstr "インポートに失敗しました: %(error)s"
 
-#: app/routes/api.py:2992
+#: app/routes/api.py:3014
 #, python-format
 msgid ""
 "Clarkson import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs"
 msgstr "Clarksonインポート完了: %(vehicles)s台の車両、%(fuel_logs)s件の給油記録"
 
-#: app/routes/api.py:3164
+#: app/routes/api.py:3187
 #, python-format
 msgid ""
 "Fuelly import complete: %(vehicles)s new vehicles, %(fuel_logs)s fuel logs"
 msgstr "Fuellyインポート完了: %(vehicles)s台の新規車両、%(fuel_logs)s件の給油記録"
 
-#: app/routes/api.py:3527
+#: app/routes/api.py:3599
 msgid "Please add a vehicle before importing data."
 msgstr "データをインポートする前に車両を追加してください。"
 
-#: app/routes/api.py:3540
+#: app/routes/api.py:3612
 msgid "Invalid data type selected."
 msgstr "無効なデータタイプが選択されました。"
 
-#: app/routes/api.py:3545 app/routes/api.py:3620
+#: app/routes/api.py:3617 app/routes/api.py:3702
 msgid "Vehicle not found."
 msgstr "車両が見つかりません。"
 
-#: app/routes/api.py:3549
+#: app/routes/api.py:3621
 msgid "No CSV file uploaded."
 msgstr "CSVファイルがアップロードされていません。"
 
-#: app/routes/api.py:3560
+#: app/routes/api.py:3640
 msgid "CSV file has no column headers."
 msgstr "CSVファイルに列ヘッダーがありません。"
 
-#: app/routes/api.py:3601
+#: app/routes/api.py:3682
 #, python-format
 msgid "Failed to parse CSV file: %(error)s"
 msgstr "CSVファイルの解析に失敗しました: %(error)s"
 
-#: app/routes/api.py:3615
+#: app/routes/api.py:3697
 msgid "Invalid data type."
 msgstr "無効なデータタイプです。"
 
-#: app/routes/api.py:3624
+#: app/routes/api.py:3706
 msgid "CSV file expired. Please upload again."
 msgstr "CSVファイルの有効期限が切れました。再度アップロードしてください。"
 
-#: app/routes/api.py:3662
+#: app/routes/api.py:3748
 #, python-format
 msgid "CSV import complete: %(count)s %(label)s imported."
 msgstr "CSVインポート完了: %(count)s件の%(label)sをインポートしました。"
 
-#: app/routes/api.py:3709
+#: app/routes/api.py:3751
+#, python-format
+msgid "%(count)s duplicate(s) skipped."
+msgstr "重複する%(count)s件をスキップしました。"
+
+#: app/routes/api.py:3798
 msgid "No backup file uploaded."
 msgstr "バックアップファイルがアップロードされていません。"
 
-#: app/routes/api.py:3732
+#: app/routes/api.py:3821
 #, python-format
 msgid "Could not read that backup: %(error)s"
 msgstr "バックアップを読み込めませんでした: %(error)s"
 
-#: app/routes/api.py:3751
+#: app/routes/api.py:3840
 msgid "The uploaded backup has expired. Please upload it again."
 msgstr "アップロードしたバックアップの有効期限が切れました。もう一度アップロードしてください。"
 
-#: app/routes/api.py:3764
+#: app/routes/api.py:3853
 #, python-format
 msgid ""
 "Backup restored: %(added)s records added, %(skipped)s already present and "
 "left alone."
 msgstr "バックアップを復元しました: %(added)s 件を追加、%(skipped)s 件は既に存在するためそのままにしました。"
 
-#: app/routes/api.py:3772
+#: app/routes/api.py:3861
 #, python-format
 msgid "Restore failed: %(error)s"
 msgstr "復元に失敗しました: %(error)s"
@@ -717,8 +742,8 @@ msgstr "そのメールアドレスのアカウントが存在する場合、パ
 msgid "Invalid or expired reset link. Please request a new one."
 msgstr "無効または期限切れのリセットリンクです。新しいリンクをリクエストしてください。"
 
-#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:240
-#: app/routes/auth.py:574 app/routes/auth.py:621
+#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:253
+#: app/routes/auth.py:585 app/routes/auth.py:632
 msgid "Passwords do not match"
 msgstr "パスワードが一致しません"
 
@@ -730,7 +755,7 @@ msgstr "パスワードがリセットされました。ログインしてくだ
 msgid "New account registration is currently disabled."
 msgstr "新規アカウント登録は現在無効になっています。"
 
-#: app/routes/auth.py:180 app/routes/auth.py:632
+#: app/routes/auth.py:180 app/routes/auth.py:643
 msgid "Username already exists"
 msgstr "ユーザー名はすでに存在します"
 
@@ -746,104 +771,104 @@ msgstr "登録が完了しました。ログインしてください。"
 msgid "You have been logged out."
 msgstr "ログアウトしました。"
 
-#: app/routes/auth.py:230 app/routes/auth.py:565
+#: app/routes/auth.py:244 app/routes/auth.py:576
 msgid "Email already in use by another account"
 msgstr "このメールアドレスは別のアカウントで使用されています"
 
-#: app/routes/auth.py:252
+#: app/routes/auth.py:263
 msgid "Settings updated successfully"
 msgstr "設定が正常に更新されました"
 
-#: app/routes/auth.py:341
+#: app/routes/auth.py:352
 #, python-format
 msgid "Invalid webhook URL: %(error)s"
 msgstr "無効なWebhook URL: %(error)s"
 
-#: app/routes/auth.py:356
+#: app/routes/auth.py:367
 msgid "Notification preferences updated"
 msgstr "通知設定が更新されました"
 
-#: app/routes/auth.py:382
+#: app/routes/auth.py:393
 msgid "Menu preferences updated"
 msgstr "メニュー設定が更新されました"
 
-#: app/routes/auth.py:407
+#: app/routes/auth.py:418
 msgid "Notification settings updated"
 msgstr "通知設定が更新されました"
 
-#: app/routes/auth.py:436
+#: app/routes/auth.py:447
 msgid "Branding settings updated successfully"
 msgstr "ブランディング設定が正常に更新されました"
 
-#: app/routes/auth.py:452
+#: app/routes/auth.py:463
 msgid "Logo removed successfully"
 msgstr "ロゴが正常に削除されました"
 
-#: app/routes/auth.py:465
+#: app/routes/auth.py:476
 msgid "DVLA settings updated"
 msgstr "DVLA設定が更新されました"
 
-#: app/routes/auth.py:480
+#: app/routes/auth.py:491
 msgid "UK fuel price settings updated"
 msgstr "英国の燃料価格設定を更新しました"
 
-#: app/routes/auth.py:493
+#: app/routes/auth.py:504
 msgid "Tessie settings updated"
 msgstr "Tessie設定が更新されました"
 
-#: app/routes/auth.py:506
+#: app/routes/auth.py:517
 msgid "Registration settings updated"
 msgstr "登録設定が更新されました"
 
-#: app/routes/auth.py:530
+#: app/routes/auth.py:541
 msgid "Cannot remove admin status from the last administrator."
 msgstr "最後の管理者から管理者権限を削除することはできません。"
 
-#: app/routes/auth.py:535
+#: app/routes/auth.py:546
 #, python-format
 msgid "Admin status updated for %(username)s"
 msgstr "%(username)sの管理者ステータスが更新されました"
 
-#: app/routes/auth.py:548
+#: app/routes/auth.py:559
 #, python-format
 msgid "User %(username)s deleted"
 msgstr "ユーザー%(username)sが削除されました"
 
-#: app/routes/auth.py:593
+#: app/routes/auth.py:604
 #, python-format
 msgid "User %(username)s updated successfully"
 msgstr "ユーザー%(username)sが正常に更新されました"
 
-#: app/routes/auth.py:616
+#: app/routes/auth.py:627
 msgid "Username, email, and password are required"
 msgstr "ユーザー名、メールアドレス、パスワードは必須です"
 
-#: app/routes/auth.py:637
+#: app/routes/auth.py:648
 msgid "Email already in use"
 msgstr "メールアドレスはすでに使用されています"
 
-#: app/routes/auth.py:646
+#: app/routes/auth.py:657
 #, python-format
 msgid "User %(username)s created successfully"
 msgstr "ユーザー%(username)sが正常に作成されました"
 
-#: app/routes/charging.py:55
+#: app/routes/charging.py:75
 msgid "No electric vehicles found. Add an EV or hybrid vehicle first."
 msgstr "電気自動車が見つかりません。まずEVまたはハイブリッド車を追加してください。"
 
-#: app/routes/charging.py:101
+#: app/routes/charging.py:121
 msgid "Charging session logged successfully"
 msgstr "充電セッションが正常に記録されました"
 
-#: app/routes/charging.py:155
+#: app/routes/charging.py:175
 msgid "Charging session updated successfully"
 msgstr "充電セッションが正常に更新されました"
 
-#: app/routes/charging.py:178
+#: app/routes/charging.py:198
 msgid "Charging session deleted successfully"
 msgstr "充電セッションが正常に削除されました"
 
-#: app/routes/documents.py:62 app/routes/maintenance.py:49
+#: app/routes/documents.py:62 app/routes/maintenance.py:98
 msgid "Invalid vehicle"
 msgstr "無効な車両"
 
@@ -865,7 +890,7 @@ msgstr "ドキュメントが更新されました"
 msgid "Document \"%(title)s\" deleted"
 msgstr "ドキュメント「%(title)s」が削除されました"
 
-#: app/routes/expenses.py:60 app/routes/vehicles.py:411
+#: app/routes/expenses.py:60 app/routes/vehicles.py:452
 #, python-format
 msgid ""
 "These files were not saved because the file type is not supported: %(names)s"
@@ -887,59 +912,71 @@ msgstr "経費が正常に更新されました"
 msgid "Expense deleted successfully"
 msgstr "経費が正常に削除されました"
 
-#: app/routes/expenses.py:340 app/routes/fuel.py:431
+#: app/routes/expenses.py:340 app/routes/fuel.py:480
 msgid "Attachment deleted"
 msgstr "添付ファイルが削除されました"
 
-#: app/routes/fuel.py:193
+#: app/routes/fuel.py:212
 msgid "Fuel log added successfully"
 msgstr "給油記録が正常に追加されました"
 
-#: app/routes/fuel.py:332
+#: app/routes/fuel.py:381
 msgid "Fuel log updated successfully"
 msgstr "給油記録が正常に更新されました"
 
-#: app/routes/fuel.py:396
+#: app/routes/fuel.py:445
 msgid "Fuel log deleted successfully"
 msgstr "給油記録が正常に削除されました"
 
-#: app/routes/fuel.py:515
+#: app/routes/fuel.py:576
 msgid "Fuel log added!"
 msgstr "給油記録を追加しました！"
 
-#: app/routes/main.py:259
+#: app/routes/main.py:134 app/routes/vehicles.py:236
+#: app/templates/base.html:358 app/templates/base.html:387
+#: app/templates/dashboard.html:376 app/templates/timeline/index.html:114
+#: app/templates/trips/index.html:127 app/templates/vehicles/view.html:95
+msgid "Fuel"
+msgstr "燃料"
+
+#: app/routes/main.py:137 app/routes/vehicles.py:239
+#: app/templates/timeline/index.html:126
+msgid "Charging"
+msgstr "充電"
+
+#: app/routes/main.py:270
 #, python-format
 msgid "Fuel: %(volume).1f L"
 msgstr "燃料: %(volume).1f L"
 
-#: app/routes/main.py:260 app/templates/search/index.html:74
+#: app/routes/main.py:271 app/templates/search/index.html:74
 msgid "Fuel Log"
 msgstr "給油記録"
 
-#: app/routes/main.py:284
+#: app/routes/main.py:295
 #, python-format
 msgid "Charging: %(kwh).1f kWh"
 msgstr "充電: %(kwh).1f kWh"
 
-#: app/routes/main.py:285 app/templates/search/index.html:160
+#: app/routes/main.py:296 app/templates/search/index.html:160
 msgid "Charging Session"
 msgstr "充電セッション"
 
-#: app/routes/maintenance.py:86
+#: app/routes/maintenance.py:136
 #, python-format
 msgid "Maintenance schedule \"%(name)s\" created"
 msgstr "メンテナンススケジュール「%(name)s」が作成されました"
 
-#: app/routes/maintenance.py:132
+#: app/routes/maintenance.py:184
 msgid "Maintenance schedule updated"
 msgstr "メンテナンススケジュールが更新されました"
 
-#: app/routes/maintenance.py:190
+#: app/routes/maintenance.py:246
 #, python-format
 msgid "Maintenance \"%(name)s\" marked as completed"
 msgstr "メンテナンス「%(name)s」が完了としてマークされました"
 
-#: app/routes/maintenance.py:209
+#: app/routes/maintenance.py:266
 #, python-format
 msgid "Maintenance schedule \"%(name)s\" deleted"
 msgstr "メンテナンススケジュール「%(name)s」が削除されました"
@@ -964,32 +1001,37 @@ msgstr "メモが正常に更新されました"
 msgid "Note deleted successfully"
 msgstr "メモが正常に削除されました"
 
-#: app/routes/recurring.py:37
+#: app/routes/recurring.py:38
 msgid "Please add a vehicle first."
 msgstr "まず車両を追加してください。"
 
-#: app/routes/recurring.py:46
+#: app/routes/recurring.py:47
 msgid "Invalid vehicle."
 msgstr "無効な車両です。"
 
-#: app/routes/recurring.py:73
+#: app/routes/recurring.py:75
 msgid "Recurring expense created."
 msgstr "定期経費が作成されました。"
 
-#: app/routes/recurring.py:115
+#: app/routes/recurring.py:119
 msgid "Recurring expense updated."
 msgstr "定期経費が更新されました。"
 
-#: app/routes/recurring.py:138
+#: app/routes/recurring.py:143
 msgid "Recurring expense deleted."
 msgstr "定期経費が削除されました。"
 
-#: app/routes/recurring.py:158
+#: app/routes/recurring.py:161
+#, python-format
+msgid "%(name)s was already generated for this period."
+msgstr "%(name)s はこの期間分をすでに作成済みです。"
+
+#: app/routes/recurring.py:165
 #, python-format
 msgid "Expense created for %(name)s."
 msgstr "%(name)sの経費が作成されました。"
 
-#: app/routes/recurring.py:177
+#: app/routes/recurring.py:184
 #, python-format
 msgid "Recurring expense %(status)s."
 msgstr "定期経費が%(status)sになりました。"
@@ -1043,72 +1085,96 @@ msgstr "ステーション「%(name)s」が削除されました"
 msgid "Updated %(prices)s live prices from %(matched)s forecourts"
 msgstr "%(matched)s 件のスタンドから %(prices)s 件の最新価格を更新しました"
 
-#: app/routes/stations.py:182
+#: app/routes/stations.py:175
+msgid "Fuel price sources are unavailable. Saved prices have been kept."
+msgstr "燃料価格の情報源を利用できません。保存済みの価格は保持されています。"
+
+#: app/routes/stations.py:177
+msgid ""
+"Some stations could not be matched because fuel price coverage is "
+"incomplete."
+msgstr "価格データが不完全なため、一部の給油所を特定できませんでした。"
+
+#: app/routes/stations.py:180
+msgid ""
+"No unique forecourt match found. Check the station postcode, address and "
+"brand."
+msgstr "給油所を一意に特定できません。郵便番号、住所、ブランドを確認してください。"
+
+#: app/routes/stations.py:186
 #, python-format
 msgid "Some retailer feeds could not be read: %(errors)s"
 msgstr "一部の販売事業者のフィードを読み込めませんでした: %(errors)s"
 
-#: app/routes/stations.py:193 app/routes/stations.py:209
+#: app/routes/stations.py:197 app/routes/stations.py:213
 msgid "UK fuel prices are not enabled. An admin can turn them on in Settings."
 msgstr "英国の燃料価格は有効になっていません。管理者が設定で有効にできます。"
 
-#: app/routes/stations.py:229
+#: app/routes/stations.py:233
 msgid "You can only delete your own price entries"
 msgstr "自分が登録した価格情報のみ削除できます"
 
-#: app/routes/stations.py:236
+#: app/routes/stations.py:240
 msgid "Price entry deleted"
 msgstr "価格情報が削除されました"
 
-#: app/routes/tires.py:88 app/routes/tires.py:133
+#: app/routes/tires.py:89 app/routes/tires.py:134
 msgid "Please give the tire set a name"
 msgstr "タイヤセットの名前を入力してください"
 
-#: app/routes/tires.py:105 app/routes/tires.py:141
+#: app/routes/tires.py:106 app/routes/tires.py:142
 msgid "Invalid data submitted. Please check the odometer and cost fields."
 msgstr "入力内容が正しくありません。走行距離と費用の項目を確認してください。"
 
-#: app/routes/tires.py:112
+#: app/routes/tires.py:113
 #, python-format
 msgid "Tire set \"%(name)s\" added"
 msgstr "タイヤセット「%(name)s」を追加しました"
 
-#: app/routes/tires.py:153
+#: app/routes/tires.py:154
 msgid "Tire set updated"
 msgstr "タイヤセットを更新しました"
 
-#: app/routes/tires.py:171
+#: app/routes/tires.py:172
 msgid "That tire set is already on the vehicle"
 msgstr "そのタイヤセットは既に車両に装着されています"
 
-#: app/routes/tires.py:174
+#: app/routes/tires.py:175
 msgid "That tire set is retired. Reinstate it before fitting it again."
 msgstr "そのタイヤセットは使用終了です。再び装着する前に使用中に戻してください。"
 
-#: app/routes/tires.py:188 app/routes/tires.py:227
+#: app/routes/tires.py:184
+msgid "Invalid axle"
+msgstr "無効な車軸"
+
+#: app/routes/tires.py:194
+msgid "The fitting date and reading cannot precede the current fitting."
+msgstr "取付日とメーター値は、現在の取付時点より前にはできません。"
+
+#: app/routes/tires.py:206 app/routes/tires.py:247
 #, python-format
 msgid "Took \"%(name)s\" off the vehicle"
 msgstr "「%(name)s」を車両から取り外しました"
 
-#: app/routes/tires.py:197
+#: app/routes/tires.py:216
 #, python-format
 msgid "Fitted \"%(name)s\""
 msgstr "「%(name)s」を装着しました"
 
-#: app/routes/tires.py:213
+#: app/routes/tires.py:232
 msgid "That tire set is not on the vehicle"
 msgstr "そのタイヤセットは車両に装着されていません"
 
-#: app/routes/tires.py:220
+#: app/routes/tires.py:240
 msgid ""
 "The odometer reading cannot be lower than the one the set was fitted at"
 msgstr "走行距離は装着時の値より小さくできません"
 
-#: app/routes/tires.py:244
+#: app/routes/tires.py:264
 msgid "Fitting record deleted"
 msgstr "装着記録を削除しました"
 
-#: app/routes/tires.py:261
+#: app/routes/tires.py:281
 #, python-format
 msgid "Tire set \"%(name)s\" deleted"
 msgstr "タイヤセット「%(name)s」を削除しました"
@@ -1141,136 +1207,140 @@ msgstr "テンプレートを更新しました"
 msgid "Template deleted"
 msgstr "テンプレートを削除しました"
 
-#: app/routes/vehicles.py:142
+#: app/routes/vehicles.py:110 app/routes/vehicles.py:301
+msgid "Starting odometer must be a nonnegative number."
+msgstr "開始時の走行距離は0以上の数値で入力してください。"
+
+#: app/routes/vehicles.py:165
 #, python-format
 msgid "Vehicle \"%(name)s\" added successfully"
 msgstr "車両「%(name)s」が正常に追加されました"
 
-#: app/routes/vehicles.py:272
+#: app/routes/vehicles.py:313
 msgid ""
 "Tracking unit cannot be changed once readings have been logged for this "
 "vehicle. Existing readings were kept as they are."
 msgstr "この車両の記録が入力された後は、管理単位を変更できません。既存の記録はそのまま保持されました。"
 
-#: app/routes/vehicles.py:329
+#: app/routes/vehicles.py:370
 msgid "Vehicle updated successfully"
 msgstr "車両が正常に更新されました"
 
-#: app/routes/vehicles.py:363
+#: app/routes/vehicles.py:404
 msgid "Vehicle deleted successfully"
 msgstr "車両が正常に削除されました"
 
-#: app/routes/vehicles.py:414
+#: app/routes/vehicles.py:455
 msgid "Photo added"
 msgstr "写真を追加しました"
 
-#: app/routes/vehicles.py:416
+#: app/routes/vehicles.py:457
 #, python-format
 msgid "%(count)s photos added"
 msgstr "%(count)s 枚の写真を追加しました"
 
-#: app/routes/vehicles.py:418
+#: app/routes/vehicles.py:459
 msgid "No photos were selected"
 msgstr "写真が選択されていません"
 
-#: app/routes/vehicles.py:456
+#: app/routes/vehicles.py:497
 msgid "Main photo updated"
 msgstr "メイン写真を更新しました"
 
-#: app/routes/vehicles.py:489
+#: app/routes/vehicles.py:530
 msgid "Photo deleted"
 msgstr "写真を削除しました"
 
-#: app/routes/vehicles.py:508
+#: app/routes/vehicles.py:549
 msgid "User not found"
 msgstr "ユーザーが見つかりません"
 
-#: app/routes/vehicles.py:510
+#: app/routes/vehicles.py:551
 msgid "You are already the owner"
 msgstr "あなたはすでにオーナーです"
 
-#: app/routes/vehicles.py:512
+#: app/routes/vehicles.py:553
 msgid "Vehicle already shared with this user"
 msgstr "この車両はすでにこのユーザーと共有されています"
 
-#: app/routes/vehicles.py:516
+#: app/routes/vehicles.py:557
 #, python-format
 msgid "Vehicle shared with %(username)s"
 msgstr "車両が%(username)sと共有されました"
 
-#: app/routes/vehicles.py:538
+#: app/routes/vehicles.py:579
 #, python-format
 msgid "Sharing removed for %(username)s"
 msgstr "%(username)sとの共有が解除されました"
 
-#: app/routes/vehicles.py:555
+#: app/routes/vehicles.py:596
 #, python-format
 msgid "Vehicle \"%(name)s\" has been archived"
 msgstr "車両「%(name)s」がアーカイブされました"
 
-#: app/routes/vehicles.py:571
+#: app/routes/vehicles.py:612
 #, python-format
 msgid "Vehicle \"%(name)s\" has been restored"
 msgstr "車両「%(name)s」が復元されました"
 
-#: app/routes/vehicles.py:663
+#: app/routes/vehicles.py:704
 msgid "PDF generation is not available. Please install weasyprint."
 msgstr "PDF生成は利用できません。weasyprintをインストールしてください。"
 
-#: app/routes/vehicles.py:786
+#: app/routes/vehicles.py:827
 #, python-format
 msgid "Part \"%(name)s\" added successfully"
 msgstr "パーツ「%(name)s」が正常に追加されました"
 
-#: app/routes/vehicles.py:809 app/routes/vehicles.py:847
+#: app/routes/vehicles.py:850 app/routes/vehicles.py:888
 msgid "Part not found"
 msgstr "パーツが見つかりません"
 
-#: app/routes/vehicles.py:824
+#: app/routes/vehicles.py:865
 msgid "Part updated successfully"
 msgstr "パーツが正常に更新されました"
 
-#: app/routes/vehicles.py:853
+#: app/routes/vehicles.py:894
 msgid "Part deleted successfully"
 msgstr "パーツが正常に削除されました"
 
-#: app/templates/auth/settings.html:434 app/templates/base.html:271
-#: app/templates/base.html:391 app/templates/dashboard.html:2
+#: app/templates/auth/settings.html:443 app/templates/base.html:271
+#: app/templates/base.html:400 app/templates/dashboard.html:2
 #: app/templates/dashboard.html:11
 msgid "Dashboard"
 msgstr "ダッシュボード"
 
-#: app/templates/auth/settings.html:435 app/templates/auth/settings.html:486
-#: app/templates/base.html:275 app/templates/base.html:393
+#: app/templates/auth/settings.html:444 app/templates/auth/settings.html:495
+#: app/templates/base.html:275 app/templates/base.html:402
 #: app/templates/dashboard.html:27 app/templates/vehicles/index.html:2
 #: app/templates/vehicles/index.html:7
 msgid "Vehicles"
 msgstr "車両"
 
-#: app/templates/auth/settings.html:436 app/templates/auth/settings.html:491
-#: app/templates/base.html:280 app/templates/base.html:396
+#: app/templates/auth/settings.html:445 app/templates/auth/settings.html:500
+#: app/templates/base.html:280 app/templates/base.html:405
 #: app/templates/fuel/index.html:2 app/templates/fuel/index.html:7
-#: app/templates/search/index.html:66 app/templates/vehicles/view.html:947
+#: app/templates/search/index.html:66 app/templates/vehicles/view.html:956
 msgid "Fuel Logs"
 msgstr "給油記録"
 
-#: app/templates/auth/settings.html:438 app/templates/auth/settings.html:496
-#: app/templates/base.html:285 app/templates/base.html:399
-#: app/templates/dashboard.html:398 app/templates/expenses/index.html:2
+#: app/templates/auth/settings.html:447 app/templates/auth/settings.html:505
+#: app/templates/base.html:285 app/templates/base.html:408
+#: app/templates/dashboard.html:382 app/templates/expenses/index.html:2
 #: app/templates/expenses/index.html:7 app/templates/expenses/index.html:143
 #: app/templates/search/index.html:43 app/templates/timeline/index.html:120
-#: app/templates/vehicles/view.html:1004
+#: app/templates/vehicles/view.html:1013
 msgid "Expenses"
 msgstr "経費"
 
-#: app/templates/auth/settings.html:439 app/templates/auth/settings.html:501
-#: app/templates/base.html:290 app/templates/base.html:402
+#: app/templates/auth/settings.html:448 app/templates/auth/settings.html:510
+#: app/templates/base.html:290 app/templates/base.html:411
 #: app/templates/reminders/index.html:2 app/templates/reminders/index.html:7
 msgid "Reminders"
 msgstr "リマインダー"
 
-#: app/templates/auth/settings.html:444 app/templates/auth/settings.html:526
-#: app/templates/base.html:295 app/templates/base.html:406
+#: app/templates/auth/settings.html:453 app/templates/auth/settings.html:535
+#: app/templates/base.html:295 app/templates/base.html:415
 #: app/templates/search/index.html:130 app/templates/trips/index.html:2
 #: app/templates/trips/index.html:7
 msgid "Trips"
@@ -1280,78 +1350,73 @@ msgstr "走行記録"
 msgid "More"
 msgstr "その他"
 
-#: app/templates/base.html:321 app/templates/base.html:415
+#: app/templates/base.html:321 app/templates/base.html:424
 msgid "Recurring"
 msgstr "定期"
 
-#: app/templates/auth/settings.html:442 app/templates/auth/settings.html:516
-#: app/templates/base.html:324 app/templates/base.html:418
+#: app/templates/auth/settings.html:451 app/templates/auth/settings.html:525
+#: app/templates/base.html:324 app/templates/base.html:427
 #: app/templates/documents/index.html:2 app/templates/documents/index.html:7
 #: app/templates/search/index.html:89
 msgid "Documents"
 msgstr "ドキュメント"
 
-#: app/templates/auth/settings.html:443 app/templates/auth/settings.html:521
-#: app/templates/base.html:327 app/templates/base.html:421
+#: app/templates/auth/settings.html:452 app/templates/auth/settings.html:530
+#: app/templates/base.html:327 app/templates/base.html:430
 #: app/templates/stations/index.html:2 app/templates/stations/index.html:7
 msgid "Fuel Stations"
 msgstr "ガソリンスタンド"
 
-#: app/templates/auth/settings.html:445 app/templates/auth/settings.html:531
-#: app/templates/base.html:330 app/templates/base.html:409
+#: app/templates/auth/settings.html:454 app/templates/auth/settings.html:540
+#: app/templates/base.html:330 app/templates/base.html:418
 msgid "EV Charging"
 msgstr "EV充電"
 
 #: app/templates/allowance/index.html:2 app/templates/allowance/index.html:7
-#: app/templates/auth/settings.html:446 app/templates/auth/settings.html:536
-#: app/templates/base.html:333 app/templates/base.html:424
-#: app/templates/dashboard.html:158 app/templates/vehicles/view.html:151
+#: app/templates/auth/settings.html:455 app/templates/auth/settings.html:545
+#: app/templates/base.html:333 app/templates/base.html:433
+#: app/templates/dashboard.html:181 app/templates/vehicles/view.html:153
 msgid "Mileage Allowance"
 msgstr "マイレージ手当"
 
-#: app/templates/auth/settings.html:541 app/templates/base.html:336
-#: app/templates/base.html:427 app/templates/tires/index.html:2
+#: app/templates/auth/settings.html:550 app/templates/base.html:336
+#: app/templates/base.html:436 app/templates/tires/index.html:2
 #: app/templates/tires/index.html:7
 msgid "Tires"
 msgstr "タイヤ"
 
-#: app/templates/auth/settings.html:447 app/templates/auth/settings.html:546
-#: app/templates/base.html:339 app/templates/base.html:430
+#: app/templates/auth/settings.html:456 app/templates/auth/settings.html:555
+#: app/templates/base.html:339 app/templates/base.html:439
 #: app/templates/charging/form.html:149 app/templates/expenses/form.html:112
-#: app/templates/fuel/form.html:168 app/templates/notes/index.html:2
+#: app/templates/fuel/form.html:171 app/templates/notes/index.html:2
 #: app/templates/notes/index.html:7 app/templates/search/index.html:110
 #: app/templates/stations/form.html:74 app/templates/tires/form.html:83
 #: app/templates/trips/form.html:142 app/templates/trips/template_form.html:76
-#: app/templates/vehicles/form.html:223
+#: app/templates/vehicles/form.html:232
 #: app/templates/vehicles/part_form.html:87
-#: app/templates/vehicles/view.html:746
+#: app/templates/vehicles/view.html:755
 msgid "Notes"
 msgstr "メモ"
 
-#: app/templates/auth/settings.html:437 app/templates/base.html:342
-#: app/templates/base.html:354 app/templates/base.html:433
-#: app/templates/fuel/quick.html:2 app/templates/fuel/quick.html:7
+#: app/templates/auth/settings.html:446 app/templates/base.html:342
+#: app/templates/base.html:354 app/templates/base.html:383
+#: app/templates/base.html:442 app/templates/fuel/quick.html:2
+#: app/templates/fuel/quick.html:7
 msgid "Quick Fuel Entry"
 msgstr "クイック給油入力"
 
-#: app/templates/base.html:358 app/templates/dashboard.html:392
-#: app/templates/timeline/index.html:114 app/templates/trips/index.html:127
-#: app/templates/vehicles/view.html:93
-msgid "Fuel"
-msgstr "燃料"
-
-#: app/templates/base.html:362 app/templates/base.html:404
-#: app/templates/search/index.html:2 app/templates/search/index.html:6
-#: app/templates/search/index.html:32
+#: app/templates/base.html:362 app/templates/base.html:413
+#: app/templates/maintenance/history.html:11 app/templates/search/index.html:2
+#: app/templates/search/index.html:6 app/templates/search/index.html:32
 msgid "Search"
 msgstr "検索"
 
 #: app/templates/auth/settings.html:2 app/templates/auth/settings.html:6
-#: app/templates/base.html:367 app/templates/base.html:435
+#: app/templates/base.html:367 app/templates/base.html:444
 msgid "Settings"
 msgstr "設定"
 
-#: app/templates/base.html:374 app/templates/base.html:440
+#: app/templates/base.html:374 app/templates/base.html:449
 msgid "Logout"
 msgstr "ログアウト"
 
@@ -1359,20 +1424,20 @@ msgstr "ログアウト"
 msgid "Overview of your vehicles and expenses"
 msgstr "車両と経費の概要"
 
-#: app/templates/dashboard.html:45 app/templates/vehicles/view.html:132
+#: app/templates/dashboard.html:45 app/templates/vehicles/view.html:134
 msgid "Total Fuel Cost"
 msgstr "燃料費合計"
 
-#: app/templates/dashboard.html:64 app/templates/vehicles/view.html:139
+#: app/templates/dashboard.html:64 app/templates/vehicles/view.html:141
 msgid "Total Charging Cost"
 msgstr "充電費用の合計"
 
-#: app/templates/dashboard.html:83 app/templates/vehicles/view.html:145
+#: app/templates/dashboard.html:83 app/templates/vehicles/view.html:147
 msgid "Other Expenses"
 msgstr "その他の経費"
 
 #: app/templates/dashboard.html:101 app/templates/trips/index.html:40
-#: app/templates/trips/report.html:35 app/templates/vehicles/view.html:162
+#: app/templates/trips/report.html:35 app/templates/vehicles/view.html:164
 msgid "Total Distance"
 msgstr "総走行距離"
 
@@ -1383,14 +1448,14 @@ msgstr "総走行距離"
 msgid "This total covers vehicles metered in distance and in engine hours."
 msgstr "この合計には、走行距離で管理する車両と稼働時間で管理する車両の両方が含まれます。"
 
-#: app/templates/dashboard.html:102 app/templates/trips/index.html:41
-#: app/templates/trips/index.html:45 app/templates/trips/report.html:36
-#: app/templates/trips/report.html:40 app/templates/trips/report.html:68
-#: app/templates/trips/report.html:127
+#: app/templates/dashboard.html:102 app/templates/dashboard.html:140
+#: app/templates/trips/index.html:41 app/templates/trips/index.html:45
+#: app/templates/trips/report.html:36 app/templates/trips/report.html:40
+#: app/templates/trips/report.html:68 app/templates/trips/report.html:127
 msgid "mixed units"
 msgstr "単位混在"
 
-#: app/templates/dashboard.html:119 app/templates/vehicles/view.html:201
+#: app/templates/dashboard.html:119 app/templates/vehicles/view.html:203
 msgid "Cost per"
 msgstr "単価"
 
@@ -1398,64 +1463,73 @@ msgstr "単価"
 msgid "unit"
 msgstr "単位"
 
+#: app/templates/dashboard.html:140 app/templates/vehicles/view.html:209
+#, python-format
+msgid "Net cost per %(unit)s"
+msgstr "%(unit)sあたりの純費用"
+
+#: app/templates/dashboard.html:140
+msgid "Net cost per"
+msgstr "純費用 /"
+
 #: app/templates/charging/form.html:140 app/templates/charging/index.html:28
-#: app/templates/dashboard.html:139 app/templates/fuel/form.html:94
-#: app/templates/fuel/quick.html:76
+#: app/templates/dashboard.html:162 app/templates/fuel/form.html:96
+#: app/templates/fuel/quick.html:78
 msgid "Total Cost"
 msgstr "合計費用"
 
-#: app/templates/dashboard.html:176 app/templates/vehicles/view.html:156
+#: app/templates/dashboard.html:199 app/templates/vehicles/view.html:158
 msgid "Net Cost"
 msgstr "正味費用"
 
-#: app/templates/dashboard.html:189
+#: app/templates/dashboard.html:212
 msgid "Monthly Spending"
 msgstr "月間支出"
 
-#: app/templates/dashboard.html:198 app/templates/stations/cheapest.html:2
+#: app/templates/dashboard.html:221 app/templates/stations/cheapest.html:2
 #: app/templates/stations/cheapest.html:7 app/templates/stations/index.html:28
 msgid "Cheapest Fuel"
 msgstr "最安燃料"
 
-#: app/templates/dashboard.html:199 app/templates/dashboard.html:290
-#: app/templates/dashboard.html:314 app/templates/vehicles/view.html:652
-#: app/templates/vehicles/view.html:766 app/templates/vehicles/view.html:824
+#: app/templates/dashboard.html:222 app/templates/dashboard.html:313
+#: app/templates/dashboard.html:337 app/templates/vehicles/view.html:661
+#: app/templates/vehicles/view.html:775 app/templates/vehicles/view.html:833
 msgid "View all"
 msgstr "すべて表示"
 
-#: app/templates/dashboard.html:223
+#: app/templates/dashboard.html:246
 msgid "No price data yet. Add fuel stations and log fuel to track prices."
 msgstr "価格データがまだありません。ガソリンスタンドを追加して給油を記録すると価格を追跡できます。"
 
-#: app/templates/dashboard.html:230 app/templates/vehicles/view.html:932
+#: app/templates/dashboard.html:253 app/templates/vehicles/view.html:941
 msgid "Expenses by Category"
 msgstr "カテゴリ別の支出"
 
-#: app/templates/dashboard.html:241
+#: app/templates/dashboard.html:264
 msgid "Your Vehicles"
 msgstr "あなたの車両"
 
-#: app/templates/dashboard.html:243
+#: app/templates/dashboard.html:266
 msgid "Add"
 msgstr "追加"
 
-#: app/templates/dashboard.html:280
+#: app/templates/dashboard.html:303
 msgid "Add your first vehicle"
 msgstr "最初の車両を追加"
 
-#: app/templates/dashboard.html:289
+#: app/templates/dashboard.html:312
 msgid "Recent Fuel Logs"
 msgstr "最近の給油記録"
 
-#: app/templates/dashboard.html:307 app/templates/vehicles/view.html:998
+#: app/templates/dashboard.html:330 app/templates/vehicles/view.html:1007
 msgid "No fuel logs yet."
 msgstr "まだ給油記録がありません。"
 
-#: app/templates/dashboard.html:313
+#: app/templates/dashboard.html:336
 msgid "Recent Expenses"
 msgstr "最近の経費"
 
-#: app/templates/dashboard.html:331 app/templates/vehicles/view.html:1046
+#: app/templates/dashboard.html:354 app/templates/vehicles/view.html:1055
 msgid "No expenses yet."
 msgstr "まだ経費がありません。"
 
@@ -1479,11 +1553,11 @@ msgstr "マイレージ手当に戻る"
 #: app/templates/expenses/index.html:29 app/templates/fuel/form.html:19
 #: app/templates/fuel/index.html:42 app/templates/fuel/index.html:145
 #: app/templates/fuel/quick.html:15 app/templates/maintenance/form.html:30
-#: app/templates/notes/form.html:19 app/templates/notes/index.html:29
-#: app/templates/recurring/form.html:21 app/templates/reminders/form.html:26
-#: app/templates/reminders/index.html:27 app/templates/tires/form.html:16
-#: app/templates/trips/form.html:37 app/templates/trips/index.html:53
-#: app/templates/trips/report.html:99
+#: app/templates/maintenance/history.html:6 app/templates/notes/form.html:19
+#: app/templates/notes/index.html:29 app/templates/recurring/form.html:21
+#: app/templates/reminders/form.html:26 app/templates/reminders/index.html:27
+#: app/templates/tires/form.html:16 app/templates/trips/form.html:37
+#: app/templates/trips/index.html:53 app/templates/trips/report.html:99
 msgid "Vehicle"
 msgstr "車両"
 
@@ -1493,13 +1567,13 @@ msgstr "車両"
 #: app/templates/fuel/index.html:41 app/templates/fuel/index.html:144
 #: app/templates/maintenance/form.html:119 app/templates/notes/form.html:34
 #: app/templates/notes/index.html:28 app/templates/tires/index.html:87
-#: app/templates/tires/index.html:102 app/templates/trips/form.html:67
+#: app/templates/tires/index.html:110 app/templates/trips/form.html:67
 #: app/templates/trips/report.html:98
 msgid "Date"
 msgstr "日付"
 
 #: app/templates/allowance/form.html:41 app/templates/allowance/index.html:31
-#: app/templates/recurring/form.html:65
+#: app/templates/recurring/form.html:66
 msgid "Amount"
 msgstr "金額"
 
@@ -1514,8 +1588,9 @@ msgstr "任意項目です。距離と一緒に設定すると、金額が自動
 #: app/templates/allowance/form.html:65 app/templates/allowance/index.html:29
 #: app/templates/documents/form.html:91 app/templates/documents/view.html:98
 #: app/templates/expenses/form.html:61 app/templates/expenses/index.html:31
-#: app/templates/maintenance/form.html:68 app/templates/recurring/form.html:96
-#: app/templates/trips/form.html:134 app/templates/trips/report.html:101
+#: app/templates/maintenance/form.html:68
+#: app/templates/recurring/form.html:112 app/templates/trips/form.html:134
+#: app/templates/trips/report.html:101
 #: app/templates/trips/template_form.html:68
 msgid "Description"
 msgstr "説明"
@@ -1526,26 +1601,26 @@ msgstr "例: 6月のクライアント訪問"
 
 #: app/templates/allowance/form.html:77 app/templates/charging/form.html:159
 #: app/templates/documents/form.html:122 app/templates/expenses/form.html:146
-#: app/templates/fuel/form.html:201
+#: app/templates/fuel/form.html:204
 #: app/templates/import/backup_preview.html:90
 #: app/templates/maintenance/form.html:177
-#: app/templates/maintenance/index.html:162 app/templates/notes/form.html:72
-#: app/templates/recurring/form.html:128 app/templates/reminders/form.html:126
+#: app/templates/maintenance/index.html:163 app/templates/notes/form.html:72
+#: app/templates/recurring/form.html:144 app/templates/reminders/form.html:126
 #: app/templates/stations/form.html:101 app/templates/tires/form.html:103
 #: app/templates/trips/form.html:152 app/templates/trips/template_form.html:86
-#: app/templates/vehicles/form.html:322
+#: app/templates/vehicles/form.html:331
 #: app/templates/vehicles/part_form.html:98
 msgid "Cancel"
 msgstr "キャンセル"
 
 #: app/templates/allowance/form.html:81 app/templates/auth/edit_user.html:91
-#: app/templates/auth/settings.html:212 app/templates/charging/form.html:163
+#: app/templates/auth/settings.html:221 app/templates/charging/form.html:163
 #: app/templates/documents/form.html:126 app/templates/expenses/form.html:150
-#: app/templates/fuel/form.html:205 app/templates/maintenance/form.html:181
-#: app/templates/notes/form.html:76 app/templates/recurring/form.html:132
+#: app/templates/fuel/form.html:208 app/templates/maintenance/form.html:181
+#: app/templates/notes/form.html:76 app/templates/recurring/form.html:148
 #: app/templates/stations/form.html:105 app/templates/tires/form.html:107
 #: app/templates/trips/form.html:156 app/templates/trips/template_form.html:90
-#: app/templates/vehicles/form.html:326
+#: app/templates/vehicles/form.html:335
 #: app/templates/vehicles/part_form.html:102
 msgid "Save Changes"
 msgstr "変更を保存"
@@ -1557,16 +1632,16 @@ msgstr "業務利用の手当収入を記録します。ランニングコスト
 
 #: app/templates/allowance/index.html:32 app/templates/expenses/index.html:34
 #: app/templates/fuel/index.html:49 app/templates/fuel/index.html:150
-#: app/templates/notes/index.html:32 app/templates/tires/index.html:128
+#: app/templates/notes/index.html:32 app/templates/tires/index.html:136
 msgid "Actions"
 msgstr "操作"
 
 #: app/templates/allowance/index.html:51 app/templates/documents/view.html:31
 #: app/templates/expenses/index.html:64 app/templates/fuel/index.html:85
-#: app/templates/fuel/index.html:174 app/templates/maintenance/index.html:85
+#: app/templates/fuel/index.html:174 app/templates/maintenance/index.html:86
 #: app/templates/notes/index.html:55 app/templates/stations/index.html:80
-#: app/templates/tires/index.html:158 app/templates/vehicles/view.html:75
-#: app/templates/vehicles/view.html:593
+#: app/templates/tires/index.html:166 app/templates/vehicles/view.html:77
+#: app/templates/vehicles/view.html:602
 msgid "Edit"
 msgstr "編集"
 
@@ -1576,10 +1651,10 @@ msgstr "この手当の記録を削除しますか？"
 
 #: app/templates/allowance/index.html:57 app/templates/documents/form.html:114
 #: app/templates/expenses/form.html:126 app/templates/expenses/index.html:70
-#: app/templates/fuel/form.html:182 app/templates/fuel/index.html:92
-#: app/templates/notes/index.html:61 app/templates/recurring/form.html:120
-#: app/templates/stations/form.html:93 app/templates/tires/index.html:144
-#: app/templates/tires/index.html:162 app/templates/vehicles/view.html:337
+#: app/templates/fuel/form.html:185 app/templates/fuel/index.html:92
+#: app/templates/notes/index.html:61 app/templates/recurring/form.html:136
+#: app/templates/stations/form.html:93 app/templates/tires/index.html:152
+#: app/templates/tires/index.html:170 app/templates/vehicles/view.html:346
 msgid "Delete"
 msgstr "削除"
 
@@ -1614,14 +1689,14 @@ msgstr "アカウント詳細"
 
 #: app/templates/auth/create_user.html:27 app/templates/auth/edit_user.html:28
 #: app/templates/auth/login.html:18 app/templates/auth/register.html:18
-#: app/templates/auth/settings.html:230
+#: app/templates/auth/settings.html:239
 msgid "Username"
 msgstr "ユーザー名"
 
 #: app/templates/auth/create_user.html:33 app/templates/auth/edit_user.html:33
 #: app/templates/auth/forgot_password.html:20
-#: app/templates/auth/register.html:24 app/templates/auth/settings.html:247
-#: app/templates/auth/settings.html:1370
+#: app/templates/auth/register.html:24 app/templates/auth/settings.html:256
+#: app/templates/auth/settings.html:1379
 msgid "Email"
 msgstr "メール"
 
@@ -1636,7 +1711,7 @@ msgid "Confirm Password"
 msgstr "パスワード確認"
 
 #: app/templates/auth/create_user.html:53 app/templates/auth/edit_user.html:40
-#: app/templates/auth/settings.html:234 app/templates/auth/users.html:21
+#: app/templates/auth/settings.html:243 app/templates/auth/users.html:21
 msgid "Role"
 msgstr "役割"
 
@@ -1664,11 +1739,11 @@ msgstr "現在のパスワードを維持する場合は空欄のままにして
 
 #: app/templates/auth/edit_user.html:75
 #: app/templates/auth/reset_password.html:18
-#: app/templates/auth/settings.html:372
+#: app/templates/auth/settings.html:381
 msgid "New Password"
 msgstr "新しいパスワード"
 
-#: app/templates/auth/edit_user.html:80 app/templates/auth/settings.html:378
+#: app/templates/auth/edit_user.html:80 app/templates/auth/settings.html:387
 msgid "Confirm New Password"
 msgstr "新しいパスワード確認"
 
@@ -1746,7 +1821,7 @@ msgstr "単位と値"
 msgid "Account & Security"
 msgstr "アカウントとセキュリティ"
 
-#: app/templates/auth/settings.html:34 app/templates/auth/settings.html:423
+#: app/templates/auth/settings.html:34 app/templates/auth/settings.html:432
 msgid "Menu & Navigation"
 msgstr "メニューとナビゲーション"
 
@@ -1758,8 +1833,8 @@ msgstr "インポート / エクスポート"
 msgid "API"
 msgstr "API"
 
-#: app/templates/auth/settings.html:58 app/templates/auth/settings.html:356
-#: app/templates/auth/settings.html:796
+#: app/templates/auth/settings.html:58 app/templates/auth/settings.html:365
+#: app/templates/auth/settings.html:805
 msgid "Integrations"
 msgstr "連携"
 
@@ -1771,7 +1846,7 @@ msgstr "通知"
 msgid "Branding"
 msgstr "ブランディング"
 
-#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1771
+#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1780
 msgid "About"
 msgstr "このアプリについて"
 
@@ -1803,8 +1878,8 @@ msgstr "年-月-日"
 msgid "DD.MM.YYYY"
 msgstr "日.月.年"
 
-#: app/templates/auth/settings.html:135 app/templates/fuel/form.html:68
-#: app/templates/fuel/index.html:45 app/templates/fuel/quick.html:57
+#: app/templates/auth/settings.html:135 app/templates/fuel/form.html:69
+#: app/templates/fuel/index.html:45 app/templates/fuel/quick.html:58
 msgid "Volume"
 msgstr "容量"
 
@@ -1861,549 +1936,558 @@ msgstr "カンマ"
 msgid "Period"
 msgstr "ピリオド"
 
-#: app/templates/auth/settings.html:170
+#: app/templates/auth/settings.html:169
+#, python-format
+msgid "Show net cost per %(unit)s"
+msgstr "%(unit)sあたりの純費用を表示"
+
+#: app/templates/auth/settings.html:171
+msgid "Deducts recorded mileage reimbursements."
+msgstr "記録された走行距離精算額を差し引きます。"
+
+#: app/templates/auth/settings.html:177
 msgid "Round costs to whole numbers"
 msgstr "費用を整数に丸める"
 
-#: app/templates/auth/settings.html:176
+#: app/templates/auth/settings.html:183
 msgid "Currency"
 msgstr "通貨"
 
-#: app/templates/auth/settings.html:198
+#: app/templates/auth/settings.html:207
 msgid "Custom Currency"
 msgstr "カスタム通貨"
 
-#: app/templates/auth/settings.html:201
+#: app/templates/auth/settings.html:210
 msgid "e.g. ZAR, R, CHF"
 msgstr "例: ZAR, R, CHF"
 
-#: app/templates/auth/settings.html:203
+#: app/templates/auth/settings.html:212
 msgid "Enter a currency code or symbol to display"
 msgstr "表示する通貨コードまたは記号を入力してください"
 
-#: app/templates/auth/settings.html:224
+#: app/templates/auth/settings.html:233
 msgid "Account Information"
 msgstr "アカウント情報"
 
-#: app/templates/auth/settings.html:225
+#: app/templates/auth/settings.html:234
 msgid "Your account details"
 msgstr "あなたのアカウント詳細"
 
-#: app/templates/auth/settings.html:239
+#: app/templates/auth/settings.html:248
 msgid ""
 "Your account can see the data but cannot change it. Ask an administrator if "
 "you need more access."
 msgstr "このアカウントはデータを閲覧できますが変更はできません。より広い権限が必要な場合は管理者に依頼してください。"
 
-#: app/templates/auth/settings.html:241
+#: app/templates/auth/settings.html:250
 msgid ""
 "Your account can record fuel fill-ups and charging sessions. Ask an "
 "administrator if you need more access."
 msgstr "このアカウントは給油と充電を記録できます。より広い権限が必要な場合は管理者に依頼してください。"
 
-#: app/templates/auth/settings.html:252
+#: app/templates/auth/settings.html:261
 msgid "Member Since"
 msgstr "登録日"
 
-#: app/templates/auth/settings.html:259
+#: app/templates/auth/settings.html:268
 msgid "Save Email"
 msgstr "メールを保存"
 
-#: app/templates/auth/settings.html:267
+#: app/templates/auth/settings.html:276
 msgid "Appearance"
 msgstr "外観"
 
-#: app/templates/auth/settings.html:268
+#: app/templates/auth/settings.html:277
 msgid "Customize how the app looks"
 msgstr "アプリの外観をカスタマイズ"
 
-#: app/templates/auth/settings.html:274
+#: app/templates/auth/settings.html:283
 msgid "Dark Mode"
 msgstr "ダークモード"
 
-#: app/templates/auth/settings.html:275
+#: app/templates/auth/settings.html:284
 msgid "Use dark theme for the interface"
 msgstr "インターフェースにダークテーマを使用"
 
-#: app/templates/auth/settings.html:290
+#: app/templates/auth/settings.html:299
 msgid "User Management"
 msgstr "ユーザー管理"
 
-#: app/templates/auth/settings.html:291
+#: app/templates/auth/settings.html:300
 msgid "Manage users and permissions"
 msgstr "ユーザーと権限の管理"
 
-#: app/templates/auth/settings.html:297 app/templates/auth/users.html:2
+#: app/templates/auth/settings.html:306 app/templates/auth/users.html:2
 msgid "Users"
 msgstr "ユーザー"
 
-#: app/templates/auth/settings.html:298
+#: app/templates/auth/settings.html:307
 msgid "View and manage all users"
 msgstr "すべてのユーザーを表示・管理"
 
-#: app/templates/auth/settings.html:302
+#: app/templates/auth/settings.html:311
 msgid "Manage Users"
 msgstr "ユーザー管理"
 
-#: app/templates/auth/settings.html:308
+#: app/templates/auth/settings.html:317
 msgid "Allow Registration"
 msgstr "登録を許可"
 
-#: app/templates/auth/settings.html:309
+#: app/templates/auth/settings.html:318
 msgid "Allow new users to create accounts"
 msgstr "新規ユーザーのアカウント作成を許可"
 
-#: app/templates/auth/settings.html:343
+#: app/templates/auth/settings.html:352
 msgid "Admin Settings"
 msgstr "管理者設定"
 
-#: app/templates/auth/settings.html:344
+#: app/templates/auth/settings.html:353
 msgid "Configure system-wide settings for all users:"
 msgstr "全ユーザー向けのシステム全体設定:"
 
-#: app/templates/auth/settings.html:348
+#: app/templates/auth/settings.html:357
 msgid "SMTP / Notifications"
 msgstr "SMTP / 通知"
 
-#: app/templates/auth/settings.html:352
+#: app/templates/auth/settings.html:361
 msgid "Branding / Appearance"
 msgstr "ブランディング / 外観"
 
-#: app/templates/auth/settings.html:365
+#: app/templates/auth/settings.html:374
 msgid "Change Password"
 msgstr "パスワード変更"
 
-#: app/templates/auth/settings.html:366
+#: app/templates/auth/settings.html:375
 msgid "Update your password to keep your account secure"
 msgstr "アカウントの安全を保つためにパスワードを更新してください"
 
-#: app/templates/auth/settings.html:388
+#: app/templates/auth/settings.html:397
 msgid "Update Password"
 msgstr "パスワードを更新"
 
-#: app/templates/auth/settings.html:396 app/templates/vehicles/view.html:1054
+#: app/templates/auth/settings.html:405 app/templates/vehicles/view.html:1063
 msgid "Danger Zone"
 msgstr "危険な操作"
 
-#: app/templates/auth/settings.html:397
+#: app/templates/auth/settings.html:406
 msgid "Irreversible actions"
 msgstr "元に戻せない操作"
 
-#: app/templates/auth/settings.html:403 app/templates/auth/settings.html:408
+#: app/templates/auth/settings.html:412 app/templates/auth/settings.html:417
 msgid "Delete Account"
 msgstr "アカウント削除"
 
-#: app/templates/auth/settings.html:404
+#: app/templates/auth/settings.html:413
 msgid "Permanently delete your account and all data"
 msgstr "アカウントとすべてのデータを完全に削除"
 
-#: app/templates/auth/settings.html:424
+#: app/templates/auth/settings.html:433
 msgid "Customize which menu items to show and your start page"
 msgstr "表示するメニュー項目とスタートページをカスタマイズ"
 
-#: app/templates/auth/settings.html:430
+#: app/templates/auth/settings.html:439
 msgid "Start Page"
 msgstr "スタートページ"
 
-#: app/templates/auth/settings.html:431
+#: app/templates/auth/settings.html:440
 msgid "Which page to show when you log in"
 msgstr "ログイン時に表示するページ"
 
-#: app/templates/auth/settings.html:441 app/templates/auth/settings.html:511
+#: app/templates/auth/settings.html:450 app/templates/auth/settings.html:520
 #: app/templates/recurring/index.html:2 app/templates/recurring/index.html:7
 msgid "Recurring Expenses"
 msgstr "定期経費"
 
-#: app/templates/auth/settings.html:453
+#: app/templates/auth/settings.html:462
 #: app/templates/trips/template_form.html:27
 msgid "Default Vehicle"
 msgstr "デフォルトの車両"
 
-#: app/templates/auth/settings.html:454
+#: app/templates/auth/settings.html:463
 msgid ""
 "Pre-selected vehicle when adding fuel logs, expenses, trips, and charging "
 "sessions"
 msgstr "給油記録、経費、走行記録、充電セッションを追加する際に自動選択される車両"
 
-#: app/templates/auth/settings.html:457
+#: app/templates/auth/settings.html:466
 msgid "No default"
 msgstr "デフォルトなし"
 
-#: app/templates/auth/settings.html:467
+#: app/templates/auth/settings.html:476
 msgid "Quick Entry Button"
 msgstr "クイック入力ボタン"
 
-#: app/templates/auth/settings.html:468
+#: app/templates/auth/settings.html:477
 msgid "Show a quick fuel entry button in the navigation bar for rapid logging"
 msgstr "ナビゲーションバーにクイック給油入力ボタンを表示"
 
-#: app/templates/auth/settings.html:479
+#: app/templates/auth/settings.html:488
 msgid "Show Menu Items"
 msgstr "メニュー項目の表示"
 
-#: app/templates/auth/settings.html:480
+#: app/templates/auth/settings.html:489
 msgid "Choose which items appear in the navigation menu"
 msgstr "ナビゲーションメニューに表示する項目を選択"
 
-#: app/templates/auth/settings.html:555 app/templates/auth/settings.html:1476
+#: app/templates/auth/settings.html:564 app/templates/auth/settings.html:1485
 msgid "Save Preferences"
 msgstr "設定を保存"
 
-#: app/templates/auth/settings.html:568
+#: app/templates/auth/settings.html:577
 msgid "Import Data"
 msgstr "データインポート"
 
-#: app/templates/auth/settings.html:569
+#: app/templates/auth/settings.html:578
 msgid ""
 "Restore a May backup, or import your data from other fuel tracking "
 "applications"
 msgstr "May のバックアップを復元するか、他の燃費管理アプリからデータを取り込みます"
 
-#: app/templates/auth/settings.html:575
+#: app/templates/auth/settings.html:584
 msgid "Restore May Backup"
 msgstr "May のバックアップを復元"
 
-#: app/templates/auth/settings.html:576
+#: app/templates/auth/settings.html:585
 msgid ""
 "Restore a JSON export (.json) or full backup (.zip) from another May "
 "instance"
 msgstr "別の May から書き出した JSON (.json) または完全バックアップ (.zip) を復元します"
 
-#: app/templates/auth/settings.html:580
+#: app/templates/auth/settings.html:589
 msgid "Restore"
 msgstr "復元"
 
-#: app/templates/auth/settings.html:587
+#: app/templates/auth/settings.html:596
 msgid "Import from Hammond SQLite database (.db file)"
 msgstr "Hammond の SQLite データベース (.db ファイル) から取り込み"
 
-#: app/templates/auth/settings.html:595 app/templates/auth/settings.html:611
-#: app/templates/auth/settings.html:627 app/templates/auth/settings.html:639
+#: app/templates/auth/settings.html:604 app/templates/auth/settings.html:620
+#: app/templates/auth/settings.html:636 app/templates/auth/settings.html:648
 msgid "Import"
 msgstr "取り込み"
 
-#: app/templates/auth/settings.html:603
+#: app/templates/auth/settings.html:612
 msgid "Import from Clarkson MySQL dump (.sql file)"
 msgstr "Clarkson の MySQL ダンプ (.sql ファイル) から取り込み"
 
-#: app/templates/auth/settings.html:619
+#: app/templates/auth/settings.html:628
 msgid "Import from Fuelly CSV export (.csv file)"
 msgstr "Fuelly の CSV エクスポート (.csv ファイル) から取り込み"
 
-#: app/templates/auth/settings.html:634 app/templates/import/csv_upload.html:2
+#: app/templates/auth/settings.html:643 app/templates/import/csv_upload.html:2
 msgid "CSV Import"
 msgstr "CSVインポート"
 
-#: app/templates/auth/settings.html:635
+#: app/templates/auth/settings.html:644
 msgid ""
 "Import fuel logs, expenses, trips, or charging sessions from any CSV file"
 msgstr "任意の CSV ファイルから給油、支出、走行、充電を取り込みます"
 
-#: app/templates/auth/settings.html:646
+#: app/templates/auth/settings.html:655
 msgid "Import from Drivvo backup files"
 msgstr "Drivvo のバックアップファイルから取り込み"
 
-#: app/templates/auth/settings.html:650
+#: app/templates/auth/settings.html:659
 msgid "Soon"
 msgstr "近日対応"
 
-#: app/templates/auth/settings.html:659
+#: app/templates/auth/settings.html:668
 msgid "Export Data"
 msgstr "データエクスポート"
 
-#: app/templates/auth/settings.html:660
+#: app/templates/auth/settings.html:669
 msgid "Download your data for backup or migration"
 msgstr "バックアップまたは移行のためにデータをダウンロード"
 
-#: app/templates/auth/settings.html:666
+#: app/templates/auth/settings.html:675
 msgid "Export as CSV"
 msgstr "CSVでエクスポート"
 
-#: app/templates/auth/settings.html:667
+#: app/templates/auth/settings.html:676
 msgid ""
 "Download all your vehicles, fuel logs, and expenses as CSV files (ZIP "
 "archive)"
 msgstr "すべての車両、給油記録、経費をCSVファイル（ZIPアーカイブ）としてダウンロード"
 
-#: app/templates/auth/settings.html:671
+#: app/templates/auth/settings.html:680
 msgid "Download CSV"
 msgstr "CSVをダウンロード"
 
-#: app/templates/auth/settings.html:677
+#: app/templates/auth/settings.html:686
 msgid "Export as JSON"
 msgstr "JSONでエクスポート"
 
-#: app/templates/auth/settings.html:678
+#: app/templates/auth/settings.html:687
 msgid "Download a complete backup of your data in JSON format"
 msgstr "データの完全バックアップをJSON形式でダウンロード"
 
-#: app/templates/auth/settings.html:682
+#: app/templates/auth/settings.html:691
 msgid "Download JSON"
 msgstr "JSONをダウンロード"
 
-#: app/templates/auth/settings.html:688
+#: app/templates/auth/settings.html:697
 msgid "Full Backup"
 msgstr "フルバックアップ"
 
-#: app/templates/auth/settings.html:689
+#: app/templates/auth/settings.html:698
 msgid ""
 "Download all data and files (images, documents, attachments) as a ZIP "
 "archive"
 msgstr "すべてのデータとファイル（画像、ドキュメント、添付ファイル）をZIPアーカイブとしてダウンロード"
 
-#: app/templates/auth/settings.html:693
+#: app/templates/auth/settings.html:702
 msgid "Download ZIP"
 msgstr "ZIPをダウンロード"
 
-#: app/templates/auth/settings.html:709
+#: app/templates/auth/settings.html:718
 msgid "API Access"
 msgstr "APIアクセス"
 
-#: app/templates/auth/settings.html:710
+#: app/templates/auth/settings.html:719
 msgid "Generate API keys to connect external applications"
 msgstr "外部アプリケーションを接続するためのAPIキーを生成"
 
-#: app/templates/auth/settings.html:712
+#: app/templates/auth/settings.html:721
 msgid "View API Docs"
 msgstr "APIドキュメントを表示"
 
-#: app/templates/auth/settings.html:721
+#: app/templates/auth/settings.html:730
 msgid "Your API Key"
 msgstr "あなたのAPIキー"
 
-#: app/templates/auth/settings.html:740 app/templates/auth/settings.html:777
-#: app/templates/auth/settings.html:953 app/templates/auth/settings.html:967
+#: app/templates/auth/settings.html:749 app/templates/auth/settings.html:786
+#: app/templates/auth/settings.html:962 app/templates/auth/settings.html:976
 msgid "Copy"
 msgstr "コピー"
 
-#: app/templates/auth/settings.html:743
+#: app/templates/auth/settings.html:752
 msgid "Created"
 msgstr "作成日"
 
-#: app/templates/auth/settings.html:747
+#: app/templates/auth/settings.html:756
 msgid "Regenerate Key"
 msgstr "キーを再生成"
 
-#: app/templates/auth/settings.html:751
+#: app/templates/auth/settings.html:760
 msgid "Revoke Key"
 msgstr "キーを取り消し"
 
-#: app/templates/auth/settings.html:758
+#: app/templates/auth/settings.html:767
 msgid "API Key"
 msgstr "APIキー"
 
-#: app/templates/auth/settings.html:759
+#: app/templates/auth/settings.html:768
 msgid ""
 "Generate an API key to access May programmatically. You can use it to "
 "integrate with other applications or build your own tools."
 msgstr "MayにプログラムからアクセスするためのAPIキーを生成します。他のアプリケーションとの連携や独自ツールの構築に使用できます。"
 
-#: app/templates/auth/settings.html:762
+#: app/templates/auth/settings.html:771
 msgid "Generate API Key"
 msgstr "APIキーを生成"
 
-#: app/templates/auth/settings.html:771
+#: app/templates/auth/settings.html:780
 msgid "API Key Generated"
 msgstr "APIキーが生成されました"
 
-#: app/templates/auth/settings.html:772
+#: app/templates/auth/settings.html:781
 msgid "Copy your API key now. For security, it won't be shown in full again."
 msgstr "今すぐAPIキーをコピーしてください。セキュリティのため、全文は再表示されません。"
 
-#: app/templates/auth/settings.html:783
+#: app/templates/auth/settings.html:792
 msgid "Done"
 msgstr "完了"
 
-#: app/templates/auth/settings.html:797
+#: app/templates/auth/settings.html:806
 msgid "Connect May with external services and applications"
 msgstr "Mayを外部サービスやアプリケーションと接続"
 
-#: app/templates/auth/settings.html:811
+#: app/templates/auth/settings.html:820
 msgid "Calendar"
 msgstr "カレンダー"
 
-#: app/templates/auth/settings.html:814
+#: app/templates/auth/settings.html:823
 msgid "Subscribe to reminders in your calendar app"
 msgstr "カレンダーアプリでリマインダーを購読"
 
-#: app/templates/auth/settings.html:816 app/templates/auth/settings.html:837
+#: app/templates/auth/settings.html:825 app/templates/auth/settings.html:846
 msgid "Ready"
 msgstr "準備完了"
 
-#: app/templates/auth/settings.html:818 app/templates/auth/settings.html:839
+#: app/templates/auth/settings.html:827 app/templates/auth/settings.html:848
 msgid "Requires API key"
 msgstr "APIキーが必要です"
 
-#: app/templates/auth/settings.html:832 app/templates/auth/settings.html:1019
+#: app/templates/auth/settings.html:841 app/templates/auth/settings.html:1028
 msgid "Home Assistant"
 msgstr "Home Assistant"
 
-#: app/templates/auth/settings.html:835 app/templates/auth/settings.html:1020
+#: app/templates/auth/settings.html:844 app/templates/auth/settings.html:1029
 msgid "Create sensors and automations for your vehicles"
 msgstr "車両用のセンサーとオートメーションを作成"
 
-#: app/templates/auth/settings.html:854
+#: app/templates/auth/settings.html:863
 msgid "DVLA"
 msgstr "DVLA"
 
-#: app/templates/auth/settings.html:855 app/templates/auth/settings.html:877
-#: app/templates/auth/settings.html:899 app/templates/auth/settings.html:1492
+#: app/templates/auth/settings.html:864 app/templates/auth/settings.html:886
+#: app/templates/auth/settings.html:908 app/templates/auth/settings.html:1501
 msgid "Admin"
 msgstr "管理者"
 
-#: app/templates/auth/settings.html:858 app/templates/auth/settings.html:1115
+#: app/templates/auth/settings.html:867 app/templates/auth/settings.html:1124
 msgid "Look up UK vehicle MOT and tax status"
 msgstr "英国車両のMOTおよび税金ステータスを検索"
 
-#: app/templates/auth/settings.html:860 app/templates/auth/settings.html:882
+#: app/templates/auth/settings.html:869 app/templates/auth/settings.html:891
 msgid "Configured"
 msgstr "設定済み"
 
-#: app/templates/auth/settings.html:862 app/templates/auth/settings.html:884
+#: app/templates/auth/settings.html:871 app/templates/auth/settings.html:893
 msgid "Not configured"
 msgstr "未設定"
 
-#: app/templates/auth/settings.html:876
+#: app/templates/auth/settings.html:885
 msgid "Tessie"
 msgstr "Tessie"
 
-#: app/templates/auth/settings.html:880
+#: app/templates/auth/settings.html:889
 msgid "Sync Tesla vehicle odometer and battery"
 msgstr "Tesla車両のオドメーターとバッテリーを同期"
 
-#: app/templates/auth/settings.html:898 app/templates/auth/settings.html:1265
+#: app/templates/auth/settings.html:907 app/templates/auth/settings.html:1274
 msgid "UK Fuel Prices"
 msgstr "英国の燃料価格"
 
-#: app/templates/auth/settings.html:902 app/templates/auth/settings.html:1266
+#: app/templates/auth/settings.html:911 app/templates/auth/settings.html:1275
 msgid "Pull live forecourt prices for saved stations"
 msgstr "保存したスタンドの最新価格を取得します"
 
-#: app/templates/auth/settings.html:904
+#: app/templates/auth/settings.html:913
 msgid "Enabled"
 msgstr "有効"
 
-#: app/templates/auth/settings.html:906
+#: app/templates/auth/settings.html:915
 msgid "Disabled"
 msgstr "無効"
 
-#: app/templates/auth/settings.html:920 app/templates/auth/settings.html:1006
-#: app/templates/auth/settings.html:1101 app/templates/auth/settings.html:1172
-#: app/templates/auth/settings.html:1252
+#: app/templates/auth/settings.html:929 app/templates/auth/settings.html:1015
+#: app/templates/auth/settings.html:1110 app/templates/auth/settings.html:1181
+#: app/templates/auth/settings.html:1261
 msgid "Back to Integrations"
 msgstr "連携に戻る"
 
-#: app/templates/auth/settings.html:933
+#: app/templates/auth/settings.html:942
 msgid "Calendar Subscription"
 msgstr "カレンダー購読"
 
-#: app/templates/auth/settings.html:934
+#: app/templates/auth/settings.html:943
 msgid "Subscribe to your reminders in any calendar app"
 msgstr "任意のカレンダーアプリでリマインダーを購読"
 
-#: app/templates/auth/settings.html:942
+#: app/templates/auth/settings.html:951
 msgid ""
 "Add this calendar to Apple Calendar, Google Calendar, Outlook, or any other "
 "calendar app that supports iCal subscriptions."
 msgstr ""
 "このカレンダーをAppleカレンダー、Googleカレンダー、Outlook、またはiCal購読をサポートする他のカレンダーアプリに追加できます。"
 
-#: app/templates/auth/settings.html:945
+#: app/templates/auth/settings.html:954
 msgid "Webcal URL"
 msgstr "Webcal URL"
 
-#: app/templates/auth/settings.html:946
+#: app/templates/auth/settings.html:955
 msgid "Use this URL for most calendar apps (Apple Calendar, Outlook, etc.)"
 msgstr "ほとんどのカレンダーアプリ（Appleカレンダー、Outlookなど）にはこのURLを使用してください"
 
-#: app/templates/auth/settings.html:959
+#: app/templates/auth/settings.html:968
 msgid "HTTPS URL"
 msgstr "HTTPS URL"
 
-#: app/templates/auth/settings.html:960
+#: app/templates/auth/settings.html:969
 msgid "Use this URL for Google Calendar"
 msgstr "GoogleカレンダーにはこのURLを使用してください"
 
-#: app/templates/auth/settings.html:973
+#: app/templates/auth/settings.html:982
 msgid "What's included in the calendar?"
 msgstr "カレンダーに含まれる内容"
 
-#: app/templates/auth/settings.html:975
+#: app/templates/auth/settings.html:984
 msgid "Maintenance schedules"
 msgstr "メンテナンススケジュール"
 
-#: app/templates/auth/settings.html:976
+#: app/templates/auth/settings.html:985
 msgid "Recurring expense due dates"
 msgstr "定期経費の支払期日"
 
-#: app/templates/auth/settings.html:977
+#: app/templates/auth/settings.html:986
 msgid "Document expiry dates"
 msgstr "ドキュメントの有効期限"
 
-#: app/templates/auth/settings.html:978
+#: app/templates/auth/settings.html:987
 msgid "Custom reminders"
 msgstr "カスタムリマインダー"
 
-#: app/templates/auth/settings.html:987 app/templates/auth/settings.html:1081
+#: app/templates/auth/settings.html:996 app/templates/auth/settings.html:1090
 msgid "API Key Required"
 msgstr "APIキーが必要です"
 
-#: app/templates/auth/settings.html:988
+#: app/templates/auth/settings.html:997
 msgid "Generate an API key in the API section to enable calendar integration."
 msgstr "カレンダー連携を有効にするには、APIセクションでAPIキーを生成してください。"
 
-#: app/templates/auth/settings.html:991 app/templates/auth/settings.html:1085
+#: app/templates/auth/settings.html:1000 app/templates/auth/settings.html:1094
 msgid "Go to API Settings"
 msgstr "API設定へ移動"
 
-#: app/templates/auth/settings.html:1028
+#: app/templates/auth/settings.html:1037
 msgid ""
 "Add the following configuration to your Home Assistant configuration.yaml to"
 " create vehicle sensors."
 msgstr "車両センサーを作成するには、以下の設定をHome Assistantのconfiguration.yamlに追加してください。"
 
-#: app/templates/auth/settings.html:1031
+#: app/templates/auth/settings.html:1040
 msgid "REST Sensor Configuration"
 msgstr "RESTセンサー設定"
 
-#: app/templates/auth/settings.html:1047
+#: app/templates/auth/settings.html:1056
 msgid "Copy configuration"
 msgstr "設定をコピー"
 
-#: app/templates/auth/settings.html:1051
+#: app/templates/auth/settings.html:1060
 msgid "Available API Endpoints"
 msgstr "利用可能なAPIエンドポイント"
 
-#: app/templates/auth/settings.html:1055
+#: app/templates/auth/settings.html:1064
 msgid "API health check"
 msgstr "APIヘルスチェック"
 
-#: app/templates/auth/settings.html:1059
+#: app/templates/auth/settings.html:1068
 msgid "List all vehicles"
 msgstr "全車両の一覧"
 
-#: app/templates/auth/settings.html:1063
+#: app/templates/auth/settings.html:1072
 msgid "Vehicle statistics"
 msgstr "車両統計"
 
-#: app/templates/auth/settings.html:1067
+#: app/templates/auth/settings.html:1076
 msgid "Upcoming reminders"
 msgstr "今後のリマインダー"
 
-#: app/templates/auth/settings.html:1071
+#: app/templates/auth/settings.html:1080
 msgid "Combined summary"
 msgstr "統合サマリー"
 
-#: app/templates/auth/settings.html:1082
+#: app/templates/auth/settings.html:1091
 msgid ""
 "Generate an API key in the API section to enable Home Assistant integration."
 msgstr "Home Assistant連携を有効にするには、APIセクションでAPIキーを生成してください。"
 
-#: app/templates/auth/settings.html:1114
+#: app/templates/auth/settings.html:1123
 msgid "DVLA Vehicle Lookup"
 msgstr "DVLA車両検索"
 
-#: app/templates/auth/settings.html:1123
+#: app/templates/auth/settings.html:1132
 msgid ""
 "The DVLA Vehicle Enquiry Service allows you to look up MOT status, tax "
 "status, and vehicle details for UK registered vehicles. This enables "
@@ -2411,52 +2495,52 @@ msgid ""
 msgstr ""
 "DVLA車両照会サービスを使用すると、英国登録車両のMOTステータス、税金ステータス、車両詳細を検索できます。新規車両追加時に車両情報を自動入力できるようになります。"
 
-#: app/templates/auth/settings.html:1127
+#: app/templates/auth/settings.html:1136
 msgid "How to get an API key"
 msgstr "APIキーの取得方法"
 
-#: app/templates/auth/settings.html:1129
+#: app/templates/auth/settings.html:1138
 msgid "Visit the"
 msgstr "アクセス:"
 
-#: app/templates/auth/settings.html:1129
+#: app/templates/auth/settings.html:1138
 msgid "DVLA Developer Portal"
 msgstr "DVLA開発者ポータル"
 
-#: app/templates/auth/settings.html:1130
+#: app/templates/auth/settings.html:1139
 msgid "Register for a free account"
 msgstr "無料アカウントを登録"
 
-#: app/templates/auth/settings.html:1131
+#: app/templates/auth/settings.html:1140
 msgid "Subscribe to the Vehicle Enquiry Service API"
 msgstr "Vehicle Enquiry Service APIに登録"
 
-#: app/templates/auth/settings.html:1132
+#: app/templates/auth/settings.html:1141
 msgid "Copy your API key and paste it below"
 msgstr "APIキーをコピーして以下に貼り付けてください"
 
-#: app/templates/auth/settings.html:1139
+#: app/templates/auth/settings.html:1148
 msgid "DVLA API Key"
 msgstr "DVLA APIキー"
 
-#: app/templates/auth/settings.html:1147 app/templates/auth/settings.html:1227
-#: app/templates/auth/settings.html:1577
+#: app/templates/auth/settings.html:1156 app/templates/auth/settings.html:1236
+#: app/templates/auth/settings.html:1586
 msgid "Test"
 msgstr "テスト"
 
-#: app/templates/auth/settings.html:1156
+#: app/templates/auth/settings.html:1165
 msgid "Save DVLA Settings"
 msgstr "DVLA設定を保存"
 
-#: app/templates/auth/settings.html:1185 app/templates/vehicles/form.html:269
+#: app/templates/auth/settings.html:1194 app/templates/vehicles/form.html:278
 msgid "Tessie Integration"
 msgstr "Tessie連携"
 
-#: app/templates/auth/settings.html:1186
+#: app/templates/auth/settings.html:1195
 msgid "Sync Tesla vehicle data via Tessie"
 msgstr "Tessie経由でTesla車両データを同期"
 
-#: app/templates/auth/settings.html:1194
+#: app/templates/auth/settings.html:1203
 msgid ""
 "Tessie allows you to automatically sync odometer readings, battery level, "
 "and range from your Tesla vehicles. When enabled for a vehicle, odometer "
@@ -2464,51 +2548,51 @@ msgid ""
 msgstr ""
 "Tessieを使用すると、Tesla車両のオドメーター、バッテリー残量、航続距離を自動的に同期できます。車両でTessieを有効にすると、オドメーターの追跡が自動になります。"
 
-#: app/templates/auth/settings.html:1198
+#: app/templates/auth/settings.html:1207
 msgid "Important"
 msgstr "重要"
 
-#: app/templates/auth/settings.html:1200
+#: app/templates/auth/settings.html:1209
 msgid "Tessie subscription required ($6.99/month per vehicle)"
 msgstr "Tessieのサブスクリプションが必要です（車両1台あたり月額$6.99）"
 
-#: app/templates/auth/settings.html:1201
+#: app/templates/auth/settings.html:1210
 msgid "Your Tesla must be connected to Tessie"
 msgstr "TeslaがTessieに接続されている必要があります"
 
-#: app/templates/auth/settings.html:1202
+#: app/templates/auth/settings.html:1211
 msgid "When enabled, manual odometer entry is disabled"
 msgstr "有効にすると、手動のオドメーター入力は無効になります"
 
-#: app/templates/auth/settings.html:1207
+#: app/templates/auth/settings.html:1216
 msgid "How to get an API token"
 msgstr "APIトークンの取得方法"
 
-#: app/templates/auth/settings.html:1209
+#: app/templates/auth/settings.html:1218
 msgid "Sign up at"
 msgstr "登録先:"
 
-#: app/templates/auth/settings.html:1210
+#: app/templates/auth/settings.html:1219
 msgid "Connect your Tesla account"
 msgstr "Teslaアカウントを接続"
 
-#: app/templates/auth/settings.html:1211
+#: app/templates/auth/settings.html:1220
 msgid "Go to Settings and create an API token"
 msgstr "設定に移動してAPIトークンを作成"
 
-#: app/templates/auth/settings.html:1212
+#: app/templates/auth/settings.html:1221
 msgid "Paste the token below"
 msgstr "以下にトークンを貼り付けてください"
 
-#: app/templates/auth/settings.html:1219
+#: app/templates/auth/settings.html:1228
 msgid "Tessie API Token"
 msgstr "Tessie APIトークン"
 
-#: app/templates/auth/settings.html:1236
+#: app/templates/auth/settings.html:1245
 msgid "Save Tessie Settings"
 msgstr "Tessie設定を保存"
 
-#: app/templates/auth/settings.html:1274
+#: app/templates/auth/settings.html:1283
 msgid ""
 "UK retailers publish forecourt prices under the government fuel price "
 "transparency scheme. May matches your saved stations to those forecourts by "
@@ -2518,272 +2602,272 @@ msgstr ""
 "英国の販売事業者は、政府の燃料価格透明化制度に基づいてスタンドの価格を公開しています。May "
 "は保存済みのスタンドを郵便番号でこれらのスタンドと照合して価格を記録するため、価格履歴と最安燃料が手入力なしで最新に保たれます。"
 
-#: app/templates/auth/settings.html:1278
+#: app/templates/auth/settings.html:1287
 msgid "Before you start"
 msgstr "始める前に"
 
-#: app/templates/auth/settings.html:1280
+#: app/templates/auth/settings.html:1289
 msgid "No API key is needed; the feeds are open data"
 msgstr "API キーは不要です。フィードはオープンデータです"
 
-#: app/templates/auth/settings.html:1281
+#: app/templates/auth/settings.html:1290
 msgid "Give each station a postcode so it can be matched to a forecourt"
 msgstr "スタンドを照合できるよう、各スタンドに郵便番号を設定してください"
 
-#: app/templates/auth/settings.html:1282
+#: app/templates/auth/settings.html:1291
 msgid ""
 "Prices refresh automatically every few hours, or on demand from the Fuel "
 "Stations page"
 msgstr "価格は数時間ごとに自動更新されるほか、給油スタンドのページから手動でも更新できます"
 
-#: app/templates/auth/settings.html:1283
+#: app/templates/auth/settings.html:1292
 msgid "See the"
 msgstr "参照:"
 
-#: app/templates/auth/settings.html:1283
+#: app/templates/auth/settings.html:1292
 msgid "gov.uk guidance"
 msgstr "gov.uk のガイダンス"
 
-#: app/templates/auth/settings.html:1283
+#: app/templates/auth/settings.html:1292
 msgid "for the current retailer list"
 msgstr "最新の販売事業者一覧はこちら"
 
-#: app/templates/auth/settings.html:1293
+#: app/templates/auth/settings.html:1302
 msgid "Enable UK fuel price updates"
 msgstr "英国の燃料価格の更新を有効にする"
 
-#: app/templates/auth/settings.html:1297
+#: app/templates/auth/settings.html:1306
 msgid "Retailer feeds (optional)"
 msgstr "販売事業者のフィード (任意)"
 
-#: app/templates/auth/settings.html:1302
+#: app/templates/auth/settings.html:1311
 #, python-format
 msgid ""
 "One feed per line. Leave blank to use the built-in list (%(count)s "
 "retailers)."
 msgstr "1 行につき 1 件。空欄のままにすると内蔵の一覧 (%(count)s 社) を使用します。"
 
-#: app/templates/auth/settings.html:1309
+#: app/templates/auth/settings.html:1318
 msgid "Save UK Fuel Price Settings"
 msgstr "英国の燃料価格設定を保存"
 
-#: app/templates/auth/settings.html:1328
+#: app/templates/auth/settings.html:1337
 msgid "Notification Preferences"
 msgstr "通知設定"
 
-#: app/templates/auth/settings.html:1329
+#: app/templates/auth/settings.html:1338
 msgid "Configure how you receive reminders about your vehicles"
 msgstr "車両に関するリマインダーの受信方法を設定"
 
-#: app/templates/auth/settings.html:1336
+#: app/templates/auth/settings.html:1345
 msgid "Enable Reminders"
 msgstr "リマインダーを有効にする"
 
-#: app/templates/auth/settings.html:1337
+#: app/templates/auth/settings.html:1346
 msgid "Receive notifications for upcoming reminders"
 msgstr "今後のリマインダーの通知を受け取る"
 
-#: app/templates/auth/settings.html:1349
+#: app/templates/auth/settings.html:1358
 msgid "Default Reminder Lead Time"
 msgstr "デフォルトのリマインダー事前通知期間"
 
-#: app/templates/auth/settings.html:1350
+#: app/templates/auth/settings.html:1359
 msgid "How many days before the due date should you be notified?"
 msgstr "期日の何日前に通知を受け取りますか？"
 
-#: app/templates/auth/settings.html:1353 app/templates/reminders/form.html:108
+#: app/templates/auth/settings.html:1362 app/templates/reminders/form.html:108
 msgid "On the due date"
 msgstr "期日当日"
 
-#: app/templates/auth/settings.html:1354 app/templates/reminders/form.html:109
+#: app/templates/auth/settings.html:1363 app/templates/reminders/form.html:109
 msgid "1 day before"
 msgstr "1日前"
 
-#: app/templates/auth/settings.html:1355 app/templates/reminders/form.html:110
+#: app/templates/auth/settings.html:1364 app/templates/reminders/form.html:110
 msgid "3 days before"
 msgstr "3日前"
 
-#: app/templates/auth/settings.html:1356 app/templates/reminders/form.html:111
+#: app/templates/auth/settings.html:1365 app/templates/reminders/form.html:111
 msgid "1 week before"
 msgstr "1週間前"
 
-#: app/templates/auth/settings.html:1357 app/templates/reminders/form.html:112
+#: app/templates/auth/settings.html:1366 app/templates/reminders/form.html:112
 msgid "2 weeks before"
 msgstr "2週間前"
 
-#: app/templates/auth/settings.html:1358 app/templates/reminders/form.html:113
+#: app/templates/auth/settings.html:1367 app/templates/reminders/form.html:113
 msgid "1 month before"
 msgstr "1ヶ月前"
 
-#: app/templates/auth/settings.html:1364
+#: app/templates/auth/settings.html:1373
 msgid "Notification Method"
 msgstr "通知方法"
 
-#: app/templates/auth/settings.html:1365
+#: app/templates/auth/settings.html:1374
 msgid "Choose how you want to receive notifications"
 msgstr "通知の受信方法を選択してください"
 
-#: app/templates/auth/settings.html:1370 app/templates/auth/settings.html:1374
+#: app/templates/auth/settings.html:1379 app/templates/auth/settings.html:1383
 msgid "not configured"
 msgstr "未設定"
 
-#: app/templates/auth/settings.html:1372
+#: app/templates/auth/settings.html:1381
 msgid "ntfy (Push Notifications)"
 msgstr "ntfy（プッシュ通知）"
 
-#: app/templates/auth/settings.html:1374 app/templates/auth/settings.html:1590
+#: app/templates/auth/settings.html:1383 app/templates/auth/settings.html:1599
 msgid "Pushover"
 msgstr "Pushover"
 
-#: app/templates/auth/settings.html:1376
+#: app/templates/auth/settings.html:1385
 msgid "Webhook (HTTP POST)"
 msgstr "Webhook (HTTP POST)"
 
-#: app/templates/auth/settings.html:1386
+#: app/templates/auth/settings.html:1395
 msgid "Notifications will be sent to"
 msgstr "通知の送信先:"
 
-#: app/templates/auth/settings.html:1393
+#: app/templates/auth/settings.html:1402
 msgid "Email not configured. Ask an administrator to configure SMTP settings."
 msgstr "メールが設定されていません。管理者にSMTP設定を依頼してください。"
 
-#: app/templates/auth/settings.html:1402
+#: app/templates/auth/settings.html:1411
 msgid "is a simple pub-sub notification service. Enter your topic below."
 msgstr "はシンプルなpub-sub通知サービスです。以下にトピックを入力してください。"
 
-#: app/templates/auth/settings.html:1405
+#: app/templates/auth/settings.html:1414
 msgid "ntfy Topic or Server URL"
 msgstr "ntfyトピックまたはサーバーURL"
 
-#: app/templates/auth/settings.html:1410
+#: app/templates/auth/settings.html:1419
 msgid ""
 "For ntfy.sh, just enter your topic name. For self-hosted, enter the full "
 "URL."
 msgstr "ntfy.shの場合はトピック名のみを入力してください。セルフホストの場合は完全なURLを入力してください。"
 
-#: app/templates/auth/settings.html:1413
+#: app/templates/auth/settings.html:1422
 msgid "ntfy Access Token"
 msgstr "ntfyアクセストークン"
 
-#: app/templates/auth/settings.html:1415
+#: app/templates/auth/settings.html:1424
 msgid "Token saved — enter a new one to replace it"
 msgstr "トークンは保存済みです — 変更する場合は新しいトークンを入力してください"
 
-#: app/templates/auth/settings.html:1418
+#: app/templates/auth/settings.html:1427
 msgid ""
 "Optional — only needed for self-hosted ntfy servers with authentication "
 "enabled. Leave blank to keep the saved token."
 msgstr ""
 "任意項目です。認証を有効にしたセルフホストのntfyサーバーを利用する場合のみ必要です。保存済みのトークンを維持する場合は空欄のままにしてください。"
 
-#: app/templates/auth/settings.html:1423
+#: app/templates/auth/settings.html:1432
 msgid "Remove the saved token"
 msgstr "保存済みのトークンを削除"
 
-#: app/templates/auth/settings.html:1433
+#: app/templates/auth/settings.html:1442
 msgid "sends notifications to your devices. Enter your User Key below."
 msgstr "はデバイスに通知を送信します。以下にUser Keyを入力してください。"
 
-#: app/templates/auth/settings.html:1436
+#: app/templates/auth/settings.html:1445
 msgid "Pushover User Key"
 msgstr "Pushover User Key"
 
-#: app/templates/auth/settings.html:1441
+#: app/templates/auth/settings.html:1450
 msgid "Find your User Key on your Pushover dashboard."
 msgstr "Pushoverダッシュボードでお使いのUser Keyを確認してください。"
 
-#: app/templates/auth/settings.html:1448
+#: app/templates/auth/settings.html:1457
 msgid "Notifications will be sent as JSON POST requests to your webhook URL."
 msgstr "通知はJSON POSTリクエストとしてWebhook URLに送信されます。"
 
-#: app/templates/auth/settings.html:1451
+#: app/templates/auth/settings.html:1460
 msgid "Webhook URL"
 msgstr "Webhook URL"
 
-#: app/templates/auth/settings.html:1456
+#: app/templates/auth/settings.html:1465
 #, python-brace-format
 msgid "JSON payload: {title, message, reminder_id, vehicle_name, due_date}"
 msgstr "JSONペイロード: {title, message, reminder_id, vehicle_name, due_date}"
 
-#: app/templates/auth/settings.html:1467
+#: app/templates/auth/settings.html:1476
 msgid "Send Test Notification"
 msgstr "テスト通知を送信"
 
-#: app/templates/auth/settings.html:1491
+#: app/templates/auth/settings.html:1500
 msgid "Notification Services"
 msgstr "通知サービス"
 
-#: app/templates/auth/settings.html:1494
+#: app/templates/auth/settings.html:1503
 msgid "Configure notification services available to all users"
 msgstr "全ユーザーが利用可能な通知サービスを設定"
 
-#: app/templates/auth/settings.html:1507
+#: app/templates/auth/settings.html:1516
 msgid "Email (SMTP)"
 msgstr "メール (SMTP)"
 
-#: app/templates/auth/settings.html:1519
+#: app/templates/auth/settings.html:1528
 msgid "SMTP Host"
 msgstr "SMTPホスト"
 
-#: app/templates/auth/settings.html:1526
+#: app/templates/auth/settings.html:1535
 msgid "SMTP Port"
 msgstr "SMTPポート"
 
-#: app/templates/auth/settings.html:1533
+#: app/templates/auth/settings.html:1542
 msgid "SMTP Username"
 msgstr "SMTPユーザー名"
 
-#: app/templates/auth/settings.html:1540
+#: app/templates/auth/settings.html:1549
 msgid "SMTP Password"
 msgstr "SMTPパスワード"
 
-#: app/templates/auth/settings.html:1547
+#: app/templates/auth/settings.html:1556
 msgid "Sender Email"
 msgstr "送信元メール"
 
-#: app/templates/auth/settings.html:1554
+#: app/templates/auth/settings.html:1563
 msgid "Sender Name"
 msgstr "送信者名"
 
-#: app/templates/auth/settings.html:1567
+#: app/templates/auth/settings.html:1576
 msgid "Use TLS"
 msgstr "TLSを使用"
 
-#: app/templates/auth/settings.html:1573
+#: app/templates/auth/settings.html:1582
 msgid "Use SSL"
 msgstr "SSLを使用"
 
-#: app/templates/auth/settings.html:1601
+#: app/templates/auth/settings.html:1610
 msgid "sends push notifications to iOS and Android devices."
 msgstr "はiOSおよびAndroidデバイスにプッシュ通知を送信します。"
 
-#: app/templates/auth/settings.html:1604
+#: app/templates/auth/settings.html:1613
 msgid "Application Token"
 msgstr "アプリケーショントークン"
 
-#: app/templates/auth/settings.html:1609
+#: app/templates/auth/settings.html:1618
 msgid "Create an application at pushover.net to get your token"
 msgstr "pushover.netでアプリケーションを作成してトークンを取得してください"
 
-#: app/templates/auth/settings.html:1619
+#: app/templates/auth/settings.html:1628
 msgid "ntfy"
 msgstr "ntfy"
 
-#: app/templates/auth/settings.html:1620 app/templates/auth/settings.html:1635
+#: app/templates/auth/settings.html:1629 app/templates/auth/settings.html:1644
 msgid "Always available"
 msgstr "常に利用可能"
 
-#: app/templates/auth/settings.html:1624
+#: app/templates/auth/settings.html:1633
 msgid ""
 "is a free, open-source notification service that requires no admin "
 "configuration. Users can set their own topic."
 msgstr "は無料のオープンソース通知サービスで、管理者の設定は不要です。ユーザーが独自のトピックを設定できます。"
 
-#: app/templates/auth/settings.html:1634
+#: app/templates/auth/settings.html:1643
 msgid "Webhook"
 msgstr "Webhook"
 
-#: app/templates/auth/settings.html:1638
+#: app/templates/auth/settings.html:1647
 msgid ""
 "Webhooks allow users to integrate with any service that accepts HTTP POST "
 "requests (Home Assistant, Discord, Slack, etc.)"
@@ -2791,147 +2875,147 @@ msgstr ""
 "Webhookを使用すると、HTTP POSTリクエストを受け付けるサービス（Home "
 "Assistant、Discord、Slackなど）と連携できます"
 
-#: app/templates/auth/settings.html:1645
+#: app/templates/auth/settings.html:1654
 msgid "Save Notification Settings"
 msgstr "通知設定を保存"
 
-#: app/templates/auth/settings.html:1656
+#: app/templates/auth/settings.html:1665
 msgid "Manage Reminders"
 msgstr "リマインダー管理"
 
-#: app/templates/auth/settings.html:1657
+#: app/templates/auth/settings.html:1666
 msgid "View and manage your upcoming reminders"
 msgstr "今後のリマインダーを表示・管理"
 
-#: app/templates/auth/settings.html:1662
+#: app/templates/auth/settings.html:1671
 msgid "View all reminders"
 msgstr "すべてのリマインダーを表示"
 
-#: app/templates/auth/settings.html:1679
+#: app/templates/auth/settings.html:1688
 msgid "Application Branding"
 msgstr "アプリケーションブランディング"
 
-#: app/templates/auth/settings.html:1680
+#: app/templates/auth/settings.html:1689
 msgid "Customize how May appears to all users"
 msgstr "全ユーザーへのMayの表示をカスタマイズ"
 
-#: app/templates/auth/settings.html:1686
+#: app/templates/auth/settings.html:1695
 msgid "Application Name"
 msgstr "アプリケーション名"
 
-#: app/templates/auth/settings.html:1694
+#: app/templates/auth/settings.html:1703
 msgid "Tagline"
 msgstr "タグライン"
 
-#: app/templates/auth/settings.html:1702
+#: app/templates/auth/settings.html:1711
 msgid "Primary Color"
 msgstr "メインカラー"
 
-#: app/templates/auth/settings.html:1714
+#: app/templates/auth/settings.html:1723
 msgid "Logo"
 msgstr "ロゴ"
 
-#: app/templates/auth/settings.html:1718 app/templates/auth/settings.html:1719
+#: app/templates/auth/settings.html:1727 app/templates/auth/settings.html:1728
 msgid "Current logo"
 msgstr "現在のロゴ"
 
-#: app/templates/auth/settings.html:1731
+#: app/templates/auth/settings.html:1740
 msgid "Remove Logo"
 msgstr "ロゴを削除"
 
-#: app/templates/auth/settings.html:1736
+#: app/templates/auth/settings.html:1745
 msgid "Are you sure you want to remove the logo?"
 msgstr "ロゴを削除してもよろしいですか？"
 
-#: app/templates/auth/settings.html:1759
+#: app/templates/auth/settings.html:1768
 msgid "Save Branding"
 msgstr "ブランディングを保存"
 
-#: app/templates/auth/settings.html:1772
+#: app/templates/auth/settings.html:1781
 msgid "Version information and updates"
 msgstr "バージョン情報とアップデート"
 
-#: app/templates/auth/settings.html:1779
+#: app/templates/auth/settings.html:1788
 msgid "Current Version"
 msgstr "現在のバージョン"
 
-#: app/templates/auth/settings.html:1802
+#: app/templates/auth/settings.html:1811
 msgid "Check for Updates"
 msgstr "アップデートを確認"
 
-#: app/templates/auth/settings.html:1803
+#: app/templates/auth/settings.html:1812
 msgid "Click to check for newer versions"
 msgstr "クリックして新しいバージョンを確認"
 
-#: app/templates/auth/settings.html:1810
+#: app/templates/auth/settings.html:1819
 msgid "Check Now"
 msgstr "今すぐ確認"
 
-#: app/templates/auth/settings.html:1821
+#: app/templates/auth/settings.html:1830
 msgid "Update Available"
 msgstr "アップデートあり"
 
-#: app/templates/auth/settings.html:1823
+#: app/templates/auth/settings.html:1832
 msgid "Version"
 msgstr "バージョン"
 
-#: app/templates/auth/settings.html:1823
+#: app/templates/auth/settings.html:1832
 msgid "is available"
 msgstr "が利用可能です"
 
-#: app/templates/auth/settings.html:1827
+#: app/templates/auth/settings.html:1836
 msgid "View Release Notes"
 msgstr "リリースノートを表示"
 
-#: app/templates/auth/settings.html:1834
+#: app/templates/auth/settings.html:1843
 msgid "To update (Docker):"
 msgstr "更新方法（Docker）："
 
-#: app/templates/auth/settings.html:1837
+#: app/templates/auth/settings.html:1846
 msgid "Or use Watchtower for automatic updates."
 msgstr "または Watchtower を使用して自動更新できます。"
 
-#: app/templates/auth/settings.html:1849
+#: app/templates/auth/settings.html:1858
 msgid "You are running the latest version"
 msgstr "最新バージョンを使用しています"
 
-#: app/templates/auth/settings.html:1856
+#: app/templates/auth/settings.html:1865
 msgid "Resources"
 msgstr "リソース"
 
-#: app/templates/auth/settings.html:1863
+#: app/templates/auth/settings.html:1872
 msgid "Source Code"
 msgstr "ソースコード"
 
-#: app/templates/auth/settings.html:1870
+#: app/templates/auth/settings.html:1879
 msgid "Report an Issue"
 msgstr "問題を報告"
 
-#: app/templates/auth/settings.html:1877
+#: app/templates/auth/settings.html:1886
 msgid "All Releases"
 msgstr "全リリース"
 
-#: app/templates/auth/settings.html:1884
+#: app/templates/auth/settings.html:1893
 msgid "Documentation"
 msgstr "ドキュメント"
 
-#: app/templates/auth/settings.html:2292
+#: app/templates/auth/settings.html:2302
 msgid "Checking..."
 msgstr "確認中..."
 
-#: app/templates/auth/settings.html:2304
+#: app/templates/auth/settings.html:2321
 msgid "A newer version is available"
 msgstr "新しいバージョンが利用可能です"
 
-#: app/templates/auth/settings.html:2309
+#: app/templates/auth/settings.html:2326
 msgid "Last checked just now"
 msgstr "たった今確認しました"
 
-#: app/templates/auth/settings.html:2313
+#: app/templates/auth/settings.html:2330
 msgid "Could not check for updates"
 msgstr "アップデートを確認できませんでした"
 
-#: app/templates/auth/settings.html:2318
+#: app/templates/auth/settings.html:2335
 msgid "Error checking for updates"
 msgstr "アップデート確認中にエラーが発生しました"
 
@@ -3025,6 +3109,7 @@ msgid "Total Energy"
 msgstr "総電力量"
 
 #: app/templates/charging/index.html:40 app/templates/documents/index.html:25
+#: app/templates/maintenance/history.html:8
 #: app/templates/reminders/index.html:29 app/templates/trips/index.html:55
 msgid "All Vehicles"
 msgstr "全車両"
@@ -3084,7 +3169,7 @@ msgstr "例: 自動車保険証券 2024"
 #: app/templates/documents/form.html:56 app/templates/maintenance/form.html:54
 #: app/templates/reminders/form.html:53 app/templates/reminders/index.html:36
 #: app/templates/tires/form.html:43 app/templates/vehicles/form.html:26
-#: app/templates/vehicles/view.html:89
+#: app/templates/vehicles/view.html:91
 msgid "Type"
 msgstr "種類"
 
@@ -3104,7 +3189,7 @@ msgstr "発行日"
 msgid "Expiry Date"
 msgstr "有効期限"
 
-#: app/templates/documents/form.html:94 app/templates/recurring/form.html:99
+#: app/templates/documents/form.html:94 app/templates/recurring/form.html:115
 msgid "Optional notes"
 msgstr "任意のメモ"
 
@@ -3116,7 +3201,7 @@ msgstr "有効期限前にリマインドする"
 msgid "Days before to remind"
 msgstr "何日前にリマインドするか"
 
-#: app/templates/documents/form.html:126 app/templates/vehicles/view.html:304
+#: app/templates/documents/form.html:126 app/templates/vehicles/view.html:313
 msgid "Upload"
 msgstr "アップロード"
 
@@ -3163,7 +3248,7 @@ msgstr "経費を編集"
 
 #: app/templates/expenses/form.html:2 app/templates/expenses/form.html:11
 #: app/templates/expenses/form.html:150 app/templates/expenses/index.html:16
-#: app/templates/expenses/index.html:125 app/templates/vehicles/view.html:263
+#: app/templates/expenses/index.html:125 app/templates/vehicles/view.html:272
 msgid "Add Expense"
 msgstr "経費を追加"
 
@@ -3189,11 +3274,11 @@ msgstr "カテゴリー"
 msgid "e.g., Oil change, Annual service"
 msgstr "例: オイル交換、年次点検"
 
-#: app/templates/expenses/form.html:83
+#: app/templates/expenses/form.html:83 app/templates/recurring/form.html:80
 msgid "Vendor / Service Provider"
 msgstr "業者/サービス提供者"
 
-#: app/templates/expenses/form.html:86
+#: app/templates/expenses/form.html:86 app/templates/recurring/form.html:83
 msgid "e.g., Local Garage"
 msgstr "例: 地元の整備工場"
 
@@ -3213,7 +3298,7 @@ msgstr "任意 — 支出の日付でメンテナンス予定を実施済みと�
 msgid "Receipts / Attachments"
 msgstr "領収書 / 添付ファイル"
 
-#: app/templates/expenses/form.html:125 app/templates/fuel/form.html:181
+#: app/templates/expenses/form.html:125 app/templates/fuel/form.html:184
 msgid "Delete this attachment?"
 msgstr "この添付ファイルを削除しますか？"
 
@@ -3225,7 +3310,7 @@ msgstr "複数のファイルを選択できます"
 msgid "Track maintenance, repairs, insurance, and other costs"
 msgstr "整備、修理、保険、その他の費用を記録します"
 
-#: app/templates/expenses/index.html:68 app/templates/vehicles/view.html:1030
+#: app/templates/expenses/index.html:68 app/templates/vehicles/view.html:1039
 msgid "Delete this expense?"
 msgstr "この経費を削除しますか？"
 
@@ -3254,7 +3339,7 @@ msgid "Spend by Vendor"
 msgstr "業者別の支出"
 
 #: app/templates/expenses/index.html:142
-#: app/templates/maintenance/index.html:151
+#: app/templates/maintenance/index.html:152
 msgid "Vendor"
 msgstr "業者"
 
@@ -3269,8 +3354,8 @@ msgid "Edit Fuel Log"
 msgstr "給油記録を編集"
 
 #: app/templates/fuel/form.html:2 app/templates/fuel/form.html:11
-#: app/templates/fuel/form.html:205 app/templates/fuel/index.html:16
-#: app/templates/fuel/index.html:116 app/templates/vehicles/view.html:233
+#: app/templates/fuel/form.html:208 app/templates/fuel/index.html:16
+#: app/templates/fuel/index.html:116 app/templates/vehicles/view.html:242
 msgid "Add Fuel Log"
 msgstr "給油記録を追加"
 
@@ -3278,91 +3363,97 @@ msgstr "給油記録を追加"
 msgid "Back to fuel logs"
 msgstr "給油記録に戻る"
 
-#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:213
+#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:216
 #: app/templates/trips/form.html:56 app/templates/trips/form.html:183
 msgid "Last engine hours"
 msgstr "前回の稼働時間"
 
-#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:212
+#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:215
 #: app/templates/trips/form.html:56 app/templates/trips/form.html:182
 msgid "Last odometer"
 msgstr "前回の走行距離計"
 
-#: app/templates/fuel/form.html:56 app/templates/fuel/quick.html:140
+#: app/templates/fuel/form.html:56 app/templates/fuel/quick.html:142
 msgid "From Tessie"
 msgstr "Tessieから取得"
 
-#: app/templates/fuel/form.html:63
+#: app/templates/fuel/form.html:62
+msgid ""
+"Leave blank if the reading was not recorded. Enter 0 to confirm a genuine "
+"zero reading."
+msgstr "メーター値を記録していない場合は空欄にしてください。実際にゼロだった場合は0を入力してください。"
+
+#: app/templates/fuel/form.html:64
 msgid "Odometer is automatically tracked via Tessie for this vehicle."
 msgstr "この車両の走行距離計はTessie経由で自動的に記録されます。"
 
-#: app/templates/fuel/form.html:76 app/templates/fuel/quick.html:66
-#: app/templates/vehicles/view.html:1234
+#: app/templates/fuel/form.html:77 app/templates/fuel/quick.html:67
+#: app/templates/vehicles/view.html:1262
 msgid "Price per"
 msgstr "単価"
 
-#: app/templates/fuel/form.html:84
+#: app/templates/fuel/form.html:86
 msgid "Discount per"
 msgstr "割引額（単位あたり）"
 
-#: app/templates/fuel/form.html:90
+#: app/templates/fuel/form.html:92
 msgid "Optional loyalty discount, subtracted from the price per unit."
 msgstr "任意項目です。ポイント割引などを単価から差し引きます。"
 
-#: app/templates/fuel/form.html:101
+#: app/templates/fuel/form.html:104
 msgid "Sales Tax"
 msgstr "消費税"
 
-#: app/templates/fuel/form.html:106
+#: app/templates/fuel/form.html:109
 msgid ""
 "Optional. Sales tax shown on the receipt, already included in the total "
 "cost. Add the amounts together where more than one tax applies."
 msgstr "任意。領収書に記載され、合計金額に含まれている税額です。税が複数ある場合は合計してください。"
 
-#: app/templates/fuel/form.html:110 app/templates/fuel/quick.html:94
+#: app/templates/fuel/form.html:113 app/templates/fuel/quick.html:96
 msgid "Station"
 msgstr "ステーション"
 
-#: app/templates/fuel/form.html:114 app/templates/fuel/quick.html:98
+#: app/templates/fuel/form.html:117 app/templates/fuel/quick.html:100
 msgid "Select station or enter manually..."
 msgstr "ステーションを選択または手動入力..."
 
-#: app/templates/fuel/form.html:125
+#: app/templates/fuel/form.html:128
 msgid "e.g., Shell, BP"
 msgstr "例: 出光、ENEOS"
 
-#: app/templates/fuel/form.html:129
+#: app/templates/fuel/form.html:132
 msgid "Add saved stations"
 msgstr "保存済みステーションを追加"
 
-#: app/templates/fuel/form.html:129
+#: app/templates/fuel/form.html:132
 msgid "for quick selection and price tracking"
 msgstr "クイック選択と価格追跡用"
 
-#: app/templates/fuel/form.html:135 app/templates/fuel/index.html:44
+#: app/templates/fuel/form.html:138 app/templates/fuel/index.html:44
 #: app/templates/vehicles/form.html:59
 msgid "Fuel Type"
 msgstr "燃料の種類"
 
-#: app/templates/fuel/form.html:143
+#: app/templates/fuel/form.html:146
 msgid "Distance on this fuel"
 msgstr "この燃料での走行距離"
 
-#: app/templates/fuel/form.html:148
+#: app/templates/fuel/form.html:151
 msgid ""
 "Distance run on this fuel since your last fill-up of it. The odometer can’t "
 "tell the fuels apart, so consumption for a dual-fuel vehicle needs this."
 msgstr "前回この燃料を入れてからの走行距離です。オドメーターは燃料を区別できないため、バイフューエル車の燃費計算にはこの値が必要です。"
 
-#: app/templates/fuel/form.html:156
+#: app/templates/fuel/form.html:159
 msgid "Full tank fill-up"
 msgstr "満タン給油"
 
-#: app/templates/fuel/form.html:163
+#: app/templates/fuel/form.html:166
 msgid "Missed fill-up (incomplete data)"
 msgstr "記録漏れの給油（データ不完全）"
 
-#: app/templates/fuel/form.html:174
+#: app/templates/fuel/form.html:177
 msgid "Receipt / Attachment"
 msgstr "領収書/添付ファイル"
 
@@ -3395,7 +3486,7 @@ msgstr "記録漏れ"
 msgid "incl. tax %(amount)s"
 msgstr "税込 %(amount)s"
 
-#: app/templates/fuel/index.html:89 app/templates/vehicles/view.html:981
+#: app/templates/fuel/index.html:89 app/templates/vehicles/view.html:990
 msgid "Delete this fuel log?"
 msgstr "この給油記録を削除しますか？"
 
@@ -3427,28 +3518,28 @@ msgstr "kWh"
 msgid "Fast fuel logging for mobile"
 msgstr "モバイル向けクイック給油記録"
 
-#: app/templates/fuel/quick.html:50 app/templates/fuel/quick.html:139
+#: app/templates/fuel/quick.html:51 app/templates/fuel/quick.html:141
 msgid "Last"
 msgstr "前回"
 
-#: app/templates/fuel/quick.html:89
+#: app/templates/fuel/quick.html:91
 msgid "Full tank"
 msgstr "満タン"
 
-#: app/templates/fuel/quick.html:108 app/templates/maintenance/index.html:135
-#: app/templates/maintenance/index.html:154
+#: app/templates/fuel/quick.html:110 app/templates/maintenance/index.html:136
+#: app/templates/maintenance/index.html:155
 msgid "Optional"
 msgstr "任意"
 
-#: app/templates/fuel/quick.html:119
+#: app/templates/fuel/quick.html:121
 msgid "Save"
 msgstr "保存"
 
-#: app/templates/fuel/quick.html:126
+#: app/templates/fuel/quick.html:128
 msgid "Save & Add Another"
 msgstr "保存して次を追加"
 
-#: app/templates/fuel/quick.html:133
+#: app/templates/fuel/quick.html:135
 msgid "Need more options? Use full form"
 msgstr "詳細な入力が必要ですか？フルフォームを使用"
 
@@ -3489,6 +3580,7 @@ msgstr "書き出し日時"
 
 #: app/templates/import/backup_preview.html:22
 #: app/templates/import/backup_preview.html:26
+#: app/templates/maintenance/history.html:18
 msgid "Unknown"
 msgstr "不明"
 
@@ -3681,6 +3773,22 @@ msgstr "スケジュールを作成"
 msgid "Delete this maintenance schedule?"
 msgstr "このメンテナンススケジュールを削除しますか？"
 
+#: app/templates/maintenance/history.html:2
+#: app/templates/maintenance/history.html:4
+#: app/templates/maintenance/index.html:21 app/templates/vehicles/view.html:10
+msgid "Maintenance History"
+msgstr "整備履歴"
+
+#: app/templates/maintenance/history.html:13
+msgid ""
+"History includes recorded completions and the latest saved service details. "
+"Earlier overwritten details cannot be recovered."
+msgstr "履歴には記録された整備と最後に保存された整備情報が含まれます。以前に上書きされた情報は復元できません。"
+
+#: app/templates/maintenance/history.html:21
+msgid "No maintenance history yet."
+msgstr "整備履歴はまだありません。"
+
 #: app/templates/maintenance/index.html:2
 #: app/templates/maintenance/index.html:7
 msgid "Maintenance Schedules"
@@ -3694,51 +3802,51 @@ msgstr "自動リマインダー付きの定期メンテナンスを設定"
 msgid "Add Schedule"
 msgstr "スケジュールを追加"
 
-#: app/templates/maintenance/index.html:35
+#: app/templates/maintenance/index.html:36
 msgid "Due Now"
 msgstr "期限到来"
 
-#: app/templates/maintenance/index.html:39
+#: app/templates/maintenance/index.html:40
 msgid "Due Soon"
 msgstr "まもなく期限"
 
-#: app/templates/maintenance/index.html:77
+#: app/templates/maintenance/index.html:78
 msgid "Mark Complete"
 msgstr "完了にする"
 
-#: app/templates/maintenance/index.html:102
+#: app/templates/maintenance/index.html:103
 msgid "No maintenance schedules"
 msgstr "メンテナンススケジュールがありません"
 
-#: app/templates/maintenance/index.html:103
+#: app/templates/maintenance/index.html:104
 msgid "Set up recurring maintenance reminders for your vehicles."
 msgstr "車両の定期メンテナンスリマインダーを設定しましょう。"
 
-#: app/templates/maintenance/index.html:111
+#: app/templates/maintenance/index.html:112
 msgid "Add Maintenance Schedule"
 msgstr "メンテナンススケジュールを追加"
 
-#: app/templates/maintenance/index.html:124
+#: app/templates/maintenance/index.html:125
 msgid "Mark as Completed"
 msgstr "完了としてマーク"
 
-#: app/templates/maintenance/index.html:127
+#: app/templates/maintenance/index.html:128
 msgid "Completed on"
 msgstr "完了日:"
 
-#: app/templates/maintenance/index.html:132
+#: app/templates/maintenance/index.html:133
 msgid "Current Odometer"
 msgstr "現在の走行距離"
 
-#: app/templates/maintenance/index.html:141
+#: app/templates/maintenance/index.html:142
 msgid "Create expense entry"
 msgstr "経費エントリーを作成"
 
-#: app/templates/maintenance/index.html:146
+#: app/templates/maintenance/index.html:147
 msgid "Actual Cost"
 msgstr "実際の費用"
 
-#: app/templates/maintenance/index.html:166
+#: app/templates/maintenance/index.html:167
 msgid "Complete"
 msgstr "完了"
 
@@ -3811,42 +3919,46 @@ msgid "Monthly"
 msgstr "毎月"
 
 #: app/templates/recurring/form.html:58
+msgid "Biweekly (every 2 weeks)"
+msgstr "隔週（2週間ごと）"
+
+#: app/templates/recurring/form.html:59
 msgid "Quarterly (every 3 months)"
 msgstr "四半期ごと（3ヶ月ごと）"
 
-#: app/templates/recurring/form.html:59
+#: app/templates/recurring/form.html:60
 msgid "Biannual (every 6 months)"
 msgstr "半年ごと（6ヶ月ごと）"
 
-#: app/templates/recurring/form.html:60
+#: app/templates/recurring/form.html:61
 msgid "Yearly"
 msgstr "毎年"
 
-#: app/templates/recurring/form.html:75
+#: app/templates/recurring/form.html:76
 msgid "Leave blank if amount varies"
 msgstr "金額が変動する場合は空欄にしてください"
 
-#: app/templates/recurring/form.html:80
+#: app/templates/recurring/form.html:96
 msgid "Start Date"
 msgstr "開始日"
 
-#: app/templates/recurring/form.html:87
+#: app/templates/recurring/form.html:103
 msgid "Next Due"
 msgstr "次回期日"
 
-#: app/templates/recurring/form.html:106
+#: app/templates/recurring/form.html:122
 msgid "Auto-create expense when due"
 msgstr "期日に経費を自動作成"
 
-#: app/templates/recurring/form.html:110
+#: app/templates/recurring/form.html:126
 msgid "Remind days before"
 msgstr "何日前にリマインド"
 
-#: app/templates/recurring/form.html:132 app/templates/recurring/index.html:16
+#: app/templates/recurring/form.html:148 app/templates/recurring/index.html:16
 msgid "Add Recurring"
 msgstr "定期を追加"
 
-#: app/templates/recurring/form.html:144
+#: app/templates/recurring/form.html:160
 msgid "Delete this recurring expense?"
 msgstr "この定期経費を削除しますか？"
 
@@ -3890,12 +4002,12 @@ msgid "%(num)d days overdue"
 msgstr "%(num)d 日超過"
 
 #: app/templates/reminders/_reminder_row.html:71
-#: app/templates/vehicles/view.html:693
+#: app/templates/vehicles/view.html:702
 msgid "Due today"
 msgstr "本日期限"
 
 #: app/templates/reminders/_reminder_row.html:73
-#: app/templates/vehicles/view.html:695
+#: app/templates/vehicles/view.html:704
 msgid "Due tomorrow"
 msgstr "明日期限"
 
@@ -3967,7 +4079,7 @@ msgid "Keep track of important dates for your vehicles"
 msgstr "車両に関する重要な日付を管理します"
 
 #: app/templates/reminders/index.html:17
-#: app/templates/reminders/index.html:141 app/templates/vehicles/view.html:272
+#: app/templates/reminders/index.html:141 app/templates/vehicles/view.html:281
 msgid "Add Reminder"
 msgstr "リマインダーを追加"
 
@@ -3983,7 +4095,7 @@ msgstr "完了済みを表示"
 msgid "Clear filters"
 msgstr "フィルターをクリア"
 
-#: app/templates/reminders/index.html:65 app/templates/vehicles/view.html:778
+#: app/templates/reminders/index.html:65 app/templates/vehicles/view.html:787
 msgid "Overdue"
 msgstr "期限超過"
 
@@ -4174,7 +4286,7 @@ msgstr "このステーションの価格履歴はありません。"
 msgid "Prices are automatically recorded when you log fuel at this station."
 msgstr "このステーションで給油を記録すると、価格が自動的に記録されます。"
 
-#: app/templates/timeline/index.html:2 app/templates/vehicles/view.html:287
+#: app/templates/timeline/index.html:2 app/templates/vehicles/view.html:296
 msgid "Timeline"
 msgstr "タイムライン"
 
@@ -4202,17 +4314,13 @@ msgstr "アクティビティタイムライン"
 msgid "No activity recorded for this vehicle yet."
 msgstr "この車両にはまだ記録がありません。"
 
-#: app/templates/timeline/index.html:126
-msgid "Charging"
-msgstr "充電"
-
 #: app/templates/tires/form.html:2 app/templates/tires/form.html:8
 msgid "Edit Tire Set"
 msgstr "タイヤセットを編集"
 
 #: app/templates/tires/form.html:2 app/templates/tires/form.html:8
 #: app/templates/tires/form.html:107 app/templates/tires/index.html:16
-#: app/templates/tires/index.html:183
+#: app/templates/tires/index.html:191
 msgid "Add Tire Set"
 msgstr "タイヤセットを追加"
 
@@ -4281,7 +4389,7 @@ msgstr "このセットの合計走行距離"
 msgid "Purchased"
 msgstr "購入"
 
-#: app/templates/tires/index.html:66 app/templates/vehicles/form.html:246
+#: app/templates/tires/index.html:66 app/templates/vehicles/form.html:255
 msgid "Status"
 msgstr "ステータス"
 
@@ -4298,39 +4406,43 @@ msgstr "車両に未装着"
 msgid "Take Off"
 msgstr "取り外す"
 
-#: app/templates/tires/index.html:111
+#: app/templates/tires/index.html:102
+msgid "Axle"
+msgstr "車軸"
+
+#: app/templates/tires/index.html:119
 msgid "Put On"
 msgstr "装着する"
 
-#: app/templates/tires/index.html:120
+#: app/templates/tires/index.html:128
 msgid "Fitting history"
 msgstr "装着履歴"
 
-#: app/templates/tires/index.html:125
+#: app/templates/tires/index.html:133
 msgid "On"
 msgstr "装着"
 
-#: app/templates/tires/index.html:126
+#: app/templates/tires/index.html:134
 msgid "Off"
 msgstr "取り外し"
 
-#: app/templates/tires/index.html:136
+#: app/templates/tires/index.html:144
 msgid "Still on"
 msgstr "まだ装着中"
 
-#: app/templates/tires/index.html:142
+#: app/templates/tires/index.html:150
 msgid "Delete this fitting record?"
 msgstr "この装着記録を削除しますか?"
 
-#: app/templates/tires/index.html:160
+#: app/templates/tires/index.html:168
 msgid "Delete this tire set and its fitting history?"
 msgstr "このタイヤセットと装着履歴を削除しますか?"
 
-#: app/templates/tires/index.html:174
+#: app/templates/tires/index.html:182
 msgid "No tire sets"
 msgstr "タイヤセットがありません"
 
-#: app/templates/tires/index.html:175
+#: app/templates/tires/index.html:183
 msgid "Add a set of tires to track when it goes on and off the vehicle."
 msgstr "タイヤセットを追加すると、車両への着脱を記録できます。"
 
@@ -4340,7 +4452,7 @@ msgstr "走行記録を編集"
 
 #: app/templates/trips/form.html:2 app/templates/trips/form.html:13
 #: app/templates/trips/form.html:156 app/templates/trips/index.html:31
-#: app/templates/vehicles/view.html:254
+#: app/templates/vehicles/view.html:263
 msgid "Log Trip"
 msgstr "走行を記録"
 
@@ -4568,12 +4680,12 @@ msgstr "最初のテンプレートを作成"
 msgid "Edit Vehicle"
 msgstr "車両を編集"
 
-#: app/templates/vehicles/form.html:2 app/templates/vehicles/form.html:326
+#: app/templates/vehicles/form.html:2 app/templates/vehicles/form.html:335
 #: app/templates/vehicles/index.html:33 app/templates/vehicles/index.html:116
 msgid "Add Vehicle"
 msgstr "車両を追加"
 
-#: app/templates/vehicles/form.html:7 app/templates/vehicles/view.html:11
+#: app/templates/vehicles/form.html:7 app/templates/vehicles/view.html:13
 msgid "Back to vehicles"
 msgstr "車両一覧に戻る"
 
@@ -4642,131 +4754,146 @@ msgid "e.g., 2020"
 msgstr "例: 2020"
 
 #: app/templates/vehicles/form.html:107
+msgid "Starting odometer"
+msgstr "開始時の走行距離"
+
+#: app/templates/vehicles/form.html:110
+msgid "e.g., 16000"
+msgstr "例: 16000"
+
+#: app/templates/vehicles/form.html:113
+#, python-format
+msgid ""
+"Optional. Used to calculate distance and cost per %(unit)s since tracking "
+"began."
+msgstr "任意。記録開始以降の走行距離と %(unit)s あたりの費用の計算に使用します。"
+
+#: app/templates/vehicles/form.html:116
 msgid "Tank Capacity (L)"
 msgstr "燃料タンク容量 (L)"
 
-#: app/templates/vehicles/form.html:110
+#: app/templates/vehicles/form.html:119
 msgid "e.g., 50"
 msgstr "例: 50"
 
-#: app/templates/vehicles/form.html:117
+#: app/templates/vehicles/form.html:126
 msgid "Identification"
 msgstr "識別情報"
 
-#: app/templates/vehicles/form.html:121
+#: app/templates/vehicles/form.html:130
 msgid "Registration / License Plate"
 msgstr "登録番号/ナンバープレート"
 
-#: app/templates/vehicles/form.html:124
+#: app/templates/vehicles/form.html:133
 msgid "e.g., ABC 123"
 msgstr "例: ABC 123"
 
-#: app/templates/vehicles/form.html:129 app/templates/vehicles/view.html:528
+#: app/templates/vehicles/form.html:138 app/templates/vehicles/view.html:537
 msgid "VIN"
 msgstr "VIN"
 
-#: app/templates/vehicles/form.html:132
+#: app/templates/vehicles/form.html:141
 msgid "Vehicle Identification Number"
 msgstr "車両識別番号"
 
-#: app/templates/vehicles/form.html:139
+#: app/templates/vehicles/form.html:148
 msgid "Photo"
 msgstr "写真"
 
-#: app/templates/vehicles/form.html:142
+#: app/templates/vehicles/form.html:151
 msgid "Vehicle Image"
 msgstr "車両画像"
 
-#: app/templates/vehicles/form.html:156 app/templates/vehicles/view.html:730
+#: app/templates/vehicles/form.html:165 app/templates/vehicles/view.html:739
 msgid "Specifications"
 msgstr "仕様"
 
-#: app/templates/vehicles/form.html:157
+#: app/templates/vehicles/form.html:166
 msgid "Add technical details like tire sizes, oil type, wiper sizes, etc."
 msgstr "タイヤサイズ、オイルの種類、ワイパーサイズなどの技術情報を追加します。"
 
-#: app/templates/vehicles/form.html:191
+#: app/templates/vehicles/form.html:200
 msgid "Add Specification"
 msgstr "仕様を追加"
 
-#: app/templates/vehicles/form.html:196
+#: app/templates/vehicles/form.html:205
 msgid "Annual Mileage Tracking"
 msgstr "年間走行距離の記録"
 
-#: app/templates/vehicles/form.html:197
+#: app/templates/vehicles/form.html:206
 msgid ""
 "Set a yearly distance limit to track progress — useful for leasing contracts"
 " or insurance policies."
 msgstr "年間の走行距離上限を設定して進捗を記録します。リース契約や保険契約に便利です。"
 
-#: app/templates/vehicles/form.html:202
+#: app/templates/vehicles/form.html:211
 msgid "Annual Limit"
 msgstr "年間上限"
 
-#: app/templates/vehicles/form.html:207
+#: app/templates/vehicles/form.html:216
 msgid "e.g. 25000"
 msgstr "例: 25000"
 
-#: app/templates/vehicles/form.html:211
+#: app/templates/vehicles/form.html:220
 msgid "Period Start Date"
 msgstr "期間開始日"
 
-#: app/templates/vehicles/form.html:215
+#: app/templates/vehicles/form.html:224
 msgid "e.g. the date your lease or insurance starts"
 msgstr "例: リースや保険の開始日"
 
-#: app/templates/vehicles/form.html:217
+#: app/templates/vehicles/form.html:226
 msgid "Tracking resets on this date each year."
 msgstr "記録は毎年この日にリセットされます。"
 
-#: app/templates/vehicles/form.html:226
+#: app/templates/vehicles/form.html:235
 msgid "General Notes"
 msgstr "全般メモ"
 
-#: app/templates/vehicles/form.html:228
+#: app/templates/vehicles/form.html:237
 msgid "Any additional notes about this vehicle..."
 msgstr "この車両に関するその他のメモ..."
 
-#: app/templates/vehicles/form.html:233
+#: app/templates/vehicles/form.html:242
 msgid "Default Trip Type"
 msgstr "デフォルトの走行種別"
 
-#: app/templates/vehicles/form.html:240
+#: app/templates/vehicles/form.html:249
 msgid "Pre-selected when logging a new trip for this vehicle"
 msgstr "この車両で新しい走行記録を作成する際に自動選択されます"
 
-#: app/templates/vehicles/form.html:251
+#: app/templates/vehicles/form.html:260
 msgid "Active (show in lists and calculations)"
 msgstr "有効（一覧と計算に表示）"
 
-#: app/templates/vehicles/form.html:257
+#: app/templates/vehicles/form.html:266
 msgid ""
 "Shared — all users on this instance can view and log against this vehicle"
 msgstr "共有 — このインスタンスの全ユーザーがこの車両を閲覧・記録できます"
 
-#: app/templates/vehicles/form.html:273
+#: app/templates/vehicles/form.html:282
 msgid ""
 "Link this vehicle to Tessie for automatic odometer and battery tracking. "
 "When enabled, manual odometer entry will be disabled."
 msgstr "この車両をTessieに連携し、走行距離計とバッテリー残量を自動記録します。有効にすると、走行距離計の手動入力は無効になります。"
 
-#: app/templates/vehicles/form.html:277
+#: app/templates/vehicles/form.html:286
 msgid "Tessie VIN"
 msgstr "Tessie VIN"
 
-#: app/templates/vehicles/form.html:281
+#: app/templates/vehicles/form.html:290
 msgid "Enter Tesla VIN or select from list"
 msgstr "Tesla VINを入力するか、一覧から選択してください"
 
-#: app/templates/vehicles/form.html:289
+#: app/templates/vehicles/form.html:298
 msgid "Lookup"
 msgstr "検索"
 
-#: app/templates/vehicles/form.html:300
+#: app/templates/vehicles/form.html:309
 msgid "Enable Tessie tracking (disables manual odometer entry)"
 msgstr "Tessie連携を有効にする（走行距離計の手動入力は無効になります）"
 
-#: app/templates/vehicles/form.html:310
+#: app/templates/vehicles/form.html:319
 msgid "Tessie tracking is active for this vehicle"
 msgstr "この車両ではTessie連携が有効です"
 
@@ -4810,7 +4937,7 @@ msgstr "パーツを編集"
 #: app/templates/vehicles/part_form.html:2
 #: app/templates/vehicles/part_form.html:8
 #: app/templates/vehicles/part_form.html:102
-#: app/templates/vehicles/parts.html:20 app/templates/vehicles/view.html:874
+#: app/templates/vehicles/parts.html:20 app/templates/vehicles/view.html:883
 msgid "Add Part"
 msgstr "パーツを追加"
 
@@ -4887,7 +5014,7 @@ msgid "Link to purchase this part"
 msgstr "このパーツを購入できるリンク"
 
 #: app/templates/vehicles/parts.html:2 app/templates/vehicles/parts.html:11
-#: app/templates/vehicles/view.html:821
+#: app/templates/vehicles/view.html:830
 msgid "Parts & Consumables"
 msgstr "パーツと消耗品"
 
@@ -4908,7 +5035,7 @@ msgid "Add First Part"
 msgstr "最初のパーツを追加"
 
 #: app/templates/vehicles/share.html:2 app/templates/vehicles/share.html:20
-#: app/templates/vehicles/view.html:81
+#: app/templates/vehicles/view.html:83
 msgid "Share"
 msgstr "共有"
 
@@ -4940,366 +5067,324 @@ msgstr "削除"
 msgid "This vehicle is not shared with anyone yet."
 msgstr "この車両はまだ誰とも共有されていません。"
 
-#: app/templates/vehicles/view.html:31
+#: app/templates/vehicles/view.html:33
 msgid "Previous photo"
 msgstr "前の写真"
 
-#: app/templates/vehicles/view.html:38
+#: app/templates/vehicles/view.html:40
 msgid "Next photo"
 msgstr "次の写真"
 
-#: app/templates/vehicles/view.html:58
+#: app/templates/vehicles/view.html:60
 msgid "Download PDF Report"
 msgstr "PDFレポートをダウンロード"
 
-#: app/templates/vehicles/view.html:66
+#: app/templates/vehicles/view.html:68
 msgid "Download PDF Report with receipt images"
 msgstr "領収書画像付き PDF レポートをダウンロード"
 
-#: app/templates/vehicles/view.html:70
+#: app/templates/vehicles/view.html:72
 msgid "PDF + Receipts"
 msgstr "PDF + 領収書"
 
-#: app/templates/vehicles/view.html:94 app/templates/vehicles/view.html:98
+#: app/templates/vehicles/view.html:96 app/templates/vehicles/view.html:100
 msgid "Not set"
 msgstr "未設定"
 
-#: app/templates/vehicles/view.html:97
+#: app/templates/vehicles/view.html:99
 msgid "Registration plate"
 msgstr "ナンバープレート"
 
-#: app/templates/vehicles/view.html:101
+#: app/templates/vehicles/view.html:103
 msgid "Last Odometer"
 msgstr "前回の走行距離計"
 
-#: app/templates/vehicles/view.html:162
+#: app/templates/vehicles/view.html:164
 msgid "Total Hours"
 msgstr "総稼働時間"
 
-#: app/templates/vehicles/view.html:172
+#: app/templates/vehicles/view.html:174
 msgid "Avg. Consumption"
 msgstr "平均燃費"
 
-#: app/templates/vehicles/view.html:179
+#: app/templates/vehicles/view.html:181
 msgid "A missed fill-up in the range means we can’t calculate this honestly."
 msgstr "この期間に記録漏れの給油があるため、正確に計算できません。"
 
-#: app/templates/vehicles/view.html:181
+#: app/templates/vehicles/view.html:183
 msgid ""
 "Consumption can’t be worked out until the distance run on each fuel is "
 "recorded — the odometer can’t tell petrol from LPG. Add it to your fill-ups."
 msgstr ""
 "各燃料での走行距離が記録されるまで燃費は計算できません。オドメーターはガソリンと LPG を区別できないためです。給油記録に追加してください。"
 
-#: app/templates/vehicles/view.html:183
+#: app/templates/vehicles/view.html:185
 msgid "Not enough distance or fuel data yet to calculate this."
 msgstr "計算に必要な走行距離または燃料のデータがまだ十分にありません。"
 
-#: app/templates/vehicles/view.html:185
+#: app/templates/vehicles/view.html:187
 msgid "Needs at least two full-tank fill-ups."
 msgstr "満タン給油が少なくとも2回必要です。"
 
-#: app/templates/vehicles/view.html:195
+#: app/templates/vehicles/view.html:197
 msgid "Avg. Charging"
 msgstr "平均充電量"
 
-#: app/templates/vehicles/view.html:207
+#: app/templates/vehicles/view.html:216
 msgid "Fuel Used"
 msgstr "使用燃料"
 
-#: app/templates/vehicles/view.html:212
+#: app/templates/vehicles/view.html:221
 msgid "CO₂ Emissions"
 msgstr "CO₂排出量"
 
-#: app/templates/vehicles/view.html:215
+#: app/templates/vehicles/view.html:224
 msgid "tonnes (estimated)"
 msgstr "トン(推定)"
 
-#: app/templates/vehicles/view.html:218
+#: app/templates/vehicles/view.html:227
 msgid "kg (estimated)"
 msgstr "kg(推定)"
 
-#: app/templates/vehicles/view.html:244
+#: app/templates/vehicles/view.html:253
 msgid "Add Charging"
 msgstr "充電を追加"
 
-#: app/templates/vehicles/view.html:280
+#: app/templates/vehicles/view.html:289
 msgid "Parts"
 msgstr "パーツ"
 
-#: app/templates/vehicles/view.html:294
+#: app/templates/vehicles/view.html:303
 msgid "Photos"
 msgstr "写真"
 
-#: app/templates/vehicles/view.html:321
+#: app/templates/vehicles/view.html:330
 msgid "Main"
 msgstr "メイン"
 
-#: app/templates/vehicles/view.html:326
+#: app/templates/vehicles/view.html:335
 msgid "Set as main"
 msgstr "メインに設定"
 
-#: app/templates/vehicles/view.html:335
+#: app/templates/vehicles/view.html:344
 msgid "Delete this photo?"
 msgstr "この写真を削除しますか?"
 
-#: app/templates/vehicles/view.html:347
+#: app/templates/vehicles/view.html:356
 msgid "No photos yet."
 msgstr "まだ写真がありません。"
 
-#: app/templates/vehicles/view.html:360
+#: app/templates/vehicles/view.html:369
 msgid "DVLA Status"
 msgstr "DVLAステータス"
 
-#: app/templates/vehicles/view.html:367 app/templates/vehicles/view.html:476
+#: app/templates/vehicles/view.html:376 app/templates/vehicles/view.html:485
 msgid "Refresh"
 msgstr "更新"
 
-#: app/templates/vehicles/view.html:374
+#: app/templates/vehicles/view.html:383
 msgid "MOT Status"
 msgstr "MOTステータス"
 
-#: app/templates/vehicles/view.html:392
+#: app/templates/vehicles/view.html:401
 msgid "MOT Expiry"
 msgstr "MOT有効期限"
 
-#: app/templates/vehicles/view.html:402
+#: app/templates/vehicles/view.html:411
 msgid "Tax Status"
 msgstr "税金ステータス"
 
-#: app/templates/vehicles/view.html:420
+#: app/templates/vehicles/view.html:429
 msgid "Tax Due"
 msgstr "税金支払期日"
 
-#: app/templates/vehicles/view.html:431 app/templates/vehicles/view.html:533
+#: app/templates/vehicles/view.html:440 app/templates/vehicles/view.html:542
 msgid "Last updated"
 msgstr "最終更新"
 
-#: app/templates/vehicles/view.html:435
+#: app/templates/vehicles/view.html:444
 msgid "No DVLA data available for this vehicle."
 msgstr "この車両のDVLAデータはありません。"
 
-#: app/templates/vehicles/view.html:441
+#: app/templates/vehicles/view.html:450
 msgid "Fetch from DVLA"
 msgstr "DVLAから取得"
 
-#: app/templates/vehicles/view.html:458
+#: app/templates/vehicles/view.html:467
 msgid "Tessie Status"
 msgstr "Tessieステータス"
 
-#: app/templates/vehicles/view.html:460
+#: app/templates/vehicles/view.html:469
 msgid "Live"
 msgstr "ライブ"
 
-#: app/templates/vehicles/view.html:469
+#: app/templates/vehicles/view.html:478
 msgid "Import Charges"
 msgstr "充電記録をインポート"
 
-#: app/templates/vehicles/view.html:498
+#: app/templates/vehicles/view.html:507
 msgid "Battery Level"
 msgstr "バッテリー残量"
 
-#: app/templates/vehicles/view.html:514
+#: app/templates/vehicles/view.html:523
 msgid "Est. Range"
 msgstr "推定航続距離"
 
-#: app/templates/vehicles/view.html:537
+#: app/templates/vehicles/view.html:546
 msgid "No Tessie data available for this vehicle yet."
 msgstr "この車両のTessieデータはまだありません。"
 
-#: app/templates/vehicles/view.html:543
+#: app/templates/vehicles/view.html:552
 msgid "Fetch from Tessie"
 msgstr "Tessieから取得"
 
-#: app/templates/vehicles/view.html:558
+#: app/templates/vehicles/view.html:567
 msgid ""
 "This vehicle is archived. It won't appear in regular lists or calculations."
 msgstr "この車両はアーカイブされています。通常の一覧や計算には表示されません。"
 
-#: app/templates/vehicles/view.html:572
+#: app/templates/vehicles/view.html:581
 msgid "Annual Mileage"
 msgstr "年間走行距離"
 
-#: app/templates/vehicles/view.html:577
+#: app/templates/vehicles/view.html:586
 msgid "Over limit"
 msgstr "上限超過"
 
-#: app/templates/vehicles/view.html:581
+#: app/templates/vehicles/view.html:590
 msgid "Approaching limit"
 msgstr "上限に近づいています"
 
-#: app/templates/vehicles/view.html:585
+#: app/templates/vehicles/view.html:594
 msgid "On pace"
 msgstr "予定通り"
 
-#: app/templates/vehicles/view.html:589
+#: app/templates/vehicles/view.html:598
 msgid "Over pace"
 msgstr "予定超過"
 
-#: app/templates/vehicles/view.html:607 app/templates/vehicles/view.html:614
+#: app/templates/vehicles/view.html:616 app/templates/vehicles/view.html:623
 msgid "Time elapsed"
 msgstr "経過時間"
 
-#: app/templates/vehicles/view.html:614
+#: app/templates/vehicles/view.html:623
 msgid "of year elapsed"
 msgstr "経過（年間）"
 
-#: app/templates/vehicles/view.html:623
+#: app/templates/vehicles/view.html:632
 msgid "remaining"
 msgstr "残り"
 
-#: app/templates/vehicles/view.html:627
+#: app/templates/vehicles/view.html:636
 msgid "days remaining"
 msgstr "残り日数"
 
-#: app/templates/vehicles/view.html:631
+#: app/templates/vehicles/view.html:640
 msgid "projected year-end"
 msgstr "年末予測"
 
-#: app/templates/vehicles/view.html:635
+#: app/templates/vehicles/view.html:644
 msgid "expected at this point"
 msgstr "この時点での予測値"
 
-#: app/templates/vehicles/view.html:650
+#: app/templates/vehicles/view.html:659
 msgid "Upcoming Reminders"
 msgstr "今後のリマインダー"
 
-#: app/templates/vehicles/view.html:663
+#: app/templates/vehicles/view.html:672
 msgid "Mark as completed"
 msgstr "完了としてマーク"
 
-#: app/templates/vehicles/view.html:691
+#: app/templates/vehicles/view.html:700
 #, python-format
 msgid "%(days)s days overdue"
 msgstr "%(days)s日の期限超過"
 
-#: app/templates/vehicles/view.html:697
+#: app/templates/vehicles/view.html:706
 #, python-format
 msgid "In %(days)s days"
 msgstr "%(days)s日後"
 
-#: app/templates/vehicles/view.html:764
+#: app/templates/vehicles/view.html:773
 msgid "Upcoming Maintenance"
 msgstr "今後の整備予定"
 
-#: app/templates/vehicles/view.html:780
+#: app/templates/vehicles/view.html:789
 msgid "Due soon"
 msgstr "まもなく期限"
 
-#: app/templates/vehicles/view.html:814
+#: app/templates/vehicles/view.html:823
 msgid "Toggle section"
 msgstr "セクションの表示切替"
 
-#: app/templates/vehicles/view.html:867
+#: app/templates/vehicles/view.html:876
 msgid "No parts added yet."
 msgstr "まだパーツが追加されていません。"
 
-#: app/templates/vehicles/view.html:904
+#: app/templates/vehicles/view.html:913
 msgid "Fuel Consumption Trend"
 msgstr "燃費の推移"
 
-#: app/templates/vehicles/view.html:917
+#: app/templates/vehicles/view.html:926
 msgid "Fuel Price Trend"
 msgstr "燃料価格の推移"
 
-#: app/templates/vehicles/view.html:961
+#: app/templates/vehicles/view.html:970
 msgid "(Full)"
 msgstr "（満タン）"
 
-#: app/templates/vehicles/view.html:1062
+#: app/templates/vehicles/view.html:1071
 msgid "Archive this vehicle"
 msgstr "この車両をアーカイブ"
 
-#: app/templates/vehicles/view.html:1063
+#: app/templates/vehicles/view.html:1072
 msgid ""
 "Archived vehicles won't appear in regular lists or calculations. You can "
 "restore them later."
 msgstr "アーカイブした車両は通常の一覧や計算には表示されません。後で復元できます。"
 
-#: app/templates/vehicles/view.html:1065
+#: app/templates/vehicles/view.html:1074
 msgid "Restore this vehicle"
 msgstr "この車両を復元"
 
-#: app/templates/vehicles/view.html:1066
+#: app/templates/vehicles/view.html:1075
 msgid ""
 "Restore this vehicle to make it active again and include it in calculations."
 msgstr "この車両を復元すると再び有効になり、計算にも含まれるようになります。"
 
-#: app/templates/vehicles/view.html:1075
+#: app/templates/vehicles/view.html:1084
 msgid "Archive Vehicle"
 msgstr "車両をアーカイブ"
 
-#: app/templates/vehicles/view.html:1085
+#: app/templates/vehicles/view.html:1094
 msgid "Restore Vehicle"
 msgstr "車両を復元"
 
-#: app/templates/vehicles/view.html:1096
+#: app/templates/vehicles/view.html:1105
 msgid "Delete this vehicle"
 msgstr "この車両を削除"
 
-#: app/templates/vehicles/view.html:1097
+#: app/templates/vehicles/view.html:1106
 msgid ""
 "Once you delete a vehicle, there is no going back. This will also delete all"
 " associated fuel logs and expenses."
 msgstr "車両を削除すると元に戻せません。関連する給油記録と経費もすべて削除されます。"
 
-#: app/templates/vehicles/view.html:1101
+#: app/templates/vehicles/view.html:1110
 msgid ""
 "Are you sure you want to delete this vehicle? This action cannot be undone."
 msgstr "この車両を削除してもよろしいですか？この操作は取り消せません。"
 
-#: app/templates/vehicles/view.html:1105
+#: app/templates/vehicles/view.html:1114
 msgid "Delete Vehicle"
 msgstr "車両を削除"
 
-#: app/templates/vehicles/view.html:1224
+#: app/templates/vehicles/view.html:1252
 msgid ""
 "Not enough data to show consumption trend. Add more fuel logs with full tank"
 " fills."
 msgstr "消費トレンドを表示するデータが不足しています。満タン給油の記録を追加してください。"
 
-#: app/templates/vehicles/view.html:1262
+#: app/templates/vehicles/view.html:1290
 msgid "No fuel prices recorded yet."
 msgstr "まだ燃料価格が記録されていません。"
-
-msgid "All axles"
-msgstr "全車軸"
-
-msgid "Front axle"
-msgstr "前車軸"
-
-msgid "Rear axle"
-msgstr "後車軸"
-
-msgid "%(count)s duplicate(s) skipped."
-msgstr "重複する%(count)s件をスキップしました。"
-
-msgid "Fuel price sources are unavailable. Saved prices have been kept."
-msgstr "燃料価格の情報源を利用できません。保存済みの価格は保持されています。"
-
-msgid "Some stations could not be matched because fuel price coverage is incomplete."
-msgstr "価格データが不完全なため、一部の給油所を特定できませんでした。"
-
-msgid "No unique forecourt match found. Check the station postcode, address and brand."
-msgstr "給油所を一意に特定できません。郵便番号、住所、ブランドを確認してください。"
-
-msgid "Invalid axle"
-msgstr "無効な車軸"
-
-msgid "The fitting date and reading cannot precede the current fitting."
-msgstr "取付日とメーター値は、現在の取付時点より前にはできません。"
-
-msgid "Leave blank if the reading was not recorded. Enter 0 to confirm a genuine zero reading."
-msgstr "メーター値を記録していない場合は空欄にしてください。実際にゼロだった場合は0を入力してください。"
-
-msgid "Maintenance History"
-msgstr "整備履歴"
-
-msgid "History includes recorded completions and the latest saved service details. Earlier overwritten details cannot be recovered."
-msgstr "履歴には記録された整備と最後に保存された整備情報が含まれます。以前に上書きされた情報は復元できません。"
-
-msgid "No maintenance history yet."
-msgstr "整備履歴はまだありません。"
-
-msgid "Axle"
-msgstr "車軸"

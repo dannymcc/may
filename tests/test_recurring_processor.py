@@ -203,3 +203,66 @@ class TestGenerateExpenseForPeriodHelper:
         expense = Expense.query.filter_by(vehicle_id=recurring.vehicle_id).first()
         assert expense.vendor == 'Acme Insurers'
         assert expense.notes == 'Policy AB123'
+
+
+def test_second_worker_cannot_generate_the_same_period(app, test_user, sample_vehicle):
+    """Two workers that both loaded a due row write one expense, not two (#403)."""
+    from sqlalchemy import text
+
+    today = date.today()
+    recurring = RecurringExpense(
+        user_id=test_user.id, vehicle_id=sample_vehicle.id, name='Insurance',
+        category='insurance', amount=50, frequency='monthly',
+        start_date=today, next_due=today, auto_create=True, is_active=True,
+    )
+    db.session.add(recurring)
+    db.session.commit()
+
+    # This worker holds the row as due. Meanwhile another worker generates the
+    # period and advances the schedule underneath it.
+    from sqlalchemy.orm.attributes import set_committed_value
+
+    db.session.execute(
+        text('UPDATE recurring_expenses SET next_due = :due WHERE id = :id'),
+        {'due': (today + timedelta(days=31)).isoformat(), 'id': recurring.id})
+    db.session.commit()
+    set_committed_value(recurring, 'next_due', today)  # the stale in-memory copy
+
+    assert generate_expense_for_period(recurring, on_date=today) is None
+    db.session.commit()
+    assert Expense.query.filter_by(vehicle_id=sample_vehicle.id).count() == 0
+    assert recurring.next_due == today + timedelta(days=31)
+
+
+def test_generation_claims_and_advances_once(app, test_user, sample_vehicle):
+    today = date.today()
+    recurring = RecurringExpense(
+        user_id=test_user.id, vehicle_id=sample_vehicle.id, name='Tax',
+        category='tax', amount=20, frequency='monthly',
+        start_date=today, next_due=today, auto_create=True, is_active=True,
+    )
+    db.session.add(recurring)
+    db.session.commit()
+    assert process_due_recurring_expenses()['generated'] == 1
+    assert process_due_recurring_expenses()['generated'] == 0
+    assert Expense.query.filter_by(vehicle_id=sample_vehicle.id).count() == 1
+
+
+def test_only_one_process_holds_the_scheduler_lock(app, tmp_path, monkeypatch):
+    """A second worker is refused the lock the first one holds (#403)."""
+    import fcntl
+
+    import app as app_module
+    import config
+
+    monkeypatch.setattr(config, 'SECRET_KEY_FILE', tmp_path / '.secret_key')
+    monkeypatch.setattr(app_module, '_scheduler_lock_file', None)
+
+    other_worker = open(tmp_path / '.scheduler.lock', 'w')
+    fcntl.flock(other_worker, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    assert app_module._hold_scheduler_lock(app) is False
+
+    other_worker.close()
+    assert app_module._hold_scheduler_lock(app) is True
+    assert app_module._hold_scheduler_lock(app) is True
+    app_module._scheduler_lock_file.close()

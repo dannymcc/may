@@ -9,6 +9,7 @@ from functools import wraps
 from flask import request, redirect, url_for, flash
 from flask_login import current_user
 from app.utils import parse_decimal
+from config import ALLOW_SELFHOSTED_WEBHOOK
 
 # File signature (magic bytes) mappings
 FILE_SIGNATURES = {
@@ -151,7 +152,7 @@ def validate_webhook_url(url):
         # Check for private IP ranges
         try:
             ip = ipaddress.ip_address(hostname)
-            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+            if (ip.is_private and not ALLOW_SELFHOSTED_WEBHOOK) or ip.is_loopback or ip.is_link_local or ip.is_reserved:
                 return False, "Webhook URL cannot point to private or reserved IP addresses"
         except ValueError:
             # Not an IP address, it's a hostname - that's OK

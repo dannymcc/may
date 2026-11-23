@@ -354,3 +354,19 @@ def test_scanner_spots_a_rigid_button_row():
     assert not scan(row.format(cls='flex flex-wrap gap-2')).rigid_button_rows
     assert not scan(row.format(cls='flex flex-col gap-2')).rigid_button_rows
     assert not scan(row.format(cls='flex gap-2 overflow-x-auto')).rigid_button_rows
+
+
+def test_quick_fuel_shortcut_is_reachable_on_phones(auth_client, test_user):
+    """The add-fuel shortcut sits beside the menu button on small screens (#415)."""
+    from app import db
+
+    test_user.show_quick_entry = True
+    db.session.commit()
+    html = auth_client.get('/dashboard').text
+    assert 'data-mobile-quick-fuel' in html
+    bar = html[html.index('data-mobile-quick-fuel') - 400:html.index('data-mobile-quick-fuel')]
+    assert 'sm:hidden' in bar
+
+    test_user.show_quick_entry = False
+    db.session.commit()
+    assert 'data-mobile-quick-fuel' not in auth_client.get('/dashboard').text

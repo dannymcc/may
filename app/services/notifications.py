@@ -6,6 +6,7 @@ from email.mime.multipart import MIMEMultipart
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 from app.models import AppSettings
+from app.security import validate_webhook_url
 from app.utils import utcnow
 
 
@@ -68,6 +69,10 @@ class NotificationService:
         """Send a notification via webhook (HTTP POST with JSON)."""
         if not webhook_url:
             return False, "Webhook URL not configured"
+
+        is_valid, error_msg = validate_webhook_url(webhook_url)
+        if not is_valid:
+            return False, error_msg
 
         try:
             data = json.dumps(payload).encode('utf-8')

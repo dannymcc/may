@@ -27,9 +27,37 @@ def generate_expense_for_period(recurring, on_date=None):
             expense's ``next_due`` (or today, if it has never been scheduled).
 
     Returns:
-        The created (uncommitted) Expense.
+        The created (uncommitted) Expense, or None when another worker had
+        already generated this period.
     """
     period_date = on_date or recurring.next_due or date.today()
+
+    # Claim the period before writing the expense. The scheduler runs in every
+    # server worker, so two of them can load the same due row at the same
+    # moment; each used to write its own expense for it (#403). Advancing
+    # ``next_due`` with a compare-and-swap lets exactly one of them win.
+    previous_due = recurring.next_due
+    recurring.last_generated = period_date
+    recurring.calculate_next_due()
+    new_due, new_active = recurring.next_due, recurring.is_active
+
+    if recurring.id is not None and previous_due is not None:
+        # no_autoflush: the pending change above must not reach the database
+        # ahead of the claim, or the claim would never match its own row.
+        with db.session.no_autoflush:
+            claimed = RecurringExpense.query.filter(
+                RecurringExpense.id == recurring.id,
+                RecurringExpense.next_due == previous_due,
+            ).update({
+                RecurringExpense.next_due: new_due,
+                RecurringExpense.last_generated: period_date,
+                RecurringExpense.is_active: new_active,
+            }, synchronize_session=False)
+        if not claimed:
+            # Another worker generated this period first; pick up its result.
+            db.session.rollback()
+            db.session.refresh(recurring)
+            return None
 
     expense = Expense(
         vehicle_id=recurring.vehicle_id,
@@ -42,11 +70,6 @@ def generate_expense_for_period(recurring, on_date=None):
         notes=recurring.description,
     )
     db.session.add(expense)
-
-    # Advance the schedule from the period we just generated so the same period
-    # is never generated twice (idempotency) and catch-up loops make progress.
-    recurring.last_generated = period_date
-    recurring.calculate_next_due()
 
     return expense
 
@@ -84,7 +107,11 @@ def process_due_recurring_expenses():
                    and recurring.next_due <= today
                    and count < MAX_CATCHUP_PERIODS):
                 previous_due = recurring.next_due
-                generate_expense_for_period(recurring, on_date=previous_due)
+                if generate_expense_for_period(recurring, on_date=previous_due) is None:
+                    break
+                # Commit each period as it is claimed so the claim and its
+                # expense land together and a concurrent worker sees them.
+                db.session.commit()
                 count += 1
 
                 # Guard against a frequency that fails to advance next_due
@@ -99,7 +126,6 @@ def process_due_recurring_expenses():
                     break
 
             if count:
-                db.session.commit()
                 stats['generated'] += count
                 logger.info(
                     "Generated %s expense(s) for recurring #%s (%s)",

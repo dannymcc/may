@@ -178,6 +178,7 @@ in `.env` has no effect — edit `docker-compose.yml` instead.
 | `TAILWIND_ASSET_URL` | Local Tailwind Play CDN JS path | `/static/vendor/tailwindcss.js` |
 | `TAILWIND_CDN_URL` | Tailwind CDN fallback URL | `https://cdn.tailwindcss.com` |
 | `HTMX_CDN_URL` | HTMX CDN URL | `https://unpkg.com/htmx.org@1.9.10` |
+| `ALLOW_SELFHOSTED_WEBHOOK` | Allow application to send webhooks in the same network | `0` (`Disabled`) |
 
 By default, Tailwind loads from `app/static/vendor/tailwindcss.js` and falls back to the CDN URL if the local asset is missing.
 
@@ -203,6 +204,25 @@ Add and manage your vehicles with detailed information:
 - **PDF Report**: The "PDF" button downloads a summary of the vehicle, its specifications, its parts and consumables, its fuel logs and its expenses. "PDF + Receipts" does the same and appends the receipt images attached to those entries, which is the version to hand to an accountant or employer. Non-image attachments (PDF scans, for example) are listed at the end of the report rather than embedded.
 - **Service Timeline**: Combined history of fuel, expenses, and charging, including any notes recorded against an entry and links to its attachments
 - **Expenses by Category**: A collapsible bar chart on the vehicle page breaking that vehicle's expenses down by category, alongside the dashboard chart covering the whole fleet. Vehicles with no expenses recorded do not show it.
+
+#### Starting odometer
+
+The optional **Starting odometer** field on a vehicle records the reading when
+cost tracking began, in the vehicle's odometer unit (or engine hours).
+
+- Leave it blank and Total Distance is the span between the lowest and highest
+  reading logged at a fill-up or charging session, or the full Tessie odometer
+  for a Tessie-connected vehicle.
+- Enter a value, including zero, to measure from that reading instead.
+  Tessie-connected vehicles use the Tessie reading as the endpoint.
+- Readings on expenses do not extend this distance. Trip readings are used only
+  when fill-ups and charging sessions provide fewer than two readings between
+  them. With no usable endpoint, or a starting reading at or above the endpoint,
+  distance is zero and no cost-per-distance rate is calculated.
+
+This affects Total Distance and cost-per-distance statistics, not fuel economy.
+Costs are not date-filtered by the field, so choose a starting reading matching
+the costs you track. JSON backups preserve this value.
 
 ### Fuel Logs
 Track every fill-up with:

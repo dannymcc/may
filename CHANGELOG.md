@@ -8,6 +8,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.45.0] - 2026-11-23
+
+### Added
+
+- Optional **Starting odometer** on a vehicle. When set, Total Distance and
+  the cost-per-distance figures are measured from that reading rather than
+  from the first logged fill-up. JSON backups carry the value.
+  ([#409](https://github.com/dannymcc/may/pull/409))
+- Optional net cost per km, mile or hour cards on the dashboard and vehicle
+  pages, showing running costs after recorded mileage allowances. Enable
+  **Show net cost per km/mi** under Settings → Units & Values.
+  ([#408](https://github.com/dannymcc/may/pull/408))
+- Loan Payment expense category, and a Biweekly (every 2 weeks) frequency for
+  recurring expenses. (#406, [#407](https://github.com/dannymcc/may/pull/407))
+- Air-conditioning service maintenance type.
+  (#425, [#427](https://github.com/dannymcc/may/pull/427))
+- `ALLOW_SELFHOSTED_WEBHOOK=1` lets webhooks be sent to private network
+  addresses, for receivers such as n8n running beside May. Off by default;
+  loopback, link-local and reserved addresses remain blocked.
+  ([#391](https://github.com/dannymcc/may/pull/391))
+- ARS and CLP in the currency list. (#393)
+- The quick fuel shortcut is shown beside the menu button on phones. (#415)
+
+### Fixed
+
+- Electric vehicles no longer show a Total Distance of zero and an empty cost
+  per km. Readings logged with charging sessions now count alongside fuel
+  readings, and logged trips are used when neither provides a span. The annual
+  mileage tracker reads charging sessions and trips as well. (#412)
+- Recurring expenses are generated once per period. Every server worker ran
+  the hourly scheduler, so two of them could write the same expense; the jobs
+  now run in one worker and each period is claimed before it is written.
+  Duplicates already created need deleting by hand. (#403)
+- Upgrading on PostgreSQL no longer fails while adding new columns. Boolean
+  defaults are written as PostgreSQL booleans, one rejected statement no
+  longer blocks the ones after it, and the upgrade no longer waits on its own
+  table locks. Verified by upgrading a 0.38.0 PostgreSQL database. (#410)
+- A rejected change on the Settings page (mismatched or weak password, email
+  already in use) shows its error to administrators instead of a 500, and no
+  longer saves the rest of the rejected form. (#414)
+- Fuel prices above 1000 per unit are accepted, for currencies such as ARS and
+  CLP. The total cost and sales tax ceilings are raised to match. (#393, #396)
+- Quick fuel entry works out the price per unit when both the volume and the
+  total are typed in, instead of rewriting the volume to fit the remembered
+  price. A total entered on its own still derives the volume. (#423)
+- Charging sessions accept decimal state-of-charge values such as 74.5 and
+  store them to the nearest whole percent. On some mobile browsers the form
+  previously refused to submit without saying why. (#390)
+- Webhook URLs are validated again at the moment a notification is sent.
+
+### Security
+
+- Pillow upgraded to 13.0.0, and the Docker image applies Debian security
+  updates when it is built. (#419)
+
+### Changed
+
+- Dependencies: `werkzeug` >= 3.1.9
+  ([#399](https://github.com/dannymcc/may/pull/399)), `python-dotenv` >= 1.2.4
+  ([#400](https://github.com/dannymcc/may/pull/400)), `weasyprint` >= 70.0
+  ([#388](https://github.com/dannymcc/may/pull/388)), `psycopg2-binary` >=
+  2.9.13 ([#389](https://github.com/dannymcc/may/pull/389)) and `coverage` >=
+  7.16.2 ([#401](https://github.com/dannymcc/may/pull/401)).
+- SQLAlchemy is held on the 2.0 series. Version 2.1 resolves `postgresql://`
+  to the psycopg 3 driver, which the image does not include.
+- New interface text is translated in all 19 locales.
+
 ## [0.44.2] - 2026-09-12
 
 ### Fixed

@@ -203,6 +203,19 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
+def _reject_settings_change():
+    """Abandon a rejected settings submission and return to the settings page.
+
+    The page needs the full admin context (integrations, version, branding),
+    so re-rendering it from a validation branch with only part of that context
+    raised a 500 instead of showing the flashed error (#414). Rolling back and
+    redirecting keeps one place that builds the page, and stops the earlier
+    half of a rejected form from being saved by a later commit.
+    """
+    db.session.rollback()
+    return redirect(url_for('auth.settings'))
+
+
 @bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
@@ -215,6 +228,7 @@ def settings():
         if submitted_separator in ('none', 'space', 'comma', 'period'):
             current_user.thousand_separator = submitted_separator
         current_user.round_costs = request.form.get('round_costs') == 'on'
+        current_user.show_net_cost_per_distance = request.form.get('show_net_cost_per_distance') == 'on'
         currency = (request.form.get('currency', 'USD') or 'USD').strip()
         if currency == 'custom':
             custom_currency = (request.form.get('custom_currency') or '').strip()
@@ -228,8 +242,7 @@ def settings():
             existing = User.query.filter(User.email == new_email, User.id != current_user.id).first()
             if existing:
                 flash(_('Email already in use by another account'), 'error')
-                branding = AppSettings.get_all_branding() if current_user.is_admin else {}
-                return render_template('auth/settings.html', branding=branding)
+                return _reject_settings_change()
             current_user.email = new_email
 
         # Update password if provided
@@ -238,14 +251,12 @@ def settings():
             confirm_password = request.form.get('confirm_new_password')
             if new_password != confirm_password:
                 flash(_('Passwords do not match'), 'error')
-                branding = AppSettings.get_all_branding() if current_user.is_admin else {}
-                return render_template('auth/settings.html', branding=branding)
+                return _reject_settings_change()
             # Validate password strength
             is_valid, error_msg = validate_password_strength(new_password)
             if not is_valid:
                 flash(error_msg, 'error')
-                branding = AppSettings.get_all_branding() if current_user.is_admin else {}
-                return render_template('auth/settings.html', branding=branding)
+                return _reject_settings_change()
             current_user.set_password(new_password)
 
         db.session.commit()

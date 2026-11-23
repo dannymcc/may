@@ -244,3 +244,36 @@ class TestChargingDelete:
         resp = auth_client.post(f'/charging/{session_id}/delete', follow_redirects=True)
         assert resp.status_code == 200
         assert db.session.get(ChargingSession, session_id) is None
+
+
+class TestDecimalStateOfCharge:
+    """A decimal SOC is accepted and stored to the whole percent (#390)."""
+
+    def test_form_fields_accept_decimals(self, auth_client, ev_vehicle):
+        html = auth_client.get('/charging/new').text
+        for field in ('start_soc', 'end_soc'):
+            tag = html[html.index(f'id="{field}"') - 60:html.index(f'id="{field}"') + 80]
+            assert 'step="any"' in tag
+
+    def test_decimal_soc_is_rounded_not_rejected(self, auth_client, ev_vehicle):
+        resp = auth_client.post('/charging/new', data={
+            'vehicle_id': str(ev_vehicle.id), 'date': '2026-10-01',
+            'kwh_added': '21.5', 'start_soc': '22,4', 'end_soc': '74.5',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        session = ChargingSession.query.filter_by(vehicle_id=ev_vehicle.id, kwh_added=21.5).one()
+        assert (session.start_soc, session.end_soc) == (22, 74)
+
+    def test_edit_accepts_decimal_and_ignores_out_of_range(self, auth_client, ev_vehicle, test_user):
+        from datetime import date
+        session = ChargingSession(vehicle_id=ev_vehicle.id, user_id=test_user.id,
+                                  date=date(2026, 10, 1), kwh_added=10)
+        db.session.add(session)
+        db.session.commit()
+        resp = auth_client.post(f'/charging/{session.id}/edit', data={
+            'vehicle_id': str(ev_vehicle.id), 'date': '2026-10-01',
+            'kwh_added': '10', 'start_soc': '19.6', 'end_soc': '140',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(session)
+        assert (session.start_soc, session.end_soc) == (20, None)

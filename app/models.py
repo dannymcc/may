@@ -24,6 +24,8 @@ CURRENCY_SYMBOLS = {
     'BRL': 'R$',
     'MXN': '$',
     'ZAR': 'R',
+    'ARS': '$',
+    'CLP': '$',
 }
 
 
@@ -120,6 +122,8 @@ class User(UserMixin, db.Model):
     # API access
     api_key = db.Column(db.String(64), unique=True, index=True)
     api_key_created_at = db.Column(db.DateTime)
+
+    show_net_cost_per_distance = db.Column(db.Boolean, default=False, nullable=False)
 
     # Menu preferences
     start_page = db.Column(db.String(50), default='dashboard')  # dashboard, vehicles, fuel, expenses, etc.
@@ -278,6 +282,8 @@ class Vehicle(db.Model):
     # Fuel info
     fuel_type = db.Column(db.String(20), default='petrol')  # petrol, diesel, electric, hybrid, lpg
     secondary_fuel_type = db.Column(db.String(20), nullable=True)  # e.g. adblue, lpg
+    # Baseline in the vehicle's odometer unit (or hours); None retains legacy totals.
+    starting_odometer = db.Column(db.Float, nullable=True)
     tank_capacity = db.Column(db.Float)  # in liters
     battery_capacity = db.Column(db.Float)  # in kWh for EVs
 
@@ -455,26 +461,72 @@ class Vehicle(db.Model):
     def currency_symbol(self):
         return get_currency_symbol(self.owner.currency if self.owner else None)
 
+    def _distance_readings(self):
+        """Odometer readings that mark out the distance this vehicle's costs cover.
+
+        Fill-ups and charging sessions are both energy purchases, so both
+        count: an electric vehicle has no fuel logs at all, and leaving its
+        charging readings out pinned Total Distance — and with it every
+        cost-per-distance figure — at zero (#412). Only when those give no
+        span to measure do logged trips stand in, for the owner who records
+        journeys but not readings at the charger.
+
+        Returned sorted, in the vehicle's own odometer unit (or engine hours).
+        """
+        readings = [log.odometer for log in
+                    self.fuel_logs.filter(FuelLog.recorded_odometer_filter()).all()]
+        readings += [session.odometer for session in self.charging_sessions.filter(
+            ChargingSession.odometer.isnot(None), ChargingSession.odometer > 0).all()]
+        if len(readings) < 2:
+            for trip in self.trips.all():
+                readings += [value for value in (trip.start_odometer, trip.end_odometer)
+                             if value is not None and value > 0]
+        return sorted(readings)
+
     def get_total_distance(self, distance_unit=None):
         """Get total distance for the vehicle.
 
-        If Tessie is enabled, returns the current odometer reading.
-        Otherwise, calculates from fuel log entries.
+        The span between the lowest and highest reading logged at a fill-up
+        or charging session (see :meth:`_distance_readings`), needing at
+        least two readings. An explicit starting odometer replaces the lowest
+        reading as the baseline; zero is a valid baseline, None is blank. A
+        missing endpoint returns zero.
+
+        If Tessie is enabled it supplies the endpoint, and with no baseline
+        the current odometer reading is returned as it always has been.
 
         Args:
             distance_unit: If provided ('km' or 'mi'), converts the result
-                to this unit. Otherwise returns the raw value in the
-                vehicle's effective odometer unit.
+                to this unit. With a baseline, an omitted unit means the
+                vehicle's own unit. Without a baseline, Tessie retains its
+                legacy kilometres default; logged readings use the vehicle unit.
 
         For an hours-tracked vehicle the readings are engine hours, so the
         span is returned as logged and ``distance_unit`` is ignored — there
         is no km/mi conversion to apply to an hour (#323).
         """
+        if self.starting_odometer is not None:
+            # A supplied baseline changes cost distance only. Fuel economy
+            # continues to use its existing full-tank consumption segments.
+            unit = self.get_effective_odometer_unit()
+            if (not self.tracks_hours() and self.uses_tessie_odometer()
+                    and self.tessie_last_odometer is not None):
+                latest = _distance_in(self.tessie_last_odometer, 'km', unit)
+            else:
+                readings = self._distance_readings()
+                if not readings:
+                    return 0
+                latest = readings[-1]
+            raw_distance = max(0, latest - self.starting_odometer)
+            if distance_unit and not self.tracks_hours():
+                return _distance_in(raw_distance, unit, distance_unit)
+            return raw_distance
+
         if self.tracks_hours():
-            logs = self.fuel_logs.filter(FuelLog.recorded_odometer_filter()).order_by(FuelLog.odometer).all()
-            if len(logs) < 2:
+            readings = self._distance_readings()
+            if len(readings) < 2:
                 return 0
-            return logs[-1].odometer - logs[0].odometer
+            return readings[-1] - readings[0]
 
         # If Tessie is enabled, use the odometer reading directly (always stored in km)
         if self.uses_tessie_odometer() and self.tessie_last_odometer:
@@ -483,11 +535,11 @@ class Vehicle(db.Model):
                 return odometer * 0.621371
             return odometer
 
-        # Otherwise calculate from fuel logs, stored in the vehicle's odometer unit
-        logs = self.fuel_logs.filter(FuelLog.recorded_odometer_filter()).order_by(FuelLog.odometer).all()
-        if len(logs) < 2:
+        # Otherwise calculate from logged readings, stored in the vehicle's odometer unit
+        readings = self._distance_readings()
+        if len(readings) < 2:
             return 0
-        raw_distance = logs[-1].odometer - logs[0].odometer
+        raw_distance = readings[-1] - readings[0]
         if distance_unit:
             return _distance_in(raw_distance, self.get_effective_odometer_unit(), distance_unit)
         return raw_distance
@@ -853,6 +905,13 @@ class Vehicle(db.Model):
             return total_cost / total_distance
         return None
 
+    def get_net_cost_per_distance(self):
+        """Cost after mileage reimbursements per km, mile, or engine hour."""
+        total_distance = self.get_total_distance()
+        if total_distance > 0:
+            return self.get_net_cost() / total_distance
+        return None
+
     def is_electric(self):
         """Check if vehicle uses any electric propulsion"""
         return self.fuel_type in ('electric', 'plugin_hybrid', 'hybrid')
@@ -899,28 +958,26 @@ class Vehicle(db.Model):
         days_elapsed = max(0, (today - period_start).days)
         days_remaining = max(0, (period_end - today).days)
 
-        # Baseline: last odometer reading before this period
-        baseline_log = (self.fuel_logs
-                        .filter(FuelLog.date < period_start)
-                        .order_by(FuelLog.date.desc(), FuelLog.odometer.desc())
-                        .first())
-        current_log = (self.fuel_logs
-                       .order_by(FuelLog.date.desc(), FuelLog.odometer.desc())
-                       .first())
+        # Every dated reading counts, whichever kind of entry carried it: an
+        # electric vehicle logs charging sessions and trips, never fuel (#412).
+        dated = [(log.date, log.odometer) for log in
+                 self.fuel_logs.filter(FuelLog.recorded_odometer_filter()).all()]
+        dated += [(session.date, session.odometer) for session in
+                  self.charging_sessions.filter(ChargingSession.odometer.isnot(None),
+                                                ChargingSession.odometer > 0).all()]
+        for trip in self.trips.all():
+            dated += [(trip.date, value) for value in (trip.start_odometer, trip.end_odometer)
+                      if value is not None and value > 0]
+        dated = sorted((day, reading) for day, reading in dated if day is not None)
 
-        if not current_log:
+        # Baseline: last odometer reading before this period, else the first in it
+        before = [reading for day, reading in dated if day < period_start]
+        if not dated:
             driven = 0.0
-        elif baseline_log:
-            driven = max(0.0, current_log.odometer - baseline_log.odometer)
+        elif before:
+            driven = max(0.0, dated[-1][1] - before[-1])
         else:
-            first_log = (self.fuel_logs
-                         .filter(FuelLog.date >= period_start)
-                         .order_by(FuelLog.date.asc(), FuelLog.odometer.asc())
-                         .first())
-            if first_log and current_log.id != first_log.id:
-                driven = max(0.0, current_log.odometer - first_log.odometer)
-            else:
-                driven = 0.0
+            driven = max(0.0, dated[-1][1] - dated[0][1])
 
         remaining = max(0.0, limit - driven)
         progress_pct = min(100.0, round(driven / limit * 100, 1)) if limit > 0 else 0.0
@@ -959,6 +1016,7 @@ class Vehicle(db.Model):
             'fuel_type': self.fuel_type,
             'secondary_fuel_type': self.secondary_fuel_type,
             'tank_capacity': self.tank_capacity,
+            'starting_odometer': self.starting_odometer,
             'is_active': self.is_active,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'stats': {
@@ -1408,6 +1466,7 @@ EXPENSE_CATEGORIES = [
     ('repairs', _l('Repairs')),
     ('inspection', _l('Inspection')),
     ('insurance', _l('Insurance')),
+    ('loan_payment', _l('Loan Payment')),
     ('tax', _l('Road Tax')),
     ('registration', _l('Registration')),
     ('parking', _l('Parking')),
@@ -1571,6 +1630,7 @@ MAINTENANCE_TYPES = [
     ('oil_filter', _l('Oil Filter')),
     ('air_filter', _l('Air Filter')),
     ('cabin_filter', _l('Cabin/Pollen Filter')),
+    ('air_conditioning_service', _l('Air-conditioning service')),
     ('fuel_filter', _l('Fuel Filter')),
     ('spark_plugs', _l('Spark Plugs')),
     ('brake_pads', _l('Brake Pads')),
@@ -1815,7 +1875,7 @@ class RecurringExpense(db.Model):
     vendor = db.Column(db.String(100))
 
     # Recurrence settings
-    frequency = db.Column(db.String(20), nullable=False)  # weekly, monthly, quarterly, yearly
+    frequency = db.Column(db.String(20), nullable=False)  # weekly, biweekly, monthly, quarterly, biannual, yearly
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date)  # optional end date
 
@@ -1843,6 +1903,8 @@ class RecurringExpense(db.Model):
 
         if self.frequency == 'weekly':
             self.next_due = base_date + relativedelta(weeks=1)
+        elif self.frequency == 'biweekly':
+            self.next_due = base_date + relativedelta(weeks=2)
         elif self.frequency == 'monthly':
             self.next_due = base_date + relativedelta(months=1)
         elif self.frequency == 'quarterly':

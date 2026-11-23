@@ -16,7 +16,18 @@ const context = vm.createContext({document: {getElementById: get, addEventListen
 vm.runInContext(script, context);
 context.updateVehicleOdometer();
 assert.equal(get('price_per_unit').value, '1.5');
+// A total entered against the remembered price works out the volume (#376).
+get('total_cost').value = '75'; context.calcQuickFuel('total');
+assert.equal(get('volume').value, '50.000');
+assert.equal(get('price_per_unit').value, '1.5');
+// Volume and total both typed from the receipt: the price is derived (#423).
 get('volume').value = '40'; context.calcQuickFuel('volume');
+assert.equal(get('total_cost').value, '60.00');
+get('total_cost').value = '75'; context.calcQuickFuel('total');
+assert.equal(get('volume').value, '40');
+assert.equal(get('price_per_unit').value, '1.875');
+// A price the driver typed is kept, and the volume gives way instead.
+get('price_per_unit').value = '1.5'; context.calcQuickFuel('price');
 assert.equal(get('total_cost').value, '60.00');
 get('total_cost').value = '75'; context.calcQuickFuel('total');
 assert.equal(get('volume').value, '50.000');
