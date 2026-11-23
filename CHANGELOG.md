@@ -42,8 +42,9 @@ This file starts at 0.28.0. Notes for earlier releases are on the
   now run in one worker and each period is claimed before it is written.
   Duplicates already created need deleting by hand. (#403)
 - Upgrading on PostgreSQL no longer fails while adding new columns. Boolean
-  defaults are written as PostgreSQL booleans, and one rejected statement no
-  longer blocks the ones after it. (#410)
+  defaults are written as PostgreSQL booleans, one rejected statement no
+  longer blocks the ones after it, and the upgrade no longer waits on its own
+  table locks. Verified by upgrading a 0.38.0 PostgreSQL database. (#410)
 - A rejected change on the Settings page (mismatched or weak password, email
   already in use) shows its error to administrators instead of a 500, and no
   longer saves the rest of the rejected form. (#414)
@@ -70,6 +71,8 @@ This file starts at 0.28.0. Notes for earlier releases are on the
   ([#388](https://github.com/dannymcc/may/pull/388)), `psycopg2-binary` >=
   2.9.13 ([#389](https://github.com/dannymcc/may/pull/389)) and `coverage` >=
   7.16.2 ([#401](https://github.com/dannymcc/may/pull/401)).
+- SQLAlchemy is held on the 2.0 series. Version 2.1 resolves `postgresql://`
+  to the psycopg 3 driver, which the image does not include.
 - New interface text is translated in all 19 locales.
 
 ## [0.44.2] - 2026-09-12

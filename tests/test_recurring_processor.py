@@ -224,7 +224,7 @@ def test_second_worker_cannot_generate_the_same_period(app, test_user, sample_ve
 
     db.session.execute(
         text('UPDATE recurring_expenses SET next_due = :due WHERE id = :id'),
-        {'due': today + timedelta(days=31), 'id': recurring.id})
+        {'due': (today + timedelta(days=31)).isoformat(), 'id': recurring.id})
     db.session.commit()
     set_committed_value(recurring, 'next_due', today)  # the stale in-memory copy
 
