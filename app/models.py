@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from flask_babel import lazy_gettext as _l
+from sqlalchemy.ext.hybrid import hybrid_property
 from app import db
 from app.utils import utcnow
 
@@ -2504,7 +2505,10 @@ class TireSet(db.Model):
         return total
 
     def to_dict(self):
-        """Serialize the tire set to a dictionary"""
+        """Serialize the tire set to a dictionary."""
+        readings = sorted((reading for tire in self.tires for reading in tire.measurements),
+                          key=lambda reading: reading.chronology)
+        export_order = {reading.id: rank for rank, reading in enumerate(readings, 1)}
         return {
             'id': self.id,
             'vehicle_id': self.vehicle_id,
@@ -2519,7 +2523,7 @@ class TireSet(db.Model):
             'is_fitted': self.is_fitted,
             'distance': self.get_distance(),
             'fitments': [f.to_dict() for f in self.fitments.all()],
-            'tires': [t.to_dict() for t in self.tires],
+            'tires': [t.to_dict(export_order) for t in self.tires],
             'tread_tracking': self.tread_tracking,
             'tread_warning_mm': self.tread_warning_mm,
             'tread_replace_mm': self.tread_replace_mm,
@@ -2623,9 +2627,9 @@ class Tire(db.Model):
             return _l('Warning threshold reached')
         return None
 
-    def to_dict(self):
+    def to_dict(self, export_order):
         return dict(identity=self.identity, label=self.label,
-                    measurements=[m.to_dict() for m in self.measurements])
+                    measurements=[m.to_dict(export_order[m.id]) for m in self.measurements])
 
 
 class TireMeasurement(db.Model):
@@ -2637,18 +2641,42 @@ class TireMeasurement(db.Model):
     depth_mm = db.Column(db.Float, nullable=False)
     odometer = db.Column(db.Float)
     position = db.Column(db.String(20), nullable=False, default='')
+    day_order = db.Column(db.Integer)
     tire = db.relationship('Tire', backref=db.backref(
         'measurements', cascade='all, delete-orphan',
-        order_by='TireMeasurement.measured_date.desc(), TireMeasurement.id.desc()'))
+        order_by=lambda: (TireMeasurement.measured_date.desc(),
+                          TireMeasurement.effective_day_order.desc(), TireMeasurement.id.desc())))
     __table_args__ = (
         db.CheckConstraint('depth_mm >= 0 AND depth_mm <= 100', name='valid_tread_depth'),
         db.CheckConstraint('odometer IS NULL OR odometer >= 0', name='valid_tread_odometer'),
     )
 
+    @hybrid_property
+    def effective_day_order(self):
+        # Rows recorded before the ordering migration use their insertion ID.
+        return self.id if self.day_order is None else self.day_order
+
+    @effective_day_order.expression
+    def effective_day_order(cls):
+        return db.func.coalesce(cls.day_order, cls.id)
+
+    @property
+    def chronology(self):
+        return self.measured_date, self.effective_day_order, self.id
+
+    @classmethod
+    def next_day_order(cls, tire_set_id, measured_date):
+        if tire_set_id is None:
+            return 1
+        last = (db.session.query(db.func.max(cls.effective_day_order))
+                .join(Tire)
+                .filter(Tire.tire_set_id == tire_set_id, cls.measured_date == measured_date).scalar())
+        return (last or 0) + 1
+
     @property
     def position_label(self):
         return dict(TIRE_POSITIONS).get(self.position, self.position)
 
-    def to_dict(self):
+    def to_dict(self, export_order):
         return dict(measured_date=self.measured_date.isoformat(), depth_mm=self.depth_mm,
-                    odometer=self.odometer, position=self.position, order=self.id)
+                    odometer=self.odometer, position=self.position, order=export_order)

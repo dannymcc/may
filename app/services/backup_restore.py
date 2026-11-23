@@ -2,8 +2,8 @@
 
 The restore always *merges*: records are added to the account that is signed
 in, and any record that already matches an existing one on its natural key is
-skipped rather than duplicated. Nothing is ever deleted or overwritten, so a
-restore can never destroy data the user still has.
+skipped rather than duplicated. Existing measurement values are preserved;
+merging a tire history can reconcile the order of readings on the same date.
 
 The two-step flow in the UI (preview, then apply) uses the same code path:
 ``restore_backup(..., dry_run=True)`` does the whole thing inside the request's
@@ -15,6 +15,7 @@ import logging
 import math
 import os
 import zipfile
+from collections import defaultdict
 from datetime import datetime, date, time
 
 from flask_babel import lazy_gettext as _l
@@ -824,10 +825,59 @@ def _restore_tires(tire_set, records, summary):
             key = (measured_date, has_order, order if has_order else -index)
             pending.append((key, tire.id, values))
 
+    if pending:
+        _merge_tread_measurements(tire_set, pending, summary['tire_measurements'])
+
+
+def _merge_tread_measurements(tire_set, pending, counts):
+    incoming_by_day = defaultdict(dict)
     for _, tire_id, values in sorted(pending, key=lambda item: item[0]):
-        exists = TireMeasurement.query.filter_by(tire_id=tire_id, **values).first()
-        if exists:
-            summary['tire_measurements']['skipped'] += 1
-        else:
-            db.session.add(TireMeasurement(tire_id=tire_id, **values))
-            summary['tire_measurements']['added'] += 1
+        incoming = incoming_by_day[values['measured_date']]
+        key = (tire_id, values['depth_mm'], values['odometer'], values['position'])
+        if incoming.pop(key, None) is not None:
+            counts['skipped'] += 1
+        # Keep the last occurrence of an equal reading in its original position.
+        incoming[key] = values
+
+    existing_by_day = defaultdict(list)
+    existing = (TireMeasurement.query.join(Tire)
+                .filter(Tire.tire_set_id == tire_set.id)
+                .order_by(TireMeasurement.measured_date,
+                          TireMeasurement.effective_day_order, TireMeasurement.id))
+    for reading in existing:
+        if reading.measured_date in incoming_by_day:
+            existing_by_day[reading.measured_date].append(reading)
+
+    for day, incoming in incoming_by_day.items():
+        existing = existing_by_day[day]
+        matches = {(row.tire_id, row.depth_mm, row.odometer, row.position): row for row in existing}
+        imported = []
+        for key, values in incoming.items():
+            reading = matches.get(key)
+            if reading is None:
+                reading = TireMeasurement(tire_id=key[0], **values)
+                db.session.add(reading)
+                counts['added'] += 1
+            else:
+                counts['skipped'] += 1
+            imported.append(reading)
+
+        # Attach destination-only readings to their next shared reading. Those
+        # with no later shared reading stay at the end in their existing order.
+        anchors = set(imported)
+        before = {}
+        unmatched = []
+        for reading in existing:
+            if reading in anchors:
+                before[reading] = unmatched
+                unmatched = []
+            else:
+                unmatched.append(reading)
+
+        merged = []
+        for reading in imported:
+            merged.extend(before.get(reading, ()))
+            merged.append(reading)
+        merged.extend(unmatched)
+        for order, reading in enumerate(merged, 1):
+            reading.day_order = order

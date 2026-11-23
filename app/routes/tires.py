@@ -131,10 +131,10 @@ def _tread_positions(tire_set):
             position = measurement.position
             if not position:
                 continue
-            # The relationship is ordered newest first, including same-day IDs.
+            # The relationship is ordered newest first, including same-day order.
             last_position_by_tire.setdefault(tire.id, measurement)
             previous = last_at_wheel.get(position)
-            if previous is None or (measurement.measured_date, measurement.id) > (previous.measured_date, previous.id):
+            if previous is None or measurement.chronology > previous.chronology:
                 last_at_wheel[position] = measurement
         if tire.id not in last_position_by_tire and tire.latest_measurement:
             unassigned.append(tire.latest_measurement)
@@ -179,6 +179,7 @@ def _save_tread_form(tire_set, vehicle):
     labels = {tire.label for tire in tire_set.tires}
     latest_at_wheel, _unassigned = _tread_positions(tire_set)
     used = set()
+    next_order = TireMeasurement.next_day_order(tire_set.id, measured_date)
     for position, depth in readings:
         tire_id = request.form.get(f'tire_{position}', '')
         previous = latest_at_wheel.get(position)
@@ -208,7 +209,9 @@ def _save_tread_form(tire_set, vehicle):
                == (measured_date, depth, odometer, position) for row in tire.measurements):
             continue
         db.session.add(TireMeasurement(tire=tire, measured_date=measured_date,
-                                       depth_mm=depth, odometer=odometer, position=position))
+                                       depth_mm=depth, odometer=odometer, position=position,
+                                       day_order=next_order))
+        next_order += 1
 
 
 def _tread_distances(tire_set):
@@ -549,6 +552,8 @@ def tread(set_id, measurement_id=None):
             if editing is None:
                 tire_set.tread_tracking = True
             measurement = editing or TireMeasurement()
+            if measurement.measured_date != measured_date:
+                measurement.day_order = TireMeasurement.next_day_order(tire_set.id, measured_date)
             measurement.tire = tire
             measurement.measured_date = measured_date
             measurement.depth_mm = depth
