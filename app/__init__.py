@@ -236,11 +236,14 @@ def _run_schema_migrations(app):
     """
     from sqlalchemy import text, inspect
 
-    inspector = inspect(db.engine)
-    existing_tables = set(inspector.get_table_names())
     dialect = db.engine.dialect
 
     with db.engine.begin() as conn:
+        # Inspect through this same connection. Once a column has been added
+        # the transaction holds a lock on that table, and on PostgreSQL an
+        # inspector on a second connection waits on it forever (#410).
+        inspector = inspect(conn)
+        existing_tables = set(inspector.get_table_names())
         for table in db.metadata.tables.values():
             if table.name not in existing_tables:
                 continue
@@ -263,7 +266,7 @@ def _run_schema_migrations(app):
                     )
 
         # Re-inspect so we see indexes on freshly-added columns.
-        inspector = inspect(db.engine)
+        inspector = inspect(conn)
         for table in db.metadata.tables.values():
             if table.name not in existing_tables:
                 continue
