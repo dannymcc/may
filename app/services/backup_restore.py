@@ -15,6 +15,7 @@ import logging
 import math
 import os
 import zipfile
+from bisect import bisect_left
 from collections import defaultdict
 from datetime import datetime, date, time
 
@@ -851,11 +852,7 @@ def _merge_tread_measurements(tire_set, pending, counts):
 
     for day, incoming in incoming_by_day.items():
         existing = existing_by_day[day]
-        anchor_positions = {}
-        for index, row in enumerate(existing):
-            key = (row.tire_id, row.depth_mm, row.odometer, row.position)
-            # An equal value measured again may be newer than the backup.
-            anchor_positions.setdefault(key, index)
+        anchor_positions = _tread_anchor_positions(existing, incoming)
 
         insertions = defaultdict(list)
         waiting = []
@@ -888,3 +885,26 @@ def _merge_tread_measurements(tire_set, pending, counts):
         merged.extend(insertions.get(len(existing), ()))
         for order, reading in enumerate(merged, 1):
             reading.day_order = order
+
+
+def _tread_anchor_positions(existing, incoming):
+    """Match shared readings in backup order when the destination allows it."""
+    occurrences = defaultdict(list)
+    for index, row in enumerate(existing):
+        key = (row.tire_id, row.depth_mm, row.odometer, row.position)
+        occurrences[key].append(index)
+
+    anchors = {}
+    next_position = 0
+    for key in incoming:
+        positions = occurrences.get(key)
+        if not positions:
+            continue
+        occurrence = bisect_left(positions, next_position)
+        if occurrence == len(positions):
+            # The two timelines disagree. Use the first matching anchors and
+            # leave the destination's existing chronology intact.
+            return {key: positions[0] for key, positions in occurrences.items()}
+        anchors[key] = positions[occurrence]
+        next_position = positions[occurrence] + 1
+    return anchors
