@@ -332,3 +332,27 @@ def test_positive_number_rejects_nonfinite(value):
     number, error = validate_positive_number(value, 'Cost')
     assert number is None
     assert error is not None
+
+
+class TestSelfHostedWebhookOptIn:
+    """ALLOW_SELFHOSTED_WEBHOOK opens private ranges only (#391)."""
+
+    def test_private_address_blocked_by_default(self, monkeypatch):
+        import app.security as security
+        monkeypatch.setattr(security, 'ALLOW_SELFHOSTED_WEBHOOK', False)
+        ok, _ = security.validate_webhook_url('http://192.168.1.20:5678/webhook/may')
+        assert not ok
+
+    def test_private_address_allowed_when_opted_in(self, monkeypatch):
+        import app.security as security
+        monkeypatch.setattr(security, 'ALLOW_SELFHOSTED_WEBHOOK', True)
+        ok, _ = security.validate_webhook_url('http://192.168.1.20:5678/webhook/may')
+        assert ok
+
+    def test_loopback_and_link_local_stay_blocked(self, monkeypatch):
+        import app.security as security
+        monkeypatch.setattr(security, 'ALLOW_SELFHOSTED_WEBHOOK', True)
+        for url in ('http://127.0.0.1:5678/hook', 'http://127.0.0.2/hook',
+                    'http://169.254.169.254/latest/meta-data', 'http://[::1]/hook'):
+            ok, _ = security.validate_webhook_url(url)
+            assert not ok, url

@@ -34,6 +34,11 @@ else:
 
 
 SECRET_KEY_FILE = basedir / 'data' / '.secret_key'
+# Opt-in for self-hosters whose webhook receiver (n8n, Home Assistant, ...)
+# lives on a private address. Loopback, link-local and reserved ranges stay
+# blocked either way.
+ALLOW_SELFHOSTED_WEBHOOK = os.environ.get(
+    'ALLOW_SELFHOSTED_WEBHOOK', '').strip().lower() in ('1', 'true', 'yes', 'on')
 
 
 def _read_secret_key(path):
