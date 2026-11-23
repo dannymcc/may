@@ -189,6 +189,7 @@ def view(vehicle_id):
         'consumption_by_fuel': vehicle.get_average_consumption_by_fuel(
             current_user.consumption_unit, current_user.volume_unit),
         'cost_per_distance': vehicle.get_cost_per_distance(),
+        'net_cost_per_distance': vehicle.get_net_cost_per_distance(),
         'total_fuel_volume': vehicle.get_total_fuel_volume(),
         'total_co2_kg': vehicle.get_total_co2_kg(current_user.volume_unit),
         'fuel_logs_count': vehicle.fuel_logs.count(),

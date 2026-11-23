@@ -163,6 +163,13 @@
                                     </select>
                                 </div>
 
+                                <div class="mb-4">
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                        <input type="checkbox" name="show_net_cost_per_distance" {% if current_user.show_net_cost_per_distance %}checked{% endif %}>
+                                        {{ _('Show net cost per %(unit)s', unit=current_user.distance_unit) }}
+                                    </label>
+                                    <p class="mt-1 text-sm text-gray-500">{{ _('Deducts recorded mileage reimbursements.') }}</p>
+                                </div>
                                 <div class="flex items-center">
                                     <input type="checkbox" name="round_costs" id="round_costs"
                                            {% if current_user.round_costs %}checked{% endif %}
