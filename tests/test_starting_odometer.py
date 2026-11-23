@@ -88,10 +88,11 @@ def test_saved_baseline_updates_vehicle_and_dashboard(auth_client, sample_vehicl
     assert '2053' in auth_client.get('/dashboard').text
 
 
-@pytest.mark.parametrize('source', ['trip', 'expense', 'charging'])
+@pytest.mark.parametrize('source,extends', [('trip', True), ('expense', False), ('charging', True)])
 @pytest.mark.parametrize('unit', ['km', 'mi', 'hours'])
-def test_nonfuel_readings_do_not_change_distance(app, sample_vehicle, test_user, source, unit):
-    """Non-fuel readings never advance the fuel-based cost distance."""
+def test_which_readings_extend_distance(app, sample_vehicle, test_user, source, extends, unit):
+    """Charging readings count like fuel readings, and trips fill in when
+    there is no other span to measure (#412); an expense reading never does."""
     from app.models import Trip, ChargingSession
     sample_vehicle.tracking_unit = 'hours' if unit == 'hours' else 'mileage'
     sample_vehicle.odometer_unit = 'mi' if unit == 'mi' else 'km'
@@ -105,13 +106,72 @@ def test_nonfuel_readings_do_not_change_distance(app, sample_vehicle, test_user,
         record = ChargingSession(**common, odometer=300, kwh_added=10, total_cost=5)
     db.session.add(record)
     db.session.commit()
-    assert sample_vehicle.get_total_distance() == 0
+    assert sample_vehicle.get_total_distance() == (200 if extends else 0)
     sample_vehicle.starting_odometer = 50
-    assert sample_vehicle.get_total_distance() == 50
+    expected = 250 if extends else 50
+    assert sample_vehicle.get_total_distance() == expected
     if unit == 'mi':
-        assert sample_vehicle.get_total_distance('km') == pytest.approx(50 / 0.621371)
+        assert sample_vehicle.get_total_distance('km') == pytest.approx(expected / 0.621371)
     elif unit == 'hours':
-        assert sample_vehicle.get_total_distance('mi') == 50
+        assert sample_vehicle.get_total_distance('mi') == expected
+
+
+def test_trips_do_not_stretch_a_span_measured_at_the_pump(app, sample_vehicle, test_user):
+    """Trips only stand in when fill-ups and charges give no span of their own."""
+    from app.models import Trip
+    common = dict(vehicle_id=sample_vehicle.id, user_id=test_user.id, date=date(2026, 10, 1))
+    db.session.add_all([
+        FuelLog(**common, odometer=100, volume=10, total_cost=20),
+        FuelLog(**common, odometer=400, volume=10, total_cost=20),
+        Trip(**common, start_odometer=400, end_odometer=900, purpose='business'),
+    ])
+    db.session.commit()
+    assert sample_vehicle.get_total_distance() == 300
+
+
+def test_electric_vehicle_distance_and_cost_rate(app, sample_vehicle, test_user):
+    """An EV with charging sessions and no fuel logs gets a distance and a rate (#412)."""
+    from app.models import ChargingSession
+    sample_vehicle.fuel_type = 'electric'
+    sample_vehicle.odometer_unit = 'km'
+    for day, reading in [(1, 263), (9, 352), (14, 447)]:
+        db.session.add(ChargingSession(
+            vehicle_id=sample_vehicle.id, user_id=test_user.id, date=date(2026, 10, day),
+            odometer=reading, kwh_added=20, total_cost=4.6))
+    db.session.commit()
+    assert sample_vehicle.get_total_distance() == 184
+    assert sample_vehicle.get_cost_per_distance() == pytest.approx(13.8 / 184)
+
+
+def test_electric_vehicle_with_trips_only(app, sample_vehicle, test_user):
+    """Trips alone are enough when no charge carries a reading (#412)."""
+    from app.models import ChargingSession, Trip
+    sample_vehicle.fuel_type = 'electric'
+    common = dict(vehicle_id=sample_vehicle.id, user_id=test_user.id)
+    db.session.add_all([
+        ChargingSession(**common, date=date(2026, 10, 1), kwh_added=20, total_cost=4.91),
+        Trip(**common, date=date(2026, 10, 9), start_odometer=263, end_odometer=333, purpose='personal'),
+        Trip(**common, date=date(2026, 10, 14), start_odometer=438, end_odometer=447, purpose='personal'),
+    ])
+    db.session.commit()
+    assert sample_vehicle.get_total_distance() == 184
+
+
+def test_annual_mileage_counts_charging_and_trip_readings(app, sample_vehicle, test_user):
+    """The mileage allowance tracker no longer reads zero for an EV (#412)."""
+    from datetime import timedelta
+    from app.models import ChargingSession, Trip
+    today = date.today()
+    sample_vehicle.annual_mileage_limit = 10000
+    sample_vehicle.annual_mileage_start_date = today - timedelta(days=60)
+    common = dict(vehicle_id=sample_vehicle.id, user_id=test_user.id)
+    db.session.add_all([
+        ChargingSession(**common, date=today - timedelta(days=30), odometer=263, kwh_added=20),
+        Trip(**common, date=today - timedelta(days=1), start_odometer=438, end_odometer=447,
+             purpose='personal'),
+    ])
+    db.session.commit()
+    assert sample_vehicle.get_annual_mileage_stats()['driven'] == 184
 
 
 def test_no_baseline_and_confirmed_zero(app, sample_vehicle, test_user):
