@@ -120,7 +120,7 @@ class TestFuelNew:
             'date': '2024-03-05',
             'odometer': '15401',
             'volume': '1',
-            'total_cost': '2000',
+            'total_cost': '2000000',
             'station_id': str(sample_station.id),
         }, follow_redirects=True)
         assert resp.status_code == 200
@@ -1522,7 +1522,7 @@ class TestDerivedPriceEditing:
         old_price = sample_fuel_log.price_per_unit
         response = auth_client.post(f'/fuel/{sample_fuel_log.id}/edit', data={
             'date': '2024-03-05', 'odometer': '15400', 'volume': '1',
-            'total_cost': '2000',
+            'total_cost': '2000000',
         })
         assert response.status_code == 302
         db.session.refresh(sample_fuel_log)
@@ -1607,3 +1607,44 @@ def test_unknown_adblue_reading_does_not_invalidate_diesel_consumption(sample_ve
     db.session.commit()
     assert logs[-1].get_consumption() == pytest.approx(8)
     assert sample_vehicle.get_average_consumption() == pytest.approx(8)
+
+
+class TestHighDenominationCurrencies:
+    """Prices in the thousands per litre are ordinary in CLP and ARS (#393, #396)."""
+
+    def test_new_fuel_log_accepts_price_above_1000(self, auth_client, sample_vehicle):
+        resp = auth_client.post('/fuel/new', data={
+            'vehicle_id': str(sample_vehicle.id), 'date': '2026-10-01',
+            'odometer': '15000', 'volume': '60', 'price_per_unit': '2050',
+            'total_cost': '123000', 'is_full_tank': 'on',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        assert b'cannot exceed' not in resp.data
+        log = FuelLog.query.filter_by(vehicle_id=sample_vehicle.id, odometer=15000.0).one()
+        assert log.price_per_unit == 2050
+        assert log.total_cost == 123000
+
+    def test_edit_fuel_log_accepts_price_above_1000(self, auth_client, sample_vehicle, test_user):
+        log = FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                      date=date(2026, 10, 1), odometer=15000, volume=40,
+                      price_per_unit=900, total_cost=36000, is_full_tank=True)
+        db.session.add(log)
+        db.session.commit()
+        resp = auth_client.post(f'/fuel/{log.id}/edit', data={
+            'vehicle_id': str(sample_vehicle.id), 'date': '2026-10-01',
+            'odometer': '15000', 'volume': '40', 'price_per_unit': '1350',
+            'total_cost': '54000', 'is_full_tank': 'on',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        assert b'cannot exceed' not in resp.data
+        db.session.refresh(log)
+        assert log.price_per_unit == 1350
+
+    def test_last_price_default_survives_a_high_price(self, sample_vehicle, test_user):
+        from app.routes.fuel import get_last_fuel_price
+
+        db.session.add(FuelLog(vehicle_id=sample_vehicle.id, user_id=test_user.id,
+                               date=date(2026, 10, 1), odometer=15000, volume=40,
+                               price_per_unit=2050, total_cost=82000, is_full_tank=True))
+        db.session.commit()
+        assert get_last_fuel_price(sample_vehicle, test_user.id) == 2050

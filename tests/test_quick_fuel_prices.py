@@ -20,7 +20,7 @@ def test_quick_price_uses_primary_fuel_and_preserves_zero(auth_client, sample_ve
     assert get_last_fuel_price(sample_vehicle, test_user.id) == 1.5
     add_log(sample_vehicle, test_user, 0, 'diesel')
     add_log(sample_vehicle, test_user, -1, 'diesel')
-    add_log(sample_vehicle, test_user, 1001, 'diesel')
+    add_log(sample_vehicle, test_user, 1000001, 'diesel')
     assert get_last_fuel_price(sample_vehicle, test_user.id) == 0
     html = auth_client.get(f'/fuel/quick?vehicle_id={sample_vehicle.id}').text
     assert re.search(r'id="price_per_unit"[^>]*value="0(?:\.0)?"', html)

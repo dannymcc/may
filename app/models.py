@@ -24,6 +24,8 @@ CURRENCY_SYMBOLS = {
     'BRL': 'R$',
     'MXN': '$',
     'ZAR': 'R',
+    'ARS': '$',
+    'CLP': '$',
 }
 
 

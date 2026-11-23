@@ -177,7 +177,7 @@
                                     <label for="round_costs" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Round costs to whole numbers') }}</label>
                                 </div>
 
-                                {% set known_currencies =['USD', 'EUR', 'GBP', 'AUD', 'CAD', 'INR', 'JPY', 'CHF', 'NZD', 'SEK', 'NOK', 'DKK', 'PLN', 'BRL', 'MXN', 'ZAR'] %}
+                                {% set known_currencies =['USD', 'EUR', 'GBP', 'AUD', 'CAD', 'INR', 'JPY', 'CHF', 'NZD', 'SEK', 'NOK', 'DKK', 'PLN', 'BRL', 'MXN', 'ZAR', 'ARS', 'CLP'] %}
                                 {% set is_custom_currency = current_user.currency not in known_currencies %}
                                 <div>
                                     <label for="currency" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Currency') }}</label>
@@ -199,6 +199,8 @@
                                         <option value="BRL" {% if current_user.currency == 'BRL' %}selected{% endif %}>BRL (R$)</option>
                                         <option value="MXN" {% if current_user.currency == 'MXN' %}selected{% endif %}>MXN ($)</option>
                                         <option value="ZAR" {% if current_user.currency == 'ZAR' %}selected{% endif %}>ZAR (R)</option>
+                                        <option value="ARS" {% if current_user.currency == 'ARS' %}selected{% endif %}>ARS ($)</option>
+                                        <option value="CLP" {% if current_user.currency == 'CLP' %}selected{% endif %}>CLP ($)</option>
                                         <option value="custom" {% if is_custom_currency %}selected{% endif %}>{{ _('Custom') }}</option>
                                     </select>
                                     <div id="custom-currency-field" class="mt-3 {% if not is_custom_currency %}hidden{% endif %}">
