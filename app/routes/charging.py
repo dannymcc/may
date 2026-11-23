@@ -6,6 +6,26 @@ from app import db
 from app.utils import parse_decimal
 from app.models import Vehicle, ChargingSession, CHARGER_TYPES
 
+def _soc_input(field):
+    """Read a state-of-charge percentage, rounded to the whole percent stored.
+
+    Cars and chargers report figures such as 74.5%. The field used to demand a
+    whole number, and on mobile browsers that give no validation message the
+    form simply refused to submit (#390). A value that is not a number at all,
+    or falls outside 0-100, is left blank rather than failing the whole entry.
+    """
+    raw = request.form.get(field)
+    if not raw:
+        return None
+    try:
+        value = parse_decimal(raw)
+    except (TypeError, ValueError):
+        return None
+    if value is None or not 0 <= value <= 100:
+        return None
+    return int(round(value))
+
+
 bp = Blueprint('charging', __name__, url_prefix='/charging')
 
 
@@ -81,8 +101,8 @@ def new():
             end_time=end_time,
             odometer=parse_decimal(request.form.get('odometer')) if request.form.get('odometer') else None,
             kwh_added=parse_decimal(request.form.get('kwh_added')) if request.form.get('kwh_added') else None,
-            start_soc=int(request.form.get('start_soc')) if request.form.get('start_soc') else None,
-            end_soc=int(request.form.get('end_soc')) if request.form.get('end_soc') else None,
+            start_soc=_soc_input('start_soc'),
+            end_soc=_soc_input('end_soc'),
             cost_per_kwh=parse_decimal(request.form.get('cost_per_kwh')) if request.form.get('cost_per_kwh') else None,
             total_cost=parse_decimal(request.form.get('total_cost')) if request.form.get('total_cost') else None,
             charger_type=request.form.get('charger_type'),
@@ -138,8 +158,8 @@ def edit(session_id):
 
         session.odometer = parse_decimal(request.form.get('odometer')) if request.form.get('odometer') else None
         session.kwh_added = parse_decimal(request.form.get('kwh_added')) if request.form.get('kwh_added') else None
-        session.start_soc = int(request.form.get('start_soc')) if request.form.get('start_soc') else None
-        session.end_soc = int(request.form.get('end_soc')) if request.form.get('end_soc') else None
+        session.start_soc = _soc_input('start_soc')
+        session.end_soc = _soc_input('end_soc')
         session.cost_per_kwh = parse_decimal(request.form.get('cost_per_kwh')) if request.form.get('cost_per_kwh') else None
         session.total_cost = parse_decimal(request.form.get('total_cost')) if request.form.get('total_cost') else None
         session.charger_type = request.form.get('charger_type')
