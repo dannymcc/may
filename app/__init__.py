@@ -573,6 +573,40 @@ def create_app(config_class=Config):
     return app
 
 
+_scheduler_lock_file = None
+
+
+def _hold_scheduler_lock(app):
+    """Return True when this process owns the background jobs.
+
+    Gunicorn runs several workers and each one starts the scheduler thread, so
+    every hourly job ran once per worker at the same moment — which is how a
+    recurring expense came to be written twice (#403). An advisory lock on a
+    file in the data directory lets one process run them; the kernel releases
+    it if that process dies, so a surviving worker takes over on its next pass.
+    Where locking is unavailable the jobs run anyway, as they always have.
+    """
+    global _scheduler_lock_file
+    if _scheduler_lock_file is not None:
+        return True
+    try:
+        import fcntl
+    except ImportError:  # not a POSIX platform
+        return True
+    try:
+        from config import SECRET_KEY_FILE
+        handle = open(SECRET_KEY_FILE.parent / '.scheduler.lock', 'w')
+    except OSError:
+        return True
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        handle.close()
+        return False
+    _scheduler_lock_file = handle
+    return True
+
+
 def _start_reminder_scheduler(app):
     """Start a background thread that processes reminders daily."""
     import threading
@@ -587,6 +621,12 @@ def _start_reminder_scheduler(app):
         time.sleep(60)
 
         while True:
+            if not _hold_scheduler_lock(app):
+                # Another worker process owns the scheduled jobs. Keep asking,
+                # so this one takes over if that worker is recycled.
+                time.sleep(3600)
+                continue
+
             try:
                 with app.app_context():
                     from app.services.reminder_processor import process_due_reminders

@@ -157,7 +157,9 @@ def generate(recurring_id):
 
     # Create a single expense for the current period and advance the schedule,
     # sharing the same logic as the background auto-generation processor.
-    generate_expense_for_period(recurring)
+    if generate_expense_for_period(recurring) is None:
+        flash(_('%(name)s was already generated for this period.') % {'name': recurring.name}, 'info')
+        return redirect(url_for('recurring.index'))
     db.session.commit()
 
     flash(_('Expense created for %(name)s.') % {'name': recurring.name}, 'success')
