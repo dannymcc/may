@@ -5698,3 +5698,7 @@ msgstr "Udskift dæk"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "Det tidligere dæk og dets målinger bevares i historikken."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "USA"

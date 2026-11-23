@@ -5685,3 +5685,7 @@ msgstr "Vaihda rengas"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "Aiempi rengas ja sen mittaukset säilyvät historiassa."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "Yhdysvallat"

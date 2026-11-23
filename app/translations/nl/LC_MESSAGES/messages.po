@@ -5723,3 +5723,7 @@ msgstr "Band vervangen"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "De vorige band en de metingen blijven in de geschiedenis staan."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "VS"

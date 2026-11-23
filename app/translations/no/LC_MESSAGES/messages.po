@@ -5681,3 +5681,7 @@ msgstr "Bytt dekk"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "Det forrige dekket og målingene beholdes i historikken."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "USA"

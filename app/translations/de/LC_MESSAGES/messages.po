@@ -5756,3 +5756,7 @@ msgstr "Reifen ersetzen"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "Der bisherige Reifen und seine Messungen bleiben in der Historie."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "USA"

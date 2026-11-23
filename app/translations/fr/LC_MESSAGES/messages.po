@@ -5731,3 +5731,7 @@ msgstr "Remplacer le pneu"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "L’ancien pneu et ses mesures restent dans l’historique."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "États-Unis"

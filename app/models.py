@@ -364,7 +364,12 @@ class Vehicle(db.Model):
             return True
         if self.charging_sessions.filter(ChargingSession.odometer.isnot(None)).first() is not None:
             return True
-        return self.expenses.filter(Expense.odometer.isnot(None)).first() is not None
+        if self.expenses.filter(Expense.odometer.isnot(None)).first() is not None:
+            return True
+        return (db.session.query(TireMeasurement.id)
+                .join(Tire).join(TireSet)
+                .filter(TireSet.vehicle_id == self.id, TireMeasurement.odometer.isnot(None))
+                .first() is not None)
 
     def get_effective_odometer_unit(self):
         """Return the odometer unit for this vehicle.
@@ -2646,4 +2651,4 @@ class TireMeasurement(db.Model):
 
     def to_dict(self):
         return dict(measured_date=self.measured_date.isoformat(), depth_mm=self.depth_mm,
-                    odometer=self.odometer, position=self.position)
+                    odometer=self.odometer, position=self.position, order=self.id)

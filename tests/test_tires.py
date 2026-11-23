@@ -407,9 +407,9 @@ class TestTreadHistory:
         assert TireMeasurement.query.count() == 1
         assert b'name="depth_mm"' not in auth_client.get(f'/tires/{sample_tire_set.id}/tread').data
 
-    def test_other_account_cannot_read_or_change_measurements(self, auth_client, sample_tire_set, test_user):
+    def test_other_account_cannot_read_or_change_measurements(self, auth_client, sample_tire_set):
         from app.models import TireMeasurement, User
-        self.record(auth_client, sample_tire_set)
+        self.record(auth_client, sample_tire_set, label='Private tread marker')
         measurement = TireMeasurement.query.one()
         other = User(username='unrelated', email='unrelated@example.org')
         other.set_password('OtherPass123!')
@@ -418,6 +418,9 @@ class TestTreadHistory:
         auth_client.get('/auth/logout')
         auth_client.post('/auth/login', data=dict(username='unrelated', password='OtherPass123!'))
         page = auth_client.get(f'/tires/{sample_tire_set.id}/tread', follow_redirects=True)
+        assert page.request.path == '/tires/'
+        assert b'Access denied' in page.data
+        assert b'Private tread marker' not in page.data
         assert b'name="depth_mm"' not in page.data
         self.record(auth_client, sample_tire_set, label='B')
         auth_client.post(f'/tires/measurements/{measurement.id}/delete')
@@ -494,6 +497,55 @@ class TestTreadHistory:
         restored_set = admin_user.get_all_vehicles()[0].tire_sets.first()
         assert restored_set.tread_warning_mm == 4
         assert restored_set.tread_replace_mm == 2
+
+    @pytest.mark.parametrize('legacy_backup', [False, True])
+    def test_restore_keeps_same_date_readings_in_order(self, auth_client, sample_tire_set,
+                                                       admin_user, legacy_backup):
+        from app.models import Tire
+        from app.services.backup_restore import restore_backup
+
+        self.record(auth_client, sample_tire_set, label='First', measured_date='2026-10-01',
+                    position='front_left', depth_mm='6')
+        tire = Tire.query.one()
+        if not legacy_backup:
+            self.record(auth_client, sample_tire_set, label='Second', measured_date='2026-10-02',
+                        position='front_right', depth_mm='8')
+        self.record(auth_client, sample_tire_set, tire_id=tire.id, measured_date='2026-10-02',
+                    position='front_right', depth_mm='6')
+        self.record(auth_client, sample_tire_set, tire_id=tire.id, measured_date='2026-10-02',
+                    position='front_right', depth_mm='2')
+        sample_tire_set.tread_replace_mm = 2
+        db.session.commit()
+
+        exported = auth_client.get('/api/export/json').get_json()
+        if legacy_backup:
+            for tire_data in exported['vehicles'][0]['tire_sets'][0]['tires']:
+                for measurement in tire_data['measurements']:
+                    measurement.pop('order')
+        restore_backup(exported, admin_user)
+        restored = admin_user.get_all_vehicles()[0].tire_sets.first()
+        first = next(tire for tire in restored.tires if tire.label == 'First')
+        assert [reading.depth_mm for reading in first.measurements] == [2, 6, 6]
+        assert str(first.tread_status) == 'Replacement threshold reached'
+        if not legacy_backup:
+            assert first.latest_measurement.id > restored.tires[1].latest_measurement.id
+        repeat = restore_backup(exported, admin_user)
+        assert repeat['tire_measurements']['added'] == 0
+
+    def test_tread_odometer_prevents_changing_tracking_unit(self, auth_client, sample_tire_set):
+        from app.models import TireMeasurement
+        vehicle = sample_tire_set.vehicle
+        self.record(auth_client, sample_tire_set, odometer='')
+        assert not vehicle.has_odometer_readings()
+        reading = TireMeasurement.query.one()
+        reading.odometer = 0
+        db.session.commit()
+        assert vehicle.has_odometer_readings()
+
+        auth_client.post(f'/vehicles/{vehicle.id}/edit',
+                         data=dict(name=vehicle.name, vehicle_type=vehicle.vehicle_type, tracking_unit='hours'))
+        db.session.refresh(vehicle)
+        assert vehicle.tracking_unit == 'mileage'
 
     def test_restore_rejects_invalid_measurements(self, auth_client, sample_tire_set, test_user):
         from app.models import TireMeasurement

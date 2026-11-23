@@ -139,7 +139,7 @@
                                             <input type="radio" name="tread_unit" value="{{ value }}"
                                                    {% if current_user.tread_unit == value %}checked{% endif %}
                                                    class="text-primary-600 focus:ring-primary-500">
-                                            {{ unit }}{% if value == 'inch32' %} (US){% endif %}
+                                            {{ unit }}{% if value == 'inch32' %} ({{ _('US') }}){% endif %}
                                         </label>
                                         {% endfor %}
                                     </div>

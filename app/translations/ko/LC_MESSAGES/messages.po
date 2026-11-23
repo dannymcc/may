@@ -5540,3 +5540,7 @@ msgstr "타이어 교체"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "이전 타이어와 해당 측정값은 기록에 남습니다."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "미국"

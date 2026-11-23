@@ -5695,3 +5695,7 @@ msgstr "Byt däck"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "Det tidigare däcket och dess mätningar finns kvar i historiken."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "USA"

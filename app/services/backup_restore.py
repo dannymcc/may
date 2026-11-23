@@ -772,6 +772,7 @@ def _restore_tires(tire_set, records, summary):
         summary['tires']['skipped'] += 1
         return
     db.session.flush()
+    pending = []
     for raw in records:
         if not isinstance(raw, dict):
             continue
@@ -799,7 +800,7 @@ def _restore_tires(tire_set, records, summary):
         if not isinstance(measurements, list):
             summary['tire_measurements']['skipped'] += 1
             continue
-        for record in measurements:
+        for index, record in enumerate(measurements):
             if not isinstance(record, dict):
                 continue
             measured_date = _parse_date(record.get('measured_date'))
@@ -816,9 +817,17 @@ def _restore_tires(tire_set, records, summary):
                 continue
             values = dict(measured_date=measured_date, depth_mm=depth,
                           odometer=odometer, position=position)
-            exists = TireMeasurement.query.filter_by(tire_id=tire.id, **values).first()
-            if exists:
-                summary['tire_measurements']['skipped'] += 1
-            else:
-                db.session.add(TireMeasurement(tire=tire, **values))
-                summary['tire_measurements']['added'] += 1
+            order = record.get('order')
+            has_order = type(order) is int and order > 0
+            # Earlier backups list each tire's readings newest first. Modern
+            # backups also carry an order key to preserve ties across tires.
+            key = (measured_date, has_order, order if has_order else -index)
+            pending.append((key, tire.id, values))
+
+    for _, tire_id, values in sorted(pending, key=lambda item: item[0]):
+        exists = TireMeasurement.query.filter_by(tire_id=tire_id, **values).first()
+        if exists:
+            summary['tire_measurements']['skipped'] += 1
+        else:
+            db.session.add(TireMeasurement(tire_id=tire_id, **values))
+            summary['tire_measurements']['added'] += 1

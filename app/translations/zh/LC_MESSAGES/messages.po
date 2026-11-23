@@ -5520,3 +5520,7 @@ msgstr "更换轮胎"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "原轮胎及其测量值保留在历史记录中。"
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "美国"

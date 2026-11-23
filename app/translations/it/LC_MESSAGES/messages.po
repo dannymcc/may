@@ -5725,3 +5725,7 @@ msgstr "Sostituisci pneumatico"
 #: app/templates/tires/_tread_form.html:79
 msgid "The previous tire and its measurements stay in the history."
 msgstr "Lo pneumatico precedente e le sue misurazioni restano nella cronologia."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "USA"
