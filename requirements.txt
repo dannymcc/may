@@ -15,6 +15,6 @@ weasyprint>=70.0
 requests>=2.34.2
 python-dateutil>=2.9.0.post0
 psycopg2-binary>=2.9.13
-pytest>=9.1.1
+pytest>=9.2.0
 pytest-cov>=7.1.0
 coverage>=7.16.2
