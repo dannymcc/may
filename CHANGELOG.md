@@ -8,6 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.46.2] - 2026-11-27
+
+### Fixed
+
+- "Automatically create reminder when due" on maintenance schedules now
+  creates a reminder. The setting was saved but never acted on. A reminder is
+  created once a schedule is within its "Remind Days Before" window, or within
+  500 km or miles of its next-due reading (25 hours for hours-tracked
+  vehicles). Each service cycle gets one reminder, and recording the work
+  closes it. **After upgrading, the first hourly check creates reminders for
+  every schedule already inside its window**, so a vehicle with overdue
+  schedules may get several at once. Untick the setting on a schedule to stop
+  this.
+- UK fuel prices are recorded under the date the retailer's feed gives, not
+  the date they were downloaded. A feed more than 7 days old is skipped and
+  reported, instead of stamping months-old prices as today's.
+  ([#371](https://github.com/dannymcc/may/issues/371))
+- The Applegreen, Ascona Group and Esso Tesco Alliance feeds are no longer
+  defaults: their certificates have expired or the feed has gone. Admins can
+  still add them back in the feed override.
+  ([#371](https://github.com/dannymcc/may/issues/371))
+- The v1 API accepts every vehicle type the web form offers, not only car,
+  van, motorbike and scooter.
+
+### Changed
+
+- Database migration: reminders record the maintenance schedule that created
+  them. Migrations run automatically on container startup.
+
 ## [0.46.1] - 2026-11-27
 
 ### Added
