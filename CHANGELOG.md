@@ -8,6 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.46.3] - 2026-11-27
+
+### Added
+
+- Petrol fill-ups can record their grade: **E10** (standard unleaded) or
+  **E5** (super unleaded). The choice appears on the fuel form for petrol
+  vehicles, hybrids and the petrol side of a bi-fuel vehicle, and defaults to
+  E10. Older fill-ups show "Not recorded" until one is set.
+  ([#268](https://github.com/dannymcc/may/issues/268))
+- E5 prices are filed under the station's super unleaded price series, the
+  same one the UK price feeds use, so they no longer mix with E10 prices.
+  That series and the feeds' premium diesel series now have readable labels.
+- The grade is shown in the fill-up list and included in the API, CSV and
+  JSON exports, and backups. The API rejects unknown grades.
+
+### Changed
+
+- Consumption counts every grade as petrol, so mixing E10 and E5 still gives
+  one petrol figure.
+- Database migration: fill-ups gain an optional grade column. Migrations run
+  automatically on container startup.
+- New interface text is translated in all 19 locales.
+
 ## [0.46.2] - 2026-11-27
 
 ### Fixed
