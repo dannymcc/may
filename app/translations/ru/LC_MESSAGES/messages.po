@@ -5558,3 +5558,150 @@ msgstr ""
 #: app/templates/vehicles/view.html:1290
 msgid "No fuel prices recorded yet."
 msgstr "Цены на топливо пока не записаны."
+
+#: app/models.py:2586
+msgid "Not recorded"
+msgstr "Не указано"
+
+#: app/models.py:2587
+msgid "Front left"
+msgstr "Переднее левое"
+
+#: app/models.py:2587
+msgid "Front right"
+msgstr "Переднее правое"
+
+#: app/models.py:2588
+msgid "Rear left"
+msgstr "Заднее левое"
+
+#: app/models.py:2588
+msgid "Rear right"
+msgstr "Заднее правое"
+
+#: app/models.py:2589
+msgid "Front"
+msgstr "Переднее"
+
+#: app/models.py:2589
+msgid "Rear"
+msgstr "Заднее"
+
+#: app/models.py:2589
+msgid "Spare"
+msgstr "Запасное"
+
+#: app/models.py:2616
+msgid "Replacement threshold reached"
+msgstr "Достигнут порог замены"
+
+#: app/models.py:2618
+msgid "Warning threshold reached"
+msgstr "Достигнут порог предупреждения"
+
+#: app/routes/tires.py:562
+msgid "Invalid tread measurement. Check the tire, date, depth and reading."
+msgstr "Некорректное измерение. Проверьте шину, дату, глубину и показание счётчика."
+
+#: app/services/backup_restore.py:46
+#: app/templates/tires/_tread_history.html:3
+#: app/templates/tires/index.html:78
+msgid "Tread depth history"
+msgstr "История глубины протектора"
+
+#: app/templates/tires/_tread_form.html:101
+msgid "Leave threshold fields blank to disable them."
+msgstr "Оставьте поля порогов пустыми, чтобы отключить их."
+
+#: app/templates/tires/_tread_form.html:90
+msgid "Warning threshold"
+msgstr "Порог предупреждения"
+
+#: app/templates/tires/_tread_form.html:91
+msgid "Replacement threshold"
+msgstr "Порог замены"
+
+#: app/templates/tires/tread.html:17
+msgid "New tire"
+msgstr "Новая шина"
+
+#: app/templates/tires/tread.html:27
+msgid "New tire label"
+msgstr "Метка новой шины"
+
+#: app/templates/auth/settings.html:135 app/templates/tires/tread.html:36
+msgid "Tread depth"
+msgstr "Глубина протектора"
+
+#: app/templates/tires/tread.html:47
+msgid "Position at measurement"
+msgstr "Положение при измерении"
+
+#: app/templates/tires/_tread_history.html:26
+msgid "Delete this measurement?"
+msgstr "Удалить это измерение?"
+
+#: app/services/backup_restore.py:45
+msgid "Individual tires"
+msgstr "Отдельные шины"
+
+#: app/templates/tires/_tread_form.html:12
+msgid "Track tread depth"
+msgstr "Учитывать глубину протектора"
+
+#: app/templates/tires/_tread_form.html:15
+msgid "Leave wheels you did not measure blank."
+msgstr "Оставьте поля для колёс без замера пустыми."
+
+#: app/templates/tires/_tread_form.html:32
+msgid "Use the latest vehicle reading"
+msgstr "Использовать последнее показание счётчика автомобиля"
+
+#: app/templates/tires/_tread_form.html:38
+msgid "If you moved a tire, select its existing label at the new position."
+msgstr "Если вы переставили шину, в новой позиции выберите её прежнее обозначение."
+
+#: app/templates/tires/_tread_form.html:43
+msgid "Wheel positions"
+msgstr "Положения колёс"
+
+#: app/templates/tires/_tread_form.html:61
+msgid "Last measured:"
+msgstr "Последний замер:"
+
+#: app/templates/tires/_tread_form.html:106 app/templates/tires/tread.html:2
+#: app/templates/tires/tread.html:10
+msgid "Individual measurements"
+msgstr "Отдельные замеры"
+
+#: app/templates/tires/_tread_history.html:22
+msgid "Distance on this set"
+msgstr "Пробег на этом комплекте"
+
+#: app/templates/tires/_tread_history.html:40
+msgid "No tread measurements yet."
+msgstr "Замеров глубины протектора пока нет."
+
+#: app/routes/tires.py:331 app/routes/tires.py:378
+msgid "Check the tread depths, date, odometer and tire selection."
+msgstr "Проверьте глубину протектора, дату, показание счётчика и выбранные шины."
+
+#: app/templates/tires/_tread_form.html:68
+msgid "Tire assignment"
+msgstr "Назначение шины"
+
+#: app/templates/tires/_tread_form.html:71
+msgid "First measurement"
+msgstr "Первый замер"
+
+#: app/templates/tires/_tread_form.html:75
+msgid "Replace tire"
+msgstr "Заменить шину"
+
+#: app/templates/tires/_tread_form.html:79
+msgid "The previous tire and its measurements stay in the history."
+msgstr "Предыдущая шина и её замеры остаются в истории."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "США"

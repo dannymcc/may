@@ -2,8 +2,8 @@
 
 The restore always *merges*: records are added to the account that is signed
 in, and any record that already matches an existing one on its natural key is
-skipped rather than duplicated. Nothing is ever deleted or overwritten, so a
-restore can never destroy data the user still has.
+skipped rather than duplicated. Existing measurement values are preserved;
+merging a tire history can reconcile the order of readings on the same date.
 
 The two-step flow in the UI (preview, then apply) uses the same code path:
 ``restore_backup(..., dry_run=True)`` does the whole thing inside the request's
@@ -15,13 +15,18 @@ import logging
 import math
 import os
 import zipfile
+from bisect import bisect_left
+from collections import defaultdict
 from datetime import datetime, date, time
+
+from flask_babel import lazy_gettext as _l
 
 from app import db
 from app.models import (
     Vehicle, FuelLog, Expense, Trip, ChargingSession, Reminder,
     MaintenanceSchedule, MaintenanceEvent, RecurringExpense, Document, VehicleSpec,
-    VehiclePart, FuelStation, FuelPriceHistory, Attachment, TireSet, TireFitment
+    VehiclePart, FuelStation, FuelPriceHistory, Attachment, TireSet, TireFitment,
+    Tire, TireMeasurement, TIRE_POSITIONS,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,6 +44,8 @@ SECTION_LABELS = {
     'maintenance_events': 'Maintenance History',
     'tire_sets': 'Tires',
     'tire_fitments': 'Fitting history',
+    'tires': _l('Individual tires'),
+    'tire_measurements': _l('Tread depth history'),
     'recurring_expenses': 'Recurring expenses',
     'documents': 'Documents',
     'parts': 'Parts',
@@ -264,7 +271,8 @@ VEHICLE_SECTIONS = [
     Section('tire_sets', TireSet,
             {'name': 'str', 'tire_type': 'str', 'size': 'str', 'purchase_date': 'date',
              'purchase_odometer': 'float', 'cost': 'float', 'notes': 'str',
-             'is_retired': 'bool', 'created_at': 'datetime'},
+             'is_retired': 'bool', 'created_at': 'datetime',
+             'tread_tracking': 'bool', 'tread_warning_mm': 'float', 'tread_replace_mm': 'float'},
             key_fields=('name', 'tire_type', 'size')),
     Section('recurring_expenses', RecurringExpense,
             {'name': 'str', 'category': 'str', 'description': 'str',
@@ -408,9 +416,10 @@ def _zip_upload_names(zip_path):
 def restore_backup(data, user, zip_path=None, upload_folder=None, dry_run=False):
     """Merge a backup into ``user``'s account.
 
-    Existing records are never modified or deleted; a record whose natural key
-    already exists is counted as skipped. With ``dry_run`` the work is done and
-    then rolled back, so the returned summary previews a real restore.
+    A record whose natural key already exists is counted as skipped. Existing
+    measurement values are preserved. Inserting a missing tread measurement can
+    update the ordering metadata of retained readings on the same date.
+    With ``dry_run``, all changes, including ordering updates, are rolled back.
     """
     summary = _new_summary()
     summary['vehicle_details'] = []
@@ -492,7 +501,7 @@ def _restore_vehicles(data, user, summary, available_files):
         for section in VEHICLE_SECTIONS:
             added, skipped, (attach_added, attach_skipped) = _restore_child_records(
                 section, raw_vehicle.get(section.name) or [], vehicle, user,
-                available_files, summary['tire_fitments']
+                available_files, summary['tire_fitments'], summary
             )
             summary[section.name]['added'] += added
             summary[section.name]['skipped'] += skipped
@@ -558,7 +567,7 @@ def _restore_fitments(tire_set, records, counts):
             counts['added'] += 1
 
 
-def _restore_child_records(section, records, vehicle, user, available_files, fitment_counts):
+def _restore_child_records(section, records, vehicle, user, available_files, fitment_counts, summary):
     """Add a vehicle's child records, skipping ones that already exist.
 
     Returns ``(added, skipped, attachments)`` where ``attachments`` is the
@@ -573,6 +582,13 @@ def _restore_child_records(section, records, vehicle, user, available_files, fit
         if not isinstance(record, dict):
             continue
         values = section.parse(record)
+        if section.name == 'tire_sets':
+            warning, replace = values.get('tread_warning_mm'), values.get('tread_replace_mm')
+            if (any(v is not None and (not math.isfinite(v) or not 0 <= v <= 100)
+                    for v in (warning, replace))
+                    or (warning is not None and replace is not None and warning < replace)):
+                skipped += 1
+                continue
         if section.name == 'maintenance_events':
             schedules = vehicle.maintenance_schedules.filter_by(
                 name=values.get('name'), maintenance_type=values.get('maintenance_type')).all()
@@ -593,6 +609,7 @@ def _restore_child_records(section, records, vehicle, user, available_files, fit
                 existing = next(row for row in vehicle.tire_sets.all()
                                 if section.key_of_row(row) == key)
                 _restore_fitments(existing, record.get('fitments') or [], fitment_counts)
+                _restore_tires(existing, record.get('tires') or [], summary)
             if owner_field:
                 # The record is already here, so its attachments may be too;
                 # they are counted as skipped rather than duplicated.
@@ -607,6 +624,7 @@ def _restore_child_records(section, records, vehicle, user, available_files, fit
         added += 1
         if section.name == 'tire_sets':
             _restore_fitments(row, record.get('fitments') or [], fitment_counts)
+            _restore_tires(row, record.get('tires') or [], summary)
 
         if owner_field and record.get('attachments'):
             db.session.flush()
@@ -748,3 +766,145 @@ def _copy_files(zip_path, available_files, upload_folder, summary, dry_run=False
             except (KeyError, OSError) as exc:
                 logger.warning('Backup restore: could not write %s: %s', base, exc)
                 summary['files']['skipped'] += 1
+
+
+def _restore_tires(tire_set, records, summary):
+    """Restore stable tire identities and measurements, including on repeat imports."""
+    from uuid import UUID
+    if not isinstance(records, list):
+        summary['tires']['skipped'] += 1
+        return
+    db.session.flush()
+    pending = []
+    for raw in records:
+        if not isinstance(raw, dict):
+            continue
+        label = _parse_str(raw.get('label'))
+        try:
+            identity = UUID(raw.get('identity')).hex
+        except (ValueError, TypeError, AttributeError):
+            summary['tires']['skipped'] += 1
+            continue
+        if not label or len(label) > 100:
+            summary['tires']['skipped'] += 1
+            continue
+        tire = Tire.query.filter_by(tire_set_id=tire_set.id, identity=identity).first()
+        if tire is None and any(t.label == label for t in tire_set.tires):
+            summary['tires']['skipped'] += 1
+            continue
+        if tire is None:
+            tire = Tire(tire_set=tire_set, identity=identity, label=label)
+            db.session.add(tire)
+            db.session.flush()
+            summary['tires']['added'] += 1
+        else:
+            summary['tires']['skipped'] += 1
+        measurements = raw.get('measurements') or []
+        if not isinstance(measurements, list):
+            summary['tire_measurements']['skipped'] += 1
+            continue
+        for index, record in enumerate(measurements):
+            if not isinstance(record, dict):
+                continue
+            measured_date = _parse_date(record.get('measured_date'))
+            depth = _parse_float(record.get('depth_mm'))
+            odometer = _parse_float(record.get('odometer'))
+            position = record.get('position', '')
+            if (measured_date is None or depth is None or not math.isfinite(depth)
+                    or isinstance(record.get('depth_mm'), bool) or not 0 <= depth <= 100
+                    or not isinstance(position, str) or position not in dict(TIRE_POSITIONS)
+                    or isinstance(record.get('odometer'), bool)
+                    or (record.get('odometer') not in (None, '') and odometer is None)
+                    or (odometer is not None and (not math.isfinite(odometer) or odometer < 0))):
+                summary['tire_measurements']['skipped'] += 1
+                continue
+            values = dict(measured_date=measured_date, depth_mm=depth,
+                          odometer=odometer, position=position)
+            order = record.get('order')
+            has_order = type(order) is int and order > 0
+            # Earlier backups list each tire's readings newest first. Modern
+            # backups also carry an order key to preserve ties across tires.
+            key = (measured_date, has_order, order if has_order else -index)
+            pending.append((key, tire.id, values))
+
+    if pending:
+        _merge_tread_measurements(tire_set, pending, summary['tire_measurements'])
+
+
+def _merge_tread_measurements(tire_set, pending, counts):
+    incoming_by_day = defaultdict(dict)
+    for _, tire_id, values in sorted(pending, key=lambda item: item[0]):
+        incoming = incoming_by_day[values['measured_date']]
+        key = (tire_id, values['depth_mm'], values['odometer'], values['position'])
+        if incoming.pop(key, None) is not None:
+            counts['skipped'] += 1
+        # Keep the last occurrence of an equal reading in its original position.
+        incoming[key] = values
+
+    existing_by_day = defaultdict(list)
+    existing = (TireMeasurement.query.join(Tire)
+                .filter(Tire.tire_set_id == tire_set.id)
+                .order_by(TireMeasurement.measured_date,
+                          TireMeasurement.effective_day_order, TireMeasurement.id))
+    for reading in existing:
+        if reading.measured_date in incoming_by_day:
+            existing_by_day[reading.measured_date].append(reading)
+
+    for day, incoming in incoming_by_day.items():
+        existing = existing_by_day[day]
+        anchor_positions = _tread_anchor_positions(existing, incoming)
+
+        insertions = defaultdict(list)
+        waiting = []
+        after_last_anchor = 0
+        for key, values in incoming.items():
+            position = anchor_positions.get(key)
+            if position is None:
+                reading = TireMeasurement(tire_id=key[0], **values)
+                db.session.add(reading)
+                waiting.append(reading)
+                counts['added'] += 1
+                continue
+            counts['skipped'] += 1
+            if waiting:
+                insertions[position].extend(waiting)
+                waiting = []
+            after_last_anchor = position + 1
+
+        # Insert missing readings before their next shared observation, or
+        # after their last shared observation when the backup has no next one.
+        # The destination list stays in order even if backup anchors disagree.
+        if waiting:
+            insertions[after_last_anchor].extend(waiting)
+        if not insertions:
+            continue
+        merged = []
+        for position, reading in enumerate(existing):
+            merged.extend(insertions.get(position, ()))
+            merged.append(reading)
+        merged.extend(insertions.get(len(existing), ()))
+        for order, reading in enumerate(merged, 1):
+            reading.day_order = order
+
+
+def _tread_anchor_positions(existing, incoming):
+    """Match shared readings in backup order when the destination allows it."""
+    occurrences = defaultdict(list)
+    for index, row in enumerate(existing):
+        key = (row.tire_id, row.depth_mm, row.odometer, row.position)
+        occurrences[key].append(index)
+
+    anchors = {}
+    next_position = 0
+    for key in incoming:
+        positions = occurrences.get(key)
+        if not positions:
+            continue
+        occurrence = bisect_left(positions, next_position)
+        if occurrence == len(positions):
+            # The two timelines disagree. Use the first matching anchors and
+            # leave the destination's existing chronology intact.
+            return {key: positions[0] for key, positions in occurrences.items()}
+        anchors[key] = positions[occurrence]
+        next_position = positions[occurrence] + 1
+    return anchors

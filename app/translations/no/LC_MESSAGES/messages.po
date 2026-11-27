@@ -5538,3 +5538,150 @@ msgstr ""
 #: app/templates/vehicles/view.html:1290
 msgid "No fuel prices recorded yet."
 msgstr "Ingen drivstoffpriser registrert ennå."
+
+#: app/models.py:2586
+msgid "Not recorded"
+msgstr "Ikke registrert"
+
+#: app/models.py:2587
+msgid "Front left"
+msgstr "Foran til venstre"
+
+#: app/models.py:2587
+msgid "Front right"
+msgstr "Foran til høyre"
+
+#: app/models.py:2588
+msgid "Rear left"
+msgstr "Bak til venstre"
+
+#: app/models.py:2588
+msgid "Rear right"
+msgstr "Bak til høyre"
+
+#: app/models.py:2589
+msgid "Front"
+msgstr "Foran"
+
+#: app/models.py:2589
+msgid "Rear"
+msgstr "Bak"
+
+#: app/models.py:2589
+msgid "Spare"
+msgstr "Reservehjul"
+
+#: app/models.py:2616
+msgid "Replacement threshold reached"
+msgstr "Utskiftingsgrense nådd"
+
+#: app/models.py:2618
+msgid "Warning threshold reached"
+msgstr "Varselgrense nådd"
+
+#: app/routes/tires.py:562
+msgid "Invalid tread measurement. Check the tire, date, depth and reading."
+msgstr "Ugyldig måling. Kontroller dekk, dato, mønsterdybde og tellerstand."
+
+#: app/services/backup_restore.py:46
+#: app/templates/tires/_tread_history.html:3
+#: app/templates/tires/index.html:78
+msgid "Tread depth history"
+msgstr "Mønsterdybdehistorikk"
+
+#: app/templates/tires/_tread_form.html:101
+msgid "Leave threshold fields blank to disable them."
+msgstr "La grensefeltene stå tomme for å deaktivere dem."
+
+#: app/templates/tires/_tread_form.html:90
+msgid "Warning threshold"
+msgstr "Varselgrense"
+
+#: app/templates/tires/_tread_form.html:91
+msgid "Replacement threshold"
+msgstr "Utskiftingsgrense"
+
+#: app/templates/tires/tread.html:17
+msgid "New tire"
+msgstr "Nytt dekk"
+
+#: app/templates/tires/tread.html:27
+msgid "New tire label"
+msgstr "Navn på nytt dekk"
+
+#: app/templates/auth/settings.html:135 app/templates/tires/tread.html:36
+msgid "Tread depth"
+msgstr "Mønsterdybde"
+
+#: app/templates/tires/tread.html:47
+msgid "Position at measurement"
+msgstr "Plassering ved måling"
+
+#: app/templates/tires/_tread_history.html:26
+msgid "Delete this measurement?"
+msgstr "Slette denne målingen?"
+
+#: app/services/backup_restore.py:45
+msgid "Individual tires"
+msgstr "Enkeltdekk"
+
+#: app/templates/tires/_tread_form.html:12
+msgid "Track tread depth"
+msgstr "Registrer mønsterdybde"
+
+#: app/templates/tires/_tread_form.html:15
+msgid "Leave wheels you did not measure blank."
+msgstr "La feltene for umålte hjul stå tomme."
+
+#: app/templates/tires/_tread_form.html:32
+msgid "Use the latest vehicle reading"
+msgstr "Bruk kjøretøyets siste avlesning"
+
+#: app/templates/tires/_tread_form.html:38
+msgid "If you moved a tire, select its existing label at the new position."
+msgstr "Hvis du har flyttet et dekk, velg dekkets eksisterende merking på den nye posisjonen."
+
+#: app/templates/tires/_tread_form.html:43
+msgid "Wheel positions"
+msgstr "Hjulposisjoner"
+
+#: app/templates/tires/_tread_form.html:61
+msgid "Last measured:"
+msgstr "Sist målt:"
+
+#: app/templates/tires/_tread_form.html:106 app/templates/tires/tread.html:2
+#: app/templates/tires/tread.html:10
+msgid "Individual measurements"
+msgstr "Enkeltmålinger"
+
+#: app/templates/tires/_tread_history.html:22
+msgid "Distance on this set"
+msgstr "Kjørelengde med dette settet"
+
+#: app/templates/tires/_tread_history.html:40
+msgid "No tread measurements yet."
+msgstr "Ingen målinger av mønsterdybden ennå."
+
+#: app/routes/tires.py:331 app/routes/tires.py:378
+msgid "Check the tread depths, date, odometer and tire selection."
+msgstr "Kontroller mønsterdybdene, datoen, tellerstanden og de valgte dekkene."
+
+#: app/templates/tires/_tread_form.html:68
+msgid "Tire assignment"
+msgstr "Dekktildeling"
+
+#: app/templates/tires/_tread_form.html:71
+msgid "First measurement"
+msgstr "Første måling"
+
+#: app/templates/tires/_tread_form.html:75
+msgid "Replace tire"
+msgstr "Bytt dekk"
+
+#: app/templates/tires/_tread_form.html:79
+msgid "The previous tire and its measurements stay in the history."
+msgstr "Det forrige dekket og målingene beholdes i historikken."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "USA"
