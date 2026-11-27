@@ -181,11 +181,13 @@ def new():
 
         db.session.add(expense)
 
-        # Optionally mark a maintenance schedule as performed by this
-        # expense (#86): stamps the expense's date/odometer onto the
-        # schedule and recalculates the next due point.
-        schedule_id = request.form.get('maintenance_schedule_id', type=int)
-        if schedule_id:
+        # Optionally mark maintenance schedules as performed by this
+        # expense (#86, #387): stamps the expense's date/odometer onto each
+        # selected schedule and recalculates its next due point.
+        schedule_ids = request.form.getlist('maintenance_schedule_id', type=int)
+        for schedule_id in dict.fromkeys(schedule_ids):
+            if not schedule_id:
+                continue
             schedule = db.session.get(MaintenanceSchedule, schedule_id)
             if schedule and schedule.vehicle_id == vehicle_id:
                 schedule.last_performed_date = date

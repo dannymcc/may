@@ -97,14 +97,13 @@
                 {% if not expense and maintenance_schedules %}
                 <div>
                     <label for="maintenance_schedule_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Mark Maintenance as Performed') }}</label>
-                    <select name="maintenance_schedule_id" id="maintenance_schedule_id"
+                    <select name="maintenance_schedule_id" id="maintenance_schedule_id" multiple size="4"
                             class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                        <option value="">{{ _('— none —') }}</option>
                         {% for schedule in maintenance_schedules %}
                         <option value="{{ schedule.id }}" data-vehicle-id="{{ schedule.vehicle_id }}">{{ schedule.name }}</option>
                         {% endfor %}
                     </select>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Optional — records the schedule as performed on the expense date') }}</p>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ _('Optional — records each selected schedule as performed on the expense date') }}</p>
                 </div>
                 {% endif %}
 
@@ -192,7 +191,7 @@
                     const match = opt.dataset.vehicleId === vehicleId;
                     opt.hidden = !match;
                     if (match) visible++;
-                    if (!match && opt.selected) scheduleSelect.value = '';
+                    if (!match && opt.selected) opt.selected = false;
                 });
                 scheduleSelect.closest('div').style.display = visible ? '' : 'none';
             }

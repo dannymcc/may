@@ -1,4 +1,5 @@
 import io
+import re
 import pytest
 from datetime import date
 from app import db
@@ -66,6 +67,70 @@ class TestExpenseNew:
         expense = Expense.query.filter_by(description='Annual insurance').first()
         assert expense is not None
         assert expense.vendor == 'Insurance Co'
+
+
+class TestMarkMaintenancePerformed:
+    """One expense can stamp several maintenance schedules (#387)."""
+
+    def _schedule(self, vehicle, user, name, maintenance_type='oil_change'):
+        from app.models import MaintenanceSchedule
+        schedule = MaintenanceSchedule(
+            vehicle_id=vehicle.id, user_id=user.id, name=name,
+            maintenance_type=maintenance_type, interval_months=12, interval_km=15000,
+        )
+        db.session.add(schedule)
+        db.session.commit()
+        return schedule
+
+    def _expense_data(self, vehicle, schedule_ids):
+        return {
+            'vehicle_id': str(vehicle.id),
+            'date': '2026-10-01',
+            'category': 'maintenance',
+            'description': 'Workshop visit',
+            'cost': '180.00',
+            'odometer': '20000',
+            'maintenance_schedule_id': schedule_ids,
+        }
+
+    def test_expense_marks_multiple_schedules(self, auth_client, sample_vehicle, test_user):
+        first = self._schedule(sample_vehicle, test_user, 'Oil change')
+        second = self._schedule(sample_vehicle, test_user, 'Brake fluid', 'brake_fluid')
+        resp = auth_client.post('/expenses/new', data=self._expense_data(
+            sample_vehicle, [str(first.id), str(second.id)]), follow_redirects=True)
+        assert resp.status_code == 200
+        for schedule in (first, second):
+            db.session.refresh(schedule)
+            assert schedule.last_performed_date == date(2026, 10, 1)
+            assert schedule.last_performed_odometer == 20000
+            assert schedule.next_due_date == date(2027, 10, 1)
+            assert schedule.next_due_odometer == 35000
+
+    def test_single_schedule_still_works(self, auth_client, sample_vehicle, test_user):
+        schedule = self._schedule(sample_vehicle, test_user, 'Oil change')
+        resp = auth_client.post('/expenses/new', data=self._expense_data(
+            sample_vehicle, str(schedule.id)), follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(schedule)
+        assert schedule.last_performed_date == date(2026, 10, 1)
+
+    def test_other_vehicle_schedule_is_ignored(self, auth_client, sample_vehicle, test_user):
+        from app.models import Vehicle
+        other_vehicle = Vehicle(owner_id=test_user.id, name='Second car',
+                                vehicle_type='car', fuel_type='petrol', odometer_unit='km')
+        db.session.add(other_vehicle)
+        db.session.commit()
+        schedule = self._schedule(other_vehicle, test_user, 'Oil change')
+        resp = auth_client.post('/expenses/new', data=self._expense_data(
+            sample_vehicle, str(schedule.id)), follow_redirects=True)
+        assert resp.status_code == 200
+        db.session.refresh(schedule)
+        assert schedule.last_performed_date is None
+
+    def test_form_offers_multiple_selection(self, auth_client, sample_vehicle, test_user):
+        self._schedule(sample_vehicle, test_user, 'Oil change')
+        body = auth_client.get('/expenses/new').get_data(as_text=True)
+        assert re.search(r'<select name="maintenance_schedule_id"[^>]*multiple', body)
 
 
 class TestExpenseEdit:

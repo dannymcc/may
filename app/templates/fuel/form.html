@@ -152,11 +152,14 @@
                 </div>
 
                 <div class="sm:col-span-2 flex flex-wrap gap-6">
-                    <div class="flex items-center">
-                        <input type="checkbox" name="is_full_tank" id="is_full_tank"
-                               {% if log and log.is_full_tank %}checked{% elif not log %}checked{% endif %}
-                               class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
-                        <label for="is_full_tank" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Full tank fill-up') }}</label>
+                    <div>
+                        <div class="flex items-center">
+                            <input type="checkbox" name="is_full_tank" id="is_full_tank"
+                                   {% if log and log.is_full_tank %}checked{% elif not log %}checked{% endif %}
+                                   class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                            <label for="is_full_tank" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">{{ _('Full tank fill-up') }}</label>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('Consumption is measured between full tanks. Leave unticked for a partial fill-up — its fuel counts towards the next full tank.') }}</p>
                     </div>
 
                     <div class="flex items-center">

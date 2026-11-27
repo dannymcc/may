@@ -221,6 +221,33 @@ def test_matching_service_details_on_different_vehicles_are_not_hidden(auth_clie
     assert body.count('Oil service') == 2
 
 
+class TestBrakeTypes:
+    """Built-in types for the rest of the brake hardware (#422)."""
+
+    @pytest.mark.parametrize('maintenance_type,label', [
+        ('brake_rotors', 'Brake Rotors/Discs'),
+        ('brake_drums', 'Brake Drums'),
+        ('brake_shoes', 'Brake Shoes'),
+    ])
+    def test_create_schedule_with_brake_type(self, auth_client, sample_vehicle,
+                                             maintenance_type, label):
+        body = auth_client.get('/maintenance/new').get_data(as_text=True)
+        assert re.search(
+            rf'<option\b[^>]*value="{maintenance_type}"[^>]*>\s*{re.escape(label)}\s*</option>',
+            body,
+        )
+        resp = auth_client.post('/maintenance/new', data={
+            'vehicle_id': str(sample_vehicle.id),
+            'name': label,
+            'maintenance_type': maintenance_type,
+            'interval_months': '24',
+        })
+        assert resp.status_code == 302
+        schedule = MaintenanceSchedule.query.filter_by(name=label).one()
+        assert schedule.maintenance_type == maintenance_type
+        assert label in auth_client.get('/maintenance/').get_data(as_text=True)
+
+
 class TestAirConditioningService:
     """The built-in service type uses the normal schedule and history lifecycle."""
 
