@@ -1115,6 +1115,9 @@ class FuelLog(db.Model):
     sales_tax = db.Column(db.Float)  # sales tax paid, included in total_cost (issue #225)
 
     fuel_type = db.Column(db.String(20), nullable=True)  # overrides vehicle primary; set when vehicle has secondary fuel type
+    # Petrol grade for this fill-up: 'e10' or 'e5' (#268). Only meaningful
+    # when the fill-up's fuel is petrol; consumption ignores it entirely.
+    fuel_grade = db.Column(db.String(10), nullable=True)
     # Distance run on this fuel since the previous fill-up of the same fuel,
     # in the vehicle's odometer unit. Only bi-fuel vehicles need it (#221).
     fuel_distance = db.Column(db.Float, nullable=True)
@@ -1141,6 +1144,22 @@ class FuelLog(db.Model):
         """
         return resolve_price_fuel_type(
             self.fuel_type, self.vehicle.fuel_type if self.vehicle else None)
+
+    @property
+    def grade_label(self):
+        """The petrol grade's display label, or None when none is recorded."""
+        return dict(FUEL_GRADES).get(self.fuel_grade) if self.fuel_grade else None
+
+    @property
+    def price_fuel_type(self):
+        """The station price series this fill-up's price belongs to.
+
+        Normally the effective fuel type, but an E5 petrol fill-up is filed
+        under ``petrol_premium`` — the series the UK price feeds already use
+        for E5 — so super unleaded prices never mix with E10 ones (#268).
+        """
+        return price_series_fuel_type(
+            self.fuel_type, self.vehicle.fuel_type if self.vehicle else None, self.fuel_grade)
 
     @classmethod
     def effective_fuel_type_filter(cls, fuel_type, vehicle_fuel_type):
@@ -1262,6 +1281,7 @@ class FuelLog(db.Model):
             'total_cost': self.total_cost,
             'sales_tax': self.sales_tax,
             'fuel_type': self.effective_fuel_type,
+            'fuel_grade': self.fuel_grade,
             'fuel_distance': self.fuel_distance,
             'is_full_tank': self.is_full_tank,
             'is_missed': self.is_missed,
@@ -1588,9 +1608,42 @@ def _propulsion_fuel_type(fuel_type):
     return resolve_price_fuel_type(fuel_type, fuel_type)
 
 
+#: Petrol grades a fill-up can record (#268). E10 is the standard 95-octane
+#: grade sold at every UK and European forecourt; E5 is super unleaded.
+FUEL_GRADES = [
+    ('e10', _l('E10 (standard unleaded)')),
+    ('e5', _l('E5 (super unleaded)')),
+]
+
+#: Station price series that are a grade of a fuel rather than a fuel. The UK
+#: feeds write these, and E5 fill-ups are recorded under ``petrol_premium``.
+PRICE_SERIES_LABELS = {
+    'petrol_premium': _l('E5 (super unleaded)'),
+    'diesel_premium': _l('Premium diesel'),
+}
+
+
+def clean_fuel_grade(fuel_grade, log_fuel_type, vehicle_fuel_type):
+    """The grade to store: a known grade on a petrol fill-up, otherwise None."""
+    if fuel_grade not in dict(FUEL_GRADES):
+        return None
+    if resolve_price_fuel_type(log_fuel_type, vehicle_fuel_type) != 'petrol':
+        return None
+    return fuel_grade
+
+
+def price_series_fuel_type(log_fuel_type, vehicle_fuel_type, fuel_grade=None):
+    """Like :func:`resolve_price_fuel_type`, with E5 petrol filed as premium."""
+    fuel_type = resolve_price_fuel_type(log_fuel_type, vehicle_fuel_type)
+    if fuel_type == 'petrol' and fuel_grade == 'e5':
+        return 'petrol_premium'
+    return fuel_type
+
+
 def fuel_type_label(fuel_type):
     """Display label for a stored fuel type slug, translated where known."""
-    return dict(FUEL_TYPES).get(fuel_type) or (fuel_type or '').replace('_', ' ').title()
+    return (dict(FUEL_TYPES).get(fuel_type) or PRICE_SERIES_LABELS.get(fuel_type)
+            or (fuel_type or '').replace('_', ' ').title())
 
 
 # Reminder types

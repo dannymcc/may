@@ -141,6 +141,19 @@
                     </select>
                 </div>
 
+                {# Petrol grade (#268): shown only when this fill-up's fuel is petrol. #}
+                {% set chosen_grade = log.fuel_grade if log else 'e10' %}
+                <div id="fuel-grade-field" class="hidden">
+                    <label for="fuel_grade" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ _('Petrol grade') }}</label>
+                    <select name="fuel_grade" id="fuel_grade"
+                            class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                        {% if log %}<option value="" {% if not chosen_grade %}selected{% endif %}>{{ _('Not recorded') }}</option>{% endif %}
+                        {% for value, label in fuel_grades %}
+                        <option value="{{ value }}" {% if chosen_grade == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <div id="fuel-distance-field" class="hidden">
                     <label for="fuel_distance" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ _('Distance on this fuel') }} (<span id="fuel-distance-unit">{{ current_user.distance_unit }}</span>)
@@ -315,6 +328,23 @@ function updateFuelTypeSelector(selectedOption) {
     } else {
         fuelTypeField.classList.add('hidden');
     }
+    updateFuelGradeField(primaryFuel);
+}
+
+// The petrol grade only applies when this fill-up's fuel is petrol (#268):
+// the chosen fuel type if the vehicle offers one, otherwise the vehicle's own,
+// with hybrids resolving to petrol as they do on the server.
+function updateFuelGradeField(primaryFuel) {
+    const gradeField = document.getElementById('fuel-grade-field');
+    const gradeSelect = document.getElementById('fuel_grade');
+    const fuelTypeField = document.getElementById('fuel-type-field');
+    const fuelTypeSelect = document.getElementById('fuel_type');
+    const resolvesTo = {'hybrid': 'petrol', 'plugin_hybrid': 'petrol'};
+    let fuel = fuelTypeField.classList.contains('hidden') ? primaryFuel : fuelTypeSelect.value;
+    fuel = resolvesTo[fuel] || fuel || 'petrol';
+    const isPetrol = fuel === 'petrol';
+    gradeField.classList.toggle('hidden', !isPetrol);
+    gradeSelect.disabled = !isPetrol;
 }
 
 function calculateFuelAmounts() {
@@ -375,6 +405,12 @@ document.addEventListener('DOMContentLoaded', function() {
     updateFuelTypeSelector(selectedOption);
     vehicleSelect.addEventListener('change', function() {
         updateFuelTypeSelector(this.options[this.selectedIndex]);
+    });
+    // Switching a bi-fuel fill-up between petrol and another fuel shows or
+    // hides the petrol grade (#268).
+    document.getElementById('fuel_type').addEventListener('change', function() {
+        const current = vehicleSelect.options[vehicleSelect.selectedIndex];
+        updateFuelGradeField(current.getAttribute('data-primary-fuel') || '');
     });
 });
 </script>
