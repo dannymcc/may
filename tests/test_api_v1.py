@@ -105,6 +105,24 @@ class TestV1Vehicles:
         )
         assert resp.status_code == 400
 
+    @pytest.mark.parametrize('vehicle_type', ['truck', 'tractor', 'boat', 'other'])
+    def test_create_vehicle_accepts_every_form_type(self, client, api_headers, vehicle_type):
+        """The API accepts the same vehicle types as the web form."""
+        resp = client.post('/api/v1/vehicles',
+                           json={'name': 'Any', 'vehicle_type': vehicle_type},
+                           headers=api_headers)
+        assert resp.status_code == 201
+        assert resp.get_json()['vehicle_type'] == vehicle_type
+
+    def test_update_vehicle_type(self, client, api_headers, sample_vehicle):
+        ok = client.patch(f'/api/v1/vehicles/{sample_vehicle.id}',
+                          json={'vehicle_type': 'tractor'}, headers=api_headers)
+        assert ok.status_code == 200 and ok.get_json()['vehicle_type'] == 'tractor'
+        bad = client.patch(f'/api/v1/vehicles/{sample_vehicle.id}',
+                           json={'vehicle_type': 'spaceship'}, headers=api_headers)
+        assert bad.status_code == 400
+        assert 'tractor' in bad.get_json()['error']
+
     def test_create_vehicle_no_body(self, client, api_headers):
         # Flask returns 415 when no Content-Type is set, 400 when JSON body is empty/invalid
         resp = client.post('/api/v1/vehicles', headers=api_headers)

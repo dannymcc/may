@@ -632,6 +632,18 @@ def _start_reminder_scheduler(app):
 
             try:
                 with app.app_context():
+                    from app.services.reminder_processor import create_maintenance_reminders
+                    auto_stats = create_maintenance_reminders()
+                    if auto_stats['created'] or auto_stats['errors']:
+                        logger.info(
+                            f"Maintenance reminder check: {auto_stats['created']} created, "
+                            f"{len(auto_stats['errors'])} errors"
+                        )
+            except Exception as e:
+                logger.error(f"Error creating maintenance reminders: {e}")
+
+            try:
+                with app.app_context():
                     from app.services.reminder_processor import process_due_reminders
                     stats = process_due_reminders()
                     if stats['sent'] > 0 or stats['failed'] > 0:

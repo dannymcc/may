@@ -37,12 +37,12 @@ class UKFuelPriceService:
     """Service for the UK fuel price transparency scheme feeds"""
 
     #: Retailer name -> feed URL, as published on the gov.uk guidance page.
+    #: Applegreen and Ascona Group (expired TLS certificates) and Esso Tesco
+    #: Alliance (404) were dropped in 0.46.2 after their feeds went dead (#371);
+    #: an admin can still add any of them back through the feed override.
     DEFAULT_FEEDS = {
-        'Applegreen': 'https://applegreenstores.com/fuel-prices/data.json',
         'Asda': 'https://storelocator.asda.com/fuel_prices_data.json',
-        'Ascona Group': 'https://fuelprices.asconagroup.co.uk/newfuel.json',
         'BP': 'https://www.bp.com/en_gb/united-kingdom/home/fuelprices/fuel_prices_data.json',
-        'Esso Tesco Alliance': 'https://fuelprices.esso.co.uk/electronicfieldsystems/fuelvendor/EssoTescoJSON/data.json',
         'JET': 'https://jetlocal.co.uk/fuel_prices_data.json',
         'Morrisons': 'https://www.morrisons.com/fuel-prices/fuel.json',
         'Moto': 'https://moto-way.com/fuel-price/fuel_prices.json',
@@ -66,6 +66,15 @@ class UKFuelPriceService:
     MATCH_RADIUS_KM = 1.0
 
     REQUEST_TIMEOUT = 15
+
+    #: A feed whose own ``last_updated`` is older than this is skipped, so a
+    #: retailer that has stopped publishing cannot keep stamping months-old
+    #: prices as today's (#371).
+    STALE_AFTER_DAYS = 7
+
+    #: ``last_updated`` formats seen in scheme feeds; the spec uses the first.
+    FEED_DATE_FORMATS = ('%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M', '%d/%m/%Y',
+                         '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d')
 
     # ------------------------------------------------------------------
     # Configuration
@@ -128,6 +137,24 @@ class UKFuelPriceService:
         if price > 10:
             price = price / 100
         return round(price, 3)
+
+    @classmethod
+    def feed_date(cls, payload):
+        """The date a feed says its prices are from, or None if it doesn't say."""
+        raw = payload.get('last_updated') if isinstance(payload, dict) else None
+        if not isinstance(raw, str) or not raw.strip():
+            return None
+        value = raw.strip()
+        # Tolerate a trailing timezone designator on ISO timestamps.
+        if value.endswith('Z'):
+            value = value[:-1]
+        value = value.split('+')[0].split('.')[0]
+        for fmt in cls.FEED_DATE_FORMATS:
+            try:
+                return datetime.strptime(value, fmt).date()
+            except ValueError:
+                continue
+        return None
 
     @classmethod
     def parse_feed(cls, payload, retailer=None):
@@ -229,9 +256,22 @@ class UKFuelPriceService:
                 errors.append(f"{retailer}: {e}")
                 continue
 
+            # Prices are recorded against the date the feed says they are
+            # from, not the date we happened to download them. A feed that
+            # does not say is taken as current; one from the future (a
+            # retailer clock running ahead) is clamped to today.
+            today = date.today()
+            as_of = cls.feed_date(payload)
+            if as_of is not None and (today - as_of).days > cls.STALE_AFTER_DAYS:
+                errors.append(f"{retailer}: data last updated {as_of.isoformat()}, skipped as out of date")
+                continue
+            as_of = min(as_of or today, today)
+
             parsed = cls.parse_feed(payload, retailer)
             if not parsed:
                 errors.append(f'{retailer}: no usable forecourt prices')
+            for forecourt in parsed:
+                forecourt['as_of'] = as_of
             forecourts.extend(parsed)
 
         return forecourts, errors
@@ -299,16 +339,18 @@ class UKFuelPriceService:
 
     @classmethod
     def record_prices(cls, station, forecourt, on_date=None):
-        """Store today's prices for a station, one row per fuel type.
+        """Store a forecourt's prices for a station, one row per fuel type.
 
-        Re-running on the same day updates the existing rows instead of
-        piling up duplicates, so the history stays one entry per day.
-        Nothing is committed here; the caller commits.
+        The row is dated by ``on_date``, else the feed's own date (set by
+        :meth:`fetch_forecourts`), else today. Re-running for the same date
+        updates the existing rows instead of piling up duplicates, so the
+        history stays one entry per day. Nothing is committed here; the
+        caller commits.
 
         Returns:
             int: number of rows created or updated
         """
-        on_date = on_date or date.today()
+        on_date = on_date or forecourt.get('as_of') or date.today()
         changed = 0
 
         for fuel_type, price in forecourt['prices'].items():

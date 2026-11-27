@@ -19,8 +19,17 @@ from app.models import (
     User, Vehicle, VehicleSpec, FuelLog, Expense, EXPENSE_CATEGORIES,
     Reminder, MaintenanceSchedule, RecurringExpense, FuelStation,
     Document, Trip, ChargingSession, VehiclePart, FuelPriceHistory, Attachment,
-    TRIP_PURPOSES, CHARGER_TYPES, fuel_type_label
+    TRIP_PURPOSES, CHARGER_TYPES, VEHICLE_TYPES, fuel_type_label
 )
+
+#: Vehicle types the API accepts: the same list the web form offers.
+API_VEHICLE_TYPES = [value for value, _label in VEHICLE_TYPES]
+
+
+def _vehicle_type_error():
+    return jsonify({'error': 'vehicle_type must be one of: ' + ', '.join(API_VEHICLE_TYPES),
+                    'code': 'validation_error'}), 400
+
 from app.services.tessie import TessieService
 from app.services.backup_restore import (
     BackupError, SECTION_LABELS, describe_backup, read_backup, restore_backup
@@ -393,8 +402,8 @@ def api_create_vehicle():
     if not data.get('vehicle_type'):
         return jsonify({'error': 'vehicle_type is required', 'code': 'validation_error'}), 400
 
-    if data['vehicle_type'] not in ['car', 'van', 'motorbike', 'scooter']:
-        return jsonify({'error': 'vehicle_type must be one of: car, van, motorbike, scooter', 'code': 'validation_error'}), 400
+    if data['vehicle_type'] not in API_VEHICLE_TYPES:
+        return _vehicle_type_error()
 
     vehicle = Vehicle(
         owner_id=user.id,
@@ -436,8 +445,8 @@ def api_update_vehicle(vehicle_id):
     if 'name' in data:
         vehicle.name = data['name']
     if 'vehicle_type' in data:
-        if data['vehicle_type'] not in ['car', 'van', 'motorbike', 'scooter']:
-            return jsonify({'error': 'vehicle_type must be one of: car, van, motorbike, scooter', 'code': 'validation_error'}), 400
+        if data['vehicle_type'] not in API_VEHICLE_TYPES:
+            return _vehicle_type_error()
         vehicle.vehicle_type = data['vehicle_type']
     if 'make' in data:
         vehicle.make = data['make']

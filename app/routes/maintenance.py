@@ -221,6 +221,7 @@ def complete(schedule_id):
 
     # Calculate next due
     schedule.calculate_next_due()
+    schedule.close_auto_reminders()
 
     _record_completion(schedule)
 
