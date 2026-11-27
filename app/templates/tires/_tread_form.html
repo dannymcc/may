@@ -26,6 +26,8 @@
                 </label>
                 <input class="{{ field_class }} mt-1" id="tread-odometer" name="tread_odometer" inputmode="decimal"
                        value="{{ request.form.get('tread_odometer', '') }}">
+                <input type="hidden" id="tread-odometer-suggested" name="tread_odometer_suggested"
+                       value="{{ request.form.get('tread_odometer_suggested', '') }}">
                 {% if suggested_odometer is not none %}
                 <button type="button" class="mt-1 text-sm text-primary-600 dark:text-primary-400 hover:underline"
                         id="use-tread-odometer" data-reading="{{ suggested_odometer }}" data-today="{{ today.isoformat() }}">

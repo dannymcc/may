@@ -943,3 +943,105 @@ class TestTreadOnSetForm:
         assert response.status_code == 200
         assert TireSet.query.filter_by(name='Bad US tread').count() == 0
         assert TireMeasurement.query.count() == 0
+
+
+class TestReleaseReviewFollowUps:
+    """CodeRabbit findings on the v0.46.0 release PR (#437)."""
+
+    def _set_form(self, client, tire_set, **fields):
+        data = dict(name=tire_set.name, tread_config_present='1', tread_tracking='on',
+                    tread_unit='mm', tread_date='2026-10-01')
+        data.update(fields)
+        return client.post(f'/tires/{tire_set.id}/edit', data=data)
+
+    def test_inch_mode_keeps_a_maximum_threshold_valid(self, auth_client, sample_tire_set):
+        from app.routes.tires import MM_PER_THIRTY_SECOND
+        sample_tire_set.tread_warning_mm = 100
+        sample_tire_set.tread_tracking = True
+        db.session.commit()
+        unchanged = format(100 / MM_PER_THIRTY_SECOND, '.15g')
+        response = self._set_form(auth_client, sample_tire_set, tread_unit='inch32',
+                                  tread_warning_mm=unchanged)
+        assert response.status_code == 302
+        db.session.refresh(sample_tire_set)
+        assert sample_tire_set.tread_warning_mm == 100
+        rejected = self._set_form(auth_client, sample_tire_set, tread_unit='inch32',
+                                  tread_warning_mm='127/32')
+        assert rejected.status_code == 200
+
+    def test_return_to_the_same_wheel_is_recorded_and_retries_are_not(self, auth_client,
+                                                                     sample_tire_set):
+        from app.models import Tire, TireMeasurement
+        from app.routes.tires import _tread_positions
+
+        assert self._set_form(auth_client, sample_tire_set, depth_front_left='6').status_code == 302
+        tire = Tire.query.one()
+        assert self._set_form(auth_client, sample_tire_set, depth_rear_right='6',
+                              tire_rear_right=tire.id).status_code == 302
+        back = dict(depth_front_left='6', tire_front_left=tire.id)
+        assert self._set_form(auth_client, sample_tire_set, **back).status_code == 302
+        assert TireMeasurement.query.count() == 3
+        db.session.expire_all()
+        at_wheel, _unassigned = _tread_positions(sample_tire_set)
+        assert at_wheel['front_left'].tire_id == tire.id
+        assert 'rear_right' not in at_wheel
+
+        assert self._set_form(auth_client, sample_tire_set, **back).status_code == 302
+        assert TireMeasurement.query.count() == 3
+
+        backdated = dict(back, tread_date='2026-09-01', depth_front_left='7')
+        for _attempt in range(2):
+            assert self._set_form(auth_client, sample_tire_set, **backdated).status_code == 302
+        assert TireMeasurement.query.count() == 4
+
+    def _reading(self, tire_set, odometer, position, measured_date):
+        from app.models import Tire, TireMeasurement
+        tire = Tire(tire_set=tire_set, label=f'Tire {position}')
+        measurement = TireMeasurement(tire=tire, measured_date=measured_date, depth_mm=6,
+                                      odometer=odometer, position=position)
+        db.session.add(measurement)
+        return measurement
+
+    def test_same_day_fitments_accumulate_in_odometer_order(self, app, sample_tire_set):
+        from app.routes.tires import _tread_distances
+        day = date(2026, 10, 1)
+        db.session.add(TireFitment(tire_set_id=sample_tire_set.id, fitted_date=day,
+                                   fitted_odometer=200, removed_date=day, removed_odometer=300))
+        db.session.add(TireFitment(tire_set_id=sample_tire_set.id, fitted_date=day,
+                                   fitted_odometer=100, removed_date=day, removed_odometer=150))
+        reading = self._reading(sample_tire_set, 250, 'front_left', day)
+        db.session.commit()
+        assert _tread_distances(sample_tire_set)[reading.id] == 100
+
+    def test_retained_axle_handoff_keeps_its_distance(self, app, sample_tire_set):
+        from app.routes.tires import _tread_distances
+        db.session.add(TireFitment(tire_set_id=sample_tire_set.id, fitted_date=date(2026, 9, 1),
+                                   fitted_odometer=0, removed_date=date(2026, 10, 1),
+                                   removed_odometer=200))
+        db.session.add(TireFitment(tire_set_id=sample_tire_set.id, axle='rear',
+                                   fitted_date=date(2026, 10, 1), fitted_odometer=200))
+        reading = self._reading(sample_tire_set, 200, 'rear_left', date(2026, 10, 1))
+        db.session.commit()
+        assert _tread_distances(sample_tire_set)[reading.id] == 200
+
+    def test_disagreeing_overlaps_stay_unresolved(self, app, sample_tire_set):
+        from app.routes.tires import _tread_distances
+        day = date(2026, 10, 1)
+        db.session.add(TireFitment(tire_set_id=sample_tire_set.id, fitted_date=day,
+                                   fitted_odometer=0, removed_date=day, removed_odometer=300))
+        db.session.add(TireFitment(tire_set_id=sample_tire_set.id, fitted_date=day,
+                                   fitted_odometer=100, removed_date=day, removed_odometer=400))
+        reading = self._reading(sample_tire_set, 200, 'front_left', day)
+        db.session.commit()
+        assert reading.id not in _tread_distances(sample_tire_set)
+
+    def test_suggested_reading_flag_survives_an_error_re_render(self, auth_client, sample_tire_set):
+        response = self._set_form(auth_client, sample_tire_set, tread_odometer='12000',
+                                  tread_odometer_suggested='1', tread_warning_mm='1',
+                                  tread_replace_mm='2')
+        assert response.status_code == 200
+        assert b'name="tread_odometer_suggested"\n                       value="1"' in response.data
+
+    def test_unassigned_tire_does_not_inherit_a_position(self, auth_client, sample_tire_set):
+        body = auth_client.get(f'/tires/{sample_tire_set.id}/tread').get_data(as_text=True)
+        assert "position.value = tire.selectedOptions[0].dataset.position || '';" in body

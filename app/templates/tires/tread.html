@@ -75,8 +75,9 @@
 
         tire.addEventListener('change', () => {
             updateLabel();
-            const assignedPosition = tire.selectedOptions[0].dataset.position;
-            if (assignedPosition) position.value = assignedPosition;
+            // An unassigned or new tire must not inherit the previous tire's
+            // wheel; fall back to "Not recorded" until the user picks one.
+            position.value = tire.selectedOptions[0].dataset.position || '';
         });
         updateLabel();
     });

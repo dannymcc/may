@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.46.1] - 2026-11-27
+
+### Added
+
+- Brake Rotors/Discs, Brake Drums and Brake Shoes maintenance types.
+  ([#422](https://github.com/dannymcc/may/issues/422))
+- One expense can mark several maintenance schedules as performed.
+  ([#387](https://github.com/dannymcc/may/issues/387))
+- Help text under the full-tank checkbox explains that consumption is measured
+  between full tanks. ([#436](https://github.com/dannymcc/may/issues/436))
+
+### Fixed
+
+- Moving a tire back to a wheel it was on earlier, with the same reading on the
+  same date, is now recorded instead of being skipped as a duplicate. The
+  overview previously showed the tire on the wrong wheel.
+- A 100 mm tread threshold no longer blocks saving a tire set in 1/32-inch
+  mode.
+- Same-day fittings are ordered by odometer, so the distance on the set at
+  each measurement is correct.
+- A reading taken when one axle pair is replaced keeps its distance on the
+  set.
+- A suggested vehicle reading is cleared if the measurement date changes after
+  a form error.
+- Choosing a tire with no recorded position no longer inherits the previous
+  tire's wheel.
+- New interface text is translated in all 19 locales.
+
 ## [0.46.0] - 2026-11-27
 
 ### Added

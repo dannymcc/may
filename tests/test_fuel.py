@@ -32,6 +32,11 @@ class TestFuelNew:
         resp = auth_client.get('/fuel/new')
         assert resp.status_code == 200
 
+    def test_full_tank_checkbox_explains_fill_to_fill(self, auth_client, sample_vehicle):
+        """The form says why a partial fill-up stays unticked (#436)."""
+        body = auth_client.get('/fuel/new').get_data(as_text=True)
+        assert 'Consumption is measured between full tanks.' in body
+
     def test_create_fuel_log(self, auth_client, sample_vehicle, test_user):
         resp = auth_client.post('/fuel/new', data={
             'vehicle_id': str(sample_vehicle.id),
