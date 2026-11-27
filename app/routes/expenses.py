@@ -195,6 +195,7 @@ def new():
                     expense.odometer or vehicle.get_last_odometer()
                 )
                 schedule.calculate_next_due()
+                schedule.close_auto_reminders()
 
         # Optionally complete the reminder this expense was logged for
         # (#296), rolling a recurring reminder on to its next occurrence.

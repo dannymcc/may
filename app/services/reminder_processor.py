@@ -2,10 +2,73 @@
 import logging
 from datetime import date, timedelta
 from app import db
-from app.models import Reminder, User
+from app.models import MaintenanceSchedule, Reminder, User
 from app.services.notifications import NotificationService
 
 logger = logging.getLogger(__name__)
+
+
+def create_maintenance_reminders(today=None):
+    """Create reminders for maintenance schedules that have entered their window.
+
+    Covers schedules with "Automatically create reminder when due" ticked,
+    which was stored but never acted on before 0.46.2. Each service cycle
+    (identified by the schedule's next-due point) gets at most one reminder,
+    and none is created while an open reminder with the same name already
+    exists for the vehicle, such as one the user made by hand or restored
+    from a backup.
+
+    Returns:
+        dict with counts of created/skipped reminders and any errors
+    """
+    today = today or date.today()
+    stats = {'created': 0, 'skipped': 0, 'errors': []}
+    schedules = MaintenanceSchedule.query.filter_by(is_active=True, auto_remind=True).all()
+
+    for schedule in schedules:
+        try:
+            vehicle = schedule.vehicle
+            if vehicle is None or vehicle.is_active is False:  # archived
+                stats['skipped'] += 1
+                continue
+            due = schedule.reminder_due_date(vehicle.get_last_odometer(), today)
+            if due is None:
+                stats['skipped'] += 1
+                continue
+            key = schedule.due_key
+            already = Reminder.query.filter_by(
+                maintenance_schedule_id=schedule.id, maintenance_due_key=key).first()
+            open_same_name = Reminder.query.filter_by(
+                vehicle_id=vehicle.id, title=schedule.name[:100], is_completed=False).first()
+            if already or open_same_name:
+                stats['skipped'] += 1
+                continue
+
+            description = None
+            if schedule.next_due_odometer:
+                description = (f"Due at {schedule.next_due_odometer:,.0f} "
+                               f"{vehicle.get_reading_unit()}")
+            db.session.add(Reminder(
+                vehicle_id=vehicle.id,
+                user_id=schedule.user_id,
+                title=schedule.name[:100],
+                description=description,
+                reminder_type='oil_change' if schedule.maintenance_type == 'oil_change' else 'service',
+                due_date=due,
+                # The schedule's own lead time has already passed, so notify
+                # on the next run rather than waiting a further lead period.
+                notify_days_before=max((due - today).days, 1),
+                maintenance_schedule_id=schedule.id,
+                maintenance_due_key=key,
+            ))
+            db.session.commit()
+            stats['created'] += 1
+        except Exception as e:  # one bad schedule must not stop the rest
+            db.session.rollback()
+            stats['errors'].append(f"Schedule #{schedule.id}: {e}")
+            logger.error(f"Error creating reminder for schedule #{schedule.id}: {e}")
+
+    return stats
 
 
 def process_due_reminders():

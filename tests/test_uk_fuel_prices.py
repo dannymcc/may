@@ -17,7 +17,8 @@ from app.services.uk_fuel_prices import (
 
 
 FEED_PAYLOAD = {
-    'last_updated': '01/03/2026 08:00:00',
+    # Current, so the feed is not skipped as stale (#371).
+    'last_updated': date.today().strftime('%d/%m/%Y 08:00:00'),
     'stations': [
         {
             'site_id': 'A1',
@@ -516,3 +517,67 @@ class TestIncompletePriceCoverage:
             messages = ' '.join(get_flashed_messages())
             assert 'sources are unavailable' in messages
             assert 'Check the station postcodes' not in messages
+
+
+class TestFeedFreshness:
+    """Prices are dated by the feed, and dead feeds are skipped (#371)."""
+
+    def _serve(self, monkeypatch, last_updated):
+        from copy import deepcopy
+        payload = deepcopy(FEED_PAYLOAD)
+        if last_updated is None:
+            payload.pop('last_updated')
+        else:
+            payload['last_updated'] = last_updated
+        monkeypatch.setattr(ukfp.requests, 'get', lambda url, **kw: FakeResponse(payload))
+
+    def test_recent_feed_is_recorded_on_its_own_date(self, app, enabled_single_feed,
+                                                     uk_station, monkeypatch):
+        from datetime import timedelta
+        feed_day = date.today() - timedelta(days=2)
+        self._serve(monkeypatch, feed_day.strftime('%d/%m/%Y 11:00:00'))
+        stats = UKFuelPriceService.refresh_prices()
+        assert stats['matched'] == 1 and stats['errors'] == []
+        assert {e.date for e in FuelPriceHistory.query.all()} == {feed_day}
+
+    def test_stale_feed_is_skipped_and_reported(self, app, enabled_single_feed,
+                                               uk_station, monkeypatch):
+        self._serve(monkeypatch, '01/05/2026 10:55:06')
+        stats = UKFuelPriceService.refresh_prices()
+        assert FuelPriceHistory.query.count() == 0
+        assert stats['source_available'] is False
+        assert stats['errors'] == ['Test Retailer: data last updated 2026-05-01, skipped as out of date']
+
+    def test_stale_feed_does_not_block_a_live_one(self, app, uk_station, monkeypatch):
+        from copy import deepcopy
+        AppSettings.set(SETTING_ENABLED, 'true')
+        AppSettings.set(SETTING_FEEDS, "Old|https://old.test/d.json\nLive|https://live.test/d.json")
+        stale = deepcopy(FEED_PAYLOAD)
+        stale['last_updated'] = '01/05/2026 10:55:06'
+        monkeypatch.setattr(ukfp.requests, 'get', lambda url, **kw: FakeResponse(
+            stale if 'old' in url else FEED_PAYLOAD))
+        stats = UKFuelPriceService.refresh_prices()
+        assert stats['matched'] == 1
+        assert len(stats['errors']) == 1 and stats['errors'][0].startswith('Old:')
+        assert {e.date for e in FuelPriceHistory.query.all()} == {date.today()}
+
+    @pytest.mark.parametrize('last_updated', [None, 'not a date', '31/12/2099 00:00:00'])
+    def test_undated_unreadable_or_future_feed_counts_as_today(self, app, enabled_single_feed,
+                                                               uk_station, monkeypatch, last_updated):
+        self._serve(monkeypatch, last_updated)
+        stats = UKFuelPriceService.refresh_prices()
+        assert stats['matched'] == 1
+        assert {e.date for e in FuelPriceHistory.query.all()} == {date.today()}
+
+    @pytest.mark.parametrize('raw,expected', [
+        ('27/11/2026 11:00:00', date(2026, 11, 27)),
+        ('27/11/2026', date(2026, 11, 27)),
+        ('2026-11-27T11:00:00Z', date(2026, 11, 27)),
+        ('2026-11-27T11:00:00.123+00:00', date(2026, 11, 27)),
+    ])
+    def test_feed_date_formats(self, raw, expected):
+        assert UKFuelPriceService.feed_date({'last_updated': raw}) == expected
+
+    def test_dead_feeds_are_no_longer_defaults(self):
+        for name in ('Applegreen', 'Ascona Group', 'Esso Tesco Alliance'):
+            assert name not in UKFuelPriceService.DEFAULT_FEEDS

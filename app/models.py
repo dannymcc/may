@@ -1369,6 +1369,14 @@ class Reminder(db.Model):
     is_completed = db.Column(db.Boolean, default=False)
     completed_at = db.Column(db.DateTime)
 
+    # Set when the reminder was created automatically from a maintenance
+    # schedule with "Automatically create reminder when due" ticked. The key
+    # records which next-due point it was for, so each service cycle gets one
+    # reminder and no more.
+    maintenance_schedule_id = db.Column(
+        db.Integer, db.ForeignKey('maintenance_schedules.id', ondelete='SET NULL'))
+    maintenance_due_key = db.Column(db.String(64))
+
     # Tracking
     created_at = db.Column(db.DateTime, default=utcnow)
     updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
@@ -1828,6 +1836,44 @@ class MaintenanceSchedule(db.Model):
                 return True
 
         return False
+
+    @property
+    def due_key(self):
+        """Identifies the current service cycle by its next-due point."""
+        return f'{self.next_due_date.isoformat() if self.next_due_date else ""}|{self.next_due_odometer or ""}'
+
+    def reminder_due_date(self, current_odometer=None, today=None):
+        """The due date for an automatic reminder, or None if it isn't time yet.
+
+        A date-based schedule enters its reminder window ``remind_days_before``
+        days ahead and the reminder is due on the next-due date. A reading-based
+        one enters it ``remind_miles_before`` (in the vehicle's own unit) ahead
+        of the next-due reading and the reminder is due straight away, since a
+        reading has no date. Where both apply, the earlier date wins.
+        """
+        from datetime import date, timedelta
+        today = today or date.today()
+        candidates = []
+        if self.next_due_date:
+            lead = self.remind_days_before if self.remind_days_before is not None else 14
+            if today >= self.next_due_date - timedelta(days=lead):
+                candidates.append(self.next_due_date)
+        if self.next_due_odometer and current_odometer:
+            if self.tracks_hours():
+                # 500 "miles" of lead would mean 500 engine hours (#282).
+                lead = MAINTENANCE_DUE_SOON_HOURS
+            else:
+                lead = self.remind_miles_before if self.remind_miles_before is not None else 500
+            if current_odometer >= self.next_due_odometer - lead:
+                candidates.append(today)
+        return min(candidates) if candidates else None
+
+    def close_auto_reminders(self):
+        """Complete open automatic reminders once the work has been done."""
+        for reminder in Reminder.query.filter_by(maintenance_schedule_id=self.id,
+                                                 is_completed=False):
+            reminder.is_completed = True
+            reminder.completed_at = utcnow()
 
     def is_due_soon(self, current_odometer=None, days=14, distance=None):
         """Check if maintenance is due soon.
