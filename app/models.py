@@ -809,9 +809,10 @@ class Vehicle(db.Model):
         """Get the most recent odometer reading.
 
         If Tessie is enabled for this vehicle, returns the Tessie odometer.
-        Otherwise, returns the highest from fuel logs, trips, charging sessions
-        or expenses. Expenses count because a maintenance entry such as an oil
-        change records the odometer at the time of the work (#286).
+        Otherwise, returns the highest from fuel logs, trips, charging sessions,
+        expenses or tread measurements. Expenses count because a maintenance
+        entry such as an oil change records the odometer at the time of the work
+        (#286).
 
         Args:
             distance_unit: If provided ('km' or 'mi'), converts Tessie odometer to
@@ -840,7 +841,12 @@ class Vehicle(db.Model):
             Expense.odometer.desc()).first()
         expense_odo = last_expense.odometer if last_expense else 0
 
-        return max(fuel_odo, trip_odo, charge_odo, expense_odo)
+        tread_odo = (db.session.query(db.func.max(TireMeasurement.odometer))
+                     .join(Tire).join(TireSet)
+                     .filter(TireSet.vehicle_id == self.id)
+                     .scalar()) or 0
+
+        return max(fuel_odo, trip_odo, charge_odo, expense_odo, tread_odo)
 
     def get_fitted_tire_set(self):
         """The tire set currently on this vehicle, or None (#293)."""

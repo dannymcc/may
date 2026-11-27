@@ -1,8 +1,9 @@
-{% if tire_set.tracks_tread and tire_set.tires %}
+{% set tires_with_measurements = tire_set.tires|selectattr('measurements')|list %}
+{% if tire_set.tracks_tread and tires_with_measurements %}
 <details id="tread-history" class="min-w-0 rounded-lg bg-white dark:bg-gray-800 px-4 py-3 shadow">
     <summary class="cursor-pointer font-semibold text-gray-900 dark:text-white">{{ _('Tread depth history') }}</summary>
     <div class="mt-3 divide-y divide-gray-200 dark:divide-gray-700">
-        {% for tire in tire_set.tires if tire.measurements %}
+        {% for tire in tires_with_measurements %}
         <section class="py-2 text-gray-900 dark:text-white">
             <h3 class="font-semibold break-words">{{ tire.label }}</h3>
             {% if tire.tread_status %}<p class="text-xs text-red-600">{{ tire.tread_status }}</p>{% endif %}

@@ -88,6 +88,12 @@ ACCOUNT_ENDPOINTS = {
     'api.test_notification',
 }
 
+# Mixed GET/POST endpoints whose GET explicitly renders a read-only view for
+# restricted users. Writes to these endpoints remain subject to the normal guard.
+READABLE_FORM_ENDPOINTS = {
+    'tires.edit',
+}
+
 
 def scope_for_endpoint(endpoint):
     """The write scope an endpoint belongs to, or None if it has no mapping."""
@@ -140,10 +146,12 @@ def check_request_permission():
 
     scope = scope_for_endpoint(endpoint)
     is_write = request.method in WRITE_METHODS
-    # A GET on a route that also accepts POST is a form page; there is no
-    # point letting a restricted user fill in a form that will be refused.
+    # A GET on a route that also accepts POST is normally a form page; there is
+    # no point letting a restricted user fill in a form that will be refused.
+    # Explicit exceptions render their own read-only view instead.
     is_form_page = (
         not is_write
+        and endpoint not in READABLE_FORM_ENDPOINTS
         and scope is not None
         and request.url_rule is not None
         and bool(WRITE_METHODS & set(request.url_rule.methods or ()))

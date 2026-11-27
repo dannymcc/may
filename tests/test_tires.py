@@ -387,6 +387,16 @@ class TestTreadHistory:
         auth_client.post(f'/tires/{sample_tire_set.id}/delete')
         assert Tire.query.count() == TireMeasurement.query.count() == 0
 
+    def test_deleting_last_measurement_shows_empty_state(self, auth_client, sample_tire_set):
+        from app.models import TireMeasurement
+        self.record(auth_client, sample_tire_set)
+        measurement = TireMeasurement.query.one()
+        auth_client.post(f'/tires/measurements/{measurement.id}/delete')
+
+        page = auth_client.get(f'/tires/{sample_tire_set.id}/edit')
+        assert b'id="tread-history"' not in page.data
+        assert b'No tread measurements yet.' in page.data
+
     def test_tire_from_other_set_cannot_be_used(self, auth_client, sample_tire_set, summer_tire_set):
         from app.models import Tire, TireMeasurement
         self.record(auth_client, sample_tire_set)
@@ -406,6 +416,21 @@ class TestTreadHistory:
         auth_client.post(f'/tires/measurements/{measurement.id}/delete')
         assert TireMeasurement.query.count() == 1
         assert b'name="depth_mm"' not in auth_client.get(f'/tires/{sample_tire_set.id}/tread').data
+
+    def test_viewer_can_read_full_history(self, auth_client, sample_tire_set, test_user):
+        from app.models import ROLE_VIEWER
+        self.record(auth_client, sample_tire_set)
+        test_user.role = ROLE_VIEWER
+        db.session.commit()
+
+        route = f'/tires/{sample_tire_set.id}/edit'
+        overview = auth_client.get('/tires/')
+        assert f'{route}#tread-history'.encode() in overview.data
+        history = auth_client.get(route)
+        assert history.status_code == 200
+        assert b'id="tread-history"' in history.data
+        assert b'6.5 mm' in history.data
+        assert b'name="depth_mm"' not in history.data
 
     def test_other_account_cannot_read_or_change_measurements(self, auth_client, sample_tire_set):
         from app.models import TireMeasurement, User
@@ -703,6 +728,18 @@ class TestTreadHistory:
                          data=dict(name=vehicle.name, vehicle_type=vehicle.vehicle_type, tracking_unit='hours'))
         db.session.refresh(vehicle)
         assert vehicle.tracking_unit == 'mileage'
+
+    def test_tread_odometer_updates_latest_reading_and_set_distance(self, auth_client, sample_tire_set):
+        vehicle = sample_tire_set.vehicle
+        db.session.add(TireFitment(tire_set_id=sample_tire_set.id, fitted_date=date(2026, 9, 1),
+                                   fitted_odometer=10000))
+        db.session.commit()
+        self.record(auth_client, sample_tire_set, odometer='12000')
+
+        assert vehicle.get_last_odometer() == 12000
+        assert sample_tire_set.get_distance() == 2000
+        form = auth_client.get(f'/tires/{sample_tire_set.id}/edit')
+        assert b'data-reading="12000.0"' in form.data
 
     def test_restore_rejects_invalid_measurements(self, auth_client, sample_tire_set, test_user):
         from app.models import TireMeasurement
