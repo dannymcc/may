@@ -161,7 +161,14 @@
         const measurementDate = document.getElementById('tread-date');
         const odometer = document.getElementById('tread-odometer');
         const latestReading = document.getElementById('use-tread-odometer');
-        let usedSuggestion = false;
+        // Survives an error re-render, so a restored suggestion is still
+        // cleared if the measurement date changes afterwards.
+        const suggestedFlag = document.getElementById('tread-odometer-suggested');
+        let usedSuggestion = suggestedFlag?.value === '1';
+        function setUsedSuggestion(value) {
+            usedSuggestion = value;
+            if (suggestedFlag) suggestedFlag.value = value ? '1' : '';
+        }
 
         function update() {
             fields.hidden = !toggle.checked;
@@ -180,14 +187,14 @@
                 latestReading.hidden = measurementDate.value !== latestReading.dataset.today;
                 if (latestReading.hidden && usedSuggestion) {
                     odometer.value = '';
-                    usedSuggestion = false;
+                    setUsedSuggestion(false);
                 }
             }
         }
 
         latestReading?.addEventListener('click', () => {
             odometer.value = latestReading.dataset.reading;
-            usedSuggestion = true;
+            setUsedSuggestion(true);
             odometer.focus();
         });
         fields.querySelectorAll('[data-tread-tire]').forEach(select => {
@@ -198,7 +205,7 @@
                 });
             }
         });
-        odometer.addEventListener('input', () => { usedSuggestion = false; });
+        odometer.addEventListener('input', () => { setUsedSuggestion(false); });
         measurementDate.addEventListener('change', update);
         toggle.addEventListener('change', update);
         vehicle?.addEventListener('change', update);

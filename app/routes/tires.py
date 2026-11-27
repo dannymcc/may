@@ -100,9 +100,13 @@ def _depth(value, unit):
     if depth is None:
         return None
     millimetres = depth * MM_PER_THIRTY_SECOND if unit == 'inch32' else depth
+    if unit == 'inch32':
+        # Round before the range check so a stored maximum survives the
+        # mm -> 1/32" -> mm round trip of an unchanged form field.
+        millimetres = round(millimetres, 12)
     if not math.isfinite(millimetres) or not 0 <= millimetres <= 100:
         raise ValueError
-    return round(millimetres, 12) if unit == 'inch32' else millimetres
+    return millimetres
 
 
 @bp.app_template_filter('tread_display')
@@ -205,8 +209,13 @@ def _save_tread_form(tire_set, vehicle):
             tire = Tire(tire_set=tire_set, label=label)
             db.session.add(tire)
 
-        if any((row.measured_date, row.depth_mm, row.odometer, row.position)
-               == (measured_date, depth, odometer, position) for row in tire.measurements):
+        # A resubmitted form repeats the tire's latest reading for that date;
+        # an older identical reading is a genuine return to the same wheel.
+        same_day = [row for row in tire.measurements if row.measured_date == measured_date]
+        last_same_day = max(same_day, key=lambda row: row.chronology, default=None)
+        if last_same_day is not None and (
+                (last_same_day.depth_mm, last_same_day.odometer, last_same_day.position)
+                == (depth, odometer, position)):
             continue
         db.session.add(TireMeasurement(tire=tire, measured_date=measured_date,
                                        depth_mm=depth, odometer=odometer, position=position,
@@ -216,7 +225,8 @@ def _save_tread_form(tire_set, vehicle):
 
 def _tread_distances(tire_set):
     """Set mileage at readings inside a known, matching fitment interval."""
-    fitments = list(reversed(tire_set.fitments.all()))
+    fitments = sorted(tire_set.fitments.all(),
+                      key=lambda f: (f.fitted_date, f.fitted_odometer, f.id))
     distances = {}
     for tire in tire_set.tires:
         for measurement in tire.measurements:
@@ -235,7 +245,9 @@ def _tread_distances(tire_set):
                     matches.append(previous_distance + measurement.odometer - fitment.fitted_odometer)
                 if removed is not None:
                     previous_distance += max(0, removed - fitment.fitted_odometer)
-            if len(matches) == 1:
+            # A reading at a retained-axle handoff sits in two intervals that
+            # agree on the distance; only disagreeing matches are ambiguous.
+            if matches and max(matches) - min(matches) < 1e-6:
                 distances[measurement.id] = matches[0]
     return distances
 
