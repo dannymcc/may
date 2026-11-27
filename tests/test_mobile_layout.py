@@ -40,6 +40,8 @@ from app.models import (
     MaintenanceSchedule,
     Note,
     Reminder,
+    Tire,
+    TireMeasurement,
     TireFitment,
     TireSet,
     Trip,
@@ -223,6 +225,9 @@ def populated(app, test_user, sample_vehicle, sample_fuel_log, sample_expense,
     db.session.add(tire_set)
     db.session.commit()
 
+    tire = Tire(tire_set=tire_set, label='A')
+    db.session.add(TireMeasurement(tire=tire, measured_date=date(2024, 3, 1),
+                                   depth_mm=5.5, position='front_left'))
     db.session.add(TireFitment(tire_set_id=tire_set.id,
                                fitted_date=date(2024, 1, 1), fitted_odometer=10000.0,
                                removed_date=date(2024, 3, 1), removed_odometer=10800.0))
@@ -248,6 +253,7 @@ def _pages(vehicle):
         '/documents/',
         '/notes/',
         '/tires/',
+        f'/tires/{vehicle.tire_sets.first().id}/tread',
         '/allowance/',
         '/stations/',
         '/recurring/',

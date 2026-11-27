@@ -313,6 +313,24 @@ Track summer, winter and all-season sets separately:
 - The distance covered on each set is the sum of every period it spent fitted,
   measured against the vehicle's latest odometer reading while it is still on
 - Retire a set when it is worn out or sold; the history stays
+- Enable **Track tread depth** when adding or editing a tire set. Enter only the
+  wheels you measured in the vehicle diagram. The date and optional odometer
+  or engine-hour reading apply to the batch. Use **Individual measurements**
+  for a named tire or a spare. Edit or delete an existing reading from its history
+- Choose **Tire assignment** when rotating a tire. Each physical tire keeps its
+  history across position changes. **Replace tire** starts a separate history
+  at that wheel and preserves the previous tire's readings
+- The collapsed history shows depth, date, position and the recorded odometer
+  or engine hours. It shows distance on the set when a reading matches a known
+  fitting period. Turning tracking off hides the history and keeps the readings
+- Choose **mm** or **1/32″ (US)** under **Settings → Units & Values → Tread depth**.
+  In US mode, `6` and `6/32` both mean six thirty-seconds of an inch. Exports and
+  stored values always use millimetres
+- Warning and replacement thresholds are optional per set. Blank fields disable
+  the corresponding warning. Set the warning threshold at or above the
+  replacement threshold
+- JSON and full ZIP backups keep tire identities, thresholds and measurements.
+  Restore skips duplicate measurements
 
 ### Recurring Expenses
 Track regular payments:

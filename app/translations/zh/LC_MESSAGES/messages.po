@@ -5377,3 +5377,150 @@ msgstr "数据不足，无法显示消耗趋势。请添加更多满箱加油记
 #: app/templates/vehicles/view.html:1290
 msgid "No fuel prices recorded yet."
 msgstr "尚未记录任何燃油价格。"
+
+#: app/models.py:2586
+msgid "Not recorded"
+msgstr "未记录"
+
+#: app/models.py:2587
+msgid "Front left"
+msgstr "左前"
+
+#: app/models.py:2587
+msgid "Front right"
+msgstr "右前"
+
+#: app/models.py:2588
+msgid "Rear left"
+msgstr "左后"
+
+#: app/models.py:2588
+msgid "Rear right"
+msgstr "右后"
+
+#: app/models.py:2589
+msgid "Front"
+msgstr "前"
+
+#: app/models.py:2589
+msgid "Rear"
+msgstr "后"
+
+#: app/models.py:2589
+msgid "Spare"
+msgstr "备胎"
+
+#: app/models.py:2616
+msgid "Replacement threshold reached"
+msgstr "已达到更换阈值"
+
+#: app/models.py:2618
+msgid "Warning threshold reached"
+msgstr "已达到警告阈值"
+
+#: app/routes/tires.py:562
+msgid "Invalid tread measurement. Check the tire, date, depth and reading."
+msgstr "测量无效。请检查轮胎、日期、深度和里程读数。"
+
+#: app/services/backup_restore.py:46
+#: app/templates/tires/_tread_history.html:3
+#: app/templates/tires/index.html:78
+msgid "Tread depth history"
+msgstr "胎纹深度历史"
+
+#: app/templates/tires/_tread_form.html:101
+msgid "Leave threshold fields blank to disable them."
+msgstr "将阈值字段留空即可禁用。"
+
+#: app/templates/tires/_tread_form.html:90
+msgid "Warning threshold"
+msgstr "警告阈值"
+
+#: app/templates/tires/_tread_form.html:91
+msgid "Replacement threshold"
+msgstr "更换阈值"
+
+#: app/templates/tires/tread.html:17
+msgid "New tire"
+msgstr "新轮胎"
+
+#: app/templates/tires/tread.html:27
+msgid "New tire label"
+msgstr "新轮胎名称"
+
+#: app/templates/auth/settings.html:135 app/templates/tires/tread.html:36
+msgid "Tread depth"
+msgstr "胎纹深度"
+
+#: app/templates/tires/tread.html:47
+msgid "Position at measurement"
+msgstr "测量时的位置"
+
+#: app/templates/tires/_tread_history.html:26
+msgid "Delete this measurement?"
+msgstr "删除此测量记录？"
+
+#: app/services/backup_restore.py:45
+msgid "Individual tires"
+msgstr "单条轮胎"
+
+#: app/templates/tires/_tread_form.html:12
+msgid "Track tread depth"
+msgstr "跟踪胎纹深度"
+
+#: app/templates/tires/_tread_form.html:15
+msgid "Leave wheels you did not measure blank."
+msgstr "未测量的车轮请留空。"
+
+#: app/templates/tires/_tread_form.html:32
+msgid "Use the latest vehicle reading"
+msgstr "使用车辆最新读数"
+
+#: app/templates/tires/_tread_form.html:38
+msgid "If you moved a tire, select its existing label at the new position."
+msgstr "调换轮胎位置后，请在新位置选择该轮胎原有的标签。"
+
+#: app/templates/tires/_tread_form.html:43
+msgid "Wheel positions"
+msgstr "车轮位置"
+
+#: app/templates/tires/_tread_form.html:61
+msgid "Last measured:"
+msgstr "最近测量："
+
+#: app/templates/tires/_tread_form.html:106 app/templates/tires/tread.html:2
+#: app/templates/tires/tread.html:10
+msgid "Individual measurements"
+msgstr "单次测量"
+
+#: app/templates/tires/_tread_history.html:22
+msgid "Distance on this set"
+msgstr "此套轮胎的行驶里程"
+
+#: app/templates/tires/_tread_history.html:40
+msgid "No tread measurements yet."
+msgstr "尚无胎纹深度测量记录。"
+
+#: app/routes/tires.py:331 app/routes/tires.py:378
+msgid "Check the tread depths, date, odometer and tire selection."
+msgstr "请检查胎纹深度、日期、里程表读数和所选轮胎。"
+
+#: app/templates/tires/_tread_form.html:68
+msgid "Tire assignment"
+msgstr "分配轮胎"
+
+#: app/templates/tires/_tread_form.html:71
+msgid "First measurement"
+msgstr "首次测量"
+
+#: app/templates/tires/_tread_form.html:75
+msgid "Replace tire"
+msgstr "更换轮胎"
+
+#: app/templates/tires/_tread_form.html:79
+msgid "The previous tire and its measurements stay in the history."
+msgstr "原轮胎及其测量值保留在历史记录中。"
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "美国"

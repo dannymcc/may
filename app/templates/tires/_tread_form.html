@@ -1,0 +1,109 @@
+{% set saved_tracking = tire_set and tire_set.tracks_tread %}
+{% set tracking = request.form.get('tread_tracking') == 'on' if 'tread_config_present' in request.form else saved_tracking %}
+{% set chosen_vehicle = tire_set.vehicle if tire_set else ((vehicles|selectattr('id', 'equalto', selected_vehicle_id)|first) or (vehicles|first)) %}
+{% set is_bike = chosen_vehicle.vehicle_type in two_wheel_vehicles %}
+{% set field_class = 'block w-full min-w-0 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-2 text-gray-900 dark:text-white' %}
+<section class="rounded-lg bg-white dark:bg-gray-800 shadow p-4 sm:p-6 text-gray-900 dark:text-white" aria-labelledby="tread-heading">
+    <input type="hidden" name="tread_config_present" value="1">
+    <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" id="tread-tracking" name="tread_tracking" aria-controls="tread-fields"
+               class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
+               {% if tracking %}checked{% endif %}>
+        <span id="tread-heading" class="font-semibold">{{ _('Track tread depth') }}</span>
+    </label>
+    <fieldset id="tread-fields" class="mt-4 min-w-0" {% if not tracking %}hidden disabled{% endif %}>
+        <p class="mb-4 text-sm text-gray-600 dark:text-gray-300">{{ _('Leave wheels you did not measure blank.') }}</p>
+        <input type="hidden" name="tread_unit" value="{{ tread_unit }}">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label for="tread-date" class="text-sm font-medium">{{ _('Date') }}
+                <input class="{{ field_class }} mt-1" id="tread-date" name="tread_date" type="date"
+                       value="{{ request.form.get('tread_date', today.isoformat()) }}">
+            </label>
+            <div>
+                <label for="tread-odometer" class="text-sm font-medium">
+                    <span id="tread-reading-word">{{ chosen_vehicle.get_reading_label() }}</span>
+                    (<span id="tread-reading-unit">{{ chosen_vehicle.get_reading_unit() }}</span>)
+                </label>
+                <input class="{{ field_class }} mt-1" id="tread-odometer" name="tread_odometer" inputmode="decimal"
+                       value="{{ request.form.get('tread_odometer', '') }}">
+                {% if suggested_odometer is not none %}
+                <button type="button" class="mt-1 text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                        id="use-tread-odometer" data-reading="{{ suggested_odometer }}" data-today="{{ today.isoformat() }}">
+                    {{ _('Use the latest vehicle reading') }} · {{ suggested_odometer|groupnum }} {{ chosen_vehicle.get_reading_unit() }}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% if tire_set and tire_set.tires %}
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">{{ _('If you moved a tire, select its existing label at the new position.') }}</p>
+        {% endif %}
+        {% for layout, positions, visible in [('car', car_wheels, not is_bike), ('bike', bike_wheels, is_bike)] %}
+        <fieldset class="tread-wheel-layout tread-wheel-layout--{{ layout }}" data-tread-layout="{{ layout }}"
+                  {% if not visible %}hidden disabled{% endif %}>
+            <legend class="sr-only">{{ _('Wheel positions') }}</legend>
+            <div class="tread-body" aria-hidden="true">
+                <div class="tread-body-shell"><div class="tread-body-cabin"></div></div>
+            </div>
+            {% for position in positions %}
+            {% set latest = latest_at_wheel.get(position) %}
+            {% set selected_tire = request.form.get('tire_' ~ position, latest.tire_id if latest else '')|string %}
+            <div class="tread-wheel tread-wheel--{{ position }}">
+                <label for="depth-{{ position }}" class="block text-sm font-medium mb-1">{{ position_labels[position] }}</label>
+                <div class="tread-depth-input">
+                    <input class="{{ field_class }}" id="depth-{{ position }}" name="depth_{{ position }}" type="text"
+                           inputmode="decimal" placeholder="{{ '6/32' if tread_unit == 'inch32' else '' }}"
+                           value="{{ request.form.get('depth_' ~ position, '') }}"
+                           aria-describedby="unit-{{ position }}{% if latest %} last-{{ position }}{% endif %}">
+                    <span class="text-sm text-gray-500 dark:text-gray-400" id="unit-{{ position }}">{{ tread_units[tread_unit] }}</span>
+                </div>
+                {% if latest %}
+                <p id="last-{{ position }}" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                    {{ _('Last measured:') }}
+                    {{ latest.depth_mm|tread_display(tread_unit) }}
+                </p>
+                {% endif %}
+                {% if tire_set and tire_set.tires %}
+                {% set replacement = 'replace:' ~ latest.tire_id if latest else '' %}
+                <details class="mt-2 text-xs" {% if replacement and selected_tire == replacement %}open{% endif %}>
+                    <summary class="cursor-pointer break-words text-primary-600 dark:text-primary-400">{{ _('Tire assignment') }}</summary>
+                    <select class="{{ field_class }} mt-1 text-sm" name="tire_{{ position }}" data-tread-tire
+                            aria-label="{{ _('Tire') }} · {{ position_labels[position] }}">
+                        {% if not latest %}<option value="">{{ _('First measurement') }}</option>{% endif %}
+                        {% for tire in tire_set.tires %}
+                        <option value="{{ tire.id }}" {% if selected_tire == tire.id|string %}selected{% endif %}>{{ tire.label }}</option>
+                        {% endfor %}
+                        {% if latest %}<option value="{{ replacement }}" {% if selected_tire == replacement %}selected{% endif %}>{{ _('Replace tire') }}</option>{% endif %}
+                    </select>
+                    {% if latest %}
+                    <p data-tread-replacement class="mt-1 text-gray-600 dark:text-gray-300" {% if selected_tire != replacement %}hidden{% endif %}>
+                        {{ _('The previous tire and its measurements stay in the history.') }}
+                    </p>
+                    {% endif %}
+                </details>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </fieldset>
+        {% endfor %}
+        <div class="mt-5 grid grid-cols-2 gap-3 border-t border-gray-200 dark:border-gray-700 pt-4">
+            {% for name, label, value in [
+                ('tread_warning_mm', _('Warning threshold'), tire_set.tread_warning_mm if tire_set else none),
+                ('tread_replace_mm', _('Replacement threshold'), tire_set.tread_replace_mm if tire_set else none)
+            ] %}
+            <label for="{{ name }}" class="text-sm font-medium min-w-0">
+                {{ label }} ({{ tread_units[tread_unit] }})
+                <input class="{{ field_class }} mt-1" id="{{ name }}" name="{{ name }}" type="text"
+                       inputmode="decimal" value="{{ request.form.get(name, value|tread_input(tread_unit)) }}"
+                       aria-describedby="tread-threshold-help">
+            </label>
+            {% endfor %}
+            <p class="col-span-2 text-xs text-gray-600 dark:text-gray-300" id="tread-threshold-help">
+                {{ _('Leave threshold fields blank to disable them.') }}
+            </p>
+        </div>
+        {% if tire_set %}
+        <a class="inline-block mt-4 text-sm text-primary-600 dark:text-primary-400 hover:underline"
+           href="{{ url_for('tires.tread', set_id=tire_set.id) }}">{{ _('Individual measurements') }}</a>
+        {% endif %}
+    </fieldset>
+</section>

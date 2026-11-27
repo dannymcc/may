@@ -1900,6 +1900,7 @@ def export_json():
         'user_preferences': {
             'language': current_user.language,
             'distance_unit': current_user.distance_unit,
+            'tread_unit': current_user.tread_unit,
             'volume_unit': current_user.volume_unit,
             'consumption_unit': current_user.consumption_unit,
             'currency': current_user.currency
@@ -2189,6 +2190,7 @@ def export_full_backup():
         'user_preferences': {
             'language': current_user.language,
             'distance_unit': current_user.distance_unit,
+            'tread_unit': current_user.tread_unit,
             'volume_unit': current_user.volume_unit,
             'consumption_unit': current_user.consumption_unit,
             'currency': current_user.currency

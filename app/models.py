@@ -1,8 +1,10 @@
+from uuid import uuid4
 import secrets
 from datetime import date, datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from flask_babel import lazy_gettext as _l
+from sqlalchemy.ext.hybrid import hybrid_property
 from app import db
 from app.utils import utcnow
 
@@ -82,6 +84,9 @@ vehicle_users = db.Table('vehicle_users',
 )
 
 
+TREAD_UNITS = {'mm': 'mm', 'inch32': '1/32″'}
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -96,6 +101,7 @@ class User(UserMixin, db.Model):
     # User preferences
     language = db.Column(db.String(10), default='en')  # en, de, fr, es, etc.
     distance_unit = db.Column(db.String(10), default='km')  # km, mi
+    tread_unit = db.Column(db.String(8), nullable=False, default='mm', server_default='mm')
     volume_unit = db.Column(db.String(10), default='L')  # L, gal, us_gal
     consumption_unit = db.Column(db.String(10), default='L/100km')  # L/100km, mpg, mpg_us
     currency = db.Column(db.String(10), default='USD')
@@ -359,7 +365,12 @@ class Vehicle(db.Model):
             return True
         if self.charging_sessions.filter(ChargingSession.odometer.isnot(None)).first() is not None:
             return True
-        return self.expenses.filter(Expense.odometer.isnot(None)).first() is not None
+        if self.expenses.filter(Expense.odometer.isnot(None)).first() is not None:
+            return True
+        return (db.session.query(TireMeasurement.id)
+                .join(Tire).join(TireSet)
+                .filter(TireSet.vehicle_id == self.id, TireMeasurement.odometer.isnot(None))
+                .first() is not None)
 
     def get_effective_odometer_unit(self):
         """Return the odometer unit for this vehicle.
@@ -798,9 +809,10 @@ class Vehicle(db.Model):
         """Get the most recent odometer reading.
 
         If Tessie is enabled for this vehicle, returns the Tessie odometer.
-        Otherwise, returns the highest from fuel logs, trips, charging sessions
-        or expenses. Expenses count because a maintenance entry such as an oil
-        change records the odometer at the time of the work (#286).
+        Otherwise, returns the highest from fuel logs, trips, charging sessions,
+        expenses or tread measurements. Expenses count because a maintenance
+        entry such as an oil change records the odometer at the time of the work
+        (#286).
 
         Args:
             distance_unit: If provided ('km' or 'mi'), converts Tessie odometer to
@@ -829,7 +841,12 @@ class Vehicle(db.Model):
             Expense.odometer.desc()).first()
         expense_odo = last_expense.odometer if last_expense else 0
 
-        return max(fuel_odo, trip_odo, charge_odo, expense_odo)
+        tread_odo = (db.session.query(db.func.max(TireMeasurement.odometer))
+                     .join(Tire).join(TireSet)
+                     .filter(TireSet.vehicle_id == self.id)
+                     .scalar()) or 0
+
+        return max(fuel_odo, trip_odo, charge_odo, expense_odo, tread_odo)
 
     def get_fitted_tire_set(self):
         """The tire set currently on this vehicle, or None (#293)."""
@@ -2433,6 +2450,9 @@ class TireSet(db.Model):
     name = db.Column(db.String(100), nullable=False)  # "Michelin Alpin 6"
     tire_type = db.Column(db.String(20), nullable=False, default='all_season')
     size = db.Column(db.String(50))  # "205/55 R16 91H"
+    tread_tracking = db.Column(db.Boolean)
+    tread_warning_mm = db.Column(db.Float)
+    tread_replace_mm = db.Column(db.Float)
 
     purchase_date = db.Column(db.Date)
     purchase_odometer = db.Column(db.Float)  # vehicle odometer when the set was bought
@@ -2463,6 +2483,13 @@ class TireSet(db.Model):
     def is_fitted(self):
         return self.current_fitment is not None
 
+    @property
+    def tracks_tread(self):
+        # Legacy backups and sets created before opt-in inherit their existing use.
+        if self.tread_tracking is not None:
+            return self.tread_tracking
+        return bool(self.tires or self.tread_warning_mm is not None or self.tread_replace_mm is not None)
+
     def get_distance(self, current_odometer=None):
         """Total distance covered on this set, in the vehicle's odometer unit.
 
@@ -2484,7 +2511,10 @@ class TireSet(db.Model):
         return total
 
     def to_dict(self):
-        """Serialize the tire set to a dictionary"""
+        """Serialize the tire set to a dictionary."""
+        readings = sorted((reading for tire in self.tires for reading in tire.measurements),
+                          key=lambda reading: reading.chronology)
+        export_order = {reading.id: rank for rank, reading in enumerate(readings, 1)}
         return {
             'id': self.id,
             'vehicle_id': self.vehicle_id,
@@ -2499,6 +2529,10 @@ class TireSet(db.Model):
             'is_fitted': self.is_fitted,
             'distance': self.get_distance(),
             'fitments': [f.to_dict() for f in self.fitments.all()],
+            'tires': [t.to_dict(export_order) for t in self.tires],
+            'tread_tracking': self.tread_tracking,
+            'tread_warning_mm': self.tread_warning_mm,
+            'tread_replace_mm': self.tread_replace_mm,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 
@@ -2561,3 +2595,94 @@ class TireFitment(db.Model):
             'removed_odometer': self.removed_odometer,
             'distance': self.get_distance(),
         }
+
+
+TIRE_POSITIONS = (
+    ('', _l('Not recorded')),
+    ('front_left', _l('Front left')), ('front_right', _l('Front right')),
+    ('rear_left', _l('Rear left')), ('rear_right', _l('Rear right')),
+    ('front', _l('Front')), ('rear', _l('Rear')), ('spare', _l('Spare')),
+)
+
+
+class Tire(db.Model):
+    """A physical tire; its identity survives wheel-position changes (#424)."""
+    __tablename__ = 'tires'
+    id = db.Column(db.Integer, primary_key=True)
+    tire_set_id = db.Column(db.Integer, db.ForeignKey('tire_sets.id'), nullable=False)
+    identity = db.Column(db.String(36), nullable=False,
+                         default=lambda: uuid4().hex)
+    label = db.Column(db.String(100), nullable=False)
+    tire_set = db.relationship('TireSet', backref=db.backref(
+        'tires', cascade='all, delete-orphan', order_by='Tire.id'))
+    __table_args__ = (db.UniqueConstraint('tire_set_id', 'label'),
+                      db.UniqueConstraint('tire_set_id', 'identity'))
+
+    @property
+    def latest_measurement(self):
+        return self.measurements[0] if self.measurements else None
+
+    @property
+    def tread_status(self):
+        latest = self.latest_measurement
+        if latest is None:
+            return None
+        if self.tire_set.tread_replace_mm is not None and latest.depth_mm <= self.tire_set.tread_replace_mm:
+            return _l('Replacement threshold reached')
+        if self.tire_set.tread_warning_mm is not None and latest.depth_mm <= self.tire_set.tread_warning_mm:
+            return _l('Warning threshold reached')
+        return None
+
+    def to_dict(self, export_order):
+        return dict(identity=self.identity, label=self.label,
+                    measurements=[m.to_dict(export_order[m.id]) for m in self.measurements])
+
+
+class TireMeasurement(db.Model):
+    """One dated reading; position describes this measurement, not tire identity."""
+    __tablename__ = 'tire_measurements'
+    id = db.Column(db.Integer, primary_key=True)
+    tire_id = db.Column(db.Integer, db.ForeignKey('tires.id'), nullable=False, index=True)
+    measured_date = db.Column(db.Date, nullable=False)
+    depth_mm = db.Column(db.Float, nullable=False)
+    odometer = db.Column(db.Float)
+    position = db.Column(db.String(20), nullable=False, default='')
+    day_order = db.Column(db.Integer)
+    tire = db.relationship('Tire', backref=db.backref(
+        'measurements', cascade='all, delete-orphan',
+        order_by=lambda: (TireMeasurement.measured_date.desc(),
+                          TireMeasurement.effective_day_order.desc(), TireMeasurement.id.desc())))
+    __table_args__ = (
+        db.CheckConstraint('depth_mm >= 0 AND depth_mm <= 100', name='valid_tread_depth'),
+        db.CheckConstraint('odometer IS NULL OR odometer >= 0', name='valid_tread_odometer'),
+    )
+
+    @hybrid_property
+    def effective_day_order(self):
+        # Rows recorded before the ordering migration use their insertion ID.
+        return self.id if self.day_order is None else self.day_order
+
+    @effective_day_order.expression
+    def effective_day_order(cls):
+        return db.func.coalesce(cls.day_order, cls.id)
+
+    @property
+    def chronology(self):
+        return self.measured_date, self.effective_day_order, self.id
+
+    @classmethod
+    def next_day_order(cls, tire_set_id, measured_date):
+        if tire_set_id is None:
+            return 1
+        last = (db.session.query(db.func.max(cls.effective_day_order))
+                .join(Tire)
+                .filter(Tire.tire_set_id == tire_set_id, cls.measured_date == measured_date).scalar())
+        return (last or 0) + 1
+
+    @property
+    def position_label(self):
+        return dict(TIRE_POSITIONS).get(self.position, self.position)
+
+    def to_dict(self, export_order):
+        return dict(measured_date=self.measured_date.isoformat(), depth_mm=self.depth_mm,
+                    odometer=self.odometer, position=self.position, order=export_order)

@@ -5552,3 +5552,150 @@ msgstr ""
 #: app/templates/vehicles/view.html:1290
 msgid "No fuel prices recorded yet."
 msgstr "Inga bränslepriser registrerade ännu."
+
+#: app/models.py:2586
+msgid "Not recorded"
+msgstr "Inte registrerat"
+
+#: app/models.py:2587
+msgid "Front left"
+msgstr "Vänster fram"
+
+#: app/models.py:2587
+msgid "Front right"
+msgstr "Höger fram"
+
+#: app/models.py:2588
+msgid "Rear left"
+msgstr "Vänster bak"
+
+#: app/models.py:2588
+msgid "Rear right"
+msgstr "Höger bak"
+
+#: app/models.py:2589
+msgid "Front"
+msgstr "Fram"
+
+#: app/models.py:2589
+msgid "Rear"
+msgstr "Bak"
+
+#: app/models.py:2589
+msgid "Spare"
+msgstr "Reservhjul"
+
+#: app/models.py:2616
+msgid "Replacement threshold reached"
+msgstr "Bytesgräns uppnådd"
+
+#: app/models.py:2618
+msgid "Warning threshold reached"
+msgstr "Varningsgräns uppnådd"
+
+#: app/routes/tires.py:562
+msgid "Invalid tread measurement. Check the tire, date, depth and reading."
+msgstr "Ogiltig mätning. Kontrollera däck, datum, mönsterdjup och mätarställning."
+
+#: app/services/backup_restore.py:46
+#: app/templates/tires/_tread_history.html:3
+#: app/templates/tires/index.html:78
+msgid "Tread depth history"
+msgstr "Mönsterdjupshistorik"
+
+#: app/templates/tires/_tread_form.html:101
+msgid "Leave threshold fields blank to disable them."
+msgstr "Lämna gränsvärdesfälten tomma för att inaktivera dem."
+
+#: app/templates/tires/_tread_form.html:90
+msgid "Warning threshold"
+msgstr "Varningsgräns"
+
+#: app/templates/tires/_tread_form.html:91
+msgid "Replacement threshold"
+msgstr "Bytesgräns"
+
+#: app/templates/tires/tread.html:17
+msgid "New tire"
+msgstr "Nytt däck"
+
+#: app/templates/tires/tread.html:27
+msgid "New tire label"
+msgstr "Beteckning för nytt däck"
+
+#: app/templates/auth/settings.html:135 app/templates/tires/tread.html:36
+msgid "Tread depth"
+msgstr "Mönsterdjup"
+
+#: app/templates/tires/tread.html:47
+msgid "Position at measurement"
+msgstr "Position vid mätning"
+
+#: app/templates/tires/_tread_history.html:26
+msgid "Delete this measurement?"
+msgstr "Radera denna mätning?"
+
+#: app/services/backup_restore.py:45
+msgid "Individual tires"
+msgstr "Enskilda däck"
+
+#: app/templates/tires/_tread_form.html:12
+msgid "Track tread depth"
+msgstr "Registrera mönsterdjup"
+
+#: app/templates/tires/_tread_form.html:15
+msgid "Leave wheels you did not measure blank."
+msgstr "Lämna fälten för omätta hjul tomma."
+
+#: app/templates/tires/_tread_form.html:32
+msgid "Use the latest vehicle reading"
+msgstr "Använd fordonets senaste mätarställning"
+
+#: app/templates/tires/_tread_form.html:38
+msgid "If you moved a tire, select its existing label at the new position."
+msgstr "Om du flyttat ett däck väljer du dess befintliga etikett på den nya platsen."
+
+#: app/templates/tires/_tread_form.html:43
+msgid "Wheel positions"
+msgstr "Hjulpositioner"
+
+#: app/templates/tires/_tread_form.html:61
+msgid "Last measured:"
+msgstr "Senast uppmätt:"
+
+#: app/templates/tires/_tread_form.html:106 app/templates/tires/tread.html:2
+#: app/templates/tires/tread.html:10
+msgid "Individual measurements"
+msgstr "Enskilda mätningar"
+
+#: app/templates/tires/_tread_history.html:22
+msgid "Distance on this set"
+msgstr "Körsträcka på den här uppsättningen"
+
+#: app/templates/tires/_tread_history.html:40
+msgid "No tread measurements yet."
+msgstr "Inga mätningar av mönsterdjup ännu."
+
+#: app/routes/tires.py:331 app/routes/tires.py:378
+msgid "Check the tread depths, date, odometer and tire selection."
+msgstr "Kontrollera mönsterdjupen, datumet, mätarställningen och valda däck."
+
+#: app/templates/tires/_tread_form.html:68
+msgid "Tire assignment"
+msgstr "Tilldela däck"
+
+#: app/templates/tires/_tread_form.html:71
+msgid "First measurement"
+msgstr "Första mätning"
+
+#: app/templates/tires/_tread_form.html:75
+msgid "Replace tire"
+msgstr "Byt däck"
+
+#: app/templates/tires/_tread_form.html:79
+msgid "The previous tire and its measurements stay in the history."
+msgstr "Det tidigare däcket och dess mätningar finns kvar i historiken."
+
+#: app/templates/auth/settings.html:142
+msgid "US"
+msgstr "USA"

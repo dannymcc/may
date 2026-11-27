@@ -74,6 +74,15 @@
             </div>
         </dl>
 
+        {% if tire_set.tracks_tread %}
+        <p class="mt-4 text-sm"><a class="text-primary-600 hover:text-primary-500" href="{{ url_for('tires.edit', set_id=tire_set.id, _anchor='tread-heading') if can_write('tires') else url_for('tires.edit', set_id=tire_set.id, _anchor='tread-history') }}">{{ _('Tread depth history') }}</a></p>
+        <div class="mt-2 flex flex-wrap gap-3 text-sm text-gray-900 dark:text-white">
+        {% for latest in tread_latest_by_set[tire_set.id] %}
+            {% set tire = latest.tire %}
+            <span>{{ tire.label }}: {{ latest.depth_mm|tread_display(tread_unit) }}{% if tire.tread_status %} · {{ tire.tread_status }}{% endif %} · {{ latest.measured_date|format_date }}</span>
+        {% endfor %}
+        </div>
+        {% endif %}
         {% if tire_set.notes %}
         <p class="mt-4 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{{ tire_set.notes }}</p>
         {% endif %}

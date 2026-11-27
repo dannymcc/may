@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}{{ tire_set.name }} – {{ _('Individual measurements') }}{% endblock %}
+{% block content %}
+{% set selected_tire = request.form.get('tire_id', editing.tire_id if editing else 0)|int %}
+{% set selected_position = request.form.get('position', editing.position if editing else '') %}
+{% set field_class = 'mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2' %}
+<div class="max-w-2xl mx-auto text-gray-900 dark:text-white">
+    <a class="text-sm text-primary-600 dark:text-primary-400"
+       href="{{ url_for('tires.edit', set_id=tire_set.id, _anchor='tread-heading') }}">&larr; {{ _('Edit Tire Set') }}</a>
+    <h1 class="mt-2 text-2xl font-bold break-words">{{ tire_set.name }} – {{ _('Individual measurements') }}</h1>
+    <form method="POST" class="mt-6 bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="tread_unit" value="{{ tread_unit }}">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label class="block text-sm font-medium sm:col-span-2">{{ _('Tire') }}
+                <select id="measurement-tire" name="tire_id" class="{{ field_class }}">
+                    <option value="0">{{ _('New tire') }}</option>
+                    {% for tire in tire_set.tires %}
+                    {% set position = current_positions.get(tire.id) %}
+                    <option value="{{ tire.id }}" data-position="{{ position or '' }}" {% if selected_tire == tire.id %}selected{% endif %}>
+                        {{ tire.label }}{% if position %} · {{ positions[position] }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <div id="measurement-new-label" class="sm:col-span-2" {% if selected_tire %}hidden{% endif %}>
+                <label class="block text-sm font-medium">{{ _('New tire label') }}
+                    <input name="label" maxlength="100" value="{{ request.form.get('label', '') }}" class="{{ field_class }}">
+                </label>
+            </div>
+            <label class="block text-sm font-medium">{{ _('Date') }}
+                <input type="text" data-datepicker name="measured_date" required
+                       value="{{ request.form.get('measured_date', (editing.measured_date if editing else today).isoformat()) }}"
+                       class="{{ field_class }}">
+            </label>
+            <label class="block text-sm font-medium">{{ _('Tread depth') }} ({{ tread_units[tread_unit] }})
+                <input type="text" name="depth_mm" inputmode="decimal" required
+                       placeholder="{{ '6/32' if tread_unit == 'inch32' else '' }}"
+                       value="{{ request.form.get('depth_mm', editing.depth_mm|tread_input(tread_unit) if editing else '') }}"
+                       class="{{ field_class }}">
+            </label>
+            <label class="block text-sm font-medium">{{ tire_set.vehicle.get_reading_label() }} ({{ tire_set.vehicle.get_reading_unit() }})
+                <input type="text" name="odometer" inputmode="decimal"
+                       value="{{ request.form.get('odometer', editing.odometer if editing and editing.odometer is not none else '') }}"
+                       class="{{ field_class }}">
+            </label>
+            <label class="block text-sm font-medium">{{ _('Position at measurement') }}
+                <select id="measurement-position" name="position" class="{{ field_class }}">
+                    {% for value, label in positions.items() %}
+                    <option value="{{ value }}" {% if selected_position == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="mt-5 flex justify-end">
+            <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-md">{{ _('Save') }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tire = document.getElementById('measurement-tire');
+        const newLabel = document.getElementById('measurement-new-label');
+        const labelInput = newLabel.querySelector('input');
+        const position = document.getElementById('measurement-position');
+
+        function updateLabel() {
+            newLabel.hidden = tire.value !== '0';
+            labelInput.disabled = newLabel.hidden;
+            labelInput.required = !newLabel.hidden;
+        }
+
+        tire.addEventListener('change', () => {
+            updateLabel();
+            const assignedPosition = tire.selectedOptions[0].dataset.position;
+            if (assignedPosition) position.value = assignedPosition;
+        });
+        updateLabel();
+    });
+</script>
+{% endblock %}
