@@ -8,6 +8,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This file starts at 0.28.0. Notes for earlier releases are on the
 [GitHub releases page](https://github.com/dannymcc/may/releases).
 
+## [0.46.0] - 2026-11-27
+
+### Added
+
+- Optional per-tire tread-depth history. Record dated measurements in
+  millimetres or thirty-seconds of an inch, with an optional odometer reading
+  and wheel position. Tire identities survive rotations and replacements, and
+  existing sets start with tracking disabled.
+  ([#430](https://github.com/dannymcc/may/pull/430),
+  [#424](https://github.com/dannymcc/may/issues/424))
+- Latest readings, configurable warning and replacement thresholds, and the
+  distance travelled on the fitted set at each measurement. Record several
+  wheels on the tire-set form or add individual measurements, including spares.
+- Tire identities, thresholds and measurement histories in JSON and full ZIP
+  backups. Restore skips repeated measurements and preserves chronological
+  order, including multiple readings on the same date.
+
+### Fixed
+
+- Tread odometer readings now count towards the vehicle's latest reading, open
+  tire-set distances and the next measurement's suggested reading.
+- Read-only users can open the full tread-depth history without seeing editing
+  controls.
+- Deleting the final measurement shows the empty-state message instead of an
+  empty history widget.
+
+### Changed
+
+- Dependencies: `gunicorn` >= 27.0.1
+  ([#431](https://github.com/dannymcc/may/pull/431)), `python-dateutil` >=
+  4.0.0 ([#432](https://github.com/dannymcc/may/pull/432)), `pytest` >= 9.2.0
+  ([#433](https://github.com/dannymcc/may/pull/433)) and `coverage` >= 7.17.4
+  ([#434](https://github.com/dannymcc/may/pull/434)).
+- New interface text is translated in all 19 locales.
+
 ## [0.45.0] - 2026-11-23
 
 ### Added
