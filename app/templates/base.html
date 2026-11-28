@@ -163,6 +163,17 @@
         };
     </script>
     <script src="{{ FLATPICKR_JS_ASSET_URL }}" onerror="window.__loadFlatpickrFallback()"></script>
+    <script>
+        // Registered before any page script, so it runs first on
+        // DOMContentLoaded, once deferred Chart.js has loaded: charts appear
+        // without animating for people who ask for reduced motion.
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.Chart && window.matchMedia
+                    && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                Chart.defaults.animation = false;
+            }
+        });
+    </script>
     <!-- Chart.js - Only loaded on pages that need it via block -->
     {% block extra_scripts %}{% endblock %}
     <style>
@@ -180,6 +191,28 @@
         html.dark .dark\:border-gray-600 { border-color: #4b5563; }
 
         [x-cloak] { display: none !important; }
+
+        /* Figures line up in columns: fuel prices, odometers and totals use
+           equal-width digits so lists and tables scan cleanly (#381). */
+        body { font-variant-numeric: tabular-nums; }
+
+        /* A clear focus ring for keyboard users. Fields that style their own
+           focus state (focus:ring / focus:outline-none) keep it. */
+        :focus-visible { outline: 2px solid var(--primary-500); outline-offset: 2px; }
+
+        /* Dark mode: links and actions coloured for a light page sit too dark
+           on grey. Lift them; explicit dark: classes still take precedence. */
+        html.dark :where(.text-primary-600) { color: var(--primary-400); }
+        html.dark :where(.text-red-600) { color: #f87171; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
         .text-primary-400 { color: var(--primary-400); }
         .text-primary-500 { color: var(--primary-500); }
         .text-primary-600 { color: var(--primary-600); }
@@ -306,9 +339,12 @@
                                                     (current_user.show_menu_tires is not defined or current_user.show_menu_tires) %}
                             {% if show_more_menu %}
                             <div class="relative inline-flex items-center" id="more-menu-container">
-                                <button onclick="document.getElementById('more-dropdown').classList.toggle('hidden')" class="inline-flex items-center px-3 py-2 text-sm font-medium {% if 'maintenance' in request.endpoint or 'recurring' in request.endpoint or 'documents' in request.endpoint or 'stations' in request.endpoint %}text-primary-600 border-b-2 border-primary-600{% else %}text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white{% endif %}">
+                                {% set more_active = request.blueprint in ('maintenance', 'recurring', 'documents', 'stations', 'charging', 'allowance', 'tires', 'notes') %}
+                                <button type="button" id="more-menu-button" aria-haspopup="true" aria-expanded="false" aria-controls="more-dropdown"
+                                        onclick="var d = document.getElementById('more-dropdown'); d.classList.toggle('hidden'); this.setAttribute('aria-expanded', !d.classList.contains('hidden'));"
+                                        class="inline-flex items-center px-3 py-2 text-sm font-medium {% if more_active %}text-primary-600 border-b-2 border-primary-600{% else %}text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white{% endif %}">
                                     {{ _('More') }}
-                                    <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                     </svg>
                                 </button>
@@ -359,19 +395,19 @@
                         </a>
                         {% endif %}
                         {% endif %}
-                        <a href="{{ url_for('search.index') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" title="{{ _('Search') }}">
+                        <a href="{{ url_for('search.index') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" title="{{ _('Search') }}" aria-label="{{ _('Search') }}">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </a>
-                        <a href="{{ url_for('auth.settings') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" title="{{ _('Settings') }}">
+                        <a href="{{ url_for('auth.settings') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" title="{{ _('Settings') }}" aria-label="{{ _('Settings') }}">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                         </a>
                         <span class="text-sm text-gray-400 dark:text-gray-500 dark:text-gray-400">{{ current_user.username }}</span>
-                        <a href="{{ url_for('auth.logout') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400" title="{{ _('Logout') }}">
+                        <a href="{{ url_for('auth.logout') }}" class="p-2 text-gray-500 dark:text-gray-400 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400" title="{{ _('Logout') }}" aria-label="{{ _('Logout') }}">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                             </svg>
@@ -387,8 +423,10 @@
                             <span>{{ _('Fuel') }}</span>
                         </a>
                         {% endif %}
-                        <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-500 dark:text-gray-400">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <button type="button" id="mobile-menu-button" aria-label="{{ _('Menu') }}" aria-controls="mobile-menu" aria-expanded="false"
+                                onclick="var m = document.getElementById('mobile-menu'); m.classList.toggle('hidden'); this.setAttribute('aria-expanded', !m.classList.contains('hidden'));"
+                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-500 dark:text-gray-400">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                             </svg>
                         </button>
@@ -510,14 +548,50 @@
             .catch(() => {});
     }
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(event) {
+    // Close the More menu on a click outside it or on Escape
+    function closeMoreMenu(returnFocus) {
         const dropdown = document.getElementById('more-dropdown');
-        const container = document.getElementById('more-menu-container');
-        if (dropdown && container && !container.contains(event.target)) {
-            dropdown.classList.add('hidden');
+        const button = document.getElementById('more-menu-button');
+        if (!dropdown || dropdown.classList.contains('hidden')) return;
+        dropdown.classList.add('hidden');
+        if (button) {
+            button.setAttribute('aria-expanded', 'false');
+            if (returnFocus) button.focus();
         }
+    }
+    document.addEventListener('click', function(event) {
+        const container = document.getElementById('more-menu-container');
+        if (container && !container.contains(event.target)) closeMoreMenu(false);
     });
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') closeMoreMenu(true);
+    });
+
+    // Mark the current page in the navigation: aria-current for screen
+    // readers everywhere, and a visible highlight in the mobile menu, which
+    // otherwise gives no sign of where you are.
+    (function() {
+        document.querySelectorAll('nav a.border-primary-600').forEach(function(link) {
+            link.setAttribute('aria-current', 'page');
+        });
+        const menu = document.getElementById('mobile-menu');
+        if (!menu) return;
+        const here = window.location.pathname;
+        let best = null;
+        menu.querySelectorAll('a[href]').forEach(function(link) {
+            const path = new URL(link.href, window.location.origin).pathname;
+            if (path.length > 1 && (here === path || here.startsWith(path.replace(/\/?$/, '/')))
+                    && (!best || path.length > best.path.length)) {
+                best = {link: link, path: path};
+            }
+        });
+        if (best) {
+            best.link.setAttribute('aria-current', 'page');
+            best.link.classList.remove('text-gray-500');
+            best.link.classList.add('bg-primary-50', 'text-primary-700', 'border-l-4', 'border-primary-600',
+                                    'dark:bg-gray-700', 'dark:text-white');
+        }
+    })();
 
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {

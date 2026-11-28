@@ -13,18 +13,18 @@
 </div>
 
 <!-- Stats Cards -->
-<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5 mb-8">
+<div class="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4 mb-8">
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Vehicles') }}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Vehicles') }}</dt>
                         <dd class="text-lg font-semibold text-gray-900 dark:text-white">{{ vehicles|length }}</dd>
                     </dl>
                 </div>
@@ -33,16 +33,16 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Total Fuel Cost') }}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Total Fuel Cost') }}</dt>
                         <dd class="text-lg font-semibold text-gray-900 dark:text-white">{{ total_fuel_cost|money }} {{ current_user.currency }}</dd>
                     </dl>
                 </div>
@@ -52,16 +52,16 @@
 
     {% if total_charging_cost and total_charging_cost > 0 %}
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Total Charging Cost') }}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Total Charging Cost') }}</dt>
                         <dd class="text-lg font-semibold text-gray-900 dark:text-white">{{ total_charging_cost|money }} {{ current_user.currency }}</dd>
                     </dl>
                 </div>
@@ -71,16 +71,16 @@
     {% endif %}
 
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Other Expenses') }}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Other Expenses') }}</dt>
                         <dd class="text-lg font-semibold text-gray-900 dark:text-white">{{ total_expense_cost|money }} {{ current_user.currency }}</dd>
                     </dl>
                 </div>
@@ -89,16 +89,16 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Total Distance') }}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Total Distance') }}</dt>
                         <dd class="text-lg font-semibold text-gray-900 dark:text-white">{{ "%.0f"|format(total_distance) }} {% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('mixed units') }}</span>{% endif %}</dd>
                     </dl>
                 </div>
@@ -107,16 +107,16 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg border-2 border-primary-200 dark:border-primary-800">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Cost per') }} {% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('unit') }}</span>{% endif %}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Cost per') }} {% if total_distance_unit %}{{ total_distance_unit }}{% else %}<span title="{{ _('This total covers vehicles metered in distance and in engine hours.') }}">{{ _('unit') }}</span>{% endif %}</dt>
                         <dd class="text-lg font-semibold text-primary-600 dark:text-primary-400">
                             {% if cost_per_distance %}{{ cost_per_distance|money }} {{ current_user.currency }}{% else %}-{% endif %}
                         </dd>
@@ -128,16 +128,16 @@
 
     {% if current_user.show_net_cost_per_distance %}
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg border-2 border-primary-200 dark:border-primary-800">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Net cost per %(unit)s', unit=total_distance_unit) if total_distance_unit else _('Net cost per') }}{% if not total_distance_unit %} ({{ _('mixed units') }}){% endif %}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Net cost per %(unit)s', unit=total_distance_unit) if total_distance_unit else _('Net cost per') }}{% if not total_distance_unit %} ({{ _('mixed units') }}){% endif %}</dt>
                         <dd class="text-lg font-semibold text-primary-600 dark:text-primary-400">
                             {% if net_cost_per_distance is not none %}{{ net_cost_per_distance|money }} {{ current_user.currency }}{% else %}-{% endif %}
                         </dd>
@@ -150,16 +150,16 @@
     {% endif %}
 
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Total Cost') }}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Total Cost') }}</dt>
                         <dd class="text-lg font-semibold text-gray-900 dark:text-white">{{ total_cost|money }} {{ current_user.currency }}</dd>
                     </dl>
                 </div>
@@ -169,16 +169,16 @@
 
     {% if total_allowance and total_allowance > 0 %}
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Mileage Allowance') }}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Mileage Allowance') }}</dt>
                         <dd class="text-lg font-semibold text-emerald-600 dark:text-emerald-400">-{{ total_allowance|money }} {{ current_user.currency }}</dd>
                     </dl>
                 </div>
@@ -187,16 +187,16 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="hidden sm:block flex-shrink-0" aria-hidden="true">
                     <svg class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="sm:ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ _('Net Cost') }}</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:truncate">{{ _('Net Cost') }}</dt>
                         <dd class="text-lg font-semibold text-gray-900 dark:text-white">{{ net_cost|money }} {{ current_user.currency }}</dd>
                     </dl>
                 </div>

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: May 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-27 19:59+0000\n"
+"POT-Creation-Date: 2026-11-28 10:50+0000\n"
 "PO-Revision-Date: 2026-04-18 15:49+0100\n"
 "Last-Translator: Albano Battistella <albanobattistella@gmail.com>\n"
 "Language-Team: it\n"
@@ -144,7 +144,7 @@ msgstr "Personalizzato"
 
 #: app/models.py:1510 app/routes/maintenance.py:54
 #: app/templates/auth/settings.html:463 app/templates/auth/settings.html:529
-#: app/templates/base.html:318 app/templates/base.html:421
+#: app/templates/base.html:354 app/templates/base.html:459
 msgid "Maintenance"
 msgstr "Manutenzione"
 
@@ -1021,7 +1021,7 @@ msgid "Fuel log added!"
 msgstr "Registro carburante aggiunto!"
 
 #: app/routes/main.py:134 app/routes/vehicles.py:236
-#: app/templates/base.html:358 app/templates/base.html:387
+#: app/templates/base.html:394 app/templates/base.html:423
 #: app/templates/dashboard.html:376 app/templates/timeline/index.html:114
 #: app/templates/trips/index.html:127 app/templates/vehicles/view.html:95
 msgid "Fuel"
@@ -1428,28 +1428,28 @@ msgstr "Singoli pneumatici"
 msgid "Tread depth history"
 msgstr "Storico profondità battistrada"
 
-#: app/templates/auth/settings.html:457 app/templates/base.html:271
-#: app/templates/base.html:400 app/templates/dashboard.html:2
+#: app/templates/auth/settings.html:457 app/templates/base.html:304
+#: app/templates/base.html:438 app/templates/dashboard.html:2
 #: app/templates/dashboard.html:11
 msgid "Dashboard"
 msgstr "Cruscotto"
 
 #: app/templates/auth/settings.html:458 app/templates/auth/settings.html:509
-#: app/templates/base.html:275 app/templates/base.html:402
+#: app/templates/base.html:308 app/templates/base.html:440
 #: app/templates/dashboard.html:27 app/templates/vehicles/index.html:2
 #: app/templates/vehicles/index.html:7
 msgid "Vehicles"
 msgstr "Veicoli"
 
 #: app/templates/auth/settings.html:459 app/templates/auth/settings.html:514
-#: app/templates/base.html:280 app/templates/base.html:405
+#: app/templates/base.html:313 app/templates/base.html:443
 #: app/templates/fuel/index.html:2 app/templates/fuel/index.html:7
 #: app/templates/search/index.html:66 app/templates/vehicles/view.html:956
 msgid "Fuel Logs"
 msgstr "Registri Carburante"
 
 #: app/templates/auth/settings.html:461 app/templates/auth/settings.html:519
-#: app/templates/base.html:285 app/templates/base.html:408
+#: app/templates/base.html:318 app/templates/base.html:446
 #: app/templates/dashboard.html:382 app/templates/expenses/index.html:2
 #: app/templates/expenses/index.html:7 app/templates/expenses/index.html:143
 #: app/templates/search/index.html:43 app/templates/timeline/index.html:120
@@ -1458,59 +1458,59 @@ msgid "Expenses"
 msgstr "Spese"
 
 #: app/templates/auth/settings.html:462 app/templates/auth/settings.html:524
-#: app/templates/base.html:290 app/templates/base.html:411
+#: app/templates/base.html:323 app/templates/base.html:449
 #: app/templates/reminders/index.html:2 app/templates/reminders/index.html:7
 msgid "Reminders"
 msgstr "Promemoria"
 
 #: app/templates/auth/settings.html:467 app/templates/auth/settings.html:549
-#: app/templates/base.html:295 app/templates/base.html:415
+#: app/templates/base.html:328 app/templates/base.html:453
 #: app/templates/search/index.html:130 app/templates/trips/index.html:2
 #: app/templates/trips/index.html:7
 msgid "Trips"
 msgstr "Viaggi"
 
-#: app/templates/base.html:310
+#: app/templates/base.html:346
 msgid "More"
 msgstr "Altro"
 
-#: app/templates/base.html:321 app/templates/base.html:424
+#: app/templates/base.html:357 app/templates/base.html:462
 msgid "Recurring"
 msgstr "Ricorrenti"
 
 #: app/templates/auth/settings.html:465 app/templates/auth/settings.html:539
-#: app/templates/base.html:324 app/templates/base.html:427
+#: app/templates/base.html:360 app/templates/base.html:465
 #: app/templates/documents/index.html:2 app/templates/documents/index.html:7
 #: app/templates/search/index.html:89
 msgid "Documents"
 msgstr "Documenti"
 
 #: app/templates/auth/settings.html:466 app/templates/auth/settings.html:544
-#: app/templates/base.html:327 app/templates/base.html:430
+#: app/templates/base.html:363 app/templates/base.html:468
 #: app/templates/stations/index.html:2 app/templates/stations/index.html:7
 msgid "Fuel Stations"
 msgstr "Stazioni di Servizio"
 
 #: app/templates/auth/settings.html:468 app/templates/auth/settings.html:554
-#: app/templates/base.html:330 app/templates/base.html:418
+#: app/templates/base.html:366 app/templates/base.html:456
 msgid "EV Charging"
 msgstr "Ricarica EV"
 
 #: app/templates/allowance/index.html:2 app/templates/allowance/index.html:7
 #: app/templates/auth/settings.html:469 app/templates/auth/settings.html:559
-#: app/templates/base.html:333 app/templates/base.html:433
+#: app/templates/base.html:369 app/templates/base.html:471
 #: app/templates/dashboard.html:181 app/templates/vehicles/view.html:153
 msgid "Mileage Allowance"
 msgstr "Indennità Chilometrica"
 
-#: app/templates/auth/settings.html:564 app/templates/base.html:336
-#: app/templates/base.html:436 app/templates/tires/index.html:2
+#: app/templates/auth/settings.html:564 app/templates/base.html:372
+#: app/templates/base.html:474 app/templates/tires/index.html:2
 #: app/templates/tires/index.html:7
 msgid "Tires"
 msgstr "Gomme"
 
 #: app/templates/auth/settings.html:470 app/templates/auth/settings.html:569
-#: app/templates/base.html:339 app/templates/base.html:439
+#: app/templates/base.html:375 app/templates/base.html:477
 #: app/templates/charging/form.html:149 app/templates/expenses/form.html:111
 #: app/templates/fuel/form.html:187 app/templates/notes/index.html:2
 #: app/templates/notes/index.html:7 app/templates/search/index.html:110
@@ -1522,27 +1522,31 @@ msgstr "Gomme"
 msgid "Notes"
 msgstr "Note"
 
-#: app/templates/auth/settings.html:460 app/templates/base.html:342
-#: app/templates/base.html:354 app/templates/base.html:383
-#: app/templates/base.html:442 app/templates/fuel/quick.html:2
+#: app/templates/auth/settings.html:460 app/templates/base.html:378
+#: app/templates/base.html:390 app/templates/base.html:419
+#: app/templates/base.html:480 app/templates/fuel/quick.html:2
 #: app/templates/fuel/quick.html:7
 msgid "Quick Fuel Entry"
 msgstr "Inserimento Rapido Carburante"
 
-#: app/templates/base.html:362 app/templates/base.html:413
+#: app/templates/base.html:398 app/templates/base.html:451
 #: app/templates/maintenance/history.html:11 app/templates/search/index.html:2
 #: app/templates/search/index.html:6 app/templates/search/index.html:32
 msgid "Search"
 msgstr "Cerca"
 
 #: app/templates/auth/settings.html:2 app/templates/auth/settings.html:6
-#: app/templates/base.html:367 app/templates/base.html:444
+#: app/templates/base.html:403 app/templates/base.html:482
 msgid "Settings"
 msgstr "Impostazioni"
 
-#: app/templates/base.html:374 app/templates/base.html:449
+#: app/templates/base.html:410 app/templates/base.html:487
 msgid "Logout"
 msgstr "Disconnetti"
+
+#: app/templates/base.html:426
+msgid "Menu"
+msgstr "Menu"
 
 #: app/templates/dashboard.html:12
 msgid "Overview of your vehicles and expenses"
