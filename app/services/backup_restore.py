@@ -224,7 +224,7 @@ VEHICLE_SECTIONS = [
             {'date': 'date', 'odometer': 'float', 'odometer_confirmed': 'bool', 'volume': 'float',
              'price_per_unit': 'float', 'discount_per_unit': 'float',
              'total_cost': 'float', 'sales_tax': 'float',
-             'fuel_type': 'str', 'fuel_distance': 'float', 'is_full_tank': 'bool',
+             'fuel_type': 'str', 'fuel_grade': 'str', 'fuel_distance': 'float', 'is_full_tank': 'bool',
              'is_missed': 'bool', 'station': 'str', 'notes': 'str',
              'created_at': 'datetime'},
             key_fields=('date', 'odometer', 'volume')),

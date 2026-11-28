@@ -7,8 +7,8 @@ from werkzeug.utils import secure_filename
 from app import db
 from app.utils import parse_decimal
 from app.models import (
-    Vehicle, FuelLog, Attachment, FuelStation, FuelPriceHistory, FUEL_TYPES,
-    resolve_price_fuel_type,
+    Vehicle, FuelLog, Attachment, FuelStation, FuelPriceHistory, FUEL_TYPES, FUEL_GRADES,
+    clean_fuel_grade,
 )
 from app.security import (
     validate_file_upload, secure_filename_with_uuid, validate_positive_number,
@@ -160,6 +160,8 @@ def new():
             total_cost=total_cost,
             sales_tax=sales_tax,
             fuel_type=request.form.get('fuel_type') or None,
+            fuel_grade=clean_fuel_grade(request.form.get('fuel_grade'),
+                                        request.form.get('fuel_type') or None, vehicle.fuel_type),
             fuel_distance=fuel_distance,
             is_full_tank=request.form.get('is_full_tank') == 'on',
             is_missed=request.form.get('is_missed') == 'on',
@@ -186,7 +188,7 @@ def new():
                     user_id=current_user.id,
                     fuel_log_id=log.id,
                     date=log.date,
-                    fuel_type=resolve_price_fuel_type(log.fuel_type, vehicle.fuel_type),
+                    fuel_type=log.price_fuel_type,
                     price_per_unit=log.price_per_unit
                 )
                 db.session.add(price_history)
@@ -230,7 +232,7 @@ def new():
                            log=None,
                            vehicles=vehicles,
                            stations=stations,
-                           fuel_types=FUEL_TYPES,
+                           fuel_types=FUEL_TYPES, fuel_grades=FUEL_GRADES,
                            selected_vehicle_id=selected_vehicle_id)
 
 
@@ -294,6 +296,8 @@ def edit(log_id):
         log.total_cost = parse_decimal(request.form.get('total_cost')) if request.form.get('total_cost') else None
         log.sales_tax = parse_decimal(request.form.get('sales_tax')) if request.form.get('sales_tax') else None
         log.fuel_type = request.form.get('fuel_type') or None
+        log.fuel_grade = clean_fuel_grade(request.form.get('fuel_grade'),
+                                          log.fuel_type, log.vehicle.fuel_type)
         log.fuel_distance = parse_decimal(request.form.get('fuel_distance')) if request.form.get('fuel_distance') else None
         log.is_full_tank = request.form.get('is_full_tank') == 'on'
         log.is_missed = request.form.get('is_missed') == 'on'
@@ -335,9 +339,7 @@ def edit(log_id):
                 # Keep the charted fuel type in step with the log (#268):
                 # changing a fill-up from petrol to diesel has to move the
                 # price row onto the diesel series too.
-                existing_entry.fuel_type = resolve_price_fuel_type(
-                    log.fuel_type, log.vehicle.fuel_type
-                )
+                existing_entry.fuel_type = log.price_fuel_type
                 if station_id and existing_entry.station_id != station_id:
                     new_station = db.session.get(FuelStation, station_id)
                     if new_station:
@@ -357,7 +359,7 @@ def edit(log_id):
                     user_id=current_user.id,
                     fuel_log_id=log.id,
                     date=log.date,
-                    fuel_type=resolve_price_fuel_type(log.fuel_type, log.vehicle.fuel_type),
+                    fuel_type=log.price_fuel_type,
                     price_per_unit=log.price_per_unit,
                 ))
                 new_station.increment_usage()
@@ -396,7 +398,7 @@ def edit(log_id):
                            log=log,
                            vehicles=vehicles,
                            stations=stations,
-                           fuel_types=FUEL_TYPES,
+                           fuel_types=FUEL_TYPES, fuel_grades=FUEL_GRADES,
                            selected_vehicle_id=log.vehicle_id)
 
 
@@ -538,6 +540,8 @@ def quick():
             total_cost=total_cost,
             price_per_unit=price_per_unit,
             fuel_type=request.form.get('fuel_type') or None,
+            fuel_grade=clean_fuel_grade(request.form.get('fuel_grade'),
+                                        request.form.get('fuel_type') or None, vehicle.fuel_type),
             is_full_tank=request.form.get('is_full_tank') == 'on',
             station=request.form.get('station'),
         )
@@ -567,7 +571,7 @@ def quick():
                 user_id=current_user.id,
                 fuel_log_id=log.id,
                 date=log.date,
-                fuel_type=resolve_price_fuel_type(log.fuel_type, vehicle.fuel_type),
+                fuel_type=log.price_fuel_type,
                 price_per_unit=log.price_per_unit,
             ))
             station.increment_usage()

@@ -19,11 +19,21 @@ from app.models import (
     User, Vehicle, VehicleSpec, FuelLog, Expense, EXPENSE_CATEGORIES,
     Reminder, MaintenanceSchedule, RecurringExpense, FuelStation,
     Document, Trip, ChargingSession, VehiclePart, FuelPriceHistory, Attachment,
-    TRIP_PURPOSES, CHARGER_TYPES, VEHICLE_TYPES, fuel_type_label
+    TRIP_PURPOSES, CHARGER_TYPES, VEHICLE_TYPES, FUEL_GRADES, clean_fuel_grade,
+    fuel_type_label
 )
 
 #: Vehicle types the API accepts: the same list the web form offers.
 API_VEHICLE_TYPES = [value for value, _label in VEHICLE_TYPES]
+
+
+def _invalid_fuel_grade(data):
+    """An error response if the body carries an unknown petrol grade (#268)."""
+    grade = data.get('fuel_grade')
+    if grade not in (None, '') and grade not in dict(FUEL_GRADES):
+        return jsonify({'error': 'fuel_grade must be one of: ' + ', '.join(dict(FUEL_GRADES)),
+                        'code': 'validation_error'}), 400
+    return None
 
 
 def _vehicle_type_error():
@@ -563,6 +573,10 @@ def api_create_fuel_log(vehicle_id):
     except ValueError:
         return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD', 'code': 'validation_error'}), 400
 
+    grade_error = _invalid_fuel_grade(data)
+    if grade_error:
+        return grade_error
+
     log = FuelLog(
         vehicle_id=vehicle_id,
         user_id=user.id,
@@ -573,6 +587,8 @@ def api_create_fuel_log(vehicle_id):
         total_cost=parse_decimal(data['total_cost']) if data.get('total_cost') else None,
         sales_tax=parse_decimal(data['sales_tax']) if data.get('sales_tax') else None,
         fuel_type=data.get('fuel_type') or None,
+        fuel_grade=clean_fuel_grade(data.get('fuel_grade'), data.get('fuel_type') or None,
+                                    vehicle.fuel_type),
         fuel_distance=parse_decimal(data['fuel_distance']) if data.get('fuel_distance') else None,
         is_full_tank=data.get('is_full_tank', True),
         is_missed=data.get('is_missed', False),
@@ -641,6 +657,14 @@ def api_update_fuel_log(log_id):
         log.sales_tax = parse_decimal(data['sales_tax']) if data['sales_tax'] else None
     if 'fuel_type' in data:
         log.fuel_type = data['fuel_type'] or None
+    if 'fuel_grade' in data:
+        grade_error = _invalid_fuel_grade(data)
+        if grade_error:
+            return grade_error
+        log.fuel_grade = data['fuel_grade'] or None
+    if 'fuel_type' in data or 'fuel_grade' in data:
+        # A grade only belongs on a petrol fill-up; a switch to diesel drops it.
+        log.fuel_grade = clean_fuel_grade(log.fuel_grade, log.fuel_type, log.vehicle.fuel_type)
     if 'fuel_distance' in data:
         log.fuel_distance = parse_decimal(data['fuel_distance']) if data['fuel_distance'] else None
     if 'is_full_tank' in data:
@@ -1649,7 +1673,7 @@ def export_csv():
         writer.writerow([
             'id', 'vehicle_id', 'vehicle_name', 'date', 'odometer', 'odometer_unit',
             'volume', 'price_per_unit', 'total_cost', 'sales_tax', 'fuel_type',
-            'fuel_distance', 'is_full_tank', 'is_missed', 'station', 'notes',
+            'fuel_grade', 'fuel_distance', 'is_full_tank', 'is_missed', 'station', 'notes',
             'created_at'
         ])
         for vehicle in current_user.get_all_vehicles():
@@ -1662,7 +1686,7 @@ def export_csv():
                     log.id, vehicle.id, vehicle.name, log.date.isoformat(),
                     log.odometer if log.has_recorded_odometer else '', odometer_unit,
                     log.volume, log.price_per_unit, log.total_cost, log.sales_tax,
-                    log.fuel_type, log.fuel_distance,
+                    log.fuel_type, log.fuel_grade, log.fuel_distance,
                     log.is_full_tank, log.is_missed, log.station, log.notes,
                     log.created_at.isoformat() if log.created_at else ''
                 ])
@@ -1979,6 +2003,7 @@ def export_json():
                 'total_cost': log.total_cost,
                 'sales_tax': log.sales_tax,
                 'fuel_type': log.fuel_type,
+                'fuel_grade': log.fuel_grade,
                 'fuel_distance': log.fuel_distance,
                 'is_full_tank': log.is_full_tank,
                 'is_missed': log.is_missed,
@@ -2290,6 +2315,7 @@ def export_full_backup():
                 'total_cost': log.total_cost,
                 'sales_tax': log.sales_tax,
                 'fuel_type': log.fuel_type,
+                'fuel_grade': log.fuel_grade,
                 'fuel_distance': log.fuel_distance,
                 'is_full_tank': log.is_full_tank,
                 'is_missed': log.is_missed,

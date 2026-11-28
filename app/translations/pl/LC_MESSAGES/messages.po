@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-27 16:26+0000\n"
+"POT-Creation-Date: 2026-11-27 19:59+0000\n"
 "PO-Revision-Date: 2026-02-17 20:56+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: pl <LL@li.org>\n"
@@ -66,7 +66,7 @@ msgstr "Motogodziny"
 msgid "Odometer"
 msgstr "Przebieg"
 
-#: app/models.py:413 app/models.py:1516 app/templates/trips/form.html:189
+#: app/models.py:413 app/models.py:1544 app/templates/trips/form.html:189
 msgid "Hours"
 msgstr "Godziny"
 
@@ -77,520 +77,532 @@ msgstr "Godziny"
 msgid "Distance"
 msgstr "Dystans"
 
-#: app/models.py:1462
+#: app/models.py:1490
 msgid "Front Tire Size"
 msgstr "Rozmiar przedniej opony"
 
-#: app/models.py:1463
+#: app/models.py:1491
 msgid "Rear Tire Size"
 msgstr "Rozmiar tylnej opony"
 
-#: app/models.py:1464
+#: app/models.py:1492
 msgid "Wheel Size"
 msgstr "Rozmiar koła"
 
-#: app/models.py:1465
+#: app/models.py:1493
 msgid "Engine Oil Type"
 msgstr "Typ oleju silnikowego"
 
-#: app/models.py:1466
+#: app/models.py:1494
 msgid "Oil Capacity"
 msgstr "Pojemność oleju"
 
-#: app/models.py:1467
+#: app/models.py:1495
 msgid "Coolant Type"
 msgstr "Typ płynu chłodniczego"
 
-#: app/models.py:1468
+#: app/models.py:1496
 msgid "Front Wiper Size"
 msgstr "Rozmiar przedniej wycieraczki"
 
-#: app/models.py:1469
+#: app/models.py:1497
 msgid "Rear Wiper Size"
 msgstr "Rozmiar tylnej wycieraczki"
 
-#: app/models.py:1470
+#: app/models.py:1498
 msgid "Battery Type"
 msgstr "Typ akumulatora"
 
-#: app/models.py:1471
+#: app/models.py:1499
 msgid "Spark Plug Type"
 msgstr "Typ świecy zapłonowej"
 
-#: app/models.py:1472
+#: app/models.py:1500
 msgid "Air Filter Part #"
 msgstr "Nr części filtra powietrza"
 
-#: app/models.py:1473
+#: app/models.py:1501
 msgid "Cabin Filter Part #"
 msgstr "Nr części filtra kabinowego"
 
-#: app/models.py:1474
+#: app/models.py:1502
 msgid "Front Brake Pads"
 msgstr "Przednie klocki hamulcowe"
 
-#: app/models.py:1475
+#: app/models.py:1503
 msgid "Rear Brake Pads"
 msgstr "Tylne klocki hamulcowe"
 
-#: app/models.py:1476 app/models.py:2283
+#: app/models.py:1504 app/models.py:2382
 msgid "Transmission Fluid"
 msgstr "Olej przekładniowy"
 
-#: app/models.py:1477 app/models.py:1598 app/models.py:1667
+#: app/models.py:1505 app/models.py:1659 app/models.py:1728
 #: app/templates/auth/settings.html:218
 msgid "Custom"
 msgstr "Niestandardowa"
 
-#: app/models.py:1482 app/routes/maintenance.py:54
+#: app/models.py:1510 app/routes/maintenance.py:54
 #: app/templates/auth/settings.html:463 app/templates/auth/settings.html:529
 #: app/templates/base.html:318 app/templates/base.html:421
 msgid "Maintenance"
 msgstr "Konserwacja"
 
-#: app/models.py:1483
+#: app/models.py:1511
 msgid "Repairs"
 msgstr "Naprawy"
 
-#: app/models.py:1484
+#: app/models.py:1512
 msgid "Inspection"
 msgstr "Przegląd"
 
-#: app/models.py:1485
+#: app/models.py:1513
 msgid "Insurance"
 msgstr "Ubezpieczenie"
 
-#: app/models.py:1486
+#: app/models.py:1514
 msgid "Loan Payment"
 msgstr "Spłata kredytu"
 
-#: app/models.py:1487 app/models.py:1593
+#: app/models.py:1515 app/models.py:1654
 msgid "Road Tax"
 msgstr "Podatek drogowy"
 
-#: app/models.py:1488
+#: app/models.py:1516
 msgid "Registration"
 msgstr "Rejestracja"
 
-#: app/models.py:1489
+#: app/models.py:1517
 msgid "Parking"
 msgstr "Parking"
 
-#: app/models.py:1490
+#: app/models.py:1518
 msgid "Tolls"
 msgstr "Opłaty drogowe"
 
-#: app/models.py:1491
+#: app/models.py:1519
 msgid "Cleaning"
 msgstr "Mycie"
 
-#: app/models.py:1492
+#: app/models.py:1520
 msgid "Accessories"
 msgstr "Akcesoria"
 
-#: app/models.py:1493 app/models.py:1510 app/models.py:1539 app/models.py:1631
-#: app/models.py:1641 app/models.py:1679 app/models.py:1687 app/models.py:2289
+#: app/models.py:1521 app/models.py:1538 app/models.py:1567 app/models.py:1692
+#: app/models.py:1702 app/models.py:1740 app/models.py:1748 app/models.py:2388
 msgid "Other"
 msgstr "Inne"
 
-#: app/models.py:1498
+#: app/models.py:1526
 msgid "Car"
 msgstr "Samochód"
 
-#: app/models.py:1499
+#: app/models.py:1527
 msgid "Van"
 msgstr "Van"
 
-#: app/models.py:1500
+#: app/models.py:1528
 msgid "Motorbike"
 msgstr "Motocykl"
 
-#: app/models.py:1501
+#: app/models.py:1529
 msgid "Scooter"
 msgstr "Skuter"
 
-#: app/models.py:1502
+#: app/models.py:1530
 msgid "Truck"
 msgstr "Ciężarówka"
 
-#: app/models.py:1503
+#: app/models.py:1531
 msgid "SUV"
 msgstr "SUV"
 
-#: app/models.py:1504
+#: app/models.py:1532
 msgid "Hatchback"
 msgstr "Hatchback"
 
-#: app/models.py:1505
+#: app/models.py:1533
 msgid "Station Wagon / Estate"
 msgstr "Kombi"
 
-#: app/models.py:1506
+#: app/models.py:1534
 msgid "Pickup / Ute"
 msgstr "Pickup"
 
-#: app/models.py:1507
+#: app/models.py:1535
 msgid "Tractor"
 msgstr "Ciągnik"
 
-#: app/models.py:1508
+#: app/models.py:1536
 msgid "ATV/UTV"
 msgstr "ATV/UTV"
 
-#: app/models.py:1509
+#: app/models.py:1537
 msgid "Boat"
 msgstr "Łódź"
 
-#: app/models.py:1515
+#: app/models.py:1543
 msgid "Mileage (km/mi)"
 msgstr "Przebieg (km/mi)"
 
-#: app/models.py:1521 app/templates/auth/settings.html:129
+#: app/models.py:1549 app/templates/auth/settings.html:129
 msgid "Kilometres (km)"
 msgstr "Kilometry (km)"
 
-#: app/models.py:1522 app/templates/auth/settings.html:130
+#: app/models.py:1550 app/templates/auth/settings.html:130
 msgid "Miles (mi)"
 msgstr "Mile (mi)"
 
-#: app/models.py:1527
+#: app/models.py:1555
 msgid "Petrol/Gasoline"
 msgstr "Benzyna"
 
-#: app/models.py:1528
+#: app/models.py:1556
 msgid "Diesel"
 msgstr "Diesel"
 
-#: app/models.py:1529
+#: app/models.py:1557
 msgid "Electric"
 msgstr "Elektryczny"
 
-#: app/models.py:1530
+#: app/models.py:1558
 msgid "Hybrid"
 msgstr "Hybryda"
 
-#: app/models.py:1531
+#: app/models.py:1559
 msgid "Plug-in Hybrid"
 msgstr "Hybryda plug-in"
 
-#: app/models.py:1532
+#: app/models.py:1560
 msgid "LPG"
 msgstr "LPG"
 
-#: app/models.py:1533
+#: app/models.py:1561
 msgid "CNG"
 msgstr "CNG"
 
-#: app/models.py:1534
+#: app/models.py:1562
 msgid "Hydrogen"
 msgstr "Wodór"
 
-#: app/models.py:1535
+#: app/models.py:1563
 msgid "E85/Flex Fuel"
 msgstr "E85/Flex Fuel"
 
-#: app/models.py:1538
+#: app/models.py:1566
 msgid "AdBlue/DEF"
 msgstr "AdBlue/DEF"
 
-#: app/models.py:1590
+#: app/models.py:1614
+msgid "E10 (standard unleaded)"
+msgstr "E10 (standardowa bezołowiowa)"
+
+#: app/models.py:1615 app/models.py:1621
+msgid "E5 (super unleaded)"
+msgstr "E5 (bezołowiowa super)"
+
+#: app/models.py:1622
+msgid "Premium diesel"
+msgstr "Olej napędowy premium"
+
+#: app/models.py:1651
 msgid "MOT/Inspection"
 msgstr "Przegląd techniczny"
 
-#: app/models.py:1591
+#: app/models.py:1652
 msgid "Service Due"
 msgstr "Termin serwisu"
 
-#: app/models.py:1592
+#: app/models.py:1653
 msgid "Insurance Renewal"
 msgstr "Odnowienie ubezpieczenia"
 
-#: app/models.py:1594
+#: app/models.py:1655
 msgid "Registration Renewal"
 msgstr "Odnowienie rejestracji"
 
-#: app/models.py:1595
+#: app/models.py:1656
 msgid "Warranty Expiry"
 msgstr "Wygaśnięcie gwarancji"
 
-#: app/models.py:1596
+#: app/models.py:1657
 msgid "Tire Change"
 msgstr "Wymiana opon"
 
-#: app/models.py:1597 app/models.py:1646
+#: app/models.py:1658 app/models.py:1707
 msgid "Oil Change"
 msgstr "Wymiana oleju"
 
-#: app/models.py:1617
+#: app/models.py:1678
 msgid "No Repeat"
 msgstr "Bez powtarzania"
 
-#: app/models.py:1618
+#: app/models.py:1679
 msgid "Day(s)"
 msgstr "Dni"
 
-#: app/models.py:1619
+#: app/models.py:1680
 msgid "Week(s)"
 msgstr "Tygodni"
 
-#: app/models.py:1620
+#: app/models.py:1681
 msgid "Month(s)"
 msgstr "Miesięcy"
 
-#: app/models.py:1621
+#: app/models.py:1682
 msgid "Year(s)"
 msgstr "Lat"
 
-#: app/models.py:1626
+#: app/models.py:1687
 msgid "Business"
 msgstr "Służbowe"
 
-#: app/models.py:1627
+#: app/models.py:1688
 msgid "Personal"
 msgstr "Prywatne"
 
-#: app/models.py:1628
+#: app/models.py:1689
 msgid "Commute"
 msgstr "Dojazd do pracy"
 
-#: app/models.py:1629
+#: app/models.py:1690
 msgid "Medical"
 msgstr "Medyczne"
 
-#: app/models.py:1630
+#: app/models.py:1691
 msgid "Charity"
 msgstr "Charytatywne"
 
-#: app/models.py:1636
+#: app/models.py:1697
 msgid "Home Charging"
 msgstr "Ładowanie w domu"
 
-#: app/models.py:1637
+#: app/models.py:1698
 msgid "Level 1"
 msgstr "Poziom 1"
 
-#: app/models.py:1638
+#: app/models.py:1699
 msgid "Level 2"
 msgstr "Poziom 2"
 
-#: app/models.py:1639
+#: app/models.py:1700
 msgid "DC Fast Charge"
 msgstr "Szybkie ładowanie DC"
 
-#: app/models.py:1640
+#: app/models.py:1701
 msgid "Tesla Supercharger"
 msgstr "Tesla Supercharger"
 
-#: app/models.py:1647 app/models.py:2275
+#: app/models.py:1708 app/models.py:2374
 msgid "Oil Filter"
 msgstr "Filtr oleju"
 
-#: app/models.py:1648 app/models.py:2276
+#: app/models.py:1709 app/models.py:2375
 msgid "Air Filter"
 msgstr "Filtr powietrza"
 
-#: app/models.py:1649
+#: app/models.py:1710
 msgid "Cabin/Pollen Filter"
 msgstr "Filtr kabinowy/pyłkowy"
 
-#: app/models.py:1650
+#: app/models.py:1711
 msgid "Air-conditioning service"
 msgstr "Serwis klimatyzacji"
 
-#: app/models.py:1651 app/models.py:2277
+#: app/models.py:1712 app/models.py:2376
 msgid "Fuel Filter"
 msgstr "Filtr paliwa"
 
-#: app/models.py:1652
+#: app/models.py:1713
 msgid "Spark Plugs"
 msgstr "Świece zapłonowe"
 
-#: app/models.py:1653
+#: app/models.py:1714
 msgid "Brake Pads"
 msgstr "Klocki hamulcowe"
 
-#: app/models.py:1654 app/models.py:2281
+#: app/models.py:1715 app/models.py:2380
 msgid "Brake Fluid"
 msgstr "Płyn hamulcowy"
 
-#: app/models.py:1655
+#: app/models.py:1716
 msgid "Brake Rotors/Discs"
 msgstr "Tarcze hamulcowe"
 
-#: app/models.py:1656
+#: app/models.py:1717
 msgid "Brake Drums"
 msgstr "Bębny hamulcowe"
 
-#: app/models.py:1657
+#: app/models.py:1718
 msgid "Brake Shoes"
 msgstr "Szczęki hamulcowe"
 
-#: app/models.py:1658
+#: app/models.py:1719
 msgid "Coolant Flush"
 msgstr "Wymiana płynu chłodniczego"
 
-#: app/models.py:1659
+#: app/models.py:1720
 msgid "Transmission Service"
 msgstr "Serwis skrzyni biegów"
 
-#: app/models.py:1660
+#: app/models.py:1721
 msgid "Timing Belt"
 msgstr "Pasek rozrządu"
 
-#: app/models.py:1661
+#: app/models.py:1722
 msgid "Serpentine Belt"
 msgstr "Pasek klinowy"
 
-#: app/models.py:1662
+#: app/models.py:1723
 msgid "Tire Rotation"
 msgstr "Zamiana kół"
 
-#: app/models.py:1663
+#: app/models.py:1724
 msgid "Wheel Alignment"
 msgstr "Geometria kół"
 
-#: app/models.py:1664
+#: app/models.py:1725
 msgid "Battery Check/Replace"
 msgstr "Kontrola/wymiana akumulatora"
 
-#: app/models.py:1665
+#: app/models.py:1726
 msgid "Wiper Blades"
 msgstr "Pióra wycieraczek"
 
-#: app/models.py:1666
+#: app/models.py:1727
 msgid "Full Service"
 msgstr "Pełny serwis"
 
-#: app/models.py:1672
+#: app/models.py:1733
 msgid "Insurance Policy"
 msgstr "Polisa ubezpieczeniowa"
 
-#: app/models.py:1673
+#: app/models.py:1734
 msgid "Registration/V5C"
 msgstr "Dowód rejestracyjny/V5C"
 
-#: app/models.py:1674
+#: app/models.py:1735
 msgid "MOT Certificate"
 msgstr "Zaświadczenie o przeglądzie"
 
-#: app/models.py:1675
+#: app/models.py:1736
 msgid "Service Record"
 msgstr "Historia serwisowa"
 
-#: app/models.py:1676
+#: app/models.py:1737
 msgid "Purchase Invoice"
 msgstr "Faktura zakupu"
 
-#: app/models.py:1677
+#: app/models.py:1738
 msgid "Warranty Document"
 msgstr "Dokument gwarancyjny"
 
-#: app/models.py:1678
+#: app/models.py:1739
 msgid "Owner's Manual"
 msgstr "Instrukcja obsługi"
 
-#: app/models.py:1684
+#: app/models.py:1745
 msgid "Summer"
 msgstr "Letnie"
 
-#: app/models.py:1685
+#: app/models.py:1746
 msgid "Winter"
 msgstr "Zimowe"
 
-#: app/models.py:1686
+#: app/models.py:1747
 msgid "All Season"
 msgstr "Wielosezonowe"
 
-#: app/models.py:2274
+#: app/models.py:2373
 msgid "Engine Oil"
 msgstr "Olej silnikowy"
 
-#: app/models.py:2278
+#: app/models.py:2377
 msgid "Cabin Filter"
 msgstr "Filtr kabinowy"
 
-#: app/models.py:2279
+#: app/models.py:2378
 msgid "Spark Plug"
 msgstr "Świeca zapłonowa"
 
-#: app/models.py:2280
+#: app/models.py:2379
 msgid "Brake Pad"
 msgstr "Klocek hamulcowy"
 
-#: app/models.py:2282
+#: app/models.py:2381
 msgid "Coolant"
 msgstr "Płyn chłodniczy"
 
-#: app/models.py:2284
+#: app/models.py:2383
 msgid "Battery"
 msgstr "Akumulator"
 
-#: app/models.py:2285 app/templates/tires/_tread_form.html:70
+#: app/models.py:2384 app/templates/tires/_tread_form.html:72
 #: app/templates/tires/tread.html:15
 msgid "Tire"
 msgstr "Opona"
 
-#: app/models.py:2286
+#: app/models.py:2385
 msgid "Belt"
 msgstr "Pasek"
 
-#: app/models.py:2287
+#: app/models.py:2386
 msgid "Wiper Blade"
 msgstr "Pióro wycieraczki"
 
-#: app/models.py:2288
+#: app/models.py:2387
 msgid "Light Bulb"
 msgstr "Żarówka"
 
-#: app/models.py:2575 app/templates/tires/index.html:113
+#: app/models.py:2674 app/templates/tires/index.html:113
 msgid "All axles"
 msgstr "Wszystkie osie"
 
-#: app/models.py:2575 app/templates/tires/index.html:114
+#: app/models.py:2674 app/templates/tires/index.html:114
 msgid "Front axle"
 msgstr "Oś przednia"
 
-#: app/models.py:2575 app/templates/tires/index.html:115
+#: app/models.py:2674 app/templates/tires/index.html:115
 msgid "Rear axle"
 msgstr "Oś tylna"
 
-#: app/models.py:2604
+#: app/models.py:2703 app/templates/fuel/form.html:150
 msgid "Not recorded"
 msgstr "Nie zapisano"
 
-#: app/models.py:2605
+#: app/models.py:2704
 msgid "Front left"
 msgstr "Przód lewy"
 
-#: app/models.py:2605
+#: app/models.py:2704
 msgid "Front right"
 msgstr "Przód prawy"
 
-#: app/models.py:2606
+#: app/models.py:2705
 msgid "Rear left"
 msgstr "Tył lewy"
 
-#: app/models.py:2606
+#: app/models.py:2705
 msgid "Rear right"
 msgstr "Tył prawy"
 
-#: app/models.py:2607
+#: app/models.py:2706
 msgid "Front"
 msgstr "Przód"
 
-#: app/models.py:2607
+#: app/models.py:2706
 msgid "Rear"
 msgstr "Tył"
 
-#: app/models.py:2607
+#: app/models.py:2706
 msgid "Spare"
 msgstr "Zapasowe"
 
-#: app/models.py:2634
+#: app/models.py:2733
 msgid "Replacement threshold reached"
 msgstr "Osiągnięto próg wymiany"
 
-#: app/models.py:2636
+#: app/models.py:2735
 msgid "Warning threshold reached"
 msgstr "Osiągnięto próg ostrzegawczy"
 
@@ -599,8 +611,8 @@ msgid "Your account does not have permission to change this data."
 msgstr "Twoje konto nie ma uprawnień do zmiany tych danych."
 
 #: app/routes/allowance.py:31 app/routes/expenses.py:155 app/routes/fuel.py:78
-#: app/routes/fuel.py:505 app/routes/notes.py:31 app/routes/reminders.py:64
-#: app/routes/tires.py:297 app/routes/trips.py:76
+#: app/routes/fuel.py:507 app/routes/notes.py:31 app/routes/reminders.py:64
+#: app/routes/tires.py:309 app/routes/trips.py:76
 msgid "Please add a vehicle first"
 msgstr "Najpierw dodaj pojazd"
 
@@ -609,18 +621,18 @@ msgstr "Najpierw dodaj pojazd"
 #: app/routes/charging.py:143 app/routes/charging.py:193
 #: app/routes/documents.py:130 app/routes/documents.py:146
 #: app/routes/documents.py:165 app/routes/documents.py:205
-#: app/routes/expenses.py:164 app/routes/expenses.py:250
-#: app/routes/expenses.py:299 app/routes/expenses.py:328
-#: app/routes/expenses.py:333 app/routes/fuel.py:87 app/routes/fuel.py:245
-#: app/routes/fuel.py:411 app/routes/fuel.py:466 app/routes/fuel.py:471
-#: app/routes/fuel.py:519 app/routes/maintenance.py:157
-#: app/routes/maintenance.py:202 app/routes/maintenance.py:258
+#: app/routes/expenses.py:164 app/routes/expenses.py:251
+#: app/routes/expenses.py:300 app/routes/expenses.py:329
+#: app/routes/expenses.py:334 app/routes/fuel.py:87 app/routes/fuel.py:247
+#: app/routes/fuel.py:413 app/routes/fuel.py:468 app/routes/fuel.py:473
+#: app/routes/fuel.py:521 app/routes/maintenance.py:157
+#: app/routes/maintenance.py:202 app/routes/maintenance.py:259
 #: app/routes/notes.py:40 app/routes/notes.py:87 app/routes/notes.py:128
 #: app/routes/reminders.py:72 app/routes/reminders.py:127
 #: app/routes/reminders.py:214 app/routes/reminders.py:237
-#: app/routes/reminders.py:256 app/routes/tires.py:304 app/routes/tires.py:351
-#: app/routes/tires.py:396 app/routes/tires.py:455 app/routes/tires.py:487
-#: app/routes/tires.py:502 app/routes/tires.py:519 app/routes/tires.py:580
+#: app/routes/reminders.py:256 app/routes/tires.py:316 app/routes/tires.py:363
+#: app/routes/tires.py:408 app/routes/tires.py:467 app/routes/tires.py:499
+#: app/routes/tires.py:514 app/routes/tires.py:531 app/routes/tires.py:592
 #: app/routes/trips.py:84 app/routes/trips.py:157 app/routes/trips.py:201
 #: app/routes/trips.py:234 app/routes/trips.py:266 app/routes/trips.py:277
 #: app/routes/trips.py:306 app/routes/vehicles.py:187
@@ -651,20 +663,20 @@ msgstr "Zaktualizowano ryczałt za przebieg"
 msgid "Mileage allowance deleted successfully"
 msgstr "Usunięto ryczałt za przebieg"
 
-#: app/routes/api.py:2679 app/routes/api.py:2893 app/routes/api.py:3069
+#: app/routes/api.py:2714 app/routes/api.py:2928 app/routes/api.py:3104
 msgid "No file uploaded"
 msgstr "Nie przesłano pliku"
 
-#: app/routes/api.py:2684 app/routes/api.py:2898 app/routes/api.py:3074
+#: app/routes/api.py:2719 app/routes/api.py:2933 app/routes/api.py:3109
 #: app/routes/documents.py:67 app/routes/documents.py:72
 msgid "No file selected"
 msgstr "Nie wybrano pliku"
 
-#: app/routes/api.py:2706
+#: app/routes/api.py:2741
 msgid "The uploaded file is not a valid SQLite database."
 msgstr "Przesłany plik nie jest prawidłową bazą danych SQLite."
 
-#: app/routes/api.py:2711
+#: app/routes/api.py:2746
 msgid ""
 "This does not appear to be a Hammond database — no vehicles, fillups, or "
 "expenses tables found."
@@ -672,7 +684,7 @@ msgstr ""
 "To nie wygląda na bazę danych Hammond — nie znaleziono tabel pojazdów, "
 "tankowań ani wydatków."
 
-#: app/routes/api.py:2861
+#: app/routes/api.py:2896
 #, python-format
 msgid ""
 "Hammond import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs, "
@@ -681,7 +693,7 @@ msgstr ""
 "Import z Hammond zakończony: zaimportowano %(vehicles)s pojazdów, "
 "%(fuel_logs)s wpisów paliwa, %(expenses)s wydatków."
 
-#: app/routes/api.py:2863
+#: app/routes/api.py:2898
 #, python-format
 msgid ""
 "(%(total_skipped)s records skipped due to errors — check server logs for "
@@ -690,7 +702,7 @@ msgstr ""
 "(%(total_skipped)s rekordów pominięto z powodu błędów — sprawdź logi "
 "serwera, aby uzyskać szczegóły.)"
 
-#: app/routes/api.py:2870
+#: app/routes/api.py:2905
 #, python-format
 msgid ""
 "Import failed due to a database error. Check that the file is a valid "
@@ -699,13 +711,13 @@ msgstr ""
 "Import nie powiódł się z powodu błędu bazy danych. Sprawdź, czy plik jest "
 "prawidłową bazą danych Hammond. Błąd: %(error)s"
 
-#: app/routes/api.py:2875 app/routes/api.py:3020 app/routes/api.py:3193
-#: app/routes/api.py:3765
+#: app/routes/api.py:2910 app/routes/api.py:3055 app/routes/api.py:3228
+#: app/routes/api.py:3800
 #, python-format
 msgid "Import failed: %(error)s"
 msgstr "Import nie powiódł się: %(error)s"
 
-#: app/routes/api.py:3016
+#: app/routes/api.py:3051
 #, python-format
 msgid ""
 "Clarkson import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs"
@@ -713,7 +725,7 @@ msgstr ""
 "Import z Clarkson zakończony: %(vehicles)s pojazdów, %(fuel_logs)s wpisów "
 "paliwa"
 
-#: app/routes/api.py:3189
+#: app/routes/api.py:3224
 #, python-format
 msgid ""
 "Fuelly import complete: %(vehicles)s new vehicles, %(fuel_logs)s fuel logs"
@@ -721,63 +733,63 @@ msgstr ""
 "Import z Fuelly zakończony: %(vehicles)s nowych pojazdów, %(fuel_logs)s "
 "wpisów paliwa"
 
-#: app/routes/api.py:3601
+#: app/routes/api.py:3636
 msgid "Please add a vehicle before importing data."
 msgstr "Dodaj pojazd przed importowaniem danych."
 
-#: app/routes/api.py:3614
+#: app/routes/api.py:3649
 msgid "Invalid data type selected."
 msgstr "Wybrano nieprawidłowy typ danych."
 
-#: app/routes/api.py:3619 app/routes/api.py:3704
+#: app/routes/api.py:3654 app/routes/api.py:3739
 msgid "Vehicle not found."
 msgstr "Nie znaleziono pojazdu."
 
-#: app/routes/api.py:3623
+#: app/routes/api.py:3658
 msgid "No CSV file uploaded."
 msgstr "Nie przesłano pliku CSV."
 
-#: app/routes/api.py:3642
+#: app/routes/api.py:3677
 msgid "CSV file has no column headers."
 msgstr "Plik CSV nie zawiera nagłówków kolumn."
 
-#: app/routes/api.py:3684
+#: app/routes/api.py:3719
 #, python-format
 msgid "Failed to parse CSV file: %(error)s"
 msgstr "Nie udało się przetworzyć pliku CSV: %(error)s"
 
-#: app/routes/api.py:3699
+#: app/routes/api.py:3734
 msgid "Invalid data type."
 msgstr "Nieprawidłowy typ danych."
 
-#: app/routes/api.py:3708
+#: app/routes/api.py:3743
 msgid "CSV file expired. Please upload again."
 msgstr "Plik CSV wygasł. Proszę przesłać ponownie."
 
-#: app/routes/api.py:3750
+#: app/routes/api.py:3785
 #, python-format
 msgid "CSV import complete: %(count)s %(label)s imported."
 msgstr "Import CSV zakończony: zaimportowano %(count)s %(label)s."
 
-#: app/routes/api.py:3753
+#: app/routes/api.py:3788
 #, python-format
 msgid "%(count)s duplicate(s) skipped."
 msgstr "Pominięto %(count)s duplikatów."
 
-#: app/routes/api.py:3800
+#: app/routes/api.py:3835
 msgid "No backup file uploaded."
 msgstr "Nie przesłano pliku kopii zapasowej."
 
-#: app/routes/api.py:3823
+#: app/routes/api.py:3858
 #, python-format
 msgid "Could not read that backup: %(error)s"
 msgstr "Nie udało się odczytać tej kopii zapasowej: %(error)s"
 
-#: app/routes/api.py:3842
+#: app/routes/api.py:3877
 msgid "The uploaded backup has expired. Please upload it again."
 msgstr "Przesłana kopia zapasowa wygasła. Prześlij ją ponownie."
 
-#: app/routes/api.py:3855
+#: app/routes/api.py:3890
 #, python-format
 msgid ""
 "Backup restored: %(added)s records added, %(skipped)s already present and "
@@ -786,7 +798,7 @@ msgstr ""
 "Przywrócono kopię zapasową: dodano %(added)s rekordów, %(skipped)s już "
 "istniało i pozostawiono je bez zmian."
 
-#: app/routes/api.py:3863
+#: app/routes/api.py:3898
 #, python-format
 msgid "Restore failed: %(error)s"
 msgstr "Przywracanie nie powiodło się: %(error)s"
@@ -972,39 +984,39 @@ msgstr ""
 "Te pliki nie zostały zapisane, ponieważ ten typ pliku nie jest obsługiwany: "
 "%(names)s"
 
-#: app/routes/expenses.py:212
+#: app/routes/expenses.py:213
 msgid "Expense added successfully"
 msgstr "Wydatek został dodany"
 
-#: app/routes/expenses.py:264
+#: app/routes/expenses.py:265
 msgid "Invalid data submitted. Please check the date and cost fields."
 msgstr "Przesłano nieprawidłowe dane. Sprawdź pola daty i kosztu."
 
-#: app/routes/expenses.py:276
+#: app/routes/expenses.py:277
 msgid "Expense updated successfully"
 msgstr "Wydatek został zaktualizowany"
 
-#: app/routes/expenses.py:312
+#: app/routes/expenses.py:313
 msgid "Expense deleted successfully"
 msgstr "Wydatek został usunięty"
 
-#: app/routes/expenses.py:342 app/routes/fuel.py:480
+#: app/routes/expenses.py:343 app/routes/fuel.py:482
 msgid "Attachment deleted"
 msgstr "Załącznik usunięty"
 
-#: app/routes/fuel.py:212
+#: app/routes/fuel.py:214
 msgid "Fuel log added successfully"
 msgstr "Wpis paliwa został dodany"
 
-#: app/routes/fuel.py:381
+#: app/routes/fuel.py:383
 msgid "Fuel log updated successfully"
 msgstr "Wpis paliwa został zaktualizowany"
 
-#: app/routes/fuel.py:445
+#: app/routes/fuel.py:447
 msgid "Fuel log deleted successfully"
 msgstr "Wpis paliwa został usunięty"
 
-#: app/routes/fuel.py:576
+#: app/routes/fuel.py:580
 msgid "Fuel log added!"
 msgstr "Wpis paliwa dodany!"
 
@@ -1047,12 +1059,12 @@ msgstr "Harmonogram konserwacji \"%(name)s\" został utworzony"
 msgid "Maintenance schedule updated"
 msgstr "Harmonogram konserwacji został zaktualizowany"
 
-#: app/routes/maintenance.py:246
+#: app/routes/maintenance.py:247
 #, python-format
 msgid "Maintenance \"%(name)s\" marked as completed"
 msgstr "Konserwacja \"%(name)s\" została oznaczona jako wykonana"
 
-#: app/routes/maintenance.py:266
+#: app/routes/maintenance.py:267
 #, python-format
 msgid "Maintenance schedule \"%(name)s\" deleted"
 msgstr "Harmonogram konserwacji \"%(name)s\" został usunięty"
@@ -1200,73 +1212,73 @@ msgstr "Możesz usuwać tylko własne wpisy cenowe"
 msgid "Price entry deleted"
 msgstr "Wpis cenowy usunięty"
 
-#: app/routes/tires.py:309 app/routes/tires.py:357
+#: app/routes/tires.py:321 app/routes/tires.py:369
 msgid "Please give the tire set a name"
 msgstr "Nadaj nazwę kompletowi opon"
 
-#: app/routes/tires.py:325 app/routes/tires.py:364
+#: app/routes/tires.py:337 app/routes/tires.py:376
 msgid "Invalid data submitted. Please check the odometer and cost fields."
 msgstr "Przesłano nieprawidłowe dane. Sprawdź pola licznika i kosztu."
 
-#: app/routes/tires.py:334 app/routes/tires.py:381
+#: app/routes/tires.py:346 app/routes/tires.py:393
 msgid "Check the tread depths, date, odometer and tire selection."
 msgstr "Sprawdź głębokości bieżnika, datę, stan licznika i wybrane opony."
 
-#: app/routes/tires.py:337
+#: app/routes/tires.py:349
 #, python-format
 msgid "Tire set \"%(name)s\" added"
 msgstr "Dodano komplet opon „%(name)s”"
 
-#: app/routes/tires.py:383
+#: app/routes/tires.py:395
 msgid "Tire set updated"
 msgstr "Zaktualizowano komplet opon"
 
-#: app/routes/tires.py:400
+#: app/routes/tires.py:412
 msgid "That tire set is already on the vehicle"
 msgstr "Ten komplet opon jest już zamontowany w pojeździe"
 
-#: app/routes/tires.py:403
+#: app/routes/tires.py:415
 msgid "That tire set is retired. Reinstate it before fitting it again."
 msgstr "Ten komplet opon jest wycofany. Przywróć go przed ponownym montażem."
 
-#: app/routes/tires.py:412
+#: app/routes/tires.py:424
 msgid "Invalid axle"
 msgstr "Nieprawidłowa oś"
 
-#: app/routes/tires.py:422
+#: app/routes/tires.py:434
 msgid "The fitting date and reading cannot precede the current fitting."
 msgstr ""
 "Data i stan licznika przy montażu nie mogą poprzedzać bieżącego montażu."
 
-#: app/routes/tires.py:434 app/routes/tires.py:475
+#: app/routes/tires.py:446 app/routes/tires.py:487
 #, python-format
 msgid "Took \"%(name)s\" off the vehicle"
 msgstr "Zdjęto „%(name)s” z pojazdu"
 
-#: app/routes/tires.py:444
+#: app/routes/tires.py:456
 #, python-format
 msgid "Fitted \"%(name)s\""
 msgstr "Zamontowano „%(name)s”"
 
-#: app/routes/tires.py:460
+#: app/routes/tires.py:472
 msgid "That tire set is not on the vehicle"
 msgstr "Ten komplet opon nie jest zamontowany w pojeździe"
 
-#: app/routes/tires.py:468
+#: app/routes/tires.py:480
 msgid ""
 "The odometer reading cannot be lower than the one the set was fitted at"
 msgstr "Stan licznika nie może być niższy niż przy montażu kompletu"
 
-#: app/routes/tires.py:492
+#: app/routes/tires.py:504
 msgid "Fitting record deleted"
 msgstr "Usunięto wpis montażu"
 
-#: app/routes/tires.py:509
+#: app/routes/tires.py:521
 #, python-format
 msgid "Tire set \"%(name)s\" deleted"
 msgstr "Usunięto komplet opon „%(name)s”"
 
-#: app/routes/tires.py:567
+#: app/routes/tires.py:579
 msgid "Invalid tread measurement. Check the tire, date, depth and reading."
 msgstr ""
 "Nieprawidłowy pomiar. Sprawdź oponę, datę, głębokość i wskazanie licznika."
@@ -1491,7 +1503,7 @@ msgstr "Opony"
 #: app/templates/auth/settings.html:470 app/templates/auth/settings.html:569
 #: app/templates/base.html:339 app/templates/base.html:439
 #: app/templates/charging/form.html:149 app/templates/expenses/form.html:111
-#: app/templates/fuel/form.html:174 app/templates/notes/index.html:2
+#: app/templates/fuel/form.html:187 app/templates/notes/index.html:2
 #: app/templates/notes/index.html:7 app/templates/search/index.html:110
 #: app/templates/stations/form.html:74 app/templates/tires/form.html:87
 #: app/templates/trips/form.html:142 app/templates/trips/template_form.html:76
@@ -1710,7 +1722,7 @@ msgstr "np. wizyty u klientów w czerwcu"
 
 #: app/templates/allowance/form.html:77 app/templates/charging/form.html:159
 #: app/templates/documents/form.html:122 app/templates/expenses/form.html:145
-#: app/templates/fuel/form.html:207
+#: app/templates/fuel/form.html:220
 #: app/templates/import/backup_preview.html:90
 #: app/templates/maintenance/form.html:177
 #: app/templates/maintenance/index.html:163 app/templates/notes/form.html:72
@@ -1725,7 +1737,7 @@ msgstr "Anuluj"
 #: app/templates/allowance/form.html:81 app/templates/auth/edit_user.html:91
 #: app/templates/auth/settings.html:235 app/templates/charging/form.html:163
 #: app/templates/documents/form.html:126 app/templates/expenses/form.html:149
-#: app/templates/fuel/form.html:211 app/templates/maintenance/form.html:181
+#: app/templates/fuel/form.html:224 app/templates/maintenance/form.html:181
 #: app/templates/notes/form.html:76 app/templates/recurring/form.html:148
 #: app/templates/stations/form.html:105 app/templates/tires/form.html:113
 #: app/templates/trips/form.html:156 app/templates/trips/template_form.html:90
@@ -1763,7 +1775,7 @@ msgstr "Usunąć ten wpis ryczałtu?"
 
 #: app/templates/allowance/index.html:57 app/templates/documents/form.html:114
 #: app/templates/expenses/form.html:125 app/templates/expenses/index.html:70
-#: app/templates/fuel/form.html:188 app/templates/fuel/index.html:92
+#: app/templates/fuel/form.html:201 app/templates/fuel/index.html:92
 #: app/templates/notes/index.html:61 app/templates/recurring/form.html:136
 #: app/templates/stations/form.html:93
 #: app/templates/tires/_tread_history.html:29
@@ -3471,7 +3483,7 @@ msgstr ""
 msgid "Receipts / Attachments"
 msgstr "Paragony / załączniki"
 
-#: app/templates/expenses/form.html:124 app/templates/fuel/form.html:187
+#: app/templates/expenses/form.html:124 app/templates/fuel/form.html:200
 msgid "Delete this attachment?"
 msgstr "Usunąć ten załącznik?"
 
@@ -3527,7 +3539,7 @@ msgid "Edit Fuel Log"
 msgstr "Edytuj wpis paliwa"
 
 #: app/templates/fuel/form.html:2 app/templates/fuel/form.html:11
-#: app/templates/fuel/form.html:211 app/templates/fuel/index.html:16
+#: app/templates/fuel/form.html:224 app/templates/fuel/index.html:16
 #: app/templates/fuel/index.html:116 app/templates/vehicles/view.html:242
 msgid "Add Fuel Log"
 msgstr "Dodaj wpis paliwa"
@@ -3536,12 +3548,12 @@ msgstr "Dodaj wpis paliwa"
 msgid "Back to fuel logs"
 msgstr "Powrót do wpisów paliwa"
 
-#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:219
+#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:232
 #: app/templates/trips/form.html:56 app/templates/trips/form.html:183
 msgid "Last engine hours"
 msgstr "Ostatnie motogodziny"
 
-#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:218
+#: app/templates/fuel/form.html:39 app/templates/fuel/form.html:231
 #: app/templates/trips/form.html:56 app/templates/trips/form.html:182
 msgid "Last odometer"
 msgstr "Ostatni przebieg"
@@ -3612,11 +3624,15 @@ msgstr "do szybkiego wyboru i śledzenia cen"
 msgid "Fuel Type"
 msgstr "Typ paliwa"
 
-#: app/templates/fuel/form.html:146
+#: app/templates/fuel/form.html:147
+msgid "Petrol grade"
+msgstr "Rodzaj benzyny"
+
+#: app/templates/fuel/form.html:159
 msgid "Distance on this fuel"
 msgstr "Dystans na tym paliwie"
 
-#: app/templates/fuel/form.html:151
+#: app/templates/fuel/form.html:164
 msgid ""
 "Distance run on this fuel since your last fill-up of it. The odometer can’t "
 "tell the fuels apart, so consumption for a dual-fuel vehicle needs this."
@@ -3625,11 +3641,11 @@ msgstr ""
 "nie rozróżnia paliw, więc zużycie w pojeździe dwupaliwowym wymaga tej "
 "wartości."
 
-#: app/templates/fuel/form.html:160
+#: app/templates/fuel/form.html:173
 msgid "Full tank fill-up"
 msgstr "Pełne tankowanie"
 
-#: app/templates/fuel/form.html:162
+#: app/templates/fuel/form.html:175
 msgid ""
 "Consumption is measured between full tanks. Leave unticked for a partial "
 "fill-up — its fuel counts towards the next full tank."
@@ -3638,11 +3654,11 @@ msgstr ""
 "przy częściowym tankowaniu — jego paliwo liczy się do następnego pełnego "
 "tankowania."
 
-#: app/templates/fuel/form.html:169
+#: app/templates/fuel/form.html:182
 msgid "Missed fill-up (incomplete data)"
 msgstr "Pominięte tankowanie (niepełne dane)"
 
-#: app/templates/fuel/form.html:180
+#: app/templates/fuel/form.html:193
 msgid "Receipt / Attachment"
 msgstr "Paragon / załącznik"
 
@@ -4537,53 +4553,53 @@ msgstr "Rejestruj głębokość bieżnika"
 msgid "Leave wheels you did not measure blank."
 msgstr "Pozostaw puste pola przy kołach, których nie mierzono."
 
-#: app/templates/tires/_tread_form.html:32
+#: app/templates/tires/_tread_form.html:34
 msgid "Use the latest vehicle reading"
 msgstr "Użyj ostatniego odczytu pojazdu"
 
-#: app/templates/tires/_tread_form.html:38
+#: app/templates/tires/_tread_form.html:40
 msgid "If you moved a tire, select its existing label at the new position."
 msgstr ""
 "Jeśli zmienisz pozycję opony, wybierz jej dotychczasową etykietę w nowym "
 "miejscu."
 
-#: app/templates/tires/_tread_form.html:43
+#: app/templates/tires/_tread_form.html:45
 msgid "Wheel positions"
 msgstr "Pozycje kół"
 
-#: app/templates/tires/_tread_form.html:61
+#: app/templates/tires/_tread_form.html:63
 msgid "Last measured:"
 msgstr "Ostatni pomiar:"
 
-#: app/templates/tires/_tread_form.html:68
+#: app/templates/tires/_tread_form.html:70
 msgid "Tire assignment"
 msgstr "Przypisanie opony"
 
-#: app/templates/tires/_tread_form.html:71
+#: app/templates/tires/_tread_form.html:73
 msgid "First measurement"
 msgstr "Pierwszy pomiar"
 
-#: app/templates/tires/_tread_form.html:75
+#: app/templates/tires/_tread_form.html:77
 msgid "Replace tire"
 msgstr "Wymień oponę"
 
-#: app/templates/tires/_tread_form.html:79
+#: app/templates/tires/_tread_form.html:81
 msgid "The previous tire and its measurements stay in the history."
 msgstr "Poprzednia opona i jej pomiary pozostaną w historii."
 
-#: app/templates/tires/_tread_form.html:90
+#: app/templates/tires/_tread_form.html:92
 msgid "Warning threshold"
 msgstr "Próg ostrzegawczy"
 
-#: app/templates/tires/_tread_form.html:91
+#: app/templates/tires/_tread_form.html:93
 msgid "Replacement threshold"
 msgstr "Próg wymiany"
 
-#: app/templates/tires/_tread_form.html:101
+#: app/templates/tires/_tread_form.html:103
 msgid "Leave threshold fields blank to disable them."
 msgstr "Pozostaw pola progów puste, aby je wyłączyć."
 
-#: app/templates/tires/_tread_form.html:106 app/templates/tires/tread.html:2
+#: app/templates/tires/_tread_form.html:108 app/templates/tires/tread.html:2
 #: app/templates/tires/tread.html:10
 msgid "Individual measurements"
 msgstr "Pojedyncze pomiary"
