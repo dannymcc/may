@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 import requests
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
@@ -11,7 +12,7 @@ from app.security import (
     get_safe_redirect_url, validate_password_strength,
     validate_webhook_url, admin_required
 )
-from app.services.notifications import NotificationService
+from app.services.notifications import EMAIL_PROVIDERS, NotificationService
 from config import APP_VERSION, DISPLAY_VERSION, RELEASE_CHANNEL, GITHUB_REPO
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -39,11 +40,7 @@ def login():
         flash(_('Invalid username or password'), 'error')
 
     registration_enabled = AppSettings.get('registration_enabled', 'true') == 'true'
-    smtp_configured = bool(
-        AppSettings.get('smtp_enabled', 'true') == 'true' and
-        AppSettings.get('smtp_host') and
-        AppSettings.get('smtp_username')
-    )
+    smtp_configured = NotificationService.email_configured()
     return render_template('auth/login.html', registration_enabled=registration_enabled, smtp_configured=smtp_configured)
 
 
@@ -52,11 +49,7 @@ def forgot_password():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
 
-    smtp_configured = bool(
-        AppSettings.get('smtp_enabled', 'true') == 'true' and
-        AppSettings.get('smtp_host') and
-        AppSettings.get('smtp_username')
-    )
+    smtp_configured = NotificationService.email_configured()
 
     if not smtp_configured:
         flash(_('Password reset by email is not available. Please contact an administrator.'), 'info')
@@ -284,12 +277,13 @@ def settings():
             'ssl': AppSettings.get('smtp_ssl', 'false'),
             'pushover_enabled': AppSettings.get('pushover_enabled', 'false'),
             'pushover_app_token': AppSettings.get('pushover_app_token'),
+            'email_provider': NotificationService.email_provider(),
+            'resend_sender': AppSettings.get('resend_sender'),
+            'resend_sender_name': AppSettings.get('resend_sender_name'),
+            # The key itself is never sent back to the browser.
+            'resend_key_saved': bool(AppSettings.get('resend_api_key')),
         }
-    smtp_configured = bool(
-        AppSettings.get('smtp_enabled', 'true') == 'true' and
-        AppSettings.get('smtp_host') and
-        AppSettings.get('smtp_username')
-    )
+    smtp_configured = NotificationService.email_configured()
     pushover_configured = bool(
         AppSettings.get('pushover_enabled') == 'true' and
         AppSettings.get('pushover_app_token')
@@ -398,6 +392,11 @@ def menu_preferences():
     return redirect(url_for('auth.settings') + '#menu')
 
 
+def _looks_like_email(value):
+    """A light check for an address: something@domain.tld, no spaces."""
+    return bool(re.fullmatch(r'[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+', value))
+
+
 @bp.route('/smtp-settings', methods=['POST'])
 @login_required
 @admin_required
@@ -414,6 +413,22 @@ def smtp_settings():
     AppSettings.set('smtp_sender_name', request.form.get('smtp_sender_name', ''))
     AppSettings.set('smtp_tls', 'true' if request.form.get('smtp_tls') else 'false')
     AppSettings.set('smtp_ssl', 'true' if request.form.get('smtp_ssl') else 'false')
+
+    # Email provider: SMTP (above) or Resend (#resend)
+    provider = request.form.get('email_provider', 'smtp')
+    if provider not in EMAIL_PROVIDERS:
+        provider = 'smtp'
+    resend_sender = (request.form.get('resend_sender') or '').strip()
+    if provider == 'resend' and resend_sender and not _looks_like_email(resend_sender):
+        flash(_('Enter a valid sender email address for Resend.'), 'error')
+        return redirect(url_for('auth.settings') + '#notifications')
+    AppSettings.set('email_provider', provider)
+    AppSettings.set('resend_sender', resend_sender)
+    AppSettings.set('resend_sender_name', (request.form.get('resend_sender_name') or '').strip())
+    # A blank key field keeps the saved key, which is never shown again.
+    resend_api_key = (request.form.get('resend_api_key') or '').strip()
+    if resend_api_key:
+        AppSettings.set('resend_api_key', resend_api_key)
 
     # Pushover settings
     AppSettings.set('pushover_enabled', 'true' if request.form.get('pushover_enabled') else 'false')

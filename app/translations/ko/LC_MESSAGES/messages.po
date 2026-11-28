@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 10:50+0000\n"
+"POT-Creation-Date: 2026-11-28 11:18+0000\n"
 "PO-Revision-Date: 2026-02-17 20:56+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: ko <LL@li.org>\n"
@@ -661,26 +661,34 @@ msgstr "주행 수당이 성공적으로 업데이트되었습니다"
 msgid "Mileage allowance deleted successfully"
 msgstr "주행 수당이 성공적으로 삭제되었습니다"
 
-#: app/routes/api.py:2714 app/routes/api.py:2928 app/routes/api.py:3104
+#: app/routes/api.py:264
+msgid "Enter a Resend API key."
+msgstr "Resend API 키를 입력하세요."
+
+#: app/routes/api.py:266
+msgid "Enter a sender email address on a domain verified in Resend."
+msgstr "Resend에서 인증된 도메인의 보낸 사람 주소를 입력하세요."
+
+#: app/routes/api.py:2750 app/routes/api.py:2964 app/routes/api.py:3140
 msgid "No file uploaded"
 msgstr "파일이 업로드되지 않았습니다"
 
-#: app/routes/api.py:2719 app/routes/api.py:2933 app/routes/api.py:3109
+#: app/routes/api.py:2755 app/routes/api.py:2969 app/routes/api.py:3145
 #: app/routes/documents.py:67 app/routes/documents.py:72
 msgid "No file selected"
 msgstr "파일이 선택되지 않았습니다"
 
-#: app/routes/api.py:2741
+#: app/routes/api.py:2777
 msgid "The uploaded file is not a valid SQLite database."
 msgstr "업로드된 파일이 유효한 SQLite 데이터베이스가 아닙니다."
 
-#: app/routes/api.py:2746
+#: app/routes/api.py:2782
 msgid ""
 "This does not appear to be a Hammond database — no vehicles, fillups, or "
 "expenses tables found."
 msgstr "Hammond 데이터베이스가 아닌 것으로 보입니다 — 차량, 주유, 비용 테이블을 찾을 수 없습니다."
 
-#: app/routes/api.py:2896
+#: app/routes/api.py:2932
 #, python-format
 msgid ""
 "Hammond import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs, "
@@ -689,14 +697,14 @@ msgstr ""
 "Hammond 가져오기 완료: 차량 %(vehicles)s대, 주유 기록 %(fuel_logs)s건, 비용 %(expenses)s건을 "
 "가져왔습니다."
 
-#: app/routes/api.py:2898
+#: app/routes/api.py:2934
 #, python-format
 msgid ""
 "(%(total_skipped)s records skipped due to errors — check server logs for "
 "details.)"
 msgstr "(오류로 인해 %(total_skipped)s건의 기록을 건너뛰었습니다 — 자세한 내용은 서버 로그를 확인하십시오.)"
 
-#: app/routes/api.py:2905
+#: app/routes/api.py:2941
 #, python-format
 msgid ""
 "Import failed due to a database error. Check that the file is a valid "
@@ -704,216 +712,220 @@ msgid ""
 msgstr ""
 "데이터베이스 오류로 인해 가져오기에 실패했습니다. 파일이 유효한 Hammond 데이터베이스인지 확인하십시오. 오류: %(error)s"
 
-#: app/routes/api.py:2910 app/routes/api.py:3055 app/routes/api.py:3228
-#: app/routes/api.py:3800
+#: app/routes/api.py:2946 app/routes/api.py:3091 app/routes/api.py:3264
+#: app/routes/api.py:3836
 #, python-format
 msgid "Import failed: %(error)s"
 msgstr "가져오기 실패: %(error)s"
 
-#: app/routes/api.py:3051
+#: app/routes/api.py:3087
 #, python-format
 msgid ""
 "Clarkson import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs"
 msgstr "Clarkson 가져오기 완료: 차량 %(vehicles)s대, 주유 기록 %(fuel_logs)s건"
 
-#: app/routes/api.py:3224
+#: app/routes/api.py:3260
 #, python-format
 msgid ""
 "Fuelly import complete: %(vehicles)s new vehicles, %(fuel_logs)s fuel logs"
 msgstr "Fuelly 가져오기 완료: 새 차량 %(vehicles)s대, 주유 기록 %(fuel_logs)s건"
 
-#: app/routes/api.py:3636
+#: app/routes/api.py:3672
 msgid "Please add a vehicle before importing data."
 msgstr "데이터를 가져오기 전에 차량을 추가하십시오."
 
-#: app/routes/api.py:3649
+#: app/routes/api.py:3685
 msgid "Invalid data type selected."
 msgstr "잘못된 데이터 유형이 선택되었습니다."
 
-#: app/routes/api.py:3654 app/routes/api.py:3739
+#: app/routes/api.py:3690 app/routes/api.py:3775
 msgid "Vehicle not found."
 msgstr "차량을 찾을 수 없습니다."
 
-#: app/routes/api.py:3658
+#: app/routes/api.py:3694
 msgid "No CSV file uploaded."
 msgstr "CSV 파일이 업로드되지 않았습니다."
 
-#: app/routes/api.py:3677
+#: app/routes/api.py:3713
 msgid "CSV file has no column headers."
 msgstr "CSV 파일에 열 헤더가 없습니다."
 
-#: app/routes/api.py:3719
+#: app/routes/api.py:3755
 #, python-format
 msgid "Failed to parse CSV file: %(error)s"
 msgstr "CSV 파일 구문 분석 실패: %(error)s"
 
-#: app/routes/api.py:3734
+#: app/routes/api.py:3770
 msgid "Invalid data type."
 msgstr "잘못된 데이터 유형입니다."
 
-#: app/routes/api.py:3743
+#: app/routes/api.py:3779
 msgid "CSV file expired. Please upload again."
 msgstr "CSV 파일이 만료되었습니다. 다시 업로드하십시오."
 
-#: app/routes/api.py:3785
+#: app/routes/api.py:3821
 #, python-format
 msgid "CSV import complete: %(count)s %(label)s imported."
 msgstr "CSV 가져오기 완료: %(count)s건의 %(label)s을(를) 가져왔습니다."
 
-#: app/routes/api.py:3788
+#: app/routes/api.py:3824
 #, python-format
 msgid "%(count)s duplicate(s) skipped."
 msgstr "중복 %(count)s개를 건너뛰었습니다."
 
-#: app/routes/api.py:3835
+#: app/routes/api.py:3871
 msgid "No backup file uploaded."
 msgstr "업로드된 백업 파일이 없습니다."
 
-#: app/routes/api.py:3858
+#: app/routes/api.py:3894
 #, python-format
 msgid "Could not read that backup: %(error)s"
 msgstr "백업을 읽을 수 없습니다: %(error)s"
 
-#: app/routes/api.py:3877
+#: app/routes/api.py:3913
 msgid "The uploaded backup has expired. Please upload it again."
 msgstr "업로드한 백업이 만료되었습니다. 다시 업로드해 주세요."
 
-#: app/routes/api.py:3890
+#: app/routes/api.py:3926
 #, python-format
 msgid ""
 "Backup restored: %(added)s records added, %(skipped)s already present and "
 "left alone."
 msgstr "백업 복원 완료: %(added)s개 추가, %(skipped)s개는 이미 있어 그대로 두었습니다."
 
-#: app/routes/api.py:3898
+#: app/routes/api.py:3934
 #, python-format
 msgid "Restore failed: %(error)s"
 msgstr "복원 실패: %(error)s"
 
-#: app/routes/auth.py:39
+#: app/routes/auth.py:40
 msgid "Invalid username or password"
 msgstr "잘못된 사용자 이름 또는 비밀번호입니다"
 
-#: app/routes/auth.py:62
+#: app/routes/auth.py:55
 msgid ""
 "Password reset by email is not available. Please contact an administrator."
 msgstr "이메일을 통한 비밀번호 재설정을 사용할 수 없습니다. 관리자에게 문의하십시오."
 
-#: app/routes/auth.py:91
+#: app/routes/auth.py:84
 msgid ""
 "If an account with that email exists, a password reset link has been sent."
 msgstr "해당 이메일의 계정이 존재하면 비밀번호 재설정 링크가 전송되었습니다."
 
-#: app/routes/auth.py:104
+#: app/routes/auth.py:97
 msgid "Invalid or expired reset link. Please request a new one."
 msgstr "유효하지 않거나 만료된 재설정 링크입니다. 새로 요청하십시오."
 
-#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:256
-#: app/routes/auth.py:589 app/routes/auth.py:636
+#: app/routes/auth.py:105 app/routes/auth.py:163 app/routes/auth.py:249
+#: app/routes/auth.py:604 app/routes/auth.py:651
 msgid "Passwords do not match"
 msgstr "비밀번호가 일치하지 않습니다"
 
-#: app/routes/auth.py:124
+#: app/routes/auth.py:117
 msgid "Your password has been reset. Please log in."
 msgstr "비밀번호가 재설정되었습니다. 로그인하십시오."
 
-#: app/routes/auth.py:160
+#: app/routes/auth.py:153
 msgid "New account registration is currently disabled."
 msgstr "새 계정 등록이 현재 비활성화되어 있습니다."
 
-#: app/routes/auth.py:180 app/routes/auth.py:647
+#: app/routes/auth.py:173 app/routes/auth.py:662
 msgid "Username already exists"
 msgstr "이미 존재하는 사용자 이름입니다"
 
-#: app/routes/auth.py:184
+#: app/routes/auth.py:177
 msgid "Email already registered"
 msgstr "이미 등록된 이메일입니다"
 
-#: app/routes/auth.py:192
+#: app/routes/auth.py:185
 msgid "Registration successful! Please log in."
 msgstr "등록이 완료되었습니다! 로그인하십시오."
 
-#: app/routes/auth.py:202
+#: app/routes/auth.py:195
 msgid "You have been logged out."
 msgstr "로그아웃되었습니다."
 
-#: app/routes/auth.py:247 app/routes/auth.py:580
+#: app/routes/auth.py:240 app/routes/auth.py:595
 msgid "Email already in use by another account"
 msgstr "다른 계정에서 이미 사용 중인 이메일입니다"
 
-#: app/routes/auth.py:266
+#: app/routes/auth.py:259
 msgid "Settings updated successfully"
 msgstr "설정이 성공적으로 업데이트되었습니다"
 
-#: app/routes/auth.py:356
+#: app/routes/auth.py:350
 #, python-format
 msgid "Invalid webhook URL: %(error)s"
 msgstr "잘못된 Webhook URL: %(error)s"
 
-#: app/routes/auth.py:371
+#: app/routes/auth.py:365
 msgid "Notification preferences updated"
 msgstr "알림 환경설정이 업데이트되었습니다"
 
-#: app/routes/auth.py:397
+#: app/routes/auth.py:391
 msgid "Menu preferences updated"
 msgstr "메뉴 환경설정이 업데이트되었습니다"
 
-#: app/routes/auth.py:422
+#: app/routes/auth.py:423
+msgid "Enter a valid sender email address for Resend."
+msgstr "Resend에 사용할 올바른 보낸 사람 이메일 주소를 입력하세요."
+
+#: app/routes/auth.py:437
 msgid "Notification settings updated"
 msgstr "알림 설정이 업데이트되었습니다"
 
-#: app/routes/auth.py:451
+#: app/routes/auth.py:466
 msgid "Branding settings updated successfully"
 msgstr "브랜딩 설정이 성공적으로 업데이트되었습니다"
 
-#: app/routes/auth.py:467
+#: app/routes/auth.py:482
 msgid "Logo removed successfully"
 msgstr "로고가 성공적으로 삭제되었습니다"
 
-#: app/routes/auth.py:480
+#: app/routes/auth.py:495
 msgid "DVLA settings updated"
 msgstr "DVLA 설정이 업데이트되었습니다"
 
-#: app/routes/auth.py:495
+#: app/routes/auth.py:510
 msgid "UK fuel price settings updated"
 msgstr "영국 연료 가격 설정이 업데이트되었습니다"
 
-#: app/routes/auth.py:508
+#: app/routes/auth.py:523
 msgid "Tessie settings updated"
 msgstr "Tessie 설정이 업데이트되었습니다"
 
-#: app/routes/auth.py:521
+#: app/routes/auth.py:536
 msgid "Registration settings updated"
 msgstr "등록 설정이 업데이트되었습니다"
 
-#: app/routes/auth.py:545
+#: app/routes/auth.py:560
 msgid "Cannot remove admin status from the last administrator."
 msgstr "마지막 관리자의 관리자 상태는 제거할 수 없습니다."
 
-#: app/routes/auth.py:550
+#: app/routes/auth.py:565
 #, python-format
 msgid "Admin status updated for %(username)s"
 msgstr "%(username)s의 관리자 상태가 업데이트되었습니다"
 
-#: app/routes/auth.py:563
+#: app/routes/auth.py:578
 #, python-format
 msgid "User %(username)s deleted"
 msgstr "사용자 %(username)s이(가) 삭제되었습니다"
 
-#: app/routes/auth.py:608
+#: app/routes/auth.py:623
 #, python-format
 msgid "User %(username)s updated successfully"
 msgstr "사용자 %(username)s이(가) 성공적으로 업데이트되었습니다"
 
-#: app/routes/auth.py:631
+#: app/routes/auth.py:646
 msgid "Username, email, and password are required"
 msgstr "사용자 이름, 이메일 및 비밀번호가 필요합니다"
 
-#: app/routes/auth.py:652
+#: app/routes/auth.py:667
 msgid "Email already in use"
 msgstr "이미 사용 중인 이메일입니다"
 
-#: app/routes/auth.py:661
+#: app/routes/auth.py:676
 #, python-format
 msgid "User %(username)s created successfully"
 msgstr "사용자 %(username)s이(가) 성공적으로 생성되었습니다"
@@ -1937,7 +1949,7 @@ msgstr "알림"
 msgid "Branding"
 msgstr "브랜딩"
 
-#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1794
+#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1852
 msgid "About"
 msgstr "정보"
 
@@ -2627,7 +2639,7 @@ msgid "DVLA API Key"
 msgstr "DVLA API 키"
 
 #: app/templates/auth/settings.html:1170 app/templates/auth/settings.html:1250
-#: app/templates/auth/settings.html:1600
+#: app/templates/auth/settings.html:1658
 msgid "Test"
 msgstr "테스트"
 
@@ -2819,7 +2831,7 @@ msgstr "설정되지 않음"
 msgid "ntfy (Push Notifications)"
 msgstr "ntfy (푸시 알림)"
 
-#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1613
+#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1671
 msgid "Pushover"
 msgstr "Pushover"
 
@@ -2832,8 +2844,8 @@ msgid "Notifications will be sent to"
 msgstr "알림이 다음으로 전송됩니다"
 
 #: app/templates/auth/settings.html:1416
-msgid "Email not configured. Ask an administrator to configure SMTP settings."
-msgstr "이메일이 설정되지 않았습니다. 관리자에게 SMTP 설정을 요청하십시오."
+msgid "Email is not set up yet. Ask an administrator to set it up."
+msgstr "이메일이 아직 설정되지 않았습니다. 관리자에게 설정을 요청하세요."
 
 #: app/templates/auth/settings.html:1425
 msgid "is a simple pub-sub notification service. Enter your topic below."
@@ -2904,73 +2916,113 @@ msgstr "알림 서비스"
 msgid "Configure notification services available to all users"
 msgstr "모든 사용자가 사용할 수 있는 알림 서비스 구성"
 
-#: app/templates/auth/settings.html:1530
-msgid "Email (SMTP)"
-msgstr "이메일 (SMTP)"
+#: app/templates/auth/settings.html:1526
+msgid "Email provider"
+msgstr "이메일 제공업체"
 
-#: app/templates/auth/settings.html:1542
-msgid "SMTP Host"
-msgstr "SMTP 호스트"
+#: app/templates/auth/settings.html:1527
+msgid ""
+"Reminder emails, password resets and test emails are sent with the provider "
+"chosen here."
+msgstr "알림, 비밀번호 재설정, 테스트 이메일은 여기서 선택한 제공업체로 발송됩니다."
+
+#: app/templates/auth/settings.html:1529
+msgid "SMTP server"
+msgstr "SMTP 서버"
+
+#: app/templates/auth/settings.html:1546
+msgid "Email (Resend)"
+msgstr "이메일 (Resend)"
 
 #: app/templates/auth/settings.html:1549
-msgid "SMTP Port"
-msgstr "SMTP 포트"
+msgid ""
+"Create an API key with sending access in your Resend dashboard, and send "
+"from an address on a domain you have verified there."
+msgstr "Resend 대시보드에서 발송 권한이 있는 API 키를 만들고, 그곳에서 인증한 도메인의 주소로 발송하세요."
+
+#: app/templates/auth/settings.html:1550
+msgid "Resend documentation"
+msgstr "Resend 문서"
+
+#: app/templates/auth/settings.html:1554
+msgid "API key"
+msgstr "API 키"
 
 #: app/templates/auth/settings.html:1556
-msgid "SMTP Username"
-msgstr "SMTP 사용자 이름"
+msgid "Saved. Leave blank to keep it."
+msgstr "저장됨. 유지하려면 비워 두세요."
 
-#: app/templates/auth/settings.html:1563
-msgid "SMTP Password"
-msgstr "SMTP 비밀번호"
-
-#: app/templates/auth/settings.html:1570
+#: app/templates/auth/settings.html:1560 app/templates/auth/settings.html:1628
 msgid "Sender Email"
 msgstr "발신자 이메일"
 
-#: app/templates/auth/settings.html:1577
+#: app/templates/auth/settings.html:1566 app/templates/auth/settings.html:1635
 msgid "Sender Name"
 msgstr "발신자 이름"
 
-#: app/templates/auth/settings.html:1590
+#: app/templates/auth/settings.html:1575
+msgid "Send test email"
+msgstr "테스트 이메일 보내기"
+
+#: app/templates/auth/settings.html:1588
+msgid "Email (SMTP)"
+msgstr "이메일 (SMTP)"
+
+#: app/templates/auth/settings.html:1600
+msgid "SMTP Host"
+msgstr "SMTP 호스트"
+
+#: app/templates/auth/settings.html:1607
+msgid "SMTP Port"
+msgstr "SMTP 포트"
+
+#: app/templates/auth/settings.html:1614
+msgid "SMTP Username"
+msgstr "SMTP 사용자 이름"
+
+#: app/templates/auth/settings.html:1621
+msgid "SMTP Password"
+msgstr "SMTP 비밀번호"
+
+#: app/templates/auth/settings.html:1648
 msgid "Use TLS"
 msgstr "TLS 사용"
 
-#: app/templates/auth/settings.html:1596
+#: app/templates/auth/settings.html:1654
 msgid "Use SSL"
 msgstr "SSL 사용"
 
-#: app/templates/auth/settings.html:1624
+#: app/templates/auth/settings.html:1682
 msgid "sends push notifications to iOS and Android devices."
 msgstr "iOS 및 Android 장치로 푸시 알림을 보냅니다."
 
-#: app/templates/auth/settings.html:1627
+#: app/templates/auth/settings.html:1685
 msgid "Application Token"
 msgstr "애플리케이션 토큰"
 
-#: app/templates/auth/settings.html:1632
+#: app/templates/auth/settings.html:1690
 msgid "Create an application at pushover.net to get your token"
 msgstr "토큰을 받으려면 pushover.net에서 애플리케이션을 생성하십시오"
 
-#: app/templates/auth/settings.html:1642
+#: app/templates/auth/settings.html:1700
 msgid "ntfy"
 msgstr "ntfy"
 
-#: app/templates/auth/settings.html:1643 app/templates/auth/settings.html:1658
+#: app/templates/auth/settings.html:1701 app/templates/auth/settings.html:1716
 msgid "Always available"
 msgstr "항상 사용 가능"
 
-#: app/templates/auth/settings.html:1647
+#: app/templates/auth/settings.html:1705
 msgid ""
 "is a free, open-source notification service that requires no admin "
 "configuration. Users can set their own topic."
 msgstr "는 관리자 설정이 필요 없는 무료 오픈소스 알림 서비스입니다. 사용자가 자체 주제를 설정할 수 있습니다."
 
-#: app/templates/auth/settings.html:1657
+#: app/templates/auth/settings.html:1715
 msgid "Webhook"
 msgstr "Webhook"
 
-#: app/templates/auth/settings.html:1661
+#: app/templates/auth/settings.html:1719
 msgid ""
 "Webhooks allow users to integrate with any service that accepts HTTP POST "
 "requests (Home Assistant, Discord, Slack, etc.)"
@@ -2978,147 +3030,160 @@ msgstr ""
 "Webhook을 사용하면 HTTP POST 요청을 수신하는 모든 서비스(Home Assistant, Discord, Slack 등)와 "
 "연동할 수 있습니다."
 
-#: app/templates/auth/settings.html:1668
+#: app/templates/auth/settings.html:1726
 msgid "Save Notification Settings"
 msgstr "알림 설정 저장"
 
-#: app/templates/auth/settings.html:1679
+#: app/templates/auth/settings.html:1737
 msgid "Manage Reminders"
 msgstr "알림 관리"
 
-#: app/templates/auth/settings.html:1680
+#: app/templates/auth/settings.html:1738
 msgid "View and manage your upcoming reminders"
 msgstr "다가오는 알림 보기 및 관리"
 
-#: app/templates/auth/settings.html:1685
+#: app/templates/auth/settings.html:1743
 msgid "View all reminders"
 msgstr "모든 알림 보기"
 
-#: app/templates/auth/settings.html:1702
+#: app/templates/auth/settings.html:1760
 msgid "Application Branding"
 msgstr "애플리케이션 브랜딩"
 
-#: app/templates/auth/settings.html:1703
+#: app/templates/auth/settings.html:1761
 msgid "Customize how May appears to all users"
 msgstr "모든 사용자에게 표시되는 May의 외관 사용자 지정"
 
-#: app/templates/auth/settings.html:1709
+#: app/templates/auth/settings.html:1767
 msgid "Application Name"
 msgstr "애플리케이션 이름"
 
-#: app/templates/auth/settings.html:1717
+#: app/templates/auth/settings.html:1775
 msgid "Tagline"
 msgstr "태그라인"
 
-#: app/templates/auth/settings.html:1725
+#: app/templates/auth/settings.html:1783
 msgid "Primary Color"
 msgstr "기본 색상"
 
-#: app/templates/auth/settings.html:1737
+#: app/templates/auth/settings.html:1795
 msgid "Logo"
 msgstr "로고"
 
-#: app/templates/auth/settings.html:1741 app/templates/auth/settings.html:1742
+#: app/templates/auth/settings.html:1799 app/templates/auth/settings.html:1800
 msgid "Current logo"
 msgstr "현재 로고"
 
-#: app/templates/auth/settings.html:1754
+#: app/templates/auth/settings.html:1812
 msgid "Remove Logo"
 msgstr "로고 삭제"
 
-#: app/templates/auth/settings.html:1759
+#: app/templates/auth/settings.html:1817
 msgid "Are you sure you want to remove the logo?"
 msgstr "로고를 삭제하시겠습니까?"
 
-#: app/templates/auth/settings.html:1782
+#: app/templates/auth/settings.html:1840
 msgid "Save Branding"
 msgstr "브랜딩 저장"
 
-#: app/templates/auth/settings.html:1795
+#: app/templates/auth/settings.html:1853
 msgid "Version information and updates"
 msgstr "버전 정보 및 업데이트"
 
-#: app/templates/auth/settings.html:1802
+#: app/templates/auth/settings.html:1860
 msgid "Current Version"
 msgstr "현재 버전"
 
-#: app/templates/auth/settings.html:1825
+#: app/templates/auth/settings.html:1883
 msgid "Check for Updates"
 msgstr "업데이트 확인"
 
-#: app/templates/auth/settings.html:1826
+#: app/templates/auth/settings.html:1884
 msgid "Click to check for newer versions"
 msgstr "최신 버전을 확인하려면 클릭하십시오"
 
-#: app/templates/auth/settings.html:1833
+#: app/templates/auth/settings.html:1891
 msgid "Check Now"
 msgstr "지금 확인"
 
-#: app/templates/auth/settings.html:1844
+#: app/templates/auth/settings.html:1902
 msgid "Update Available"
 msgstr "업데이트 사용 가능"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "Version"
 msgstr "버전"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "is available"
 msgstr "사용 가능합니다"
 
-#: app/templates/auth/settings.html:1850
+#: app/templates/auth/settings.html:1908
 msgid "View Release Notes"
 msgstr "릴리스 노트 보기"
 
-#: app/templates/auth/settings.html:1857
+#: app/templates/auth/settings.html:1915
 msgid "To update (Docker):"
 msgstr "업데이트 방법 (Docker):"
 
-#: app/templates/auth/settings.html:1860
+#: app/templates/auth/settings.html:1918
 msgid "Or use Watchtower for automatic updates."
 msgstr "또는 Watchtower를 사용하여 자동 업데이트하십시오."
 
-#: app/templates/auth/settings.html:1872
+#: app/templates/auth/settings.html:1930
 msgid "You are running the latest version"
 msgstr "최신 버전을 사용 중입니다"
 
-#: app/templates/auth/settings.html:1879
+#: app/templates/auth/settings.html:1937
 msgid "Resources"
 msgstr "리소스"
 
-#: app/templates/auth/settings.html:1886
+#: app/templates/auth/settings.html:1944
 msgid "Source Code"
 msgstr "소스 코드"
 
-#: app/templates/auth/settings.html:1893
+#: app/templates/auth/settings.html:1951
 msgid "Report an Issue"
 msgstr "문제 보고"
 
-#: app/templates/auth/settings.html:1900
+#: app/templates/auth/settings.html:1958
 msgid "All Releases"
 msgstr "모든 릴리스"
 
-#: app/templates/auth/settings.html:1907
+#: app/templates/auth/settings.html:1965
 msgid "Documentation"
 msgstr "문서"
 
-#: app/templates/auth/settings.html:2316
+#: app/templates/auth/settings.html:2216
+msgid "Sending..."
+msgstr "보내는 중…"
+
+#: app/templates/auth/settings.html:2230
+#, python-format
+msgid "Test email sent to %(email)s"
+msgstr "%(email)s(으)로 테스트 이메일을 보냈습니다"
+
+#: app/templates/auth/settings.html:2233 app/templates/auth/settings.html:2238
+msgid "Failed to send email"
+msgstr "이메일을 보내지 못했습니다"
+
+#: app/templates/auth/settings.html:2413
 msgid "Checking..."
 msgstr "확인 중..."
 
-#: app/templates/auth/settings.html:2335
+#: app/templates/auth/settings.html:2432
 msgid "A newer version is available"
 msgstr "최신 버전을 사용할 수 있습니다"
 
-#: app/templates/auth/settings.html:2340
+#: app/templates/auth/settings.html:2437
 msgid "Last checked just now"
 msgstr "방금 확인함"
 
-#: app/templates/auth/settings.html:2344
+#: app/templates/auth/settings.html:2441
 msgid "Could not check for updates"
 msgstr "업데이트를 확인할 수 없습니다"
 
-#: app/templates/auth/settings.html:2349
+#: app/templates/auth/settings.html:2446
 msgid "Error checking for updates"
 msgstr "업데이트 확인 중 오류 발생"
 

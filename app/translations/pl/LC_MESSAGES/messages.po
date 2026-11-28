@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 10:50+0000\n"
+"POT-Creation-Date: 2026-11-28 11:18+0000\n"
 "PO-Revision-Date: 2026-02-17 20:56+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: pl <LL@li.org>\n"
@@ -663,20 +663,28 @@ msgstr "Zaktualizowano ryczałt za przebieg"
 msgid "Mileage allowance deleted successfully"
 msgstr "Usunięto ryczałt za przebieg"
 
-#: app/routes/api.py:2714 app/routes/api.py:2928 app/routes/api.py:3104
+#: app/routes/api.py:264
+msgid "Enter a Resend API key."
+msgstr "Wpisz klucz API Resend."
+
+#: app/routes/api.py:266
+msgid "Enter a sender email address on a domain verified in Resend."
+msgstr "Wpisz adres nadawcy w domenie zweryfikowanej w Resend."
+
+#: app/routes/api.py:2750 app/routes/api.py:2964 app/routes/api.py:3140
 msgid "No file uploaded"
 msgstr "Nie przesłano pliku"
 
-#: app/routes/api.py:2719 app/routes/api.py:2933 app/routes/api.py:3109
+#: app/routes/api.py:2755 app/routes/api.py:2969 app/routes/api.py:3145
 #: app/routes/documents.py:67 app/routes/documents.py:72
 msgid "No file selected"
 msgstr "Nie wybrano pliku"
 
-#: app/routes/api.py:2741
+#: app/routes/api.py:2777
 msgid "The uploaded file is not a valid SQLite database."
 msgstr "Przesłany plik nie jest prawidłową bazą danych SQLite."
 
-#: app/routes/api.py:2746
+#: app/routes/api.py:2782
 msgid ""
 "This does not appear to be a Hammond database — no vehicles, fillups, or "
 "expenses tables found."
@@ -684,7 +692,7 @@ msgstr ""
 "To nie wygląda na bazę danych Hammond — nie znaleziono tabel pojazdów, "
 "tankowań ani wydatków."
 
-#: app/routes/api.py:2896
+#: app/routes/api.py:2932
 #, python-format
 msgid ""
 "Hammond import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs, "
@@ -693,7 +701,7 @@ msgstr ""
 "Import z Hammond zakończony: zaimportowano %(vehicles)s pojazdów, "
 "%(fuel_logs)s wpisów paliwa, %(expenses)s wydatków."
 
-#: app/routes/api.py:2898
+#: app/routes/api.py:2934
 #, python-format
 msgid ""
 "(%(total_skipped)s records skipped due to errors — check server logs for "
@@ -702,7 +710,7 @@ msgstr ""
 "(%(total_skipped)s rekordów pominięto z powodu błędów — sprawdź logi "
 "serwera, aby uzyskać szczegóły.)"
 
-#: app/routes/api.py:2905
+#: app/routes/api.py:2941
 #, python-format
 msgid ""
 "Import failed due to a database error. Check that the file is a valid "
@@ -711,13 +719,13 @@ msgstr ""
 "Import nie powiódł się z powodu błędu bazy danych. Sprawdź, czy plik jest "
 "prawidłową bazą danych Hammond. Błąd: %(error)s"
 
-#: app/routes/api.py:2910 app/routes/api.py:3055 app/routes/api.py:3228
-#: app/routes/api.py:3800
+#: app/routes/api.py:2946 app/routes/api.py:3091 app/routes/api.py:3264
+#: app/routes/api.py:3836
 #, python-format
 msgid "Import failed: %(error)s"
 msgstr "Import nie powiódł się: %(error)s"
 
-#: app/routes/api.py:3051
+#: app/routes/api.py:3087
 #, python-format
 msgid ""
 "Clarkson import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs"
@@ -725,7 +733,7 @@ msgstr ""
 "Import z Clarkson zakończony: %(vehicles)s pojazdów, %(fuel_logs)s wpisów "
 "paliwa"
 
-#: app/routes/api.py:3224
+#: app/routes/api.py:3260
 #, python-format
 msgid ""
 "Fuelly import complete: %(vehicles)s new vehicles, %(fuel_logs)s fuel logs"
@@ -733,63 +741,63 @@ msgstr ""
 "Import z Fuelly zakończony: %(vehicles)s nowych pojazdów, %(fuel_logs)s "
 "wpisów paliwa"
 
-#: app/routes/api.py:3636
+#: app/routes/api.py:3672
 msgid "Please add a vehicle before importing data."
 msgstr "Dodaj pojazd przed importowaniem danych."
 
-#: app/routes/api.py:3649
+#: app/routes/api.py:3685
 msgid "Invalid data type selected."
 msgstr "Wybrano nieprawidłowy typ danych."
 
-#: app/routes/api.py:3654 app/routes/api.py:3739
+#: app/routes/api.py:3690 app/routes/api.py:3775
 msgid "Vehicle not found."
 msgstr "Nie znaleziono pojazdu."
 
-#: app/routes/api.py:3658
+#: app/routes/api.py:3694
 msgid "No CSV file uploaded."
 msgstr "Nie przesłano pliku CSV."
 
-#: app/routes/api.py:3677
+#: app/routes/api.py:3713
 msgid "CSV file has no column headers."
 msgstr "Plik CSV nie zawiera nagłówków kolumn."
 
-#: app/routes/api.py:3719
+#: app/routes/api.py:3755
 #, python-format
 msgid "Failed to parse CSV file: %(error)s"
 msgstr "Nie udało się przetworzyć pliku CSV: %(error)s"
 
-#: app/routes/api.py:3734
+#: app/routes/api.py:3770
 msgid "Invalid data type."
 msgstr "Nieprawidłowy typ danych."
 
-#: app/routes/api.py:3743
+#: app/routes/api.py:3779
 msgid "CSV file expired. Please upload again."
 msgstr "Plik CSV wygasł. Proszę przesłać ponownie."
 
-#: app/routes/api.py:3785
+#: app/routes/api.py:3821
 #, python-format
 msgid "CSV import complete: %(count)s %(label)s imported."
 msgstr "Import CSV zakończony: zaimportowano %(count)s %(label)s."
 
-#: app/routes/api.py:3788
+#: app/routes/api.py:3824
 #, python-format
 msgid "%(count)s duplicate(s) skipped."
 msgstr "Pominięto %(count)s duplikatów."
 
-#: app/routes/api.py:3835
+#: app/routes/api.py:3871
 msgid "No backup file uploaded."
 msgstr "Nie przesłano pliku kopii zapasowej."
 
-#: app/routes/api.py:3858
+#: app/routes/api.py:3894
 #, python-format
 msgid "Could not read that backup: %(error)s"
 msgstr "Nie udało się odczytać tej kopii zapasowej: %(error)s"
 
-#: app/routes/api.py:3877
+#: app/routes/api.py:3913
 msgid "The uploaded backup has expired. Please upload it again."
 msgstr "Przesłana kopia zapasowa wygasła. Prześlij ją ponownie."
 
-#: app/routes/api.py:3890
+#: app/routes/api.py:3926
 #, python-format
 msgid ""
 "Backup restored: %(added)s records added, %(skipped)s already present and "
@@ -798,140 +806,144 @@ msgstr ""
 "Przywrócono kopię zapasową: dodano %(added)s rekordów, %(skipped)s już "
 "istniało i pozostawiono je bez zmian."
 
-#: app/routes/api.py:3898
+#: app/routes/api.py:3934
 #, python-format
 msgid "Restore failed: %(error)s"
 msgstr "Przywracanie nie powiodło się: %(error)s"
 
-#: app/routes/auth.py:39
+#: app/routes/auth.py:40
 msgid "Invalid username or password"
 msgstr "Nieprawidłowa nazwa użytkownika lub hasło"
 
-#: app/routes/auth.py:62
+#: app/routes/auth.py:55
 msgid ""
 "Password reset by email is not available. Please contact an administrator."
 msgstr ""
 "Resetowanie hasła przez e-mail nie jest dostępne. Proszę skontaktować się z "
 "administratorem."
 
-#: app/routes/auth.py:91
+#: app/routes/auth.py:84
 msgid ""
 "If an account with that email exists, a password reset link has been sent."
 msgstr ""
 "Jeśli konto z tym adresem e-mail istnieje, link do resetowania hasła został "
 "wysłany."
 
-#: app/routes/auth.py:104
+#: app/routes/auth.py:97
 msgid "Invalid or expired reset link. Please request a new one."
 msgstr "Nieprawidłowy lub wygasły link resetowania. Proszę poprosić o nowy."
 
-#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:256
-#: app/routes/auth.py:589 app/routes/auth.py:636
+#: app/routes/auth.py:105 app/routes/auth.py:163 app/routes/auth.py:249
+#: app/routes/auth.py:604 app/routes/auth.py:651
 msgid "Passwords do not match"
 msgstr "Hasła nie są zgodne"
 
-#: app/routes/auth.py:124
+#: app/routes/auth.py:117
 msgid "Your password has been reset. Please log in."
 msgstr "Hasło zostało zresetowane. Proszę się zalogować."
 
-#: app/routes/auth.py:160
+#: app/routes/auth.py:153
 msgid "New account registration is currently disabled."
 msgstr "Rejestracja nowych kont jest obecnie wyłączona."
 
-#: app/routes/auth.py:180 app/routes/auth.py:647
+#: app/routes/auth.py:173 app/routes/auth.py:662
 msgid "Username already exists"
 msgstr "Nazwa użytkownika już istnieje"
 
-#: app/routes/auth.py:184
+#: app/routes/auth.py:177
 msgid "Email already registered"
 msgstr "Adres e-mail jest już zarejestrowany"
 
-#: app/routes/auth.py:192
+#: app/routes/auth.py:185
 msgid "Registration successful! Please log in."
 msgstr "Rejestracja zakończona pomyślnie! Proszę się zalogować."
 
-#: app/routes/auth.py:202
+#: app/routes/auth.py:195
 msgid "You have been logged out."
 msgstr "Zostałeś wylogowany."
 
-#: app/routes/auth.py:247 app/routes/auth.py:580
+#: app/routes/auth.py:240 app/routes/auth.py:595
 msgid "Email already in use by another account"
 msgstr "Adres e-mail jest już używany przez inne konto"
 
-#: app/routes/auth.py:266
+#: app/routes/auth.py:259
 msgid "Settings updated successfully"
 msgstr "Ustawienia zostały zaktualizowane"
 
-#: app/routes/auth.py:356
+#: app/routes/auth.py:350
 #, python-format
 msgid "Invalid webhook URL: %(error)s"
 msgstr "Nieprawidłowy adres URL webhooka: %(error)s"
 
-#: app/routes/auth.py:371
+#: app/routes/auth.py:365
 msgid "Notification preferences updated"
 msgstr "Preferencje powiadomień zostały zaktualizowane"
 
-#: app/routes/auth.py:397
+#: app/routes/auth.py:391
 msgid "Menu preferences updated"
 msgstr "Preferencje menu zostały zaktualizowane"
 
-#: app/routes/auth.py:422
+#: app/routes/auth.py:423
+msgid "Enter a valid sender email address for Resend."
+msgstr "Wpisz prawidłowy adres e-mail nadawcy dla Resend."
+
+#: app/routes/auth.py:437
 msgid "Notification settings updated"
 msgstr "Ustawienia powiadomień zostały zaktualizowane"
 
-#: app/routes/auth.py:451
+#: app/routes/auth.py:466
 msgid "Branding settings updated successfully"
 msgstr "Ustawienia marki zostały zaktualizowane"
 
-#: app/routes/auth.py:467
+#: app/routes/auth.py:482
 msgid "Logo removed successfully"
 msgstr "Logo zostało usunięte"
 
-#: app/routes/auth.py:480
+#: app/routes/auth.py:495
 msgid "DVLA settings updated"
 msgstr "Ustawienia DVLA zostały zaktualizowane"
 
-#: app/routes/auth.py:495
+#: app/routes/auth.py:510
 msgid "UK fuel price settings updated"
 msgstr "Zaktualizowano ustawienia brytyjskich cen paliw"
 
-#: app/routes/auth.py:508
+#: app/routes/auth.py:523
 msgid "Tessie settings updated"
 msgstr "Ustawienia Tessie zostały zaktualizowane"
 
-#: app/routes/auth.py:521
+#: app/routes/auth.py:536
 msgid "Registration settings updated"
 msgstr "Ustawienia rejestracji zostały zaktualizowane"
 
-#: app/routes/auth.py:545
+#: app/routes/auth.py:560
 msgid "Cannot remove admin status from the last administrator."
 msgstr ""
 "Nie można odebrać uprawnień administratora ostatniemu administratorowi."
 
-#: app/routes/auth.py:550
+#: app/routes/auth.py:565
 #, python-format
 msgid "Admin status updated for %(username)s"
 msgstr "Status administratora zaktualizowany dla %(username)s"
 
-#: app/routes/auth.py:563
+#: app/routes/auth.py:578
 #, python-format
 msgid "User %(username)s deleted"
 msgstr "Użytkownik %(username)s został usunięty"
 
-#: app/routes/auth.py:608
+#: app/routes/auth.py:623
 #, python-format
 msgid "User %(username)s updated successfully"
 msgstr "Użytkownik %(username)s został zaktualizowany"
 
-#: app/routes/auth.py:631
+#: app/routes/auth.py:646
 msgid "Username, email, and password are required"
 msgstr "Nazwa użytkownika, adres e-mail i hasło są wymagane"
 
-#: app/routes/auth.py:652
+#: app/routes/auth.py:667
 msgid "Email already in use"
 msgstr "Adres e-mail jest już używany"
 
-#: app/routes/auth.py:661
+#: app/routes/auth.py:676
 #, python-format
 msgid "User %(username)s created successfully"
 msgstr "Użytkownik %(username)s został utworzony"
@@ -1977,7 +1989,7 @@ msgstr "Powiadomienia"
 msgid "Branding"
 msgstr "Marka"
 
-#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1794
+#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1852
 msgid "About"
 msgstr "Informacje"
 
@@ -2692,7 +2704,7 @@ msgid "DVLA API Key"
 msgstr "Klucz API DVLA"
 
 #: app/templates/auth/settings.html:1170 app/templates/auth/settings.html:1250
-#: app/templates/auth/settings.html:1600
+#: app/templates/auth/settings.html:1658
 msgid "Test"
 msgstr "Testuj"
 
@@ -2893,7 +2905,7 @@ msgstr "nie skonfigurowano"
 msgid "ntfy (Push Notifications)"
 msgstr "ntfy (powiadomienia push)"
 
-#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1613
+#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1671
 msgid "Pushover"
 msgstr "Pushover"
 
@@ -2906,10 +2918,10 @@ msgid "Notifications will be sent to"
 msgstr "Powiadomienia będą wysyłane na"
 
 #: app/templates/auth/settings.html:1416
-msgid "Email not configured. Ask an administrator to configure SMTP settings."
+msgid "Email is not set up yet. Ask an administrator to set it up."
 msgstr ""
-"E-mail nie jest skonfigurowany. Poproś administratora o skonfigurowanie "
-"ustawień SMTP."
+"Poczta e-mail nie jest jeszcze skonfigurowana. Poproś administratora o jej "
+"skonfigurowanie."
 
 #: app/templates/auth/settings.html:1425
 msgid "is a simple pub-sub notification service. Enter your topic below."
@@ -2988,63 +3000,107 @@ msgstr "Usługi powiadomień"
 msgid "Configure notification services available to all users"
 msgstr "Skonfiguruj usługi powiadomień dostępne dla wszystkich użytkowników"
 
-#: app/templates/auth/settings.html:1530
-msgid "Email (SMTP)"
-msgstr "E-mail (SMTP)"
+#: app/templates/auth/settings.html:1526
+msgid "Email provider"
+msgstr "Dostawca poczty"
 
-#: app/templates/auth/settings.html:1542
-msgid "SMTP Host"
-msgstr "Host SMTP"
+#: app/templates/auth/settings.html:1527
+msgid ""
+"Reminder emails, password resets and test emails are sent with the provider "
+"chosen here."
+msgstr ""
+"Przypomnienia, resetowanie hasła i wiadomości testowe są wysyłane przez "
+"wybranego tutaj dostawcę."
+
+#: app/templates/auth/settings.html:1529
+msgid "SMTP server"
+msgstr "Serwer SMTP"
+
+#: app/templates/auth/settings.html:1546
+msgid "Email (Resend)"
+msgstr "E-mail (Resend)"
 
 #: app/templates/auth/settings.html:1549
-msgid "SMTP Port"
-msgstr "Port SMTP"
+msgid ""
+"Create an API key with sending access in your Resend dashboard, and send "
+"from an address on a domain you have verified there."
+msgstr ""
+"Utwórz w panelu Resend klucz API z uprawnieniem do wysyłania i wysyłaj z "
+"adresu w domenie, którą tam zweryfikowano."
+
+#: app/templates/auth/settings.html:1550
+msgid "Resend documentation"
+msgstr "Dokumentacja Resend"
+
+#: app/templates/auth/settings.html:1554
+msgid "API key"
+msgstr "Klucz API"
 
 #: app/templates/auth/settings.html:1556
-msgid "SMTP Username"
-msgstr "Nazwa użytkownika SMTP"
+msgid "Saved. Leave blank to keep it."
+msgstr "Zapisany. Pozostaw puste, aby go zachować."
 
-#: app/templates/auth/settings.html:1563
-msgid "SMTP Password"
-msgstr "Hasło SMTP"
-
-#: app/templates/auth/settings.html:1570
+#: app/templates/auth/settings.html:1560 app/templates/auth/settings.html:1628
 msgid "Sender Email"
 msgstr "Adres e-mail nadawcy"
 
-#: app/templates/auth/settings.html:1577
+#: app/templates/auth/settings.html:1566 app/templates/auth/settings.html:1635
 msgid "Sender Name"
 msgstr "Nazwa nadawcy"
 
-#: app/templates/auth/settings.html:1590
+#: app/templates/auth/settings.html:1575
+msgid "Send test email"
+msgstr "Wyślij wiadomość testową"
+
+#: app/templates/auth/settings.html:1588
+msgid "Email (SMTP)"
+msgstr "E-mail (SMTP)"
+
+#: app/templates/auth/settings.html:1600
+msgid "SMTP Host"
+msgstr "Host SMTP"
+
+#: app/templates/auth/settings.html:1607
+msgid "SMTP Port"
+msgstr "Port SMTP"
+
+#: app/templates/auth/settings.html:1614
+msgid "SMTP Username"
+msgstr "Nazwa użytkownika SMTP"
+
+#: app/templates/auth/settings.html:1621
+msgid "SMTP Password"
+msgstr "Hasło SMTP"
+
+#: app/templates/auth/settings.html:1648
 msgid "Use TLS"
 msgstr "Użyj TLS"
 
-#: app/templates/auth/settings.html:1596
+#: app/templates/auth/settings.html:1654
 msgid "Use SSL"
 msgstr "Użyj SSL"
 
-#: app/templates/auth/settings.html:1624
+#: app/templates/auth/settings.html:1682
 msgid "sends push notifications to iOS and Android devices."
 msgstr "wysyła powiadomienia push na urządzenia iOS i Android."
 
-#: app/templates/auth/settings.html:1627
+#: app/templates/auth/settings.html:1685
 msgid "Application Token"
 msgstr "Token aplikacji"
 
-#: app/templates/auth/settings.html:1632
+#: app/templates/auth/settings.html:1690
 msgid "Create an application at pushover.net to get your token"
 msgstr "Utwórz aplikację na pushover.net, aby otrzymać token"
 
-#: app/templates/auth/settings.html:1642
+#: app/templates/auth/settings.html:1700
 msgid "ntfy"
 msgstr "ntfy"
 
-#: app/templates/auth/settings.html:1643 app/templates/auth/settings.html:1658
+#: app/templates/auth/settings.html:1701 app/templates/auth/settings.html:1716
 msgid "Always available"
 msgstr "Zawsze dostępne"
 
-#: app/templates/auth/settings.html:1647
+#: app/templates/auth/settings.html:1705
 msgid ""
 "is a free, open-source notification service that requires no admin "
 "configuration. Users can set their own topic."
@@ -3052,11 +3108,11 @@ msgstr ""
 "to darmowa usługa powiadomień o otwartym kodzie źródłowym, która nie wymaga "
 "konfiguracji administratora. Użytkownicy mogą ustawić własny temat."
 
-#: app/templates/auth/settings.html:1657
+#: app/templates/auth/settings.html:1715
 msgid "Webhook"
 msgstr "Webhook"
 
-#: app/templates/auth/settings.html:1661
+#: app/templates/auth/settings.html:1719
 msgid ""
 "Webhooks allow users to integrate with any service that accepts HTTP POST "
 "requests (Home Assistant, Discord, Slack, etc.)"
@@ -3064,147 +3120,160 @@ msgstr ""
 "Webhooki umożliwiają użytkownikom integrację z dowolną usługą akceptującą "
 "żądania HTTP POST (Home Assistant, Discord, Slack itp.)"
 
-#: app/templates/auth/settings.html:1668
+#: app/templates/auth/settings.html:1726
 msgid "Save Notification Settings"
 msgstr "Zapisz ustawienia powiadomień"
 
-#: app/templates/auth/settings.html:1679
+#: app/templates/auth/settings.html:1737
 msgid "Manage Reminders"
 msgstr "Zarządzaj przypomnieniami"
 
-#: app/templates/auth/settings.html:1680
+#: app/templates/auth/settings.html:1738
 msgid "View and manage your upcoming reminders"
 msgstr "Przeglądaj i zarządzaj nadchodzącymi przypomnieniami"
 
-#: app/templates/auth/settings.html:1685
+#: app/templates/auth/settings.html:1743
 msgid "View all reminders"
 msgstr "Zobacz wszystkie przypomnienia"
 
-#: app/templates/auth/settings.html:1702
+#: app/templates/auth/settings.html:1760
 msgid "Application Branding"
 msgstr "Marka aplikacji"
 
-#: app/templates/auth/settings.html:1703
+#: app/templates/auth/settings.html:1761
 msgid "Customize how May appears to all users"
 msgstr "Dostosuj wygląd May dla wszystkich użytkowników"
 
-#: app/templates/auth/settings.html:1709
+#: app/templates/auth/settings.html:1767
 msgid "Application Name"
 msgstr "Nazwa aplikacji"
 
-#: app/templates/auth/settings.html:1717
+#: app/templates/auth/settings.html:1775
 msgid "Tagline"
 msgstr "Slogan"
 
-#: app/templates/auth/settings.html:1725
+#: app/templates/auth/settings.html:1783
 msgid "Primary Color"
 msgstr "Kolor główny"
 
-#: app/templates/auth/settings.html:1737
+#: app/templates/auth/settings.html:1795
 msgid "Logo"
 msgstr "Logo"
 
-#: app/templates/auth/settings.html:1741 app/templates/auth/settings.html:1742
+#: app/templates/auth/settings.html:1799 app/templates/auth/settings.html:1800
 msgid "Current logo"
 msgstr "Aktualne logo"
 
-#: app/templates/auth/settings.html:1754
+#: app/templates/auth/settings.html:1812
 msgid "Remove Logo"
 msgstr "Usuń logo"
 
-#: app/templates/auth/settings.html:1759
+#: app/templates/auth/settings.html:1817
 msgid "Are you sure you want to remove the logo?"
 msgstr "Czy na pewno chcesz usunąć logo?"
 
-#: app/templates/auth/settings.html:1782
+#: app/templates/auth/settings.html:1840
 msgid "Save Branding"
 msgstr "Zapisz ustawienia marki"
 
-#: app/templates/auth/settings.html:1795
+#: app/templates/auth/settings.html:1853
 msgid "Version information and updates"
 msgstr "Informacje o wersji i aktualizacje"
 
-#: app/templates/auth/settings.html:1802
+#: app/templates/auth/settings.html:1860
 msgid "Current Version"
 msgstr "Aktualna wersja"
 
-#: app/templates/auth/settings.html:1825
+#: app/templates/auth/settings.html:1883
 msgid "Check for Updates"
 msgstr "Sprawdź aktualizacje"
 
-#: app/templates/auth/settings.html:1826
+#: app/templates/auth/settings.html:1884
 msgid "Click to check for newer versions"
 msgstr "Kliknij, aby sprawdzić nowsze wersje"
 
-#: app/templates/auth/settings.html:1833
+#: app/templates/auth/settings.html:1891
 msgid "Check Now"
 msgstr "Sprawdź teraz"
 
-#: app/templates/auth/settings.html:1844
+#: app/templates/auth/settings.html:1902
 msgid "Update Available"
 msgstr "Dostępna aktualizacja"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "Version"
 msgstr "Wersja"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "is available"
 msgstr "jest dostępna"
 
-#: app/templates/auth/settings.html:1850
+#: app/templates/auth/settings.html:1908
 msgid "View Release Notes"
 msgstr "Zobacz informacje o wydaniu"
 
-#: app/templates/auth/settings.html:1857
+#: app/templates/auth/settings.html:1915
 msgid "To update (Docker):"
 msgstr "Aby zaktualizować (Docker):"
 
-#: app/templates/auth/settings.html:1860
+#: app/templates/auth/settings.html:1918
 msgid "Or use Watchtower for automatic updates."
 msgstr "Lub użyj Watchtower do automatycznych aktualizacji."
 
-#: app/templates/auth/settings.html:1872
+#: app/templates/auth/settings.html:1930
 msgid "You are running the latest version"
 msgstr "Używasz najnowszej wersji"
 
-#: app/templates/auth/settings.html:1879
+#: app/templates/auth/settings.html:1937
 msgid "Resources"
 msgstr "Zasoby"
 
-#: app/templates/auth/settings.html:1886
+#: app/templates/auth/settings.html:1944
 msgid "Source Code"
 msgstr "Kod źródłowy"
 
-#: app/templates/auth/settings.html:1893
+#: app/templates/auth/settings.html:1951
 msgid "Report an Issue"
 msgstr "Zgłoś problem"
 
-#: app/templates/auth/settings.html:1900
+#: app/templates/auth/settings.html:1958
 msgid "All Releases"
 msgstr "Wszystkie wydania"
 
-#: app/templates/auth/settings.html:1907
+#: app/templates/auth/settings.html:1965
 msgid "Documentation"
 msgstr "Dokumentacja"
 
-#: app/templates/auth/settings.html:2316
+#: app/templates/auth/settings.html:2216
+msgid "Sending..."
+msgstr "Wysyłanie…"
+
+#: app/templates/auth/settings.html:2230
+#, python-format
+msgid "Test email sent to %(email)s"
+msgstr "Wiadomość testowa wysłana na %(email)s"
+
+#: app/templates/auth/settings.html:2233 app/templates/auth/settings.html:2238
+msgid "Failed to send email"
+msgstr "Nie udało się wysłać wiadomości"
+
+#: app/templates/auth/settings.html:2413
 msgid "Checking..."
 msgstr "Sprawdzanie..."
 
-#: app/templates/auth/settings.html:2335
+#: app/templates/auth/settings.html:2432
 msgid "A newer version is available"
 msgstr "Dostępna jest nowsza wersja"
 
-#: app/templates/auth/settings.html:2340
+#: app/templates/auth/settings.html:2437
 msgid "Last checked just now"
 msgstr "Ostatnio sprawdzono przed chwilą"
 
-#: app/templates/auth/settings.html:2344
+#: app/templates/auth/settings.html:2441
 msgid "Could not check for updates"
 msgstr "Nie udało się sprawdzić aktualizacji"
 
-#: app/templates/auth/settings.html:2349
+#: app/templates/auth/settings.html:2446
 msgid "Error checking for updates"
 msgstr "Błąd podczas sprawdzania aktualizacji"
 

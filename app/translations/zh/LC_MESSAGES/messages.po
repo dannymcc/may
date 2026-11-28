@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 10:50+0000\n"
+"POT-Creation-Date: 2026-11-28 11:18+0000\n"
 "PO-Revision-Date: 2026-02-17 20:56+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: zh <LL@li.org>\n"
@@ -661,256 +661,268 @@ msgstr "里程补贴已成功更新"
 msgid "Mileage allowance deleted successfully"
 msgstr "里程补贴已成功删除"
 
-#: app/routes/api.py:2714 app/routes/api.py:2928 app/routes/api.py:3104
+#: app/routes/api.py:264
+msgid "Enter a Resend API key."
+msgstr "请输入 Resend API 密钥。"
+
+#: app/routes/api.py:266
+msgid "Enter a sender email address on a domain verified in Resend."
+msgstr "请输入在 Resend 中已验证域名下的发件地址。"
+
+#: app/routes/api.py:2750 app/routes/api.py:2964 app/routes/api.py:3140
 msgid "No file uploaded"
 msgstr "未上传文件"
 
-#: app/routes/api.py:2719 app/routes/api.py:2933 app/routes/api.py:3109
+#: app/routes/api.py:2755 app/routes/api.py:2969 app/routes/api.py:3145
 #: app/routes/documents.py:67 app/routes/documents.py:72
 msgid "No file selected"
 msgstr "未选择文件"
 
-#: app/routes/api.py:2741
+#: app/routes/api.py:2777
 msgid "The uploaded file is not a valid SQLite database."
 msgstr "上传的文件不是有效的SQLite数据库。"
 
-#: app/routes/api.py:2746
+#: app/routes/api.py:2782
 msgid ""
 "This does not appear to be a Hammond database — no vehicles, fillups, or "
 "expenses tables found."
 msgstr "这似乎不是Hammond数据库 — 未找到车辆、加油或费用表。"
 
-#: app/routes/api.py:2896
+#: app/routes/api.py:2932
 #, python-format
 msgid ""
 "Hammond import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs, "
 "%(expenses)s expenses imported."
 msgstr "Hammond导入完成：已导入%(vehicles)s辆车辆、%(fuel_logs)s条加油记录、%(expenses)s条费用记录。"
 
-#: app/routes/api.py:2898
+#: app/routes/api.py:2934
 #, python-format
 msgid ""
 "(%(total_skipped)s records skipped due to errors — check server logs for "
 "details.)"
 msgstr "（因错误跳过了%(total_skipped)s条记录 — 请查看服务器日志了解详情。）"
 
-#: app/routes/api.py:2905
+#: app/routes/api.py:2941
 #, python-format
 msgid ""
 "Import failed due to a database error. Check that the file is a valid "
 "Hammond database. Error: %(error)s"
 msgstr "由于数据库错误导入失败。请检查文件是否为有效的Hammond数据库。错误：%(error)s"
 
-#: app/routes/api.py:2910 app/routes/api.py:3055 app/routes/api.py:3228
-#: app/routes/api.py:3800
+#: app/routes/api.py:2946 app/routes/api.py:3091 app/routes/api.py:3264
+#: app/routes/api.py:3836
 #, python-format
 msgid "Import failed: %(error)s"
 msgstr "导入失败：%(error)s"
 
-#: app/routes/api.py:3051
+#: app/routes/api.py:3087
 #, python-format
 msgid ""
 "Clarkson import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs"
 msgstr "Clarkson导入完成：%(vehicles)s辆车辆、%(fuel_logs)s条加油记录"
 
-#: app/routes/api.py:3224
+#: app/routes/api.py:3260
 #, python-format
 msgid ""
 "Fuelly import complete: %(vehicles)s new vehicles, %(fuel_logs)s fuel logs"
 msgstr "Fuelly导入完成：%(vehicles)s辆新车辆、%(fuel_logs)s条加油记录"
 
-#: app/routes/api.py:3636
+#: app/routes/api.py:3672
 msgid "Please add a vehicle before importing data."
 msgstr "请先添加车辆再导入数据。"
 
-#: app/routes/api.py:3649
+#: app/routes/api.py:3685
 msgid "Invalid data type selected."
 msgstr "选择的数据类型无效。"
 
-#: app/routes/api.py:3654 app/routes/api.py:3739
+#: app/routes/api.py:3690 app/routes/api.py:3775
 msgid "Vehicle not found."
 msgstr "未找到车辆。"
 
-#: app/routes/api.py:3658
+#: app/routes/api.py:3694
 msgid "No CSV file uploaded."
 msgstr "未上传CSV文件。"
 
-#: app/routes/api.py:3677
+#: app/routes/api.py:3713
 msgid "CSV file has no column headers."
 msgstr "CSV文件没有列标题。"
 
-#: app/routes/api.py:3719
+#: app/routes/api.py:3755
 #, python-format
 msgid "Failed to parse CSV file: %(error)s"
 msgstr "解析CSV文件失败：%(error)s"
 
-#: app/routes/api.py:3734
+#: app/routes/api.py:3770
 msgid "Invalid data type."
 msgstr "无效的数据类型。"
 
-#: app/routes/api.py:3743
+#: app/routes/api.py:3779
 msgid "CSV file expired. Please upload again."
 msgstr "CSV文件已过期。请重新上传。"
 
-#: app/routes/api.py:3785
+#: app/routes/api.py:3821
 #, python-format
 msgid "CSV import complete: %(count)s %(label)s imported."
 msgstr "CSV导入完成：已导入%(count)s条%(label)s。"
 
-#: app/routes/api.py:3788
+#: app/routes/api.py:3824
 #, python-format
 msgid "%(count)s duplicate(s) skipped."
 msgstr "已跳过 %(count)s 条重复记录。"
 
-#: app/routes/api.py:3835
+#: app/routes/api.py:3871
 msgid "No backup file uploaded."
 msgstr "未上传备份文件。"
 
-#: app/routes/api.py:3858
+#: app/routes/api.py:3894
 #, python-format
 msgid "Could not read that backup: %(error)s"
 msgstr "无法读取该备份：%(error)s"
 
-#: app/routes/api.py:3877
+#: app/routes/api.py:3913
 msgid "The uploaded backup has expired. Please upload it again."
 msgstr "上传的备份已过期，请重新上传。"
 
-#: app/routes/api.py:3890
+#: app/routes/api.py:3926
 #, python-format
 msgid ""
 "Backup restored: %(added)s records added, %(skipped)s already present and "
 "left alone."
 msgstr "备份已恢复：新增 %(added)s 条记录，%(skipped)s 条已存在并保持不变。"
 
-#: app/routes/api.py:3898
+#: app/routes/api.py:3934
 #, python-format
 msgid "Restore failed: %(error)s"
 msgstr "恢复失败：%(error)s"
 
-#: app/routes/auth.py:39
+#: app/routes/auth.py:40
 msgid "Invalid username or password"
 msgstr "用户名或密码无效"
 
-#: app/routes/auth.py:62
+#: app/routes/auth.py:55
 msgid ""
 "Password reset by email is not available. Please contact an administrator."
 msgstr "暂不支持通过邮件重置密码。请联系管理员。"
 
-#: app/routes/auth.py:91
+#: app/routes/auth.py:84
 msgid ""
 "If an account with that email exists, a password reset link has been sent."
 msgstr "如果存在使用该邮箱的账户，密码重置链接已发送。"
 
-#: app/routes/auth.py:104
+#: app/routes/auth.py:97
 msgid "Invalid or expired reset link. Please request a new one."
 msgstr "重置链接无效或已过期。请重新申请。"
 
-#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:256
-#: app/routes/auth.py:589 app/routes/auth.py:636
+#: app/routes/auth.py:105 app/routes/auth.py:163 app/routes/auth.py:249
+#: app/routes/auth.py:604 app/routes/auth.py:651
 msgid "Passwords do not match"
 msgstr "密码不匹配"
 
-#: app/routes/auth.py:124
+#: app/routes/auth.py:117
 msgid "Your password has been reset. Please log in."
 msgstr "密码已重置。请登录。"
 
-#: app/routes/auth.py:160
+#: app/routes/auth.py:153
 msgid "New account registration is currently disabled."
 msgstr "新账户注册目前已禁用。"
 
-#: app/routes/auth.py:180 app/routes/auth.py:647
+#: app/routes/auth.py:173 app/routes/auth.py:662
 msgid "Username already exists"
 msgstr "用户名已存在"
 
-#: app/routes/auth.py:184
+#: app/routes/auth.py:177
 msgid "Email already registered"
 msgstr "邮箱已被注册"
 
-#: app/routes/auth.py:192
+#: app/routes/auth.py:185
 msgid "Registration successful! Please log in."
 msgstr "注册成功！请登录。"
 
-#: app/routes/auth.py:202
+#: app/routes/auth.py:195
 msgid "You have been logged out."
 msgstr "您已退出登录。"
 
-#: app/routes/auth.py:247 app/routes/auth.py:580
+#: app/routes/auth.py:240 app/routes/auth.py:595
 msgid "Email already in use by another account"
 msgstr "该邮箱已被其他账户使用"
 
-#: app/routes/auth.py:266
+#: app/routes/auth.py:259
 msgid "Settings updated successfully"
 msgstr "设置更新成功"
 
-#: app/routes/auth.py:356
+#: app/routes/auth.py:350
 #, python-format
 msgid "Invalid webhook URL: %(error)s"
 msgstr "无效的Webhook URL：%(error)s"
 
-#: app/routes/auth.py:371
+#: app/routes/auth.py:365
 msgid "Notification preferences updated"
 msgstr "通知偏好已更新"
 
-#: app/routes/auth.py:397
+#: app/routes/auth.py:391
 msgid "Menu preferences updated"
 msgstr "菜单偏好已更新"
 
-#: app/routes/auth.py:422
+#: app/routes/auth.py:423
+msgid "Enter a valid sender email address for Resend."
+msgstr "请为 Resend 输入有效的发件人邮箱地址。"
+
+#: app/routes/auth.py:437
 msgid "Notification settings updated"
 msgstr "通知设置已更新"
 
-#: app/routes/auth.py:451
+#: app/routes/auth.py:466
 msgid "Branding settings updated successfully"
 msgstr "品牌设置更新成功"
 
-#: app/routes/auth.py:467
+#: app/routes/auth.py:482
 msgid "Logo removed successfully"
 msgstr "Logo已成功移除"
 
-#: app/routes/auth.py:480
+#: app/routes/auth.py:495
 msgid "DVLA settings updated"
 msgstr "DVLA设置已更新"
 
-#: app/routes/auth.py:495
+#: app/routes/auth.py:510
 msgid "UK fuel price settings updated"
 msgstr "英国燃油价格设置已更新"
 
-#: app/routes/auth.py:508
+#: app/routes/auth.py:523
 msgid "Tessie settings updated"
 msgstr "Tessie设置已更新"
 
-#: app/routes/auth.py:521
+#: app/routes/auth.py:536
 msgid "Registration settings updated"
 msgstr "注册设置已更新"
 
-#: app/routes/auth.py:545
+#: app/routes/auth.py:560
 msgid "Cannot remove admin status from the last administrator."
 msgstr "无法移除最后一位管理员的管理员权限。"
 
-#: app/routes/auth.py:550
+#: app/routes/auth.py:565
 #, python-format
 msgid "Admin status updated for %(username)s"
 msgstr "已更新%(username)s的管理员状态"
 
-#: app/routes/auth.py:563
+#: app/routes/auth.py:578
 #, python-format
 msgid "User %(username)s deleted"
 msgstr "用户%(username)s已删除"
 
-#: app/routes/auth.py:608
+#: app/routes/auth.py:623
 #, python-format
 msgid "User %(username)s updated successfully"
 msgstr "用户%(username)s更新成功"
 
-#: app/routes/auth.py:631
+#: app/routes/auth.py:646
 msgid "Username, email, and password are required"
 msgstr "用户名、邮箱和密码为必填项"
 
-#: app/routes/auth.py:652
+#: app/routes/auth.py:667
 msgid "Email already in use"
 msgstr "邮箱已被使用"
 
-#: app/routes/auth.py:661
+#: app/routes/auth.py:676
 #, python-format
 msgid "User %(username)s created successfully"
 msgstr "用户%(username)s创建成功"
@@ -1934,7 +1946,7 @@ msgstr "通知"
 msgid "Branding"
 msgstr "品牌"
 
-#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1794
+#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1852
 msgid "About"
 msgstr "关于"
 
@@ -2618,7 +2630,7 @@ msgid "DVLA API Key"
 msgstr "DVLA API密钥"
 
 #: app/templates/auth/settings.html:1170 app/templates/auth/settings.html:1250
-#: app/templates/auth/settings.html:1600
+#: app/templates/auth/settings.html:1658
 msgid "Test"
 msgstr "测试"
 
@@ -2808,7 +2820,7 @@ msgstr "未配置"
 msgid "ntfy (Push Notifications)"
 msgstr "ntfy（推送通知）"
 
-#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1613
+#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1671
 msgid "Pushover"
 msgstr "Pushover"
 
@@ -2821,8 +2833,8 @@ msgid "Notifications will be sent to"
 msgstr "通知将发送至"
 
 #: app/templates/auth/settings.html:1416
-msgid "Email not configured. Ask an administrator to configure SMTP settings."
-msgstr "邮件未配置。请联系管理员配置SMTP设置。"
+msgid "Email is not set up yet. Ask an administrator to set it up."
+msgstr "邮件尚未设置。请联系管理员进行设置。"
 
 #: app/templates/auth/settings.html:1425
 msgid "is a simple pub-sub notification service. Enter your topic below."
@@ -2893,219 +2905,272 @@ msgstr "通知服务"
 msgid "Configure notification services available to all users"
 msgstr "配置所有用户可用的通知服务"
 
-#: app/templates/auth/settings.html:1530
-msgid "Email (SMTP)"
-msgstr "邮件 (SMTP)"
+#: app/templates/auth/settings.html:1526
+msgid "Email provider"
+msgstr "邮件服务商"
 
-#: app/templates/auth/settings.html:1542
-msgid "SMTP Host"
-msgstr "SMTP主机"
+#: app/templates/auth/settings.html:1527
+msgid ""
+"Reminder emails, password resets and test emails are sent with the provider "
+"chosen here."
+msgstr "提醒邮件、密码重置邮件和测试邮件都通过此处选择的服务商发送。"
+
+#: app/templates/auth/settings.html:1529
+msgid "SMTP server"
+msgstr "SMTP 服务器"
+
+#: app/templates/auth/settings.html:1546
+msgid "Email (Resend)"
+msgstr "邮件（Resend）"
 
 #: app/templates/auth/settings.html:1549
-msgid "SMTP Port"
-msgstr "SMTP端口"
+msgid ""
+"Create an API key with sending access in your Resend dashboard, and send "
+"from an address on a domain you have verified there."
+msgstr "请在 Resend 控制台创建具有发送权限的 API 密钥，并使用在那里验证过的域名下的地址发送。"
+
+#: app/templates/auth/settings.html:1550
+msgid "Resend documentation"
+msgstr "Resend 文档"
+
+#: app/templates/auth/settings.html:1554
+msgid "API key"
+msgstr "API 密钥"
 
 #: app/templates/auth/settings.html:1556
-msgid "SMTP Username"
-msgstr "SMTP用户名"
+msgid "Saved. Leave blank to keep it."
+msgstr "已保存。留空即可保留。"
 
-#: app/templates/auth/settings.html:1563
-msgid "SMTP Password"
-msgstr "SMTP密码"
-
-#: app/templates/auth/settings.html:1570
+#: app/templates/auth/settings.html:1560 app/templates/auth/settings.html:1628
 msgid "Sender Email"
 msgstr "发件人邮箱"
 
-#: app/templates/auth/settings.html:1577
+#: app/templates/auth/settings.html:1566 app/templates/auth/settings.html:1635
 msgid "Sender Name"
 msgstr "发件人名称"
 
-#: app/templates/auth/settings.html:1590
+#: app/templates/auth/settings.html:1575
+msgid "Send test email"
+msgstr "发送测试邮件"
+
+#: app/templates/auth/settings.html:1588
+msgid "Email (SMTP)"
+msgstr "邮件 (SMTP)"
+
+#: app/templates/auth/settings.html:1600
+msgid "SMTP Host"
+msgstr "SMTP主机"
+
+#: app/templates/auth/settings.html:1607
+msgid "SMTP Port"
+msgstr "SMTP端口"
+
+#: app/templates/auth/settings.html:1614
+msgid "SMTP Username"
+msgstr "SMTP用户名"
+
+#: app/templates/auth/settings.html:1621
+msgid "SMTP Password"
+msgstr "SMTP密码"
+
+#: app/templates/auth/settings.html:1648
 msgid "Use TLS"
 msgstr "使用TLS"
 
-#: app/templates/auth/settings.html:1596
+#: app/templates/auth/settings.html:1654
 msgid "Use SSL"
 msgstr "使用SSL"
 
-#: app/templates/auth/settings.html:1624
+#: app/templates/auth/settings.html:1682
 msgid "sends push notifications to iOS and Android devices."
 msgstr "向iOS和Android设备发送推送通知。"
 
-#: app/templates/auth/settings.html:1627
+#: app/templates/auth/settings.html:1685
 msgid "Application Token"
 msgstr "应用令牌"
 
-#: app/templates/auth/settings.html:1632
+#: app/templates/auth/settings.html:1690
 msgid "Create an application at pushover.net to get your token"
 msgstr "在pushover.net创建应用以获取令牌"
 
-#: app/templates/auth/settings.html:1642
+#: app/templates/auth/settings.html:1700
 msgid "ntfy"
 msgstr "ntfy"
 
-#: app/templates/auth/settings.html:1643 app/templates/auth/settings.html:1658
+#: app/templates/auth/settings.html:1701 app/templates/auth/settings.html:1716
 msgid "Always available"
 msgstr "始终可用"
 
-#: app/templates/auth/settings.html:1647
+#: app/templates/auth/settings.html:1705
 msgid ""
 "is a free, open-source notification service that requires no admin "
 "configuration. Users can set their own topic."
 msgstr "是一个免费的开源通知服务，无需管理员配置。用户可以设置自己的主题。"
 
-#: app/templates/auth/settings.html:1657
+#: app/templates/auth/settings.html:1715
 msgid "Webhook"
 msgstr "Webhook"
 
-#: app/templates/auth/settings.html:1661
+#: app/templates/auth/settings.html:1719
 msgid ""
 "Webhooks allow users to integrate with any service that accepts HTTP POST "
 "requests (Home Assistant, Discord, Slack, etc.)"
 msgstr "Webhook允许用户与任何接受HTTP POST请求的服务集成（Home Assistant、Discord、Slack等）"
 
-#: app/templates/auth/settings.html:1668
+#: app/templates/auth/settings.html:1726
 msgid "Save Notification Settings"
 msgstr "保存通知设置"
 
-#: app/templates/auth/settings.html:1679
+#: app/templates/auth/settings.html:1737
 msgid "Manage Reminders"
 msgstr "管理提醒"
 
-#: app/templates/auth/settings.html:1680
+#: app/templates/auth/settings.html:1738
 msgid "View and manage your upcoming reminders"
 msgstr "查看和管理即将到来的提醒"
 
-#: app/templates/auth/settings.html:1685
+#: app/templates/auth/settings.html:1743
 msgid "View all reminders"
 msgstr "查看所有提醒"
 
-#: app/templates/auth/settings.html:1702
+#: app/templates/auth/settings.html:1760
 msgid "Application Branding"
 msgstr "应用品牌"
 
-#: app/templates/auth/settings.html:1703
+#: app/templates/auth/settings.html:1761
 msgid "Customize how May appears to all users"
 msgstr "自定义May对所有用户的外观"
 
-#: app/templates/auth/settings.html:1709
+#: app/templates/auth/settings.html:1767
 msgid "Application Name"
 msgstr "应用名称"
 
-#: app/templates/auth/settings.html:1717
+#: app/templates/auth/settings.html:1775
 msgid "Tagline"
 msgstr "标语"
 
-#: app/templates/auth/settings.html:1725
+#: app/templates/auth/settings.html:1783
 msgid "Primary Color"
 msgstr "主色调"
 
-#: app/templates/auth/settings.html:1737
+#: app/templates/auth/settings.html:1795
 msgid "Logo"
 msgstr "Logo"
 
-#: app/templates/auth/settings.html:1741 app/templates/auth/settings.html:1742
+#: app/templates/auth/settings.html:1799 app/templates/auth/settings.html:1800
 msgid "Current logo"
 msgstr "当前Logo"
 
-#: app/templates/auth/settings.html:1754
+#: app/templates/auth/settings.html:1812
 msgid "Remove Logo"
 msgstr "移除Logo"
 
-#: app/templates/auth/settings.html:1759
+#: app/templates/auth/settings.html:1817
 msgid "Are you sure you want to remove the logo?"
 msgstr "您确定要移除Logo吗？"
 
-#: app/templates/auth/settings.html:1782
+#: app/templates/auth/settings.html:1840
 msgid "Save Branding"
 msgstr "保存品牌设置"
 
-#: app/templates/auth/settings.html:1795
+#: app/templates/auth/settings.html:1853
 msgid "Version information and updates"
 msgstr "版本信息和更新"
 
-#: app/templates/auth/settings.html:1802
+#: app/templates/auth/settings.html:1860
 msgid "Current Version"
 msgstr "当前版本"
 
-#: app/templates/auth/settings.html:1825
+#: app/templates/auth/settings.html:1883
 msgid "Check for Updates"
 msgstr "检查更新"
 
-#: app/templates/auth/settings.html:1826
+#: app/templates/auth/settings.html:1884
 msgid "Click to check for newer versions"
 msgstr "点击检查新版本"
 
-#: app/templates/auth/settings.html:1833
+#: app/templates/auth/settings.html:1891
 msgid "Check Now"
 msgstr "立即检查"
 
-#: app/templates/auth/settings.html:1844
+#: app/templates/auth/settings.html:1902
 msgid "Update Available"
 msgstr "有可用更新"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "Version"
 msgstr "版本"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "is available"
 msgstr "可用"
 
-#: app/templates/auth/settings.html:1850
+#: app/templates/auth/settings.html:1908
 msgid "View Release Notes"
 msgstr "查看发布说明"
 
-#: app/templates/auth/settings.html:1857
+#: app/templates/auth/settings.html:1915
 msgid "To update (Docker):"
 msgstr "更新方法（Docker）："
 
-#: app/templates/auth/settings.html:1860
+#: app/templates/auth/settings.html:1918
 msgid "Or use Watchtower for automatic updates."
 msgstr "或使用Watchtower进行自动更新。"
 
-#: app/templates/auth/settings.html:1872
+#: app/templates/auth/settings.html:1930
 msgid "You are running the latest version"
 msgstr "您正在运行最新版本"
 
-#: app/templates/auth/settings.html:1879
+#: app/templates/auth/settings.html:1937
 msgid "Resources"
 msgstr "资源"
 
-#: app/templates/auth/settings.html:1886
+#: app/templates/auth/settings.html:1944
 msgid "Source Code"
 msgstr "源代码"
 
-#: app/templates/auth/settings.html:1893
+#: app/templates/auth/settings.html:1951
 msgid "Report an Issue"
 msgstr "报告问题"
 
-#: app/templates/auth/settings.html:1900
+#: app/templates/auth/settings.html:1958
 msgid "All Releases"
 msgstr "所有版本"
 
-#: app/templates/auth/settings.html:1907
+#: app/templates/auth/settings.html:1965
 msgid "Documentation"
 msgstr "文档"
 
-#: app/templates/auth/settings.html:2316
+#: app/templates/auth/settings.html:2216
+msgid "Sending..."
+msgstr "正在发送…"
+
+#: app/templates/auth/settings.html:2230
+#, python-format
+msgid "Test email sent to %(email)s"
+msgstr "测试邮件已发送至 %(email)s"
+
+#: app/templates/auth/settings.html:2233 app/templates/auth/settings.html:2238
+msgid "Failed to send email"
+msgstr "邮件发送失败"
+
+#: app/templates/auth/settings.html:2413
 msgid "Checking..."
 msgstr "检查中..."
 
-#: app/templates/auth/settings.html:2335
+#: app/templates/auth/settings.html:2432
 msgid "A newer version is available"
 msgstr "有新版本可用"
 
-#: app/templates/auth/settings.html:2340
+#: app/templates/auth/settings.html:2437
 msgid "Last checked just now"
 msgstr "刚刚检查过"
 
-#: app/templates/auth/settings.html:2344
+#: app/templates/auth/settings.html:2441
 msgid "Could not check for updates"
 msgstr "无法检查更新"
 
-#: app/templates/auth/settings.html:2349
+#: app/templates/auth/settings.html:2446
 msgid "Error checking for updates"
 msgstr "检查更新时出错"
 

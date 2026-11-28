@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 10:50+0000\n"
+"POT-Creation-Date: 2026-11-28 11:18+0000\n"
 "PO-Revision-Date: 2026-08-12 17:06+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -663,20 +663,28 @@ msgstr "A kilométerkeret sikeresen frissítve"
 msgid "Mileage allowance deleted successfully"
 msgstr "A kilométerkeret sikeresen törölve"
 
-#: app/routes/api.py:2714 app/routes/api.py:2928 app/routes/api.py:3104
+#: app/routes/api.py:264
+msgid "Enter a Resend API key."
+msgstr "Add meg a Resend API-kulcsot."
+
+#: app/routes/api.py:266
+msgid "Enter a sender email address on a domain verified in Resend."
+msgstr "Adj meg egy feladócímet a Resendben ellenőrzött domainről."
+
+#: app/routes/api.py:2750 app/routes/api.py:2964 app/routes/api.py:3140
 msgid "No file uploaded"
 msgstr "Nem töltöttél fel fájlt"
 
-#: app/routes/api.py:2719 app/routes/api.py:2933 app/routes/api.py:3109
+#: app/routes/api.py:2755 app/routes/api.py:2969 app/routes/api.py:3145
 #: app/routes/documents.py:67 app/routes/documents.py:72
 msgid "No file selected"
 msgstr "Nem választottál ki fájlt"
 
-#: app/routes/api.py:2741
+#: app/routes/api.py:2777
 msgid "The uploaded file is not a valid SQLite database."
 msgstr "A feltöltött fájl nem tűnik egy érvényes SQLite adatbázisfájlnak."
 
-#: app/routes/api.py:2746
+#: app/routes/api.py:2782
 msgid ""
 "This does not appear to be a Hammond database — no vehicles, fillups, or "
 "expenses tables found."
@@ -684,7 +692,7 @@ msgstr ""
 "Ez nem tűnik Hammond-adatbázisnak – nem találhatók benne jármű-, tankolási "
 "vagy kiadási táblák."
 
-#: app/routes/api.py:2896
+#: app/routes/api.py:2932
 #, python-format
 msgid ""
 "Hammond import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs, "
@@ -693,7 +701,7 @@ msgstr ""
 "A Hammond-importálás befejeződött: %(vehicles)s jármű, %(fuel_logs)s "
 "tankolási bejegyzés és %(expenses)s kiadás importálva."
 
-#: app/routes/api.py:2898
+#: app/routes/api.py:2934
 #, python-format
 msgid ""
 "(%(total_skipped)s records skipped due to errors — check server logs for "
@@ -702,7 +710,7 @@ msgstr ""
 "(%(total_skipped)s rekordot hiba miatt kihagytam – a részletekért ellenőrizd"
 " a szervernaplókat.)"
 
-#: app/routes/api.py:2905
+#: app/routes/api.py:2941
 #, python-format
 msgid ""
 "Import failed due to a database error. Check that the file is a valid "
@@ -711,13 +719,13 @@ msgstr ""
 "Adatbázis hiba miatt az importálás nem lehetséges! Ellenőrizd, hogy a fájl "
 "valóban Hammond adatbázis fájl-e! Hiba: %(error)s"
 
-#: app/routes/api.py:2910 app/routes/api.py:3055 app/routes/api.py:3228
-#: app/routes/api.py:3800
+#: app/routes/api.py:2946 app/routes/api.py:3091 app/routes/api.py:3264
+#: app/routes/api.py:3836
 #, python-format
 msgid "Import failed: %(error)s"
 msgstr "Importálás sikertelen: %(error)s"
 
-#: app/routes/api.py:3051
+#: app/routes/api.py:3087
 #, python-format
 msgid ""
 "Clarkson import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs"
@@ -725,7 +733,7 @@ msgstr ""
 "Clarkson-importálás befejeződött: %(vehicles)s jármű, %(fuel_logs)s "
 "tankolási bejegyzés"
 
-#: app/routes/api.py:3224
+#: app/routes/api.py:3260
 #, python-format
 msgid ""
 "Fuelly import complete: %(vehicles)s new vehicles, %(fuel_logs)s fuel logs"
@@ -733,63 +741,63 @@ msgstr ""
 "Fuelly-importálás befejeződött: %(vehicles)s új jármű, %(fuel_logs)s "
 "tankolási bejegyzés"
 
-#: app/routes/api.py:3636
+#: app/routes/api.py:3672
 msgid "Please add a vehicle before importing data."
 msgstr "Kérlek vegyél fel egy járművet importálás előtt!"
 
-#: app/routes/api.py:3649
+#: app/routes/api.py:3685
 msgid "Invalid data type selected."
 msgstr "Érvénytelen adat típust választottál."
 
-#: app/routes/api.py:3654 app/routes/api.py:3739
+#: app/routes/api.py:3690 app/routes/api.py:3775
 msgid "Vehicle not found."
 msgstr "Jármű nem található."
 
-#: app/routes/api.py:3658
+#: app/routes/api.py:3694
 msgid "No CSV file uploaded."
 msgstr "Nem töltöttél fel CSV fájlt."
 
-#: app/routes/api.py:3677
+#: app/routes/api.py:3713
 msgid "CSV file has no column headers."
 msgstr "A CSV fájlban nincs fejléc oszlop."
 
-#: app/routes/api.py:3719
+#: app/routes/api.py:3755
 #, python-format
 msgid "Failed to parse CSV file: %(error)s"
 msgstr "CSV értelmezése sikertelen: %(error)s"
 
-#: app/routes/api.py:3734
+#: app/routes/api.py:3770
 msgid "Invalid data type."
 msgstr "Érvénytelen adat típus."
 
-#: app/routes/api.py:3743
+#: app/routes/api.py:3779
 msgid "CSV file expired. Please upload again."
 msgstr "A CSV fájl lejárt. Kérlek töltsd fel újra."
 
-#: app/routes/api.py:3785
+#: app/routes/api.py:3821
 #, python-format
 msgid "CSV import complete: %(count)s %(label)s imported."
 msgstr "CSV importálás kész. %(count)s %(label)s importálva."
 
-#: app/routes/api.py:3788
+#: app/routes/api.py:3824
 #, python-format
 msgid "%(count)s duplicate(s) skipped."
 msgstr "%(count)s ismétlődés kihagyva."
 
-#: app/routes/api.py:3835
+#: app/routes/api.py:3871
 msgid "No backup file uploaded."
 msgstr "Nem lett biztonsági mentés feltöltve."
 
-#: app/routes/api.py:3858
+#: app/routes/api.py:3894
 #, python-format
 msgid "Could not read that backup: %(error)s"
 msgstr "A biztonsági mentés nem olvasható: %(error)s"
 
-#: app/routes/api.py:3877
+#: app/routes/api.py:3913
 msgid "The uploaded backup has expired. Please upload it again."
 msgstr "A feltöltött biztonsági mentés lejárt. Töltsd fel újra."
 
-#: app/routes/api.py:3890
+#: app/routes/api.py:3926
 #, python-format
 msgid ""
 "Backup restored: %(added)s records added, %(skipped)s already present and "
@@ -798,139 +806,143 @@ msgstr ""
 "Visszaállítás kész: %(added)s rekord hozzáadva, %(skipped)s már létezett, "
 "ezért változatlan maradt."
 
-#: app/routes/api.py:3898
+#: app/routes/api.py:3934
 #, python-format
 msgid "Restore failed: %(error)s"
 msgstr "A visszaállítás sikertelen: %(error)s"
 
-#: app/routes/auth.py:39
+#: app/routes/auth.py:40
 msgid "Invalid username or password"
 msgstr "Hibás felhasználónév vagy jelszó"
 
-#: app/routes/auth.py:62
+#: app/routes/auth.py:55
 msgid ""
 "Password reset by email is not available. Please contact an administrator."
 msgstr ""
 "Az e-mailes jelszó-visszaállítás nem érhető el. Kérlek, lépj kapcsolatba egy"
 " rendszergazdával!"
 
-#: app/routes/auth.py:91
+#: app/routes/auth.py:84
 msgid ""
 "If an account with that email exists, a password reset link has been sent."
 msgstr ""
 "Ha létezik fiók ezzel az e-mail-címmel, akkor elküldtük a beállításhoz "
 "szükséges hivatkozást."
 
-#: app/routes/auth.py:104
+#: app/routes/auth.py:97
 msgid "Invalid or expired reset link. Please request a new one."
 msgstr "Érvénytelen vagy lejárt visszaállítási link. Kérlek, kérj újat!"
 
-#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:256
-#: app/routes/auth.py:589 app/routes/auth.py:636
+#: app/routes/auth.py:105 app/routes/auth.py:163 app/routes/auth.py:249
+#: app/routes/auth.py:604 app/routes/auth.py:651
 msgid "Passwords do not match"
 msgstr "A jelszó nem egyeznek"
 
-#: app/routes/auth.py:124
+#: app/routes/auth.py:117
 msgid "Your password has been reset. Please log in."
 msgstr "Jelszavad beállítva. Kérlek lépj be!"
 
-#: app/routes/auth.py:160
+#: app/routes/auth.py:153
 msgid "New account registration is currently disabled."
 msgstr "A regisztráció jelenleg nincs engedélyezve."
 
-#: app/routes/auth.py:180 app/routes/auth.py:647
+#: app/routes/auth.py:173 app/routes/auth.py:662
 msgid "Username already exists"
 msgstr "A felhasználónév már foglalt"
 
-#: app/routes/auth.py:184
+#: app/routes/auth.py:177
 msgid "Email already registered"
 msgstr "E-mail cím már foglalt"
 
-#: app/routes/auth.py:192
+#: app/routes/auth.py:185
 msgid "Registration successful! Please log in."
 msgstr "Sikeres regisztráció. Kérlek lépj be!"
 
-#: app/routes/auth.py:202
+#: app/routes/auth.py:195
 msgid "You have been logged out."
 msgstr "Sikeresen kijelentkeztél."
 
-#: app/routes/auth.py:247 app/routes/auth.py:580
+#: app/routes/auth.py:240 app/routes/auth.py:595
 msgid "Email already in use by another account"
 msgstr "Az e-mail címet már valaki más használja."
 
-#: app/routes/auth.py:266
+#: app/routes/auth.py:259
 msgid "Settings updated successfully"
 msgstr "Beállítások frissítve"
 
-#: app/routes/auth.py:356
+#: app/routes/auth.py:350
 #, python-format
 msgid "Invalid webhook URL: %(error)s"
 msgstr "Hibás webhook URL: %(error)s"
 
-#: app/routes/auth.py:371
+#: app/routes/auth.py:365
 msgid "Notification preferences updated"
 msgstr "Értesítési beállítások frissítve"
 
-#: app/routes/auth.py:397
+#: app/routes/auth.py:391
 msgid "Menu preferences updated"
 msgstr "Menü beállítások frissítve"
 
-#: app/routes/auth.py:422
+#: app/routes/auth.py:423
+msgid "Enter a valid sender email address for Resend."
+msgstr "Adj meg érvényes feladó e-mail-címet a Resendhez."
+
+#: app/routes/auth.py:437
 msgid "Notification settings updated"
 msgstr "Értesítési beállítások frissítve"
 
-#: app/routes/auth.py:451
+#: app/routes/auth.py:466
 msgid "Branding settings updated successfully"
 msgstr "Testreszabási beállítások frissítve"
 
-#: app/routes/auth.py:467
+#: app/routes/auth.py:482
 msgid "Logo removed successfully"
 msgstr "Lógó eltávolítva"
 
-#: app/routes/auth.py:480
+#: app/routes/auth.py:495
 msgid "DVLA settings updated"
 msgstr "DVLA beállítások frissítve"
 
-#: app/routes/auth.py:495
+#: app/routes/auth.py:510
 msgid "UK fuel price settings updated"
 msgstr "Az egyesült királyságbeli üzemanyagár-beállítások frissítve"
 
-#: app/routes/auth.py:508
+#: app/routes/auth.py:523
 msgid "Tessie settings updated"
 msgstr "Tessie beállítások frissítve"
 
-#: app/routes/auth.py:521
+#: app/routes/auth.py:536
 msgid "Registration settings updated"
 msgstr "Regisztrációs beállítások frissítve"
 
-#: app/routes/auth.py:545
+#: app/routes/auth.py:560
 msgid "Cannot remove admin status from the last administrator."
 msgstr "Adminisztrátori státusz nem vonható meg az utolsó adminisztrátortól!"
 
-#: app/routes/auth.py:550
+#: app/routes/auth.py:565
 #, python-format
 msgid "Admin status updated for %(username)s"
 msgstr "%(username)s adminisztrátori státusza frissítve"
 
-#: app/routes/auth.py:563
+#: app/routes/auth.py:578
 #, python-format
 msgid "User %(username)s deleted"
 msgstr "%(username)s felhasználó törölve"
 
-#: app/routes/auth.py:608
+#: app/routes/auth.py:623
 #, python-format
 msgid "User %(username)s updated successfully"
 msgstr "%(username)s felhasználó frissítve"
 
-#: app/routes/auth.py:631
+#: app/routes/auth.py:646
 msgid "Username, email, and password are required"
 msgstr "Felhasználónév, e-mail cím és jelszó kötelező"
 
-#: app/routes/auth.py:652
+#: app/routes/auth.py:667
 msgid "Email already in use"
 msgstr "E-mail cím már foglalt"
 
-#: app/routes/auth.py:661
+#: app/routes/auth.py:676
 #, python-format
 msgid "User %(username)s created successfully"
 msgstr "%(username)s felhasználó létrehozva"
@@ -1982,7 +1994,7 @@ msgstr "Értesítések"
 msgid "Branding"
 msgstr "Arculat"
 
-#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1794
+#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1852
 msgid "About"
 msgstr "Névjegy"
 
@@ -2704,7 +2716,7 @@ msgid "DVLA API Key"
 msgstr "DVLA API kulcs"
 
 #: app/templates/auth/settings.html:1170 app/templates/auth/settings.html:1250
-#: app/templates/auth/settings.html:1600
+#: app/templates/auth/settings.html:1658
 msgid "Test"
 msgstr "Teszt"
 
@@ -2908,7 +2920,7 @@ msgstr "nincs beállítva"
 msgid "ntfy (Push Notifications)"
 msgstr "ntfy (Push értesítés)"
 
-#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1613
+#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1671
 msgid "Pushover"
 msgstr "Pushover"
 
@@ -2921,10 +2933,9 @@ msgid "Notifications will be sent to"
 msgstr "Az értesítések ide lesznek elküldve"
 
 #: app/templates/auth/settings.html:1416
-msgid "Email not configured. Ask an administrator to configure SMTP settings."
+msgid "Email is not set up yet. Ask an administrator to set it up."
 msgstr ""
-"Az e-mail nincs beállítva. Kérd meg a rendszergazdát az SMTP-beállítások "
-"konfigurálására."
+"Az e-mail még nincs beállítva. Kérd meg a rendszergazdát, hogy állítsa be."
 
 #: app/templates/auth/settings.html:1425
 msgid "is a simple pub-sub notification service. Enter your topic below."
@@ -3003,63 +3014,107 @@ msgid "Configure notification services available to all users"
 msgstr ""
 "Állítsd be a minden felhasználó számára elérhető értesítési szolgáltatásokat"
 
-#: app/templates/auth/settings.html:1530
-msgid "Email (SMTP)"
-msgstr "E-mail (SMTP)"
+#: app/templates/auth/settings.html:1526
+msgid "Email provider"
+msgstr "E-mail-szolgáltató"
 
-#: app/templates/auth/settings.html:1542
-msgid "SMTP Host"
-msgstr "SMTP szerver"
+#: app/templates/auth/settings.html:1527
+msgid ""
+"Reminder emails, password resets and test emails are sent with the provider "
+"chosen here."
+msgstr ""
+"Az emlékeztetők, a jelszó-visszaállítások és a teszt e-mailek az itt "
+"választott szolgáltatón keresztül mennek ki."
+
+#: app/templates/auth/settings.html:1529
+msgid "SMTP server"
+msgstr "SMTP-kiszolgáló"
+
+#: app/templates/auth/settings.html:1546
+msgid "Email (Resend)"
+msgstr "E-mail (Resend)"
 
 #: app/templates/auth/settings.html:1549
-msgid "SMTP Port"
-msgstr "SMTP port"
+msgid ""
+"Create an API key with sending access in your Resend dashboard, and send "
+"from an address on a domain you have verified there."
+msgstr ""
+"Hozz létre küldési jogosultságú API-kulcsot a Resend irányítópultján, és "
+"olyan címről küldj, amelynek domainjét ott ellenőrizted."
+
+#: app/templates/auth/settings.html:1550
+msgid "Resend documentation"
+msgstr "Resend-dokumentáció"
+
+#: app/templates/auth/settings.html:1554
+msgid "API key"
+msgstr "API-kulcs"
 
 #: app/templates/auth/settings.html:1556
-msgid "SMTP Username"
-msgstr "SMTP felhasználónév"
+msgid "Saved. Leave blank to keep it."
+msgstr "Mentve. Hagyd üresen a megtartásához."
 
-#: app/templates/auth/settings.html:1563
-msgid "SMTP Password"
-msgstr "SMTP jelszó"
-
-#: app/templates/auth/settings.html:1570
+#: app/templates/auth/settings.html:1560 app/templates/auth/settings.html:1628
 msgid "Sender Email"
 msgstr "Feladó e-mail címe"
 
-#: app/templates/auth/settings.html:1577
+#: app/templates/auth/settings.html:1566 app/templates/auth/settings.html:1635
 msgid "Sender Name"
 msgstr "Feladó neve"
 
-#: app/templates/auth/settings.html:1590
+#: app/templates/auth/settings.html:1575
+msgid "Send test email"
+msgstr "Teszt e-mail küldése"
+
+#: app/templates/auth/settings.html:1588
+msgid "Email (SMTP)"
+msgstr "E-mail (SMTP)"
+
+#: app/templates/auth/settings.html:1600
+msgid "SMTP Host"
+msgstr "SMTP szerver"
+
+#: app/templates/auth/settings.html:1607
+msgid "SMTP Port"
+msgstr "SMTP port"
+
+#: app/templates/auth/settings.html:1614
+msgid "SMTP Username"
+msgstr "SMTP felhasználónév"
+
+#: app/templates/auth/settings.html:1621
+msgid "SMTP Password"
+msgstr "SMTP jelszó"
+
+#: app/templates/auth/settings.html:1648
 msgid "Use TLS"
 msgstr "TLS használata"
 
-#: app/templates/auth/settings.html:1596
+#: app/templates/auth/settings.html:1654
 msgid "Use SSL"
 msgstr "SSL használata"
 
-#: app/templates/auth/settings.html:1624
+#: app/templates/auth/settings.html:1682
 msgid "sends push notifications to iOS and Android devices."
 msgstr "push-értesítéseket küld iOS- és Android eszközökre."
 
-#: app/templates/auth/settings.html:1627
+#: app/templates/auth/settings.html:1685
 msgid "Application Token"
 msgstr "Application Token"
 
-#: app/templates/auth/settings.html:1632
+#: app/templates/auth/settings.html:1690
 msgid "Create an application at pushover.net to get your token"
 msgstr "Hozz létre egy alkalmazást a pushover.net oldalon a token lekéréséhez"
 
-#: app/templates/auth/settings.html:1642
+#: app/templates/auth/settings.html:1700
 msgid "ntfy"
 msgstr "ntfy"
 
-#: app/templates/auth/settings.html:1643 app/templates/auth/settings.html:1658
+#: app/templates/auth/settings.html:1701 app/templates/auth/settings.html:1716
 msgid "Always available"
 msgstr "Mindig elérhető"
 
-#: app/templates/auth/settings.html:1647
+#: app/templates/auth/settings.html:1705
 msgid ""
 "is a free, open-source notification service that requires no admin "
 "configuration. Users can set their own topic."
@@ -3067,11 +3122,11 @@ msgstr ""
 "egy ingyenes, nyílt forráskódú értesítési szolgáltatás, amely nem igényel "
 "rendszergazdai konfigurációt. A felhasználók saját topic-ot állíthatnak be."
 
-#: app/templates/auth/settings.html:1657
+#: app/templates/auth/settings.html:1715
 msgid "Webhook"
 msgstr "Webhook"
 
-#: app/templates/auth/settings.html:1661
+#: app/templates/auth/settings.html:1719
 msgid ""
 "Webhooks allow users to integrate with any service that accepts HTTP POST "
 "requests (Home Assistant, Discord, Slack, etc.)"
@@ -3080,147 +3135,160 @@ msgstr ""
 "kéréseket fogadó szolgáltatással integrálják az alkalmazást (például Home "
 "Assistant, Discord, Slack stb.)."
 
-#: app/templates/auth/settings.html:1668
+#: app/templates/auth/settings.html:1726
 msgid "Save Notification Settings"
 msgstr "Értesítési beállítások mentése"
 
-#: app/templates/auth/settings.html:1679
+#: app/templates/auth/settings.html:1737
 msgid "Manage Reminders"
 msgstr "Emlékeztetők kezelése"
 
-#: app/templates/auth/settings.html:1680
+#: app/templates/auth/settings.html:1738
 msgid "View and manage your upcoming reminders"
 msgstr "Megtekintése és kezelése a közelgő emlékeztetőidnek."
 
-#: app/templates/auth/settings.html:1685
+#: app/templates/auth/settings.html:1743
 msgid "View all reminders"
 msgstr "Összes emlékeztető megtekintése"
 
-#: app/templates/auth/settings.html:1702
+#: app/templates/auth/settings.html:1760
 msgid "Application Branding"
 msgstr "Alkalmazás arculat"
 
-#: app/templates/auth/settings.html:1703
+#: app/templates/auth/settings.html:1761
 msgid "Customize how May appears to all users"
 msgstr "Állítsd be hogyan nézzen ki a May a felhasználók számára"
 
-#: app/templates/auth/settings.html:1709
+#: app/templates/auth/settings.html:1767
 msgid "Application Name"
 msgstr "Alkalmazás neve"
 
-#: app/templates/auth/settings.html:1717
+#: app/templates/auth/settings.html:1775
 msgid "Tagline"
 msgstr "Szlogen"
 
-#: app/templates/auth/settings.html:1725
+#: app/templates/auth/settings.html:1783
 msgid "Primary Color"
 msgstr "Elsődleges szín"
 
-#: app/templates/auth/settings.html:1737
+#: app/templates/auth/settings.html:1795
 msgid "Logo"
 msgstr "Lógó"
 
-#: app/templates/auth/settings.html:1741 app/templates/auth/settings.html:1742
+#: app/templates/auth/settings.html:1799 app/templates/auth/settings.html:1800
 msgid "Current logo"
 msgstr "Jelenlegi lógó"
 
-#: app/templates/auth/settings.html:1754
+#: app/templates/auth/settings.html:1812
 msgid "Remove Logo"
 msgstr "Lógó törlése"
 
-#: app/templates/auth/settings.html:1759
+#: app/templates/auth/settings.html:1817
 msgid "Are you sure you want to remove the logo?"
 msgstr "Biztos, hogy törölni akarod a lógót?"
 
-#: app/templates/auth/settings.html:1782
+#: app/templates/auth/settings.html:1840
 msgid "Save Branding"
 msgstr "Arculat mentése"
 
-#: app/templates/auth/settings.html:1795
+#: app/templates/auth/settings.html:1853
 msgid "Version information and updates"
 msgstr "Verzió és frissítések"
 
-#: app/templates/auth/settings.html:1802
+#: app/templates/auth/settings.html:1860
 msgid "Current Version"
 msgstr "Jelenlegi verzió"
 
-#: app/templates/auth/settings.html:1825
+#: app/templates/auth/settings.html:1883
 msgid "Check for Updates"
 msgstr "Frissítések keresése"
 
-#: app/templates/auth/settings.html:1826
+#: app/templates/auth/settings.html:1884
 msgid "Click to check for newer versions"
 msgstr "Kattints ide frissítés kereséséhez"
 
-#: app/templates/auth/settings.html:1833
+#: app/templates/auth/settings.html:1891
 msgid "Check Now"
 msgstr "Ellenőrzés"
 
-#: app/templates/auth/settings.html:1844
+#: app/templates/auth/settings.html:1902
 msgid "Update Available"
 msgstr "Frissítés elérhető"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "Version"
 msgstr "Verzió"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "is available"
 msgstr "elérhető"
 
-#: app/templates/auth/settings.html:1850
+#: app/templates/auth/settings.html:1908
 msgid "View Release Notes"
 msgstr "Release Notes megtekintése"
 
-#: app/templates/auth/settings.html:1857
+#: app/templates/auth/settings.html:1915
 msgid "To update (Docker):"
 msgstr "Frissítés (Docker):"
 
-#: app/templates/auth/settings.html:1860
+#: app/templates/auth/settings.html:1918
 msgid "Or use Watchtower for automatic updates."
 msgstr "Vagy használj Watchtower-t az automatikus frissítéshez"
 
-#: app/templates/auth/settings.html:1872
+#: app/templates/auth/settings.html:1930
 msgid "You are running the latest version"
 msgstr "Jelenleg a legfrissebb verzióval rendelkezel"
 
-#: app/templates/auth/settings.html:1879
+#: app/templates/auth/settings.html:1937
 msgid "Resources"
 msgstr "Erőforrások"
 
-#: app/templates/auth/settings.html:1886
+#: app/templates/auth/settings.html:1944
 msgid "Source Code"
 msgstr "Forráskód"
 
-#: app/templates/auth/settings.html:1893
+#: app/templates/auth/settings.html:1951
 msgid "Report an Issue"
 msgstr "Hiba jelentése"
 
-#: app/templates/auth/settings.html:1900
+#: app/templates/auth/settings.html:1958
 msgid "All Releases"
 msgstr "Összes verzió"
 
-#: app/templates/auth/settings.html:1907
+#: app/templates/auth/settings.html:1965
 msgid "Documentation"
 msgstr "Dokumentáció"
 
-#: app/templates/auth/settings.html:2316
+#: app/templates/auth/settings.html:2216
+msgid "Sending..."
+msgstr "Küldés…"
+
+#: app/templates/auth/settings.html:2230
+#, python-format
+msgid "Test email sent to %(email)s"
+msgstr "Teszt e-mail elküldve ide: %(email)s"
+
+#: app/templates/auth/settings.html:2233 app/templates/auth/settings.html:2238
+msgid "Failed to send email"
+msgstr "Az e-mail küldése sikertelen"
+
+#: app/templates/auth/settings.html:2413
 msgid "Checking..."
 msgstr "Ellenőrzés…"
 
-#: app/templates/auth/settings.html:2335
+#: app/templates/auth/settings.html:2432
 msgid "A newer version is available"
 msgstr "Újabb verzió elérhető"
 
-#: app/templates/auth/settings.html:2340
+#: app/templates/auth/settings.html:2437
 msgid "Last checked just now"
 msgstr "Éppen most ellenőriztem utoljára"
 
-#: app/templates/auth/settings.html:2344
+#: app/templates/auth/settings.html:2441
 msgid "Could not check for updates"
 msgstr "Jelenleg nem ellenőrizhető van-e frissítés"
 
-#: app/templates/auth/settings.html:2349
+#: app/templates/auth/settings.html:2446
 msgid "Error checking for updates"
 msgstr "Hiba a frissítés keresése közben"
 

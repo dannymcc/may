@@ -10,8 +10,95 @@ from app.security import validate_webhook_url
 from app.utils import utcnow
 
 
+#: How outgoing email is delivered. Chosen by an administrator; SMTP remains
+#: the default so existing installations behave exactly as before.
+EMAIL_PROVIDERS = ('smtp', 'resend')
+
+RESEND_API_URL = 'https://api.resend.com/emails'
+
+
 class NotificationService:
     """Service for sending notifications through various channels."""
+
+    @staticmethod
+    def email_provider():
+        """The configured email provider: 'smtp' (default) or 'resend'."""
+        provider = AppSettings.get('email_provider', 'smtp')
+        return provider if provider in EMAIL_PROVIDERS else 'smtp'
+
+    @staticmethod
+    def get_resend_config():
+        """Get Resend configuration from app settings."""
+        return {
+            'api_key': AppSettings.get('resend_api_key'),
+            'sender': AppSettings.get('resend_sender'),
+            'sender_name': AppSettings.get('resend_sender_name') or 'May',
+        }
+
+    @staticmethod
+    def email_configured():
+        """Whether email can be sent with the selected provider.
+
+        Drives the email notification option, password reset by email and
+        the "not configured" hints, whichever provider is in use.
+        """
+        if NotificationService.email_provider() == 'resend':
+            config = NotificationService.get_resend_config()
+            return bool(config['api_key'] and config['sender'])
+        return bool(
+            AppSettings.get('smtp_enabled', 'true') == 'true' and
+            AppSettings.get('smtp_host') and
+            AppSettings.get('smtp_username')
+        )
+
+    @staticmethod
+    def send_resend(to_email, subject, body, html_body=None, config=None):
+        """Send an email through the Resend API (https://resend.com).
+
+        ``config`` lets the admin test unsaved settings; otherwise the saved
+        configuration is used. Returns ``(success, error)`` like every other
+        sender here.
+        """
+        config = config or NotificationService.get_resend_config()
+        if not config.get('api_key') or not config.get('sender'):
+            return False, "Resend not configured"
+
+        sender_name = (config.get('sender_name') or 'May').replace('<', '').replace('>', '').strip()
+        payload = {
+            'from': f"{sender_name} <{config['sender']}>",
+            'to': [to_email],
+            'subject': subject,
+            'text': body,
+        }
+        if html_body:
+            payload['html'] = html_body
+
+        req = Request(
+            RESEND_API_URL,
+            data=json.dumps(payload).encode('utf-8'),
+            headers={
+                'Authorization': f"Bearer {config['api_key']}",
+                'Content-Type': 'application/json',
+                'User-Agent': 'May-Vehicle-Manager/1.0',
+            },
+            method='POST',
+        )
+        try:
+            with urlopen(req, timeout=10):
+                return True, None
+        except HTTPError as e:
+            # Resend explains failures in a JSON body, e.g. an unverified
+            # sending domain or an invalid API key; pass that on.
+            detail = None
+            try:
+                detail = json.loads(e.read().decode('utf-8')).get('message')
+            except Exception:
+                pass
+            return False, f"Resend HTTP {e.code}: {detail or e.reason}"
+        except URLError as e:
+            return False, f"URL Error: {e.reason}"
+        except Exception as e:
+            return False, str(e)
 
     @staticmethod
     def get_smtp_config():
@@ -29,7 +116,10 @@ class NotificationService:
 
     @staticmethod
     def send_email(to_email, subject, body, html_body=None):
-        """Send an email using configured SMTP settings."""
+        """Send an email with the configured provider (SMTP or Resend)."""
+        if NotificationService.email_provider() == 'resend':
+            return NotificationService.send_resend(to_email, subject, body, html_body)
+
         config = NotificationService.get_smtp_config()
 
         if not config['host'] or not config['username']:

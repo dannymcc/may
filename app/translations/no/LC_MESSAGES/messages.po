@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 10:50+0000\n"
+"POT-Creation-Date: 2026-11-28 11:18+0000\n"
 "PO-Revision-Date: 2026-02-17 20:56+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: no <LL@li.org>\n"
@@ -661,20 +661,28 @@ msgstr "Kjøregodtgjørelse oppdatert"
 msgid "Mileage allowance deleted successfully"
 msgstr "Kjøregodtgjørelse slettet"
 
-#: app/routes/api.py:2714 app/routes/api.py:2928 app/routes/api.py:3104
+#: app/routes/api.py:264
+msgid "Enter a Resend API key."
+msgstr "Skriv inn en Resend-API-nøkkel."
+
+#: app/routes/api.py:266
+msgid "Enter a sender email address on a domain verified in Resend."
+msgstr "Skriv inn en avsenderadresse på et domene som er verifisert i Resend."
+
+#: app/routes/api.py:2750 app/routes/api.py:2964 app/routes/api.py:3140
 msgid "No file uploaded"
 msgstr "Ingen fil lastet opp"
 
-#: app/routes/api.py:2719 app/routes/api.py:2933 app/routes/api.py:3109
+#: app/routes/api.py:2755 app/routes/api.py:2969 app/routes/api.py:3145
 #: app/routes/documents.py:67 app/routes/documents.py:72
 msgid "No file selected"
 msgstr "Ingen fil valgt"
 
-#: app/routes/api.py:2741
+#: app/routes/api.py:2777
 msgid "The uploaded file is not a valid SQLite database."
 msgstr "Den opplastede filen er ikke en gyldig SQLite-database."
 
-#: app/routes/api.py:2746
+#: app/routes/api.py:2782
 msgid ""
 "This does not appear to be a Hammond database — no vehicles, fillups, or "
 "expenses tables found."
@@ -682,7 +690,7 @@ msgstr ""
 "Dette ser ikke ut til å være en Hammond-database — ingen tabeller for "
 "kjøretøy, fyllinger eller utgifter ble funnet."
 
-#: app/routes/api.py:2896
+#: app/routes/api.py:2932
 #, python-format
 msgid ""
 "Hammond import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs, "
@@ -691,7 +699,7 @@ msgstr ""
 "Hammond-import fullført: %(vehicles)s kjøretøy, %(fuel_logs)s "
 "drivstofflogger, %(expenses)s utgifter importert."
 
-#: app/routes/api.py:2898
+#: app/routes/api.py:2934
 #, python-format
 msgid ""
 "(%(total_skipped)s records skipped due to errors — check server logs for "
@@ -700,7 +708,7 @@ msgstr ""
 "(%(total_skipped)s oppføringer hoppet over på grunn av feil — sjekk "
 "serverlogger for detaljer.)"
 
-#: app/routes/api.py:2905
+#: app/routes/api.py:2941
 #, python-format
 msgid ""
 "Import failed due to a database error. Check that the file is a valid "
@@ -709,13 +717,13 @@ msgstr ""
 "Import mislyktes på grunn av en databasefeil. Kontroller at filen er en "
 "gyldig Hammond-database. Feil: %(error)s"
 
-#: app/routes/api.py:2910 app/routes/api.py:3055 app/routes/api.py:3228
-#: app/routes/api.py:3800
+#: app/routes/api.py:2946 app/routes/api.py:3091 app/routes/api.py:3264
+#: app/routes/api.py:3836
 #, python-format
 msgid "Import failed: %(error)s"
 msgstr "Import mislyktes: %(error)s"
 
-#: app/routes/api.py:3051
+#: app/routes/api.py:3087
 #, python-format
 msgid ""
 "Clarkson import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs"
@@ -723,7 +731,7 @@ msgstr ""
 "Clarkson-import fullført: %(vehicles)s kjøretøy, %(fuel_logs)s "
 "drivstofflogger"
 
-#: app/routes/api.py:3224
+#: app/routes/api.py:3260
 #, python-format
 msgid ""
 "Fuelly import complete: %(vehicles)s new vehicles, %(fuel_logs)s fuel logs"
@@ -731,63 +739,63 @@ msgstr ""
 "Fuelly-import fullført: %(vehicles)s nye kjøretøy, %(fuel_logs)s "
 "drivstofflogger"
 
-#: app/routes/api.py:3636
+#: app/routes/api.py:3672
 msgid "Please add a vehicle before importing data."
 msgstr "Vennligst legg til et kjøretøy før du importerer data."
 
-#: app/routes/api.py:3649
+#: app/routes/api.py:3685
 msgid "Invalid data type selected."
 msgstr "Ugyldig datatype valgt."
 
-#: app/routes/api.py:3654 app/routes/api.py:3739
+#: app/routes/api.py:3690 app/routes/api.py:3775
 msgid "Vehicle not found."
 msgstr "Kjøretøy ikke funnet."
 
-#: app/routes/api.py:3658
+#: app/routes/api.py:3694
 msgid "No CSV file uploaded."
 msgstr "Ingen CSV-fil lastet opp."
 
-#: app/routes/api.py:3677
+#: app/routes/api.py:3713
 msgid "CSV file has no column headers."
 msgstr "CSV-filen har ingen kolonneoverskrifter."
 
-#: app/routes/api.py:3719
+#: app/routes/api.py:3755
 #, python-format
 msgid "Failed to parse CSV file: %(error)s"
 msgstr "Kunne ikke tolke CSV-filen: %(error)s"
 
-#: app/routes/api.py:3734
+#: app/routes/api.py:3770
 msgid "Invalid data type."
 msgstr "Ugyldig datatype."
 
-#: app/routes/api.py:3743
+#: app/routes/api.py:3779
 msgid "CSV file expired. Please upload again."
 msgstr "CSV-filen er utløpt. Vennligst last opp på nytt."
 
-#: app/routes/api.py:3785
+#: app/routes/api.py:3821
 #, python-format
 msgid "CSV import complete: %(count)s %(label)s imported."
 msgstr "CSV-import fullført: %(count)s %(label)s importert."
 
-#: app/routes/api.py:3788
+#: app/routes/api.py:3824
 #, python-format
 msgid "%(count)s duplicate(s) skipped."
 msgstr "%(count)s duplikater hoppet over."
 
-#: app/routes/api.py:3835
+#: app/routes/api.py:3871
 msgid "No backup file uploaded."
 msgstr "Ingen sikkerhetskopi er lastet opp."
 
-#: app/routes/api.py:3858
+#: app/routes/api.py:3894
 #, python-format
 msgid "Could not read that backup: %(error)s"
 msgstr "Kunne ikke lese sikkerhetskopien: %(error)s"
 
-#: app/routes/api.py:3877
+#: app/routes/api.py:3913
 msgid "The uploaded backup has expired. Please upload it again."
 msgstr "Den opplastede sikkerhetskopien er utløpt. Last den opp på nytt."
 
-#: app/routes/api.py:3890
+#: app/routes/api.py:3926
 #, python-format
 msgid ""
 "Backup restored: %(added)s records added, %(skipped)s already present and "
@@ -796,139 +804,143 @@ msgstr ""
 "Sikkerhetskopi gjenopprettet: %(added)s poster lagt til, %(skipped)s fantes "
 "allerede og ble latt være."
 
-#: app/routes/api.py:3898
+#: app/routes/api.py:3934
 #, python-format
 msgid "Restore failed: %(error)s"
 msgstr "Gjenoppretting mislyktes: %(error)s"
 
-#: app/routes/auth.py:39
+#: app/routes/auth.py:40
 msgid "Invalid username or password"
 msgstr "Ugyldig brukernavn eller passord"
 
-#: app/routes/auth.py:62
+#: app/routes/auth.py:55
 msgid ""
 "Password reset by email is not available. Please contact an administrator."
 msgstr ""
 "Tilbakestilling av passord via e-post er ikke tilgjengelig. Vennligst "
 "kontakt en administrator."
 
-#: app/routes/auth.py:91
+#: app/routes/auth.py:84
 msgid ""
 "If an account with that email exists, a password reset link has been sent."
 msgstr ""
 "Hvis en konto med den e-postadressen finnes, er en lenke for tilbakestilling"
 " av passord sendt."
 
-#: app/routes/auth.py:104
+#: app/routes/auth.py:97
 msgid "Invalid or expired reset link. Please request a new one."
 msgstr "Ugyldig eller utløpt tilbakestillingslenke. Vennligst be om en ny."
 
-#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:256
-#: app/routes/auth.py:589 app/routes/auth.py:636
+#: app/routes/auth.py:105 app/routes/auth.py:163 app/routes/auth.py:249
+#: app/routes/auth.py:604 app/routes/auth.py:651
 msgid "Passwords do not match"
 msgstr "Passordene samsvarer ikke"
 
-#: app/routes/auth.py:124
+#: app/routes/auth.py:117
 msgid "Your password has been reset. Please log in."
 msgstr "Passordet ditt er tilbakestilt. Vennligst logg inn."
 
-#: app/routes/auth.py:160
+#: app/routes/auth.py:153
 msgid "New account registration is currently disabled."
 msgstr "Registrering av nye kontoer er for øyeblikket deaktivert."
 
-#: app/routes/auth.py:180 app/routes/auth.py:647
+#: app/routes/auth.py:173 app/routes/auth.py:662
 msgid "Username already exists"
 msgstr "Brukernavnet eksisterer allerede"
 
-#: app/routes/auth.py:184
+#: app/routes/auth.py:177
 msgid "Email already registered"
 msgstr "E-postadressen er allerede registrert"
 
-#: app/routes/auth.py:192
+#: app/routes/auth.py:185
 msgid "Registration successful! Please log in."
 msgstr "Registrering vellykket! Vennligst logg inn."
 
-#: app/routes/auth.py:202
+#: app/routes/auth.py:195
 msgid "You have been logged out."
 msgstr "Du er logget ut."
 
-#: app/routes/auth.py:247 app/routes/auth.py:580
+#: app/routes/auth.py:240 app/routes/auth.py:595
 msgid "Email already in use by another account"
 msgstr "E-postadressen er allerede i bruk av en annen konto"
 
-#: app/routes/auth.py:266
+#: app/routes/auth.py:259
 msgid "Settings updated successfully"
 msgstr "Innstillinger oppdatert"
 
-#: app/routes/auth.py:356
+#: app/routes/auth.py:350
 #, python-format
 msgid "Invalid webhook URL: %(error)s"
 msgstr "Ugyldig webhook-URL: %(error)s"
 
-#: app/routes/auth.py:371
+#: app/routes/auth.py:365
 msgid "Notification preferences updated"
 msgstr "Varslingspreferanser oppdatert"
 
-#: app/routes/auth.py:397
+#: app/routes/auth.py:391
 msgid "Menu preferences updated"
 msgstr "Menypreferanser oppdatert"
 
-#: app/routes/auth.py:422
+#: app/routes/auth.py:423
+msgid "Enter a valid sender email address for Resend."
+msgstr "Skriv inn en gyldig avsender-e-postadresse for Resend."
+
+#: app/routes/auth.py:437
 msgid "Notification settings updated"
 msgstr "Varslingsinnstillinger oppdatert"
 
-#: app/routes/auth.py:451
+#: app/routes/auth.py:466
 msgid "Branding settings updated successfully"
 msgstr "Merkevareinnstillinger oppdatert"
 
-#: app/routes/auth.py:467
+#: app/routes/auth.py:482
 msgid "Logo removed successfully"
 msgstr "Logo fjernet"
 
-#: app/routes/auth.py:480
+#: app/routes/auth.py:495
 msgid "DVLA settings updated"
 msgstr "DVLA-innstillinger oppdatert"
 
-#: app/routes/auth.py:495
+#: app/routes/auth.py:510
 msgid "UK fuel price settings updated"
 msgstr "Innstillinger for britiske drivstoffpriser er oppdatert"
 
-#: app/routes/auth.py:508
+#: app/routes/auth.py:523
 msgid "Tessie settings updated"
 msgstr "Tessie-innstillinger oppdatert"
 
-#: app/routes/auth.py:521
+#: app/routes/auth.py:536
 msgid "Registration settings updated"
 msgstr "Registreringsinnstillinger oppdatert"
 
-#: app/routes/auth.py:545
+#: app/routes/auth.py:560
 msgid "Cannot remove admin status from the last administrator."
 msgstr "Kan ikke fjerne administratorstatus fra den siste administratoren."
 
-#: app/routes/auth.py:550
+#: app/routes/auth.py:565
 #, python-format
 msgid "Admin status updated for %(username)s"
 msgstr "Administratorstatus oppdatert for %(username)s"
 
-#: app/routes/auth.py:563
+#: app/routes/auth.py:578
 #, python-format
 msgid "User %(username)s deleted"
 msgstr "Bruker %(username)s slettet"
 
-#: app/routes/auth.py:608
+#: app/routes/auth.py:623
 #, python-format
 msgid "User %(username)s updated successfully"
 msgstr "Bruker %(username)s oppdatert"
 
-#: app/routes/auth.py:631
+#: app/routes/auth.py:646
 msgid "Username, email, and password are required"
 msgstr "Brukernavn, e-post og passord er påkrevd"
 
-#: app/routes/auth.py:652
+#: app/routes/auth.py:667
 msgid "Email already in use"
 msgstr "E-postadressen er allerede i bruk"
 
-#: app/routes/auth.py:661
+#: app/routes/auth.py:676
 #, python-format
 msgid "User %(username)s created successfully"
 msgstr "Bruker %(username)s opprettet"
@@ -1970,7 +1982,7 @@ msgstr "Varsler"
 msgid "Branding"
 msgstr "Merkevare"
 
-#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1794
+#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1852
 msgid "About"
 msgstr "Om"
 
@@ -2682,7 +2694,7 @@ msgid "DVLA API Key"
 msgstr "DVLA API-nøkkel"
 
 #: app/templates/auth/settings.html:1170 app/templates/auth/settings.html:1250
-#: app/templates/auth/settings.html:1600
+#: app/templates/auth/settings.html:1658
 msgid "Test"
 msgstr "Test"
 
@@ -2882,7 +2894,7 @@ msgstr "ikke konfigurert"
 msgid "ntfy (Push Notifications)"
 msgstr "ntfy (push-varsler)"
 
-#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1613
+#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1671
 msgid "Pushover"
 msgstr "Pushover"
 
@@ -2895,10 +2907,8 @@ msgid "Notifications will be sent to"
 msgstr "Varsler vil bli sendt til"
 
 #: app/templates/auth/settings.html:1416
-msgid "Email not configured. Ask an administrator to configure SMTP settings."
-msgstr ""
-"E-post er ikke konfigurert. Be en administrator om å konfigurere SMTP-"
-"innstillinger."
+msgid "Email is not set up yet. Ask an administrator to set it up."
+msgstr "E-post er ikke satt opp ennå. Be en administrator om å sette den opp."
 
 #: app/templates/auth/settings.html:1425
 msgid "is a simple pub-sub notification service. Enter your topic below."
@@ -2974,63 +2984,107 @@ msgstr "Varslingstjenester"
 msgid "Configure notification services available to all users"
 msgstr "Konfigurer varslingstjenester tilgjengelig for alle brukere"
 
-#: app/templates/auth/settings.html:1530
-msgid "Email (SMTP)"
-msgstr "E-post (SMTP)"
+#: app/templates/auth/settings.html:1526
+msgid "Email provider"
+msgstr "E-postleverandør"
 
-#: app/templates/auth/settings.html:1542
-msgid "SMTP Host"
-msgstr "SMTP-vert"
+#: app/templates/auth/settings.html:1527
+msgid ""
+"Reminder emails, password resets and test emails are sent with the provider "
+"chosen here."
+msgstr ""
+"Påminnelser, tilbakestilling av passord og test-e-post sendes med "
+"leverandøren du velger her."
+
+#: app/templates/auth/settings.html:1529
+msgid "SMTP server"
+msgstr "SMTP-server"
+
+#: app/templates/auth/settings.html:1546
+msgid "Email (Resend)"
+msgstr "E-post (Resend)"
 
 #: app/templates/auth/settings.html:1549
-msgid "SMTP Port"
-msgstr "SMTP-port"
+msgid ""
+"Create an API key with sending access in your Resend dashboard, and send "
+"from an address on a domain you have verified there."
+msgstr ""
+"Opprett en API-nøkkel med sendetilgang i Resend-dashbordet, og send fra en "
+"adresse på et domene du har verifisert der."
+
+#: app/templates/auth/settings.html:1550
+msgid "Resend documentation"
+msgstr "Resend-dokumentasjon"
+
+#: app/templates/auth/settings.html:1554
+msgid "API key"
+msgstr "API-nøkkel"
 
 #: app/templates/auth/settings.html:1556
-msgid "SMTP Username"
-msgstr "SMTP-brukernavn"
+msgid "Saved. Leave blank to keep it."
+msgstr "Lagret. La feltet stå tomt for å beholde den."
 
-#: app/templates/auth/settings.html:1563
-msgid "SMTP Password"
-msgstr "SMTP-passord"
-
-#: app/templates/auth/settings.html:1570
+#: app/templates/auth/settings.html:1560 app/templates/auth/settings.html:1628
 msgid "Sender Email"
 msgstr "Avsender-e-post"
 
-#: app/templates/auth/settings.html:1577
+#: app/templates/auth/settings.html:1566 app/templates/auth/settings.html:1635
 msgid "Sender Name"
 msgstr "Avsendernavn"
 
-#: app/templates/auth/settings.html:1590
+#: app/templates/auth/settings.html:1575
+msgid "Send test email"
+msgstr "Send test-e-post"
+
+#: app/templates/auth/settings.html:1588
+msgid "Email (SMTP)"
+msgstr "E-post (SMTP)"
+
+#: app/templates/auth/settings.html:1600
+msgid "SMTP Host"
+msgstr "SMTP-vert"
+
+#: app/templates/auth/settings.html:1607
+msgid "SMTP Port"
+msgstr "SMTP-port"
+
+#: app/templates/auth/settings.html:1614
+msgid "SMTP Username"
+msgstr "SMTP-brukernavn"
+
+#: app/templates/auth/settings.html:1621
+msgid "SMTP Password"
+msgstr "SMTP-passord"
+
+#: app/templates/auth/settings.html:1648
 msgid "Use TLS"
 msgstr "Bruk TLS"
 
-#: app/templates/auth/settings.html:1596
+#: app/templates/auth/settings.html:1654
 msgid "Use SSL"
 msgstr "Bruk SSL"
 
-#: app/templates/auth/settings.html:1624
+#: app/templates/auth/settings.html:1682
 msgid "sends push notifications to iOS and Android devices."
 msgstr "sender push-varsler til iOS- og Android-enheter."
 
-#: app/templates/auth/settings.html:1627
+#: app/templates/auth/settings.html:1685
 msgid "Application Token"
 msgstr "Applikasjonstoken"
 
-#: app/templates/auth/settings.html:1632
+#: app/templates/auth/settings.html:1690
 msgid "Create an application at pushover.net to get your token"
 msgstr "Opprett en applikasjon på pushover.net for å få tokenet ditt"
 
-#: app/templates/auth/settings.html:1642
+#: app/templates/auth/settings.html:1700
 msgid "ntfy"
 msgstr "ntfy"
 
-#: app/templates/auth/settings.html:1643 app/templates/auth/settings.html:1658
+#: app/templates/auth/settings.html:1701 app/templates/auth/settings.html:1716
 msgid "Always available"
 msgstr "Alltid tilgjengelig"
 
-#: app/templates/auth/settings.html:1647
+#: app/templates/auth/settings.html:1705
 msgid ""
 "is a free, open-source notification service that requires no admin "
 "configuration. Users can set their own topic."
@@ -3038,11 +3092,11 @@ msgstr ""
 "er en gratis varslingstjeneste med åpen kildekode som ikke krever "
 "administratorkonfigurasjon. Brukere kan angi sitt eget emne."
 
-#: app/templates/auth/settings.html:1657
+#: app/templates/auth/settings.html:1715
 msgid "Webhook"
 msgstr "Webhook"
 
-#: app/templates/auth/settings.html:1661
+#: app/templates/auth/settings.html:1719
 msgid ""
 "Webhooks allow users to integrate with any service that accepts HTTP POST "
 "requests (Home Assistant, Discord, Slack, etc.)"
@@ -3050,147 +3104,160 @@ msgstr ""
 "Webhooks lar brukere integrere med alle tjenester som aksepterer HTTP POST-"
 "forespørsler (Home Assistant, Discord, Slack osv.)"
 
-#: app/templates/auth/settings.html:1668
+#: app/templates/auth/settings.html:1726
 msgid "Save Notification Settings"
 msgstr "Lagre varslingsinnstillinger"
 
-#: app/templates/auth/settings.html:1679
+#: app/templates/auth/settings.html:1737
 msgid "Manage Reminders"
 msgstr "Administrer påminnelser"
 
-#: app/templates/auth/settings.html:1680
+#: app/templates/auth/settings.html:1738
 msgid "View and manage your upcoming reminders"
 msgstr "Vis og administrer kommende påminnelser"
 
-#: app/templates/auth/settings.html:1685
+#: app/templates/auth/settings.html:1743
 msgid "View all reminders"
 msgstr "Vis alle påminnelser"
 
-#: app/templates/auth/settings.html:1702
+#: app/templates/auth/settings.html:1760
 msgid "Application Branding"
 msgstr "Applikasjonsmerkevare"
 
-#: app/templates/auth/settings.html:1703
+#: app/templates/auth/settings.html:1761
 msgid "Customize how May appears to all users"
 msgstr "Tilpass hvordan May vises for alle brukere"
 
-#: app/templates/auth/settings.html:1709
+#: app/templates/auth/settings.html:1767
 msgid "Application Name"
 msgstr "Applikasjonsnavn"
 
-#: app/templates/auth/settings.html:1717
+#: app/templates/auth/settings.html:1775
 msgid "Tagline"
 msgstr "Slagord"
 
-#: app/templates/auth/settings.html:1725
+#: app/templates/auth/settings.html:1783
 msgid "Primary Color"
 msgstr "Primærfarge"
 
-#: app/templates/auth/settings.html:1737
+#: app/templates/auth/settings.html:1795
 msgid "Logo"
 msgstr "Logo"
 
-#: app/templates/auth/settings.html:1741 app/templates/auth/settings.html:1742
+#: app/templates/auth/settings.html:1799 app/templates/auth/settings.html:1800
 msgid "Current logo"
 msgstr "Gjeldende logo"
 
-#: app/templates/auth/settings.html:1754
+#: app/templates/auth/settings.html:1812
 msgid "Remove Logo"
 msgstr "Fjern logo"
 
-#: app/templates/auth/settings.html:1759
+#: app/templates/auth/settings.html:1817
 msgid "Are you sure you want to remove the logo?"
 msgstr "Er du sikker på at du vil fjerne logoen?"
 
-#: app/templates/auth/settings.html:1782
+#: app/templates/auth/settings.html:1840
 msgid "Save Branding"
 msgstr "Lagre merkevare"
 
-#: app/templates/auth/settings.html:1795
+#: app/templates/auth/settings.html:1853
 msgid "Version information and updates"
 msgstr "Versjonsinformasjon og oppdateringer"
 
-#: app/templates/auth/settings.html:1802
+#: app/templates/auth/settings.html:1860
 msgid "Current Version"
 msgstr "Gjeldende versjon"
 
-#: app/templates/auth/settings.html:1825
+#: app/templates/auth/settings.html:1883
 msgid "Check for Updates"
 msgstr "Se etter oppdateringer"
 
-#: app/templates/auth/settings.html:1826
+#: app/templates/auth/settings.html:1884
 msgid "Click to check for newer versions"
 msgstr "Klikk for å se etter nyere versjoner"
 
-#: app/templates/auth/settings.html:1833
+#: app/templates/auth/settings.html:1891
 msgid "Check Now"
 msgstr "Sjekk nå"
 
-#: app/templates/auth/settings.html:1844
+#: app/templates/auth/settings.html:1902
 msgid "Update Available"
 msgstr "Oppdatering tilgjengelig"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "Version"
 msgstr "Versjon"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "is available"
 msgstr "er tilgjengelig"
 
-#: app/templates/auth/settings.html:1850
+#: app/templates/auth/settings.html:1908
 msgid "View Release Notes"
 msgstr "Vis utgivelsesnotater"
 
-#: app/templates/auth/settings.html:1857
+#: app/templates/auth/settings.html:1915
 msgid "To update (Docker):"
 msgstr "For å oppdatere (Docker):"
 
-#: app/templates/auth/settings.html:1860
+#: app/templates/auth/settings.html:1918
 msgid "Or use Watchtower for automatic updates."
 msgstr "Eller bruk Watchtower for automatiske oppdateringer."
 
-#: app/templates/auth/settings.html:1872
+#: app/templates/auth/settings.html:1930
 msgid "You are running the latest version"
 msgstr "Du kjører den nyeste versjonen"
 
-#: app/templates/auth/settings.html:1879
+#: app/templates/auth/settings.html:1937
 msgid "Resources"
 msgstr "Ressurser"
 
-#: app/templates/auth/settings.html:1886
+#: app/templates/auth/settings.html:1944
 msgid "Source Code"
 msgstr "Kildekode"
 
-#: app/templates/auth/settings.html:1893
+#: app/templates/auth/settings.html:1951
 msgid "Report an Issue"
 msgstr "Rapporter et problem"
 
-#: app/templates/auth/settings.html:1900
+#: app/templates/auth/settings.html:1958
 msgid "All Releases"
 msgstr "Alle utgivelser"
 
-#: app/templates/auth/settings.html:1907
+#: app/templates/auth/settings.html:1965
 msgid "Documentation"
 msgstr "Dokumentasjon"
 
-#: app/templates/auth/settings.html:2316
+#: app/templates/auth/settings.html:2216
+msgid "Sending..."
+msgstr "Sender …"
+
+#: app/templates/auth/settings.html:2230
+#, python-format
+msgid "Test email sent to %(email)s"
+msgstr "Test-e-post sendt til %(email)s"
+
+#: app/templates/auth/settings.html:2233 app/templates/auth/settings.html:2238
+msgid "Failed to send email"
+msgstr "Kunne ikke sende e-post"
+
+#: app/templates/auth/settings.html:2413
 msgid "Checking..."
 msgstr "Sjekker..."
 
-#: app/templates/auth/settings.html:2335
+#: app/templates/auth/settings.html:2432
 msgid "A newer version is available"
 msgstr "En nyere versjon er tilgjengelig"
 
-#: app/templates/auth/settings.html:2340
+#: app/templates/auth/settings.html:2437
 msgid "Last checked just now"
 msgstr "Sist sjekket akkurat nå"
 
-#: app/templates/auth/settings.html:2344
+#: app/templates/auth/settings.html:2441
 msgid "Could not check for updates"
 msgstr "Kunne ikke se etter oppdateringer"
 
-#: app/templates/auth/settings.html:2349
+#: app/templates/auth/settings.html:2446
 msgid "Error checking for updates"
 msgstr "Feil ved sjekk av oppdateringer"
 

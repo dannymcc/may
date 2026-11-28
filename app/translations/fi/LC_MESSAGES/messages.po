@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 10:50+0000\n"
+"POT-Creation-Date: 2026-11-28 11:18+0000\n"
 "PO-Revision-Date: 2026-02-17 20:56+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fi <LL@li.org>\n"
@@ -662,20 +662,28 @@ msgstr "Kilometrikorvaus päivitetty"
 msgid "Mileage allowance deleted successfully"
 msgstr "Kilometrikorvaus poistettu"
 
-#: app/routes/api.py:2714 app/routes/api.py:2928 app/routes/api.py:3104
+#: app/routes/api.py:264
+msgid "Enter a Resend API key."
+msgstr "Anna Resendin API-avain."
+
+#: app/routes/api.py:266
+msgid "Enter a sender email address on a domain verified in Resend."
+msgstr "Anna lähettäjän osoite Resendissä vahvistetusta verkkotunnuksesta."
+
+#: app/routes/api.py:2750 app/routes/api.py:2964 app/routes/api.py:3140
 msgid "No file uploaded"
 msgstr "Tiedostoa ei ladattu"
 
-#: app/routes/api.py:2719 app/routes/api.py:2933 app/routes/api.py:3109
+#: app/routes/api.py:2755 app/routes/api.py:2969 app/routes/api.py:3145
 #: app/routes/documents.py:67 app/routes/documents.py:72
 msgid "No file selected"
 msgstr "Tiedostoa ei valittu"
 
-#: app/routes/api.py:2741
+#: app/routes/api.py:2777
 msgid "The uploaded file is not a valid SQLite database."
 msgstr "Ladattu tiedosto ei ole kelvollinen SQLite-tietokanta."
 
-#: app/routes/api.py:2746
+#: app/routes/api.py:2782
 msgid ""
 "This does not appear to be a Hammond database — no vehicles, fillups, or "
 "expenses tables found."
@@ -683,7 +691,7 @@ msgstr ""
 "Tämä ei vaikuta olevan Hammond-tietokanta — ajoneuvoja, tankkaustietoja tai "
 "kulutaulukoita ei löytynyt."
 
-#: app/routes/api.py:2896
+#: app/routes/api.py:2932
 #, python-format
 msgid ""
 "Hammond import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs, "
@@ -692,7 +700,7 @@ msgstr ""
 "Hammond-tuonti valmis: %(vehicles)s ajoneuvoa, %(fuel_logs)s "
 "polttoainekirjausta, %(expenses)s kulua tuotu."
 
-#: app/routes/api.py:2898
+#: app/routes/api.py:2934
 #, python-format
 msgid ""
 "(%(total_skipped)s records skipped due to errors — check server logs for "
@@ -701,7 +709,7 @@ msgstr ""
 "(%(total_skipped)s tietuetta ohitettu virheiden vuoksi — tarkista "
 "palvelinlokit lisätietoja varten.)"
 
-#: app/routes/api.py:2905
+#: app/routes/api.py:2941
 #, python-format
 msgid ""
 "Import failed due to a database error. Check that the file is a valid "
@@ -710,13 +718,13 @@ msgstr ""
 "Tuonti epäonnistui tietokantavirheen vuoksi. Tarkista, että tiedosto on "
 "kelvollinen Hammond-tietokanta. Virhe: %(error)s"
 
-#: app/routes/api.py:2910 app/routes/api.py:3055 app/routes/api.py:3228
-#: app/routes/api.py:3800
+#: app/routes/api.py:2946 app/routes/api.py:3091 app/routes/api.py:3264
+#: app/routes/api.py:3836
 #, python-format
 msgid "Import failed: %(error)s"
 msgstr "Tuonti epäonnistui: %(error)s"
 
-#: app/routes/api.py:3051
+#: app/routes/api.py:3087
 #, python-format
 msgid ""
 "Clarkson import complete: %(vehicles)s vehicles, %(fuel_logs)s fuel logs"
@@ -724,7 +732,7 @@ msgstr ""
 "Clarkson-tuonti valmis: %(vehicles)s ajoneuvoa, %(fuel_logs)s "
 "polttoainekirjausta"
 
-#: app/routes/api.py:3224
+#: app/routes/api.py:3260
 #, python-format
 msgid ""
 "Fuelly import complete: %(vehicles)s new vehicles, %(fuel_logs)s fuel logs"
@@ -732,63 +740,63 @@ msgstr ""
 "Fuelly-tuonti valmis: %(vehicles)s uutta ajoneuvoa, %(fuel_logs)s "
 "polttoainekirjausta"
 
-#: app/routes/api.py:3636
+#: app/routes/api.py:3672
 msgid "Please add a vehicle before importing data."
 msgstr "Lisää ajoneuvo ennen tietojen tuontia."
 
-#: app/routes/api.py:3649
+#: app/routes/api.py:3685
 msgid "Invalid data type selected."
 msgstr "Virheellinen tietotyyppi valittu."
 
-#: app/routes/api.py:3654 app/routes/api.py:3739
+#: app/routes/api.py:3690 app/routes/api.py:3775
 msgid "Vehicle not found."
 msgstr "Ajoneuvoa ei löytynyt."
 
-#: app/routes/api.py:3658
+#: app/routes/api.py:3694
 msgid "No CSV file uploaded."
 msgstr "CSV-tiedostoa ei ladattu."
 
-#: app/routes/api.py:3677
+#: app/routes/api.py:3713
 msgid "CSV file has no column headers."
 msgstr "CSV-tiedostossa ei ole sarakeotsikoita."
 
-#: app/routes/api.py:3719
+#: app/routes/api.py:3755
 #, python-format
 msgid "Failed to parse CSV file: %(error)s"
 msgstr "CSV-tiedoston jäsennys epäonnistui: %(error)s"
 
-#: app/routes/api.py:3734
+#: app/routes/api.py:3770
 msgid "Invalid data type."
 msgstr "Virheellinen tietotyyppi."
 
-#: app/routes/api.py:3743
+#: app/routes/api.py:3779
 msgid "CSV file expired. Please upload again."
 msgstr "CSV-tiedosto on vanhentunut. Lataa uudelleen."
 
-#: app/routes/api.py:3785
+#: app/routes/api.py:3821
 #, python-format
 msgid "CSV import complete: %(count)s %(label)s imported."
 msgstr "CSV-tuonti valmis: %(count)s %(label)s tuotu."
 
-#: app/routes/api.py:3788
+#: app/routes/api.py:3824
 #, python-format
 msgid "%(count)s duplicate(s) skipped."
 msgstr "%(count)s kaksoiskappaletta ohitettiin."
 
-#: app/routes/api.py:3835
+#: app/routes/api.py:3871
 msgid "No backup file uploaded."
 msgstr "Varmuuskopiotiedostoa ei ladattu."
 
-#: app/routes/api.py:3858
+#: app/routes/api.py:3894
 #, python-format
 msgid "Could not read that backup: %(error)s"
 msgstr "Varmuuskopiota ei voitu lukea: %(error)s"
 
-#: app/routes/api.py:3877
+#: app/routes/api.py:3913
 msgid "The uploaded backup has expired. Please upload it again."
 msgstr "Ladattu varmuuskopio on vanhentunut. Lataa se uudelleen."
 
-#: app/routes/api.py:3890
+#: app/routes/api.py:3926
 #, python-format
 msgid ""
 "Backup restored: %(added)s records added, %(skipped)s already present and "
@@ -797,139 +805,143 @@ msgstr ""
 "Varmuuskopio palautettu: %(added)s tietuetta lisätty, %(skipped)s oli jo "
 "olemassa ja jätettiin ennalleen."
 
-#: app/routes/api.py:3898
+#: app/routes/api.py:3934
 #, python-format
 msgid "Restore failed: %(error)s"
 msgstr "Palautus epäonnistui: %(error)s"
 
-#: app/routes/auth.py:39
+#: app/routes/auth.py:40
 msgid "Invalid username or password"
 msgstr "Virheellinen käyttäjänimi tai salasana"
 
-#: app/routes/auth.py:62
+#: app/routes/auth.py:55
 msgid ""
 "Password reset by email is not available. Please contact an administrator."
 msgstr ""
 "Salasanan nollaus sähköpostitse ei ole käytettävissä. Ota yhteyttä "
 "ylläpitäjään."
 
-#: app/routes/auth.py:91
+#: app/routes/auth.py:84
 msgid ""
 "If an account with that email exists, a password reset link has been sent."
 msgstr ""
 "Jos tili kyseisellä sähköpostiosoitteella on olemassa, salasanan "
 "nollauslinkki on lähetetty."
 
-#: app/routes/auth.py:104
+#: app/routes/auth.py:97
 msgid "Invalid or expired reset link. Please request a new one."
 msgstr "Virheellinen tai vanhentunut nollauslinkki. Pyydä uusi."
 
-#: app/routes/auth.py:112 app/routes/auth.py:170 app/routes/auth.py:256
-#: app/routes/auth.py:589 app/routes/auth.py:636
+#: app/routes/auth.py:105 app/routes/auth.py:163 app/routes/auth.py:249
+#: app/routes/auth.py:604 app/routes/auth.py:651
 msgid "Passwords do not match"
 msgstr "Salasanat eivät täsmää"
 
-#: app/routes/auth.py:124
+#: app/routes/auth.py:117
 msgid "Your password has been reset. Please log in."
 msgstr "Salasanasi on nollattu. Kirjaudu sisään."
 
-#: app/routes/auth.py:160
+#: app/routes/auth.py:153
 msgid "New account registration is currently disabled."
 msgstr "Uusien tilien rekisteröinti on tällä hetkellä poistettu käytöstä."
 
-#: app/routes/auth.py:180 app/routes/auth.py:647
+#: app/routes/auth.py:173 app/routes/auth.py:662
 msgid "Username already exists"
 msgstr "Käyttäjänimi on jo olemassa"
 
-#: app/routes/auth.py:184
+#: app/routes/auth.py:177
 msgid "Email already registered"
 msgstr "Sähköposti on jo rekisteröity"
 
-#: app/routes/auth.py:192
+#: app/routes/auth.py:185
 msgid "Registration successful! Please log in."
 msgstr "Rekisteröinti onnistui! Kirjaudu sisään."
 
-#: app/routes/auth.py:202
+#: app/routes/auth.py:195
 msgid "You have been logged out."
 msgstr "Olet kirjautunut ulos."
 
-#: app/routes/auth.py:247 app/routes/auth.py:580
+#: app/routes/auth.py:240 app/routes/auth.py:595
 msgid "Email already in use by another account"
 msgstr "Sähköposti on jo käytössä toisella tilillä"
 
-#: app/routes/auth.py:266
+#: app/routes/auth.py:259
 msgid "Settings updated successfully"
 msgstr "Asetukset päivitetty"
 
-#: app/routes/auth.py:356
+#: app/routes/auth.py:350
 #, python-format
 msgid "Invalid webhook URL: %(error)s"
 msgstr "Virheellinen webhook-URL: %(error)s"
 
-#: app/routes/auth.py:371
+#: app/routes/auth.py:365
 msgid "Notification preferences updated"
 msgstr "Ilmoitusasetukset päivitetty"
 
-#: app/routes/auth.py:397
+#: app/routes/auth.py:391
 msgid "Menu preferences updated"
 msgstr "Valikkoasetukset päivitetty"
 
-#: app/routes/auth.py:422
+#: app/routes/auth.py:423
+msgid "Enter a valid sender email address for Resend."
+msgstr "Anna kelvollinen lähettäjän sähköpostiosoite Resendille."
+
+#: app/routes/auth.py:437
 msgid "Notification settings updated"
 msgstr "Ilmoitusasetukset päivitetty"
 
-#: app/routes/auth.py:451
+#: app/routes/auth.py:466
 msgid "Branding settings updated successfully"
 msgstr "Brändiasettelu päivitetty"
 
-#: app/routes/auth.py:467
+#: app/routes/auth.py:482
 msgid "Logo removed successfully"
 msgstr "Logo poistettu"
 
-#: app/routes/auth.py:480
+#: app/routes/auth.py:495
 msgid "DVLA settings updated"
 msgstr "DVLA-asetukset päivitetty"
 
-#: app/routes/auth.py:495
+#: app/routes/auth.py:510
 msgid "UK fuel price settings updated"
 msgstr "Ison-Britannian polttoainehintojen asetukset päivitetty"
 
-#: app/routes/auth.py:508
+#: app/routes/auth.py:523
 msgid "Tessie settings updated"
 msgstr "Tessie-asetukset päivitetty"
 
-#: app/routes/auth.py:521
+#: app/routes/auth.py:536
 msgid "Registration settings updated"
 msgstr "Rekisteröintiasetukset päivitetty"
 
-#: app/routes/auth.py:545
+#: app/routes/auth.py:560
 msgid "Cannot remove admin status from the last administrator."
 msgstr "Viimeiseltä ylläpitäjältä ei voi poistaa ylläpitäjän oikeuksia."
 
-#: app/routes/auth.py:550
+#: app/routes/auth.py:565
 #, python-format
 msgid "Admin status updated for %(username)s"
 msgstr "Ylläpitäjän tila päivitetty käyttäjälle %(username)s"
 
-#: app/routes/auth.py:563
+#: app/routes/auth.py:578
 #, python-format
 msgid "User %(username)s deleted"
 msgstr "Käyttäjä %(username)s poistettu"
 
-#: app/routes/auth.py:608
+#: app/routes/auth.py:623
 #, python-format
 msgid "User %(username)s updated successfully"
 msgstr "Käyttäjä %(username)s päivitetty"
 
-#: app/routes/auth.py:631
+#: app/routes/auth.py:646
 msgid "Username, email, and password are required"
 msgstr "Käyttäjänimi, sähköposti ja salasana ovat pakollisia"
 
-#: app/routes/auth.py:652
+#: app/routes/auth.py:667
 msgid "Email already in use"
 msgstr "Sähköposti on jo käytössä"
 
-#: app/routes/auth.py:661
+#: app/routes/auth.py:676
 #, python-format
 msgid "User %(username)s created successfully"
 msgstr "Käyttäjä %(username)s luotu"
@@ -1974,7 +1986,7 @@ msgstr "Ilmoitukset"
 msgid "Branding"
 msgstr "Brändäys"
 
-#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1794
+#: app/templates/auth/settings.html:84 app/templates/auth/settings.html:1852
 msgid "About"
 msgstr "Tietoja"
 
@@ -2688,7 +2700,7 @@ msgid "DVLA API Key"
 msgstr "DVLA API -avain"
 
 #: app/templates/auth/settings.html:1170 app/templates/auth/settings.html:1250
-#: app/templates/auth/settings.html:1600
+#: app/templates/auth/settings.html:1658
 msgid "Test"
 msgstr "Testaa"
 
@@ -2889,7 +2901,7 @@ msgstr "ei määritetty"
 msgid "ntfy (Push Notifications)"
 msgstr "ntfy (push-ilmoitukset)"
 
-#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1613
+#: app/templates/auth/settings.html:1397 app/templates/auth/settings.html:1671
 msgid "Pushover"
 msgstr "Pushover"
 
@@ -2902,9 +2914,9 @@ msgid "Notifications will be sent to"
 msgstr "Ilmoitukset lähetetään osoitteeseen"
 
 #: app/templates/auth/settings.html:1416
-msgid "Email not configured. Ask an administrator to configure SMTP settings."
+msgid "Email is not set up yet. Ask an administrator to set it up."
 msgstr ""
-"Sähköposti ei ole määritetty. Pyydä ylläpitäjää määrittämään SMTP-asetukset."
+"Sähköpostia ei ole vielä määritetty. Pyydä ylläpitäjää määrittämään se."
 
 #: app/templates/auth/settings.html:1425
 msgid "is a simple pub-sub notification service. Enter your topic below."
@@ -2980,63 +2992,107 @@ msgstr "Ilmoituspalvelut"
 msgid "Configure notification services available to all users"
 msgstr "Määritä kaikille käyttäjille saatavilla olevat ilmoituspalvelut"
 
-#: app/templates/auth/settings.html:1530
-msgid "Email (SMTP)"
-msgstr "Sähköposti (SMTP)"
+#: app/templates/auth/settings.html:1526
+msgid "Email provider"
+msgstr "Sähköpostipalvelu"
 
-#: app/templates/auth/settings.html:1542
-msgid "SMTP Host"
+#: app/templates/auth/settings.html:1527
+msgid ""
+"Reminder emails, password resets and test emails are sent with the provider "
+"chosen here."
+msgstr ""
+"Muistutukset, salasanan palautukset ja testiviestit lähetetään tässä "
+"valitulla palvelulla."
+
+#: app/templates/auth/settings.html:1529
+msgid "SMTP server"
 msgstr "SMTP-palvelin"
 
+#: app/templates/auth/settings.html:1546
+msgid "Email (Resend)"
+msgstr "Sähköposti (Resend)"
+
 #: app/templates/auth/settings.html:1549
-msgid "SMTP Port"
-msgstr "SMTP-portti"
+msgid ""
+"Create an API key with sending access in your Resend dashboard, and send "
+"from an address on a domain you have verified there."
+msgstr ""
+"Luo Resendin hallintapaneelissa API-avain, jolla on lähetysoikeus, ja lähetä"
+" osoitteesta, joka kuuluu siellä vahvistamaasi verkkotunnukseen."
+
+#: app/templates/auth/settings.html:1550
+msgid "Resend documentation"
+msgstr "Resendin dokumentaatio"
+
+#: app/templates/auth/settings.html:1554
+msgid "API key"
+msgstr "API-avain"
 
 #: app/templates/auth/settings.html:1556
-msgid "SMTP Username"
-msgstr "SMTP-käyttäjänimi"
+msgid "Saved. Leave blank to keep it."
+msgstr "Tallennettu. Jätä tyhjäksi säilyttääksesi sen."
 
-#: app/templates/auth/settings.html:1563
-msgid "SMTP Password"
-msgstr "SMTP-salasana"
-
-#: app/templates/auth/settings.html:1570
+#: app/templates/auth/settings.html:1560 app/templates/auth/settings.html:1628
 msgid "Sender Email"
 msgstr "Lähettäjän sähköposti"
 
-#: app/templates/auth/settings.html:1577
+#: app/templates/auth/settings.html:1566 app/templates/auth/settings.html:1635
 msgid "Sender Name"
 msgstr "Lähettäjän nimi"
 
-#: app/templates/auth/settings.html:1590
+#: app/templates/auth/settings.html:1575
+msgid "Send test email"
+msgstr "Lähetä testiviesti"
+
+#: app/templates/auth/settings.html:1588
+msgid "Email (SMTP)"
+msgstr "Sähköposti (SMTP)"
+
+#: app/templates/auth/settings.html:1600
+msgid "SMTP Host"
+msgstr "SMTP-palvelin"
+
+#: app/templates/auth/settings.html:1607
+msgid "SMTP Port"
+msgstr "SMTP-portti"
+
+#: app/templates/auth/settings.html:1614
+msgid "SMTP Username"
+msgstr "SMTP-käyttäjänimi"
+
+#: app/templates/auth/settings.html:1621
+msgid "SMTP Password"
+msgstr "SMTP-salasana"
+
+#: app/templates/auth/settings.html:1648
 msgid "Use TLS"
 msgstr "Käytä TLS:ää"
 
-#: app/templates/auth/settings.html:1596
+#: app/templates/auth/settings.html:1654
 msgid "Use SSL"
 msgstr "Käytä SSL:ää"
 
-#: app/templates/auth/settings.html:1624
+#: app/templates/auth/settings.html:1682
 msgid "sends push notifications to iOS and Android devices."
 msgstr "lähettää push-ilmoituksia iOS- ja Android-laitteille."
 
-#: app/templates/auth/settings.html:1627
+#: app/templates/auth/settings.html:1685
 msgid "Application Token"
 msgstr "Sovellustunnus"
 
-#: app/templates/auth/settings.html:1632
+#: app/templates/auth/settings.html:1690
 msgid "Create an application at pushover.net to get your token"
 msgstr "Luo sovellus osoitteessa pushover.net saadaksesi tunnuksesi"
 
-#: app/templates/auth/settings.html:1642
+#: app/templates/auth/settings.html:1700
 msgid "ntfy"
 msgstr "ntfy"
 
-#: app/templates/auth/settings.html:1643 app/templates/auth/settings.html:1658
+#: app/templates/auth/settings.html:1701 app/templates/auth/settings.html:1716
 msgid "Always available"
 msgstr "Aina saatavilla"
 
-#: app/templates/auth/settings.html:1647
+#: app/templates/auth/settings.html:1705
 msgid ""
 "is a free, open-source notification service that requires no admin "
 "configuration. Users can set their own topic."
@@ -3044,11 +3100,11 @@ msgstr ""
 "on ilmainen, avoimen lähdekoodin ilmoituspalvelu, joka ei vaadi ylläpitäjän "
 "määrityksiä. Käyttäjät voivat asettaa oman aiheensa."
 
-#: app/templates/auth/settings.html:1657
+#: app/templates/auth/settings.html:1715
 msgid "Webhook"
 msgstr "Webhook"
 
-#: app/templates/auth/settings.html:1661
+#: app/templates/auth/settings.html:1719
 msgid ""
 "Webhooks allow users to integrate with any service that accepts HTTP POST "
 "requests (Home Assistant, Discord, Slack, etc.)"
@@ -3056,147 +3112,160 @@ msgstr ""
 "Webhookit mahdollistavat integroinnin mihin tahansa palveluun, joka hyväksyy"
 " HTTP POST -pyyntöjä (Home Assistant, Discord, Slack jne.)"
 
-#: app/templates/auth/settings.html:1668
+#: app/templates/auth/settings.html:1726
 msgid "Save Notification Settings"
 msgstr "Tallenna ilmoitusasetukset"
 
-#: app/templates/auth/settings.html:1679
+#: app/templates/auth/settings.html:1737
 msgid "Manage Reminders"
 msgstr "Hallitse muistutuksia"
 
-#: app/templates/auth/settings.html:1680
+#: app/templates/auth/settings.html:1738
 msgid "View and manage your upcoming reminders"
 msgstr "Näytä ja hallitse tulevia muistutuksiasi"
 
-#: app/templates/auth/settings.html:1685
+#: app/templates/auth/settings.html:1743
 msgid "View all reminders"
 msgstr "Näytä kaikki muistutukset"
 
-#: app/templates/auth/settings.html:1702
+#: app/templates/auth/settings.html:1760
 msgid "Application Branding"
 msgstr "Sovelluksen brändäys"
 
-#: app/templates/auth/settings.html:1703
+#: app/templates/auth/settings.html:1761
 msgid "Customize how May appears to all users"
 msgstr "Mukauta miten May näkyy kaikille käyttäjille"
 
-#: app/templates/auth/settings.html:1709
+#: app/templates/auth/settings.html:1767
 msgid "Application Name"
 msgstr "Sovelluksen nimi"
 
-#: app/templates/auth/settings.html:1717
+#: app/templates/auth/settings.html:1775
 msgid "Tagline"
 msgstr "Iskulause"
 
-#: app/templates/auth/settings.html:1725
+#: app/templates/auth/settings.html:1783
 msgid "Primary Color"
 msgstr "Pääväri"
 
-#: app/templates/auth/settings.html:1737
+#: app/templates/auth/settings.html:1795
 msgid "Logo"
 msgstr "Logo"
 
-#: app/templates/auth/settings.html:1741 app/templates/auth/settings.html:1742
+#: app/templates/auth/settings.html:1799 app/templates/auth/settings.html:1800
 msgid "Current logo"
 msgstr "Nykyinen logo"
 
-#: app/templates/auth/settings.html:1754
+#: app/templates/auth/settings.html:1812
 msgid "Remove Logo"
 msgstr "Poista logo"
 
-#: app/templates/auth/settings.html:1759
+#: app/templates/auth/settings.html:1817
 msgid "Are you sure you want to remove the logo?"
 msgstr "Haluatko varmasti poistaa logon?"
 
-#: app/templates/auth/settings.html:1782
+#: app/templates/auth/settings.html:1840
 msgid "Save Branding"
 msgstr "Tallenna brändäys"
 
-#: app/templates/auth/settings.html:1795
+#: app/templates/auth/settings.html:1853
 msgid "Version information and updates"
 msgstr "Versiotiedot ja päivitykset"
 
-#: app/templates/auth/settings.html:1802
+#: app/templates/auth/settings.html:1860
 msgid "Current Version"
 msgstr "Nykyinen versio"
 
-#: app/templates/auth/settings.html:1825
+#: app/templates/auth/settings.html:1883
 msgid "Check for Updates"
 msgstr "Tarkista päivitykset"
 
-#: app/templates/auth/settings.html:1826
+#: app/templates/auth/settings.html:1884
 msgid "Click to check for newer versions"
 msgstr "Napsauta tarkistaaksesi uudemmat versiot"
 
-#: app/templates/auth/settings.html:1833
+#: app/templates/auth/settings.html:1891
 msgid "Check Now"
 msgstr "Tarkista nyt"
 
-#: app/templates/auth/settings.html:1844
+#: app/templates/auth/settings.html:1902
 msgid "Update Available"
 msgstr "Päivitys saatavilla"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "Version"
 msgstr "Versio"
 
-#: app/templates/auth/settings.html:1846
+#: app/templates/auth/settings.html:1904
 msgid "is available"
 msgstr "on saatavilla"
 
-#: app/templates/auth/settings.html:1850
+#: app/templates/auth/settings.html:1908
 msgid "View Release Notes"
 msgstr "Näytä julkaisutiedot"
 
-#: app/templates/auth/settings.html:1857
+#: app/templates/auth/settings.html:1915
 msgid "To update (Docker):"
 msgstr "Päivittäminen (Docker):"
 
-#: app/templates/auth/settings.html:1860
+#: app/templates/auth/settings.html:1918
 msgid "Or use Watchtower for automatic updates."
 msgstr "Tai käytä Watchtoweria automaattisiin päivityksiin."
 
-#: app/templates/auth/settings.html:1872
+#: app/templates/auth/settings.html:1930
 msgid "You are running the latest version"
 msgstr "Käytössäsi on uusin versio"
 
-#: app/templates/auth/settings.html:1879
+#: app/templates/auth/settings.html:1937
 msgid "Resources"
 msgstr "Resurssit"
 
-#: app/templates/auth/settings.html:1886
+#: app/templates/auth/settings.html:1944
 msgid "Source Code"
 msgstr "Lähdekoodi"
 
-#: app/templates/auth/settings.html:1893
+#: app/templates/auth/settings.html:1951
 msgid "Report an Issue"
 msgstr "Ilmoita ongelmasta"
 
-#: app/templates/auth/settings.html:1900
+#: app/templates/auth/settings.html:1958
 msgid "All Releases"
 msgstr "Kaikki julkaisut"
 
-#: app/templates/auth/settings.html:1907
+#: app/templates/auth/settings.html:1965
 msgid "Documentation"
 msgstr "Dokumentaatio"
 
-#: app/templates/auth/settings.html:2316
+#: app/templates/auth/settings.html:2216
+msgid "Sending..."
+msgstr "Lähetetään…"
+
+#: app/templates/auth/settings.html:2230
+#, python-format
+msgid "Test email sent to %(email)s"
+msgstr "Testiviesti lähetetty osoitteeseen %(email)s"
+
+#: app/templates/auth/settings.html:2233 app/templates/auth/settings.html:2238
+msgid "Failed to send email"
+msgstr "Sähköpostin lähetys epäonnistui"
+
+#: app/templates/auth/settings.html:2413
 msgid "Checking..."
 msgstr "Tarkistetaan..."
 
-#: app/templates/auth/settings.html:2335
+#: app/templates/auth/settings.html:2432
 msgid "A newer version is available"
 msgstr "Uudempi versio on saatavilla"
 
-#: app/templates/auth/settings.html:2340
+#: app/templates/auth/settings.html:2437
 msgid "Last checked just now"
 msgstr "Viimeksi tarkistettu juuri nyt"
 
-#: app/templates/auth/settings.html:2344
+#: app/templates/auth/settings.html:2441
 msgid "Could not check for updates"
 msgstr "Päivitysten tarkistus epäonnistui"
 
-#: app/templates/auth/settings.html:2349
+#: app/templates/auth/settings.html:2446
 msgid "Error checking for updates"
 msgstr "Virhe päivitysten tarkistuksessa"
 

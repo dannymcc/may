@@ -360,7 +360,7 @@ Save your favorite stations:
 
 ### Notifications
 Configure your preferred notification method:
-- **Email**: SMTP server configuration (admin)
+- **Email**: sent through an SMTP server or [Resend](https://resend.com), whichever the admin chooses
 - **ntfy**: Free push notifications via ntfy.sh or self-hosted
 - **Pushover**: iOS/Android push notifications
 - **Webhook**: HTTP POST for Home Assistant, Discord, Slack, etc.
@@ -383,7 +383,9 @@ Imports from Hammond and Fuelly live in the same place.
 ## 🔧 Admin Settings
 
 Administrators can configure:
-- **SMTP Settings**: Email server for notifications
+- **Email provider**: an SMTP server, or Resend with an API key and a sender address on a domain verified
+  in Resend. Reminder emails, password resets and test emails all use the chosen provider; the
+  Resend API key is never shown again once saved
 - **Pushover**: Application token for push notifications
 - **DVLA API**: API key for UK vehicle lookups ([get one here](https://developer-portal.driver-vehicle-licensing.api.gov.uk/))
 - **UK Fuel Prices**: live forecourt prices for saved stations (see below)
@@ -542,7 +544,7 @@ A new catalogue is not offered until the language is registered:
 - **Database**: SQLite (easily swappable)
 - **Frontend**: Tailwind CSS, HTMX, Chart.js
 - **Server**: Gunicorn
-- **Notifications**: SMTP, ntfy, Pushover, Webhooks
+- **Notifications**: SMTP or Resend email, ntfy, Pushover, Webhooks
 - **PDF Generation**: WeasyPrint
 
 ## 🐛 Troubleshooting
@@ -566,7 +568,9 @@ A new catalogue is not offered until the language is registered:
   `pybabel compile -d app/translations`
 
 ### Notification Issues
-- **Email**: Verify SMTP settings and credentials in admin settings
+- **Email**: Verify the email provider settings in admin settings and use **Send test email**. With
+  Resend, the sender address must be on a domain verified in your Resend account; the test shows
+  Resend's own error message if it isn't
 - **ntfy**: Check your topic name is correct
 - **Pushover**: Ensure admin has configured the app token
 - **Webhook**: Verify the URL is accessible and accepts POST requests

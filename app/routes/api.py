@@ -241,6 +241,42 @@ def test_smtp():
         return jsonify({'success': False, 'error': message})
 
 
+@bp.route('/resend/test', methods=['POST'])
+@login_required
+def test_resend():
+    """Send a test email through Resend with the settings on the form (admin only).
+
+    Nothing is saved: a blank API key field falls back to the saved key, so
+    an admin can test before or after saving.
+    """
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Access denied'})
+
+    from app.models import AppSettings
+    from app.services.notifications import NotificationService
+
+    config = {
+        'api_key': (request.form.get('resend_api_key') or '').strip() or AppSettings.get('resend_api_key'),
+        'sender': (request.form.get('resend_sender') or '').strip(),
+        'sender_name': (request.form.get('resend_sender_name') or '').strip() or 'May',
+    }
+    if not config['api_key']:
+        return jsonify({'success': False, 'error': _('Enter a Resend API key.')})
+    if not config['sender']:
+        return jsonify({'success': False, 'error': _('Enter a sender email address on a domain verified in Resend.')})
+
+    success, error = NotificationService.send_resend(
+        current_user.email,
+        "Test Email from May",
+        "This is a test email to verify your Resend settings are configured correctly.",
+        "<html><body><h2>Test Email</h2><p>This is a test email to verify your Resend settings are configured correctly.</p></body></html>",
+        config=config,
+    )
+    if success:
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': error})
+
+
 # =============================================================================
 # Reminder Processing
 # =============================================================================
